@@ -65,6 +65,9 @@ const createCompiler = rawOptions => {
 	applyWebpackOptionsBaseDefaults(options);
 	const compiler = new Compiler(options.context);
 	compiler.options = options;
+	// NOTE:
+	// 1. 生成日志插件 compiler.infrastructureLogger
+	// 2. 生成输入流 和 输出流 compiler.inputFileSystem compiler.outputFileSystem
 	new NodeEnvironmentPlugin({
 		infrastructureLogging: options.infrastructureLogging
 	}).apply(compiler);
@@ -85,7 +88,7 @@ const createCompiler = rawOptions => {
 	compiler.hooks.environment.call();
 	compiler.hooks.afterEnvironment.call();
 
-	// NOTE: options 根据不同的值 使用不同的内置插件
+	// NOTE: options 根据不同的值 注册不同的内置插件
 	new WebpackOptionsApply().process(options, compiler);
 
 	// NOTE: 空调用
