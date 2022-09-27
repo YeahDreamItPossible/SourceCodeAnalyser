@@ -1,0 +1,427 @@
+{
+	"cache": {
+		"type": "memory",
+		"maxGenerations": null
+	},
+	"context": "/Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo",
+	"devtool": "eval",
+	"entry": {
+		"main": {
+			"import": ["/Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/src/index.js"]
+		}
+	},
+	"experiments": {
+		"topLevelAwait": false,
+		"syncWebAssembly": false,
+		"asyncWebAssembly": false,
+		"outputModule": false
+	},
+	"externalsPresets": {
+		"web": true,
+		"node": false,
+		"nwjs": false,
+		"electron": false,
+		"electronMain": false,
+		"electronPreload": false,
+		"electronRenderer": false
+	},
+	"externalsType": "var",
+	"infrastructureLogging": {
+		"stream": {
+			"connecting": false,
+			"_hadError": false,
+			"_parent": null,
+			"_host": null,
+			"_readableState": {
+				"objectMode": false,
+				"highWaterMark": 16384,
+				"buffer": {
+					"head": null,
+					"tail": null,
+					"length": 0
+				},
+				"length": 0,
+				"pipes": [],
+				"flowing": null,
+				"ended": false,
+				"endEmitted": false,
+				"reading": false,
+				"sync": true,
+				"needReadable": false,
+				"emittedReadable": false,
+				"readableListening": false,
+				"resumeScheduled": false,
+				"errorEmitted": false,
+				"emitClose": false,
+				"autoDestroy": false,
+				"destroyed": false,
+				"errored": null,
+				"closed": false,
+				"closeEmitted": false,
+				"defaultEncoding": "utf8",
+				"awaitDrainWriters": null,
+				"multiAwaitDrain": false,
+				"readingMore": false,
+				"decoder": null,
+				"encoding": null,
+				"readable": false
+			},
+			"_events": {},
+			"_eventsCount": 1,
+			"_writableState": {
+				"objectMode": false,
+				"highWaterMark": 16384,
+				"finalCalled": false,
+				"needDrain": false,
+				"ending": false,
+				"ended": false,
+				"finished": false,
+				"destroyed": false,
+				"decodeStrings": false,
+				"defaultEncoding": "utf8",
+				"length": 0,
+				"writing": false,
+				"corked": 0,
+				"sync": true,
+				"bufferProcessing": false,
+				"writecb": null,
+				"writelen": 0,
+				"afterWriteTickInfo": null,
+				"buffered": [],
+				"bufferedIndex": 0,
+				"allBuffers": true,
+				"allNoop": true,
+				"pendingcb": 0,
+				"prefinished": false,
+				"errorEmitted": false,
+				"emitClose": false,
+				"autoDestroy": false,
+				"errored": null,
+				"closed": false,
+				"closeEmitted": false
+			},
+			"allowHalfOpen": false,
+			"_sockname": null,
+			"_pendingData": null,
+			"_pendingEncoding": "",
+			"server": null,
+			"_server": null,
+			"columns": 189,
+			"rows": 14,
+			"_type": "tty",
+			"fd": 2,
+			"_isStdio": true
+		},
+		"level": "info",
+		"debug": false,
+		"colors": true,
+		"appendOnly": false
+	},
+	"loader": {
+		"target": "web"
+	},
+	"mode": "development",
+	"module": {
+		"parser": {
+			"javascript": {
+				"unknownContextRequest": ".",
+				"unknownContextRegExp": false,
+				"unknownContextRecursive": true,
+				"unknownContextCritical": true,
+				"exprContextRequest": ".",
+				"exprContextRegExp": false,
+				"exprContextRecursive": true,
+				"exprContextCritical": true,
+				"wrappedContextRegExp": {},
+				"wrappedContextRecursive": true,
+				"wrappedContextCritical": false,
+				"strictExportPresence": false,
+				"strictThisContextOnImports": false
+			},
+			"asset": {
+				"dataUrlCondition": {
+					"maxSize": 8096
+				}
+			}
+		},
+		"generator": {},
+		"defaultRules": [{
+			"mimetype": "application/node",
+			"type": "javascript/auto"
+		}, {
+			"test": {},
+			"type": "json"
+		}, {
+			"mimetype": "application/json",
+			"type": "json"
+		}, {
+			"test": {},
+			"type": "javascript/esm",
+			"resolve": {
+				"byDependency": {
+					"esm": {
+						"fullySpecified": true
+					}
+				}
+			}
+		}, {
+			"test": {},
+			"descriptionData": {
+				"type": "module"
+			},
+			"type": "javascript/esm",
+			"resolve": {
+				"byDependency": {
+					"esm": {
+						"fullySpecified": true
+					}
+				}
+			}
+		}, {
+			"test": {},
+			"type": "javascript/dynamic"
+		}, {
+			"test": {},
+			"descriptionData": {
+				"type": "commonjs"
+			},
+			"type": "javascript/dynamic"
+		}, {
+			"mimetype": {
+				"or": ["text/javascript", "application/javascript"]
+			},
+			"type": "javascript/esm",
+			"resolve": {
+				"byDependency": {
+					"esm": {
+						"fullySpecified": true
+					}
+				}
+			}
+		}, {
+			"dependency": "url",
+			"oneOf": [{
+				"scheme": {},
+				"type": "asset/inline"
+			}, {
+				"type": "asset/resource"
+			}]
+		}],
+		"rules": [{
+			"test": {},
+			"use": {
+				"loader": "/Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/loaders/index.js"
+			}
+		}]
+	},
+	"node": {
+		"global": true,
+		"__filename": "mock",
+		"__dirname": "mock"
+	},
+	"optimization": {
+		"runtimeChunk": false,
+		"splitChunks": {
+			"defaultSizeTypes": ["javascript", "unknown"],
+			"cacheGroups": {
+				"default": {
+					"idHint": "",
+					"reuseExistingChunk": true,
+					"minChunks": 2,
+					"priority": -20
+				},
+				"defaultVendors": {
+					"idHint": "vendors",
+					"reuseExistingChunk": true,
+					"test": {},
+					"priority": -10
+				}
+			},
+			"hidePathInfo": false,
+			"chunks": "async",
+			"usedExports": false,
+			"minChunks": 1,
+			"minSize": 10000,
+			"minRemainingSize": 0,
+			"enforceSizeThreshold": 30000,
+			"maxAsyncRequests": null,
+			"maxInitialRequests": null,
+			"automaticNameDelimiter": "-"
+		},
+		"emitOnErrors": true,
+		"removeAvailableModules": false,
+		"removeEmptyChunks": true,
+		"mergeDuplicateChunks": true,
+		"flagIncludedChunks": false,
+		"moduleIds": "named",
+		"chunkIds": "named",
+		"sideEffects": "flag",
+		"providedExports": true,
+		"usedExports": false,
+		"innerGraph": false,
+		"mangleExports": false,
+		"concatenateModules": false,
+		"checkWasmTypes": false,
+		"mangleWasmImports": false,
+		"portableRecords": false,
+		"realContentHash": false,
+		"minimize": false,
+		"minimizer": [{}],
+		"nodeEnv": "development"
+	},
+	"output": {
+		"assetModuleFilename": "[hash][ext][query]",
+		"charset": true,
+		"chunkFilename": "[id].dist.js",
+		"chunkFormat": "array-push",
+		"chunkLoading": "jsonp",
+		"chunkLoadingGlobal": "webpackChunkdemo",
+		"chunkLoadTimeout": 120000,
+		"compareBeforeEmit": true,
+		"crossOriginLoading": false,
+		"devtoolNamespace": "demo",
+		"environment": {
+			"arrowFunction": true,
+			"const": true,
+			"destructuring": true,
+			"forOf": true
+		},
+		"enabledChunkLoadingTypes": ["jsonp", "import-scripts"],
+		"enabledLibraryTypes": [],
+		"enabledWasmLoadingTypes": ["fetch"],
+		"filename": "dist.js",
+		"globalObject": "self",
+		"hashDigest": "hex",
+		"hashDigestLength": 20,
+		"hashFunction": "md4",
+		"hotUpdateChunkFilename": "[id].[fullhash].hot-update.js",
+		"hotUpdateGlobal": "webpackHotUpdatedemo",
+		"hotUpdateMainFilename": "[runtime].[fullhash].hot-update.json",
+		"iife": true,
+		"importFunctionName": "import",
+		"importMetaName": "import.meta",
+		"scriptType": false,
+		"module": false,
+		"path": "/Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist",
+		"pathinfo": true,
+		"publicPath": "auto",
+		"sourceMapFilename": "[file].map[query]",
+		"strictModuleExceptionHandling": false,
+		"uniqueName": "demo",
+		"wasmLoading": "fetch",
+		"webassemblyModuleFilename": "[hash].module.wasm",
+		"workerChunkLoading": "import-scripts",
+		"workerWasmLoading": "fetch"
+	},
+	"parallelism": 100,
+	"performance": false,
+	"plugins": [{
+		"options": {
+			"name": "MyPlugin"
+		}
+	}],
+	"profile": false,
+	"recordsInputPath": false,
+	"recordsOutputPath": false,
+	"resolve": {
+		"byDependency": {
+			"wasm": {
+				"conditionNames": ["import", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."]
+			},
+			"esm": {
+				"conditionNames": ["import", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."]
+			},
+			"loaderImport": {
+				"conditionNames": ["import", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."]
+			},
+			"worker": {
+				"conditionNames": ["import", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."],
+				"preferRelative": true
+			},
+			"commonjs": {
+				"conditionNames": ["require", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."]
+			},
+			"amd": {
+				"conditionNames": ["require", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."]
+			},
+			"loader": {
+				"conditionNames": ["require", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."]
+			},
+			"unknown": {
+				"conditionNames": ["require", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."]
+			},
+			"undefined": {
+				"conditionNames": ["require", "module", "..."],
+				"extensions": [".js", ".json", ".wasm"],
+				"aliasFields": ["browser"],
+				"mainFields": ["browser", "module", "..."]
+			},
+			"url": {
+				"preferRelative": true
+			}
+		},
+		"cache": true,
+		"modules": ["node_modules"],
+		"conditionNames": ["webpack", "development", "browser"],
+		"mainFiles": ["index"],
+		"extensions": [],
+		"aliasFields": [],
+		"exportsFields": ["exports"],
+		"roots": ["/Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo"],
+		"mainFields": ["main"]
+	},
+	"resolveLoader": {
+		"cache": true,
+		"conditionNames": ["loader", "require", "node"],
+		"exportsFields": ["exports"],
+		"mainFields": ["loader", "main"],
+		"extensions": [".js"],
+		"mainFiles": ["index"]
+	},
+	"snapshot": {
+		"resolveBuildDependencies": {
+			"timestamp": true,
+			"hash": true
+		},
+		"buildDependencies": {
+			"timestamp": true,
+			"hash": true
+		},
+		"resolve": {
+			"timestamp": true
+		},
+		"module": {
+			"timestamp": true
+		},
+		"immutablePaths": [],
+		"managedPaths": ["/Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/node_modules"]
+	},
+	"stats": {},
+	"target": "web",
+	"watch": false,
+	"watchOptions": {}
+}
