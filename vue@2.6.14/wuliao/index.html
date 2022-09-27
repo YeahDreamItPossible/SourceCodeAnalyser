@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .canvas {
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+  <img src="./1.jfif" alt="" id="img">
+
+  <canvas id="canvas" class="canvas"></canvas>
+
+  <script>
+    window.addEventListener('load', () => {
+      var canvas = document.getElementById('canvas')
+      var image = document.getElementById('img')
+
+      var ctx = canvas.getContext('2d')
+
+      ctx.drawImage(image, 0, 0)
+
+      let url = canvas.toDataURL()
+
+      const link = document.createElement('a')
+
+      link.style.width = '100px'
+      link.style.height = '100px'
+
+      link.href = url
+      link.textContent = '吴彦祖'
+      link.target = '_blank'
+      link.download = url
+      
+      document.body.appendChild(link)
+
+      window.ctx = ctx
+
+      console.log(canvas.toDataURL())
+    })
+  </script>
+</body>
+</html>
