@@ -198,9 +198,9 @@ class Compiler {
 		this.parentCompilation = undefined;
 		/** @type {Compiler} */
 		this.root = this;
-		/** @type {string} */
 		// NOTE:
 		// /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
+		/** @type {string} */
 		this.outputPath = "";
 		/** @type {Watching} */
 		this.watching = undefined;
