@@ -205,6 +205,8 @@ class Compiler {
 		/** @type {Watching} */
 		this.watching = undefined;
 
+		// NOTE:
+		// 文件流
 		/** @type {OutputFileSystem} */
 		this.outputFileSystem = null;
 		/** @type {IntermediateFileSystem} */
