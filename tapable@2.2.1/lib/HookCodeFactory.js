@@ -8,6 +8,8 @@ class HookCodeFactory {
 	constructor(config) {
 		this.config = config;
 		this.options = undefined;
+		// NOTE:
+		// call 调用时 形参
 		this._args = undefined;
 	}
 

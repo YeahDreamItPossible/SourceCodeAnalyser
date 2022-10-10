@@ -26,7 +26,13 @@ class Hook {
 	constructor(args = [], name = undefined) {
 		this._args = args;
 		this.name = name;
+		// NOTE:
+		// taps 优先队列
+		// taps 中的item {name, type, fn, stage, before}
+		// name 仅仅用于标识 使用过程中好像没什么卵用
 		this.taps = [];
+		// NOTE:
+		// 拦截器 的 item { register, call }
 		this.interceptors = [];
 		this._call = CALL_DELEGATE;
 		this.call = CALL_DELEGATE;
@@ -47,6 +53,10 @@ class Hook {
 	}
 
 	_createCall(type) {
+		// NOTE:
+		// 根据 选项 编译成 内部call函数
+		// 在call的时候 生成内部call函数的好处
+		// 就是保证在该次调用时 选项是最终的 不会再次改变
 		return this.compile({
 			taps: this.taps,
 			interceptors: this.interceptors,
@@ -56,6 +66,9 @@ class Hook {
 	}
 
 	_tap(type, options, fn) {
+		// NOTE:
+		// normalize options
+		// 保证最终的options 是一个包含 [name, type, fn, ...] 的对象
 		if (typeof options === "string") {
 			options = {
 				name: options.trim()
@@ -86,7 +99,8 @@ class Hook {
 		this._tap("promise", options, fn);
 	}
 
-	// NOTE: 处理options 并得到最终的options
+	// NOTE:
+	// 调用拦截器 处理options 并得到最终的options
 	_runRegisterInterceptors(options) {
 		for (const interceptor of this.interceptors) {
 			if (interceptor.register) {
@@ -123,6 +137,8 @@ class Hook {
 		this.interceptors.push(Object.assign({}, interceptor));
 		if (interceptor.register) {
 			for (let i = 0; i < this.taps.length; i++) {
+				// NOTE:
+				// 每次注册拦截器时 都会对taps 中的item options 重新处理一次
 				this.taps[i] = interceptor.register(this.taps[i]);
 			}
 		}
@@ -134,7 +150,7 @@ class Hook {
 		this.promise = this._promise;
 	}
 
-	// NOTE: 注册时间到 taps 中
+	// NOTE: 注册事件到 taps 中 并调整事件优先级
 	_insert(item) {
 		this._resetCompilation();
 		let before;
