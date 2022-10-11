@@ -9,6 +9,8 @@ if (__DEV__) {
 
 export * from '@vue/runtime-dom'
 
+// NOTE:
+// 运行时 compile 函数未实现
 export const compile = () => {
   if (__DEV__) {
     warn(
