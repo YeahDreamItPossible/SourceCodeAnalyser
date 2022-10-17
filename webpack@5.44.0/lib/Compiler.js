@@ -205,6 +205,8 @@ class Compiler {
 		/** @type {Watching} */
 		this.watching = undefined;
 
+		// NOTE:
+		// 文件流
 		/** @type {OutputFileSystem} */
 		this.outputFileSystem = null;
 		/** @type {IntermediateFileSystem} */
@@ -368,6 +370,8 @@ class Compiler {
 	// TODO webpack 6: solve this in a better way
 	_cleanupLastCompilation() {
 	// e.g. move compilation specific info from Modules into ModuleGraph
+		// NOTE:
+		// 移除 module 和 chunk 的依赖关系
 		if (this._lastCompilation !== undefined) {
 			for (const module of this._lastCompilation.modules) {
 				ChunkGraph.clearChunkGraphForModule(module);
@@ -938,6 +942,8 @@ class Compiler {
 				if (err) return callback(err);
 
 				try {
+					// NOTE:
+					// 这个地方得注意下
 					this.records = parseJson(content.toString("utf-8"));
 				} catch (e) {
 					e.message = "Cannot parse records: " + e.message;
