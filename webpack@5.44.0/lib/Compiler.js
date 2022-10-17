@@ -1127,7 +1127,7 @@ class Compiler {
 
 			logger.time("make hook");
 			// NOTE:
-			// 先试用 用户自定义插件
+			// 先使用 用户自定义插件
 			// EntryPlugin
 			this.hooks.make.callAsync(compilation, err => {
 				logger.timeEnd("make hook");
