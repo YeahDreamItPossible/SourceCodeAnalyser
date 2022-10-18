@@ -1229,6 +1229,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			currentProfile.markRestoringStart();
 		}
 
+		// NOTE:
+		// 主要是为了根据不同的缓存策略 缓存module
 		this._modulesCache.get(identifier, null, (err, cacheModule) => {
 			if (err) return callback(new ModuleRestoreError(module, err));
 
@@ -1316,6 +1318,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				// NOTE: 空调用
 				this.hooks.buildModule.call(module);
 				this.builtModules.add(module);
+
+				// NOTE: 解析模块 已经拿到 source 文件
 				module.build(
 					this.options,
 					this,
