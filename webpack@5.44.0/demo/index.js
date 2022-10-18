@@ -6,10 +6,13 @@ const compiler = webpack({
 	mode: 'development',
 	// target: 'web',
 	// target: 'node',
-	entry: path.join(__dirname, './src/index.js'),
+	// entry: path.join(__dirname, './src/index.js'),
+	entry: {
+		vendor: path.join(__dirname, './src/index.js')
+	},
 	output: {
 		// filename: '[name].js'
-		filename: 'dist.js'
+		// filename: 'dist.js'
 	},
 	plugins: [
 		new MyPlugin({name: 'MyPlugin'})
