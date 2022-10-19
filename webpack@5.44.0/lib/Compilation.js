@@ -2565,6 +2565,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 											makeWebpackError(err, "Compilation.hooks.processAssets")
 										);
 									}
+									// NOTE: 空调用
 									this.hooks.afterProcessAssets.call(this.assets);
 									this.logger.timeEnd("process assets");
 									this.assets = soonFrozenObjectDeprecation(
@@ -2578,13 +2579,16 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 									this.summarizeDependencies();
 									if (shouldRecord) {
+										// NOTE: 空调用
 										this.hooks.record.call(this, this.records);
 									}
 
+									// NOTE: 空调用
 									if (this.hooks.needAdditionalSeal.call()) {
 										this.unseal();
 										return this.seal(callback);
 									}
+									// NOTE: 直接执行回调
 									return this.hooks.afterSeal.callAsync(err => {
 										if (err) {
 											return finalCallback(
@@ -2602,6 +2606,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 							if (this.hooks.shouldGenerateChunkAssets.call() !== false) {
 								// NOTE: 空调用
 								this.hooks.beforeChunkAssets.call();
+								// TODO: 需要仔细研究研究
 								this.createChunkAssets(err => {
 									this.logger.timeEnd("create chunk assets");
 									if (err) {
