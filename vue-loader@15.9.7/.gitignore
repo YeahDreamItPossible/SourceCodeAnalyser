@@ -1,0 +1,10 @@
+.idea
+.DS_Store
+exploration
+node_modules
+*.log
+example/dist
+docs/.vuepress/dist
+test/.cache
+.vscode
+TODOS
