@@ -321,6 +321,7 @@ class AsyncQueue {
 	 * @returns {void}
 	 */
 	_handleResult(entry, err, result) {
+		// NOTE: 直接执行回调
 		this.hooks.result.callAsync(entry.item, err, result, hookError => {
 			const error = hookError
 				? makeWebpackError(hookError, `AsyncQueue(${this._name}).hooks.result`)
