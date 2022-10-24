@@ -49,6 +49,7 @@ class ArrayQueue {
 	 * @returns {T | undefined} The head of the queue of `undefined` if this queue is empty.
 	 */
 	dequeue() {
+		// NOTE: 没看懂 队列长度为16
 		if (this._listReversed.length === 0) {
 			if (this._list.length === 0) return undefined;
 			if (this._list.length === 1) return this._list.pop();
