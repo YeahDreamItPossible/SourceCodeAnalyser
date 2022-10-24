@@ -1,6 +1,5 @@
-<template lang="pug">
-div(ok)
-  h1(:class="$style.red") hello
+<template>
+  <div class="pageWrapper sourceWrapper">{{ msg }}</div>
 </template>
 
 <script>
@@ -13,14 +12,8 @@ export default {
 }
 </script>
 
-<style module>
+<style scoped>
 .red {
   color: red;
 }
 </style>
-
-<foo>
-export default comp => {
-  console.log(comp.options.data())
-}
-</foo>

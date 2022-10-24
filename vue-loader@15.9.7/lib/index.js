@@ -30,6 +30,7 @@ function loadTemplateCompiler (loaderContext) {
 }
 
 module.exports = function (source) {
+  debugger
   const loaderContext = this
 
   if (!errorEmitted && !loaderContext['thread-loader'] && !loaderContext[NS]) {
@@ -191,6 +192,7 @@ var component = normalizer(
   }
 
   code += `\nexport default component.exports`
+  debugger
   return code
 }
 

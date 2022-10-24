@@ -19,6 +19,7 @@ module.exports = function selectBlock (
 
   // script
   if (query.type === `script`) {
+    debugger
     if (appendExtension) {
       loaderContext.resourcePath += '.' + (descriptor.script.lang || 'js')
     }

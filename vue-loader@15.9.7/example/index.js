@@ -1,7 +1,9 @@
+const webpack = require('webpack')
 const path = require('path')
 const VueLoaderPlugin = require('../lib/plugin')
 
-module.exports = {
+
+const compiler = webpack({
   mode: 'development',
   entry: path.resolve(__dirname, './main.js'),
   output: {
@@ -9,10 +11,10 @@ module.exports = {
     filename: 'bundle.js',
     publicPath: '/dist/'
   },
-  // devServer: {
-  //   stats: "minimal",
-  //   contentBase: __dirname
-  // },
+  devServer: {
+    stats: "minimal",
+    contentBase: __dirname
+  },
   module: {
     rules: [
       // { loader: require.resolve('./debugger') },
@@ -27,6 +29,20 @@ module.exports = {
         loader: 'babel-loader'
       },
       // example configuring preprocessor for <template lang="pug">
+      {
+        test: /\.pug$/,
+        oneOf: [
+          // this applies to <template lang="pug"> in Vue components
+          {
+            resourceQuery: /^\?vue/,
+            use: ['pug-plain-loader']
+          },
+          // this applies to pug imports inside JavaScript
+          {
+            use: ['raw-loader', 'pug-plain-loader']
+          }
+        ]
+      },
       // example configuring CSS Modules
       {
         test: /\.css$/,
@@ -55,6 +71,21 @@ module.exports = {
         ]
       },
       // exmaple configration for <style lang="scss">
+      {
+        test: /\.scss$/,
+        use: [
+          'vue-style-loader',
+          'css-loader',
+          {
+            loader: 'sass-loader',
+            // global data for all components
+            // this can be read from a scss file
+            options: {
+              data: '$color: red;'
+            }
+          }
+        ]
+      }
     ]
   },
   resolveLoader: {
@@ -63,6 +94,10 @@ module.exports = {
     }
   },
   plugins: [
-    // new VueLoaderPlugin()
+    new VueLoaderPlugin()
   ]
-}
+})
+
+compiler.run(() => {
+  console.log('over')
+})
