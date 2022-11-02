@@ -129,8 +129,12 @@ function runSyncOrAsync(fn, context, args, callback) {
 	};
 	try {
 		var result = (function LOADER_EXECUTION() {
+			// NOTE:
+			// 调用 loader.normal || loader.pitch
 			return fn.apply(context, args);
 		}());
+		// NOTE:
+		// 该处非常巧妙 当loader.normal 调用callback or async 会动态修改 当前loader 处理类型为 isSync = false
 		if(isSync) {
 			isDone = true;
 			if(result === undefined)
