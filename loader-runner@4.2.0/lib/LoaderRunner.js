@@ -167,6 +167,8 @@ function convertArgs(args, raw) {
 
 function iteratePitchingLoaders(options, loaderContext, callback) {
 	// abort after last loader
+	// NOTE:
+	// pitch 阶段结束 开始 调用loaders
 	if(loaderContext.loaderIndex >= loaderContext.loaders.length)
 		return processResource(options, loaderContext, callback);
 
@@ -179,6 +181,8 @@ function iteratePitchingLoaders(options, loaderContext, callback) {
 	}
 
 	// load loader module
+	// NOTE:
+	// 加载 loader 模块 即 loader.normal = /* 处理数据的函数 */
 	loadLoader(currentLoaderObject, function(err) {
 		if(err) {
 			loaderContext.cacheable(false);
@@ -286,6 +290,9 @@ exports.runLoaders = function runLoaders(options, callback) {
 	// prepare loader objects
 	loaders = loaders.map(createLoaderObject);
 
+	// NOTE:
+	// 扩展 loaderContext
+	// 原因未知
 	loaderContext.context = contextDirectory;
 	loaderContext.loaderIndex = 0;
 	loaderContext.loaders = loaders;

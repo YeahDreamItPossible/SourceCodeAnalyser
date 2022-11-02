@@ -746,6 +746,8 @@ class NormalModule extends Module {
 		const hooks = NormalModule.getCompilationHooks(compilation);
 
 		try {
+			// NOTE:
+			// 空调用
 			hooks.beforeLoaders.call(this.loaders, this, loaderContext);
 		} catch (err) {
 			processResult(err);
