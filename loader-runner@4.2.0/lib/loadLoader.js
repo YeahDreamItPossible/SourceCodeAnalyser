@@ -42,6 +42,8 @@ function handleResult(loader, module, callback) {
 			"Module '" + loader.path + "' is not a loader (export function or es6 module)"
 		));
 	}
+	// NOTE:
+	// 将 raw-data 处理的函数 手动绑定到 loader.normal
 	loader.normal = typeof module === "function" ? module : module.default;
 	loader.pitch = module.pitch;
 	loader.raw = module.raw;

@@ -43,6 +43,8 @@ function dirname(path) {
 	return path.substr(0, idx);
 }
 
+// NOTE:
+// loader 数据类型 统一化
 function createLoaderObject(loader) {
 	var obj = {
 		path: null,
@@ -134,7 +136,8 @@ function runSyncOrAsync(fn, context, args, callback) {
 			return fn.apply(context, args);
 		}());
 		// NOTE:
-		// 该处非常巧妙 当loader.normal 调用callback or async 会动态修改 当前loader 处理类型为 isSync = false
+		// 该处非常巧妙 loader 可同步 or 调用调用
+		// 当loader.normal 调用callback or async 会动态修改 当前loader 处理类型为 isSync = false
 		if(isSync) {
 			isDone = true;
 			if(result === undefined)
@@ -169,6 +172,8 @@ function convertArgs(args, raw) {
 		args[0] = Buffer.from(args[0], "utf-8");
 }
 
+// NOTE:
+// 迭代 loaders.ptich
 function iteratePitchingLoaders(options, loaderContext, callback) {
 	// abort after last loader
 	// NOTE:
@@ -235,6 +240,8 @@ function processResource(options, loaderContext, callback) {
 	}
 }
 
+// NOTE:
+// 迭代 loaders
 function iterateNormalLoaders(options, loaderContext, args, callback) {
 	if(loaderContext.loaderIndex < 0)
 		return callback(null, args);
