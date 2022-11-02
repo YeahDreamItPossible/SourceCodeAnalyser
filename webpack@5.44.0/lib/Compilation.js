@@ -1684,7 +1684,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 							return callback();
 						}
 
-						// NOTE: 解析module中的dependenies 和 blocks
+						// NOTE:
+						// 解析module中的dependenies 和 blocks
 						this.processModuleDependencies(module, err => {
 							if (err) {
 								return callback(err);

@@ -645,6 +645,9 @@ class NormalModule extends Module {
 	 * @param {Object=} associatedObjectForCache object for caching
 	 * @returns {Source} the created source
 	 */
+	// NOTE:
+	// 该方法作用是 将loader 加载后的结果 封装成 Source 的实例
+	// 原因: 为了快速获取该结果的特性
 	createSource(context, content, sourceMap, associatedObjectForCache) {
 		if (Buffer.isBuffer(content)) {
 			return new RawSource(content);
@@ -684,6 +687,8 @@ class NormalModule extends Module {
 	 * @param {function(WebpackError=): void} callback callback function
 	 * @returns {void}
 	 */
+	// NOTE:
+	// 该方法作用是 运行loaders 并将结果 封装成类的实例
 	doBuild(options, compilation, resolver, fs, callback) {
 		const loaderContext = this.createLoaderContext(
 			resolver,
@@ -727,6 +732,8 @@ class NormalModule extends Module {
 				return callback(error);
 			}
 
+			// NOTE：
+			// 将 单纯的content 创建成 一个 Source 实例
 			this._source = this.createSource(
 				options.context,
 				this.binary ? asBuffer(source) : asString(source),
@@ -784,6 +791,8 @@ class NormalModule extends Module {
 					loaderContext.fs =
 						undefined;
 
+				// NOTE:
+				// 标记: 运行loader 返回的结果
 				if (!result) {
 					return processResult(
 						err || new Error("No result from loader-runner processing"),

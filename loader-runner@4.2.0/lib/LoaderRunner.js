@@ -421,6 +421,8 @@ exports.runLoaders = function runLoaders(options, callback) {
 				missingDependencies: missingDependencies
 			});
 		}
+		// NOTE:
+		// 当 loader 处理后的结果
 		callback(null, {
 			result: result,
 			resourceBuffer: processOptions.resourceBuffer,
