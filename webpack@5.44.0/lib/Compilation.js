@@ -2014,6 +2014,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 	}
 
+	// NOTE:
+	// 暂时未发现特殊作用 仅仅收集 errors 和 warnings
 	finish(callback) {
 		this.factorizeQueue.clear();
 		if (this.profile) {
@@ -2271,6 +2273,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		// NOTE:
 		// WarnCaseSensitiveModulesPlugin
+		// 还是收集 errors
 		this.hooks.seal.call();
 
 		this.logger.time("optimize dependencies");
@@ -2278,13 +2281,16 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
 		}
+
 		// NOTE: 空调用
 		this.hooks.afterOptimizeDependencies.call(this.modules);
+
 		this.logger.timeEnd("optimize dependencies");
 
 		this.logger.time("create chunks");
 		// NOTE: 空调用
 		this.hooks.beforeChunks.call();
+
 		this.moduleGraph.freeze();
 		/** @type {Map<Entrypoint, Module[]>} */
 		const chunkGraphInit = new Map();
@@ -2420,12 +2426,14 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 		this.logger.time("optimize");
 		// NOTE: 优化开始
+		// NOTE: 空调用
 		this.hooks.optimize.call();
 
 		// NOTE: 空调用
 		while (this.hooks.optimizeModules.call(this.modules)) {
 			/* empty */
 		}
+
 		// NOTE: 空调用
 		this.hooks.afterOptimizeModules.call(this.modules);
 
@@ -2438,6 +2446,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		while (this.hooks.optimizeChunks.call(this.chunks, this.chunkGroups)) {
 			/* empty */
 		}
+
 		// NOTE: 空调用
 		this.hooks.afterOptimizeChunks.call(this.chunks, this.chunkGroups);
 
@@ -2521,23 +2530,41 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						if (err) {
 							return finalCallback(err);
 						}
+						
+						// NOTE:
+						// 空调用
 						this.hooks.afterCodeGeneration.call();
 						this.logger.timeEnd("code generation");
 
 						this.logger.time("runtime requirements");
+
+						// NOTE:
+						// 空调用
 						this.hooks.beforeRuntimeRequirements.call();
+
+						// NOTE:
+						// 感觉很重要 需要详细看看
 						this.processRuntimeRequirements();
+
+						// NOTE:
+						// 空调用
 						this.hooks.afterRuntimeRequirements.call();
 						this.logger.timeEnd("runtime requirements");
 
 						this.logger.time("hashing");
-						// NOTE: 开始hash
+						// NOTE: 
+						// 空调用
 						this.hooks.beforeHash.call();
+						// 开始hash
 						const codeGenerationJobs = this.createHash();
-						// NOTE: hash结束
+						// hash结束
+						// NOTE: 
+						// 空调用
 						this.hooks.afterHash.call();
 						this.logger.timeEnd("hashing");
 
+						// NOTE:
+						// 该处的 codeGenerationJobs 目前好像是空数组 直接回调
 						this._runCodeGenerationJobs(codeGenerationJobs, err => {
 							if (err) {
 								return finalCallback(err);
@@ -2555,6 +2582,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 							// NOTE: 空调用
 							this.hooks.beforeModuleAssets.call();
+
 							this.createModuleAssets();
 							this.logger.timeEnd("module assets");
 
@@ -2603,6 +2631,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 							};
 
 							this.logger.time("create chunk assets");
+
 							// NOTE: 空调用
 							if (this.hooks.shouldGenerateChunkAssets.call() !== false) {
 								// NOTE: 空调用
@@ -2787,6 +2816,9 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				try {
 					codeGenerated = true;
 					this.codeGeneratedModules.add(module);
+					// NOTE:
+					// 重点看
+					// ast => result
 					result = module.codeGeneration({
 						chunkGraph,
 						moduleGraph,
@@ -3830,7 +3862,12 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {RenderManifestOptions} options options object
 	 * @returns {RenderManifestEntry[]} manifest entries
 	 */
+	// NOTE:
+	// 该方法非常重要 是 ast => result 的关键
 	getRenderManifest(options) {
+		// NOTE:
+		// JavascriptModulesPlugin  获得render函数
+		// AssetModulesPlugin
 		return this.hooks.renderManifest.call([], options);
 	}
 
@@ -3838,6 +3875,8 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {Callback} callback signals when the call finishes
 	 * @returns {void}
 	 */
+	// NOTE:
+	// 该方法非常重要 好好研究研究
 	createChunkAssets(callback) {
 		const outputOptions = this.outputOptions;
 		const cachedSourceMap = new WeakMap();
