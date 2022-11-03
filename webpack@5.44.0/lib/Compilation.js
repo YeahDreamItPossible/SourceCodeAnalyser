@@ -1722,6 +1722,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @param {ModuleCallback} callback callback
 	 * @returns {void}
 	 */
+	// NOTE:
+	// 根绝 context上下文 构建模块
 	_factorizeModule(
 		{
 			currentProfile,
@@ -1864,6 +1866,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @param {ModuleCallback} callback callback function
 	 * @returns {void} returns
 	 */
+	// NOTE:
+	// 添加入口
 	addEntry(context, entry, optionsOrName, callback) {
 		// TODO webpack 6 remove
 		const options =
@@ -2209,6 +2213,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// extract warnings and errors from modules
 			this.logger.time("report dependency errors and warnings");
 			this.moduleGraph.freeze();
+			// NOTE:
+			// 收集 errors 和 warning
 			for (const module of modules) {
 				this.reportDependencyErrorsAndWarnings(module, [module]);
 				const errors = module.getErrors();
@@ -2530,7 +2536,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						if (err) {
 							return finalCallback(err);
 						}
-						
+
 						// NOTE:
 						// 空调用
 						this.hooks.afterCodeGeneration.call();
@@ -2552,13 +2558,13 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						this.logger.timeEnd("runtime requirements");
 
 						this.logger.time("hashing");
-						// NOTE: 
+						// NOTE:
 						// 空调用
 						this.hooks.beforeHash.call();
 						// 开始hash
 						const codeGenerationJobs = this.createHash();
 						// hash结束
-						// NOTE: 
+						// NOTE:
 						// 空调用
 						this.hooks.afterHash.call();
 						this.logger.timeEnd("hashing");

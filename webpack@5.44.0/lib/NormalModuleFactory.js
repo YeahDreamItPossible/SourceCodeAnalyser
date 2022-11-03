@@ -287,7 +287,8 @@ class NormalModuleFactory extends ModuleFactory {
 								" Returning a Module object will result in this module used as result."
 						);
 
-					// NOTE: 直接执行回调
+					// NOTE:
+					// 直接执行回调
 					this.hooks.afterResolve.callAsync(resolveData, (err, result) => {
 						if (err) return callback(err);
 
@@ -304,7 +305,8 @@ class NormalModuleFactory extends ModuleFactory {
 
 						const createData = resolveData.createData;
 
-						// NOTE: 直接执行回调
+						// NOTE:
+						// 直接执行回调
 						this.hooks.createModule.callAsync(
 							createData,
 							resolveData,
@@ -715,7 +717,8 @@ class NormalModuleFactory extends ModuleFactory {
 			createData: {},
 			cacheable: true
 		};
-		// NOTE: 直接执行回调
+		// NOTE:
+		// 直接执行回调
 		this.hooks.beforeResolve.callAsync(resolveData, (err, result) => {
 			if (err) {
 				return callback(err, {
@@ -747,7 +750,8 @@ class NormalModuleFactory extends ModuleFactory {
 			// ExternalModuleFactoryPlugin
 			// NormalModuleFactory
 			this.hooks.factorize.callAsync(resolveData, (err, module) => {
-				// NOTE: module 为 NormalModule 的实例
+				// NOTE:
+				// module 为 NormalModule 的实例
 				if (err) {
 					return callback(err, {
 						fileDependencies,

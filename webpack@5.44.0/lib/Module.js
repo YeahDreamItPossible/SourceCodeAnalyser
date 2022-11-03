@@ -163,6 +163,8 @@ class Module extends DependenciesBlock {
 		/** @type {Record<string, any>} */
 		this.buildInfo = undefined;
 		/** @type {Dependency[] | undefined} */
+		// NOTE:
+		// 这个依赖 暂时不知道是什么
 		this.presentationalDependencies = undefined;
 	}
 
