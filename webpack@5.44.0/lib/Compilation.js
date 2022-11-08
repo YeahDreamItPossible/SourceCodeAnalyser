@@ -2283,24 +2283,28 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.hooks.seal.call();
 
 		this.logger.time("optimize dependencies");
-		// NOTE: SideEffectsFlagPlugin 插件
+		// NOTE:
+		// SideEffectsFlagPlugin 插件
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
 		}
 
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
 		this.hooks.afterOptimizeDependencies.call(this.modules);
 
 		this.logger.timeEnd("optimize dependencies");
 
 		this.logger.time("create chunks");
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
 		this.hooks.beforeChunks.call();
 
 		this.moduleGraph.freeze();
 		/** @type {Map<Entrypoint, Module[]>} */
 		const chunkGraphInit = new Map();
-		// NOTE: 目前看到大概只是 chunk
+		// NOTE:
+		// 目前看到大概只是 chunk
 		for (const [name, { dependencies, includeDependencies, options }] of this
 			.entries) {
 			const chunk = this.addChunk(name);
@@ -2426,7 +2430,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			}
 		}
 		buildChunkGraph(this, chunkGraphInit);
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
 		this.hooks.afterChunks.call(this.chunks);
 		this.logger.timeEnd("create chunks");
 
@@ -2435,7 +2440,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		// NOTE: 空调用
 		this.hooks.optimize.call();
 
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
 		while (this.hooks.optimizeModules.call(this.modules)) {
 			/* empty */
 		}
@@ -2453,7 +2459,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			/* empty */
 		}
 
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
 		this.hooks.afterOptimizeChunks.call(this.chunks, this.chunkGroups);
 
 		// NOTE: 直接执行回调
