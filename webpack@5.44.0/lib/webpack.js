@@ -59,9 +59,11 @@ const createMultiCompiler = (childOptions, options) => {
  * @returns {Compiler} a compiler
  */
 const createCompiler = rawOptions => {
-	// NOTE: normalizer(标准化) options
+	// NOTE:
+	// normalizer(标准化) options
 	const options = getNormalizedWebpackOptions(rawOptions);
-	// NOTE: options 初始化默认值
+	// NOTE:
+	// options 初始化默认值
 	applyWebpackOptionsBaseDefaults(options);
 	const compiler = new Compiler(options.context);
 	compiler.options = options;
@@ -71,7 +73,9 @@ const createCompiler = rawOptions => {
 	new NodeEnvironmentPlugin({
 		infrastructureLogging: options.infrastructureLogging
 	}).apply(compiler);
-	// NOTE: 使用用户自定义插件
+
+	// NOTE:
+	// 使用用户自定义插件
 	if (Array.isArray(options.plugins)) {
 		for (const plugin of options.plugins) {
 			if (typeof plugin === "function") {
@@ -81,14 +85,17 @@ const createCompiler = rawOptions => {
 			}
 		}
 	}
-	// NOTE: options 再次初始化默认值
+	// NOTE:
+	// options 再次初始化默认值
 	applyWebpackOptionsDefaults(options);
 
 	// NOTE: 空调用
 	compiler.hooks.environment.call();
 	compiler.hooks.afterEnvironment.call();
 
-	// NOTE: options 根据不同的值 注册不同的内置插件
+	// NOTE:
+	// options 根据不同的值 注册不同的内置插件
+	// 非常重要
 	new WebpackOptionsApply().process(options, compiler);
 
 	// NOTE: 空调用

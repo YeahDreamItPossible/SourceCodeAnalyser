@@ -237,6 +237,8 @@ class Compiler {
 		/** @type {number} */
 		this.fsStartTime = undefined;
 
+		// NOTE:
+		// 路径解析
 		/** @type {ResolverFactory} */
 		this.resolverFactory = new ResolverFactory();
 
