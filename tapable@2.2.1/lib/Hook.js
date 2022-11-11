@@ -29,10 +29,11 @@ class Hook {
 		// NOTE:
 		// taps 优先队列
 		// taps 中的item {name, type, fn, stage, before}
-		// name 仅仅用于标识 使用过程中好像没什么卵用
+		// name 仅仅用于标识 可以用于调整 taps 优先列队项优先级
 		this.taps = [];
 		// NOTE:
-		// 拦截器 的 item { register, call }
+		// interceptors 队列
+		// 拦截器 的 item { register, call, error, result, done }
 		this.interceptors = [];
 		this._call = CALL_DELEGATE;
 		this.call = CALL_DELEGATE;
@@ -42,21 +43,25 @@ class Hook {
 		this.promise = PROMISE_DELEGATE;
 		this._x = undefined;
 
+		// NOTE:
+		// 绑定
 		this.compile = this.compile;
 		this.tap = this.tap;
 		this.tapAsync = this.tapAsync;
 		this.tapPromise = this.tapPromise;
 	}
 
+	// NOTE:
+	// 基类抽象方法
 	compile(options) {
 		throw new Error("Abstract: should be overridden");
 	}
 
+	// NOTE:
+	// 根据 选项 编译成 内部call函数
+	// 在call的时候 生成内部call函数的好处
+	// 就是保证在该次调用时 选项是最终的 不会再次改变
 	_createCall(type) {
-		// NOTE:
-		// 根据 选项 编译成 内部call函数
-		// 在call的时候 生成内部call函数的好处
-		// 就是保证在该次调用时 选项是最终的 不会再次改变
 		return this.compile({
 			taps: this.taps,
 			interceptors: this.interceptors,
@@ -68,7 +73,8 @@ class Hook {
 	_tap(type, options, fn) {
 		// NOTE:
 		// normalize options
-		// 保证最终的options 是一个包含 [name, type, fn, ...] 的对象
+		// 保证最终的options 是一个包含 { name, type, fn, before, stage, context, ...} 的对象
+		// 其中 context 废弃
 		if (typeof options === "string") {
 			options = {
 				name: options.trim()
@@ -87,14 +93,20 @@ class Hook {
 		this._insert(options);
 	}
 
+	// NOTE:
+	// 同步
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
 
+	// NOTE:
+	// 异步
 	tapAsync(options, fn) {
 		this._tap("async", options, fn);
 	}
 
+	// NOTE:
+	// promise
 	tapPromise(options, fn) {
 		this._tap("promise", options, fn);
 	}
@@ -132,6 +144,8 @@ class Hook {
 		return this.taps.length > 0 || this.interceptors.length > 0;
 	}
 
+	// NOTE:
+	// 注册拦截器
 	intercept(interceptor) {
 		this._resetCompilation();
 		this.interceptors.push(Object.assign({}, interceptor));
@@ -150,7 +164,8 @@ class Hook {
 		this.promise = this._promise;
 	}
 
-	// NOTE: 注册事件到 taps 中 并调整事件优先级
+	// NOTE:
+	// 注册事件到 taps 队列 中 并调整每一项优先级
 	_insert(item) {
 		this._resetCompilation();
 		let before;
@@ -164,7 +179,8 @@ class Hook {
 			stage = item.stage;
 		}
 		let i = this.taps.length;
-		// NOTE: 事件优先级调整
+		// NOTE:
+		// 事件优先级调整
 		while (i > 0) {
 			i--;
 			const x = this.taps[i];
