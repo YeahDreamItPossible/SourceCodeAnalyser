@@ -198,6 +198,7 @@ class Compiler {
 		this.parentCompilation = undefined;
 		/** @type {Compiler} */
 		this.root = this;
+
 		// NOTE:
 		// /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
 		/** @type {string} */
@@ -510,12 +511,14 @@ class Compiler {
 		};
 
 		const run = () => {
-			// NOTE: NodeEnvironmentPlugin 插件
-			// NOTE: 标识 compiler 开始
+			// NOTE:
+			// NodeEnvironmentPlugin 插件
+			// 标识 compiler 开始
 			this.hooks.beforeRun.callAsync(this, err => {
 				if (err) return finalCallback(err);
 
-				// NOTE: 直接执行回调
+				// NOTE:
+				// 直接执行回调
 				this.hooks.run.callAsync(this, err => {
 					if (err) return finalCallback(err);
 
@@ -1096,14 +1099,16 @@ class Compiler {
 			layers: this.options.experiments.layers
 		});
 		this._lastNormalModuleFactory = normalModuleFactory;
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
 		this.hooks.normalModuleFactory.call(normalModuleFactory);
 		return normalModuleFactory;
 	}
 
 	createContextModuleFactory() {
 		const contextModuleFactory = new ContextModuleFactory(this.resolverFactory);
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
 		this.hooks.contextModuleFactory.call(contextModuleFactory);
 		return contextModuleFactory;
 	}
@@ -1122,11 +1127,13 @@ class Compiler {
 	 */
 	compile(callback) {
 		const params = this.newCompilationParams();
-		// NOTE: 直接执行回调
+		// NOTE:
+		// 直接执行回调
 		this.hooks.beforeCompile.callAsync(params, err => {
 			if (err) return callback(err);
 
-			// NOTE: ExternalsPlugin
+			// NOTE:
+			// ExternalsPlugin
 			this.hooks.compile.call(params);
 
 			const compilation = this.newCompilation(params);
