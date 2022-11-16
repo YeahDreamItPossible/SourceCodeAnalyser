@@ -1048,6 +1048,8 @@ class Compiler {
 		return !!this.parentCompilation;
 	}
 
+	// NOTE:
+	// 创建 Compilation 的实例
 	createCompilation() {
 		this._cleanupLastCompilation();
 		return (this._lastCompilation = new Compilation(this));
@@ -1061,7 +1063,14 @@ class Compiler {
 		const compilation = this.createCompilation();
 		compilation.name = this.name;
 		compilation.records = this.records;
-		// NOTE: 串行
+
+		// NOTE:
+		// thisCompilation 和 compilation
+		// 主要是给 compilation 使用用插件
+		// hooks 不同 hook 注册函数
+
+		// NOTE:
+		// 串行 使用插件
 		// ArrayPushCallbackChunkFormatPlugin
 		// JsonpChunkLoadingPlugin
 		// StartupChunkDependenciesPlugin
@@ -1072,7 +1081,9 @@ class Compiler {
 		// SplitChunksPlugin
 		// ResolverCachePlugin
 		this.hooks.thisCompilation.call(compilation, params);
-		// NOTE: 串行(此处插件根据不同情况 使用较多 可以跳过)
+
+		// NOTE:
+		// 串行使用插件(此处插件根据不同情况 使用较多 可以跳过)
 		// ChunkPrefetchPreloadPlugin
 		// ModuleInfoHeaderPlugin
 		// EvalDevToolModulePlugin
@@ -1083,11 +1094,50 @@ class Compiler {
 		// RuntimePlugin
 		// InferAsyncModulesPlugin
 		// DataUriPlugin
+		// FileUriPlugin
+		// CompatibilityPlugin
+		// HarmonyModulesPlugin
+		// AMDPlugin
+		// RequireJsStuffPlugin
+		// CommonJsPlugin
+		// LoaderPlugin
+		// LoaderPlugin
+		// NodeStuffPlugin
+		// APIPlugin
+		// ExportsInfoApiPlugin
+		// WebpackIsIncludedPlugin
+		// ConstPlugin
+		// UseStrictPlugin
+		// RequireIncludePlugin
+		// RequireEnsurePlugin
+		// RequireContextPlugin
+		// ImportPlugin
+		// SystemPlugin
+		// ImportMetaPlugin
+		// URLPlugin
+		// DefaultStatsFactoryPlugin
+		// DefaultStatsPresetPlugin
+		// DefaultStatsPrinterPlugin
+		// JavascriptMetaInfoPlugin
+		// EnsureChunkConditionsPlugin
+		// RemoveEmptyChunksPlugin
+		// MergeDuplicateChunksPlugin
+		// SideEffectsFlagPlugin
+		// FlagDependencyExportsPlugin
+		// NamedModuleIdsPlugin
+		// NamedChunkIdsPlugin
+		// DefinePlugin
+		// TemplatedPathPlugin
+		// RecordIdsPlugin
+		// WarnCaseSensitiveModulesPlugin
 		// ...
 		this.hooks.compilation.call(compilation, params);
+
 		return compilation;
 	}
 
+	// NOTE:
+	// 创建 NormalModuleFactory 的实例
 	createNormalModuleFactory() {
 		this._cleanupLastNormalModuleFactory();
 		const normalModuleFactory = new NormalModuleFactory({
@@ -1105,6 +1155,8 @@ class Compiler {
 		return normalModuleFactory;
 	}
 
+	// NOTE:
+	// 创建 ContextModuleFactory 的实例
 	createContextModuleFactory() {
 		const contextModuleFactory = new ContextModuleFactory(this.resolverFactory);
 		// NOTE:
@@ -1142,7 +1194,6 @@ class Compiler {
 
 			logger.time("make hook");
 			// NOTE:
-			// 先使用 用户自定义插件
 			// EntryPlugin
 			this.hooks.make.callAsync(compilation, err => {
 				logger.timeEnd("make hook");
