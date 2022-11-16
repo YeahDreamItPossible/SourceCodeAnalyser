@@ -1717,13 +1717,13 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.factorizeQueue.add(options, callback);
 	}
 
+	// NOTE:
+	// 根绝 context上下文 构建模块
 	/**
 	 * @param {FactorizeModuleOptions} options options object
 	 * @param {ModuleCallback} callback callback
 	 * @returns {void}
 	 */
-	// NOTE:
-	// 根绝 context上下文 构建模块
 	_factorizeModule(
 		{
 			currentProfile,
@@ -1859,6 +1859,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
+	// NOTE:
+	// 添加入口
 	/**
 	 * @param {string} context context path for entry
 	 * @param {Dependency} entry entry dependency that should be followed
@@ -1866,8 +1868,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @param {ModuleCallback} callback callback function
 	 * @returns {void} returns
 	 */
-	// NOTE:
-	// 添加入口
 	addEntry(context, entry, optionsOrName, callback) {
 		// TODO webpack 6 remove
 		const options =

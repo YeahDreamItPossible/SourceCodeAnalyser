@@ -49,6 +49,8 @@ const intersectConnectionStates = (a, b) => {
 	return a;
 };
 
+// NOTE:
+// 两个module之间的依赖关系
 class ModuleGraphConnection {
 	/**
 	 * @param {Module|null} originModule the referencing module
@@ -66,11 +68,16 @@ class ModuleGraphConnection {
 		weak = false,
 		condition = undefined
 	) {
+		// NOTE: 引用当前module的module
 		this.originModule = originModule;
+
 		this.resolvedOriginModule = originModule;
 		this.dependency = dependency;
 		this.resolvedModule = module;
+
+		// NOTE: 当前module
 		this.module = module;
+
 		this.weak = weak;
 		this.conditional = !!condition;
 		this._active = condition !== false;

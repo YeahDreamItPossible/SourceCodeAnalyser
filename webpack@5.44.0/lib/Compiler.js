@@ -1200,7 +1200,8 @@ class Compiler {
 				if (err) return callback(err);
 
 				logger.time("finish make hook");
-				// NOTE: 直接执行回调
+				// NOTE:
+				// 直接执行回调
 				this.hooks.finishMake.callAsync(compilation, err => {
 					logger.timeEnd("finish make hook");
 					if (err) return callback(err);

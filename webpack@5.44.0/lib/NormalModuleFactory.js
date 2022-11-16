@@ -737,13 +737,14 @@ class NormalModuleFactory extends ModuleFactory {
 				});
 			}
 
-			if (typeof result === "object")
+			if (typeof result === "object") {
 				throw new Error(
 					deprecationChangedHookMessage(
 						"beforeResolve",
 						this.hooks.beforeResolve
 					)
 				);
+			}
 
 			// NOTE:
 			// 串行执行
