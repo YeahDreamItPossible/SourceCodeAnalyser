@@ -174,6 +174,8 @@ const isAvailableChunk = (a, b) => {
 	return true;
 };
 
+// NOTE:
+// 用来记录当前module属于哪些chunk的
 class ChunkGraphModule {
 	constructor() {
 		/** @type {SortableSet<Chunk>} */
@@ -195,6 +197,8 @@ class ChunkGraphModule {
 	}
 }
 
+// NOTE:
+// 用来记录当前chunk中有哪些modules的
 class ChunkGraphChunk {
 	constructor() {
 		/** @type {SortableSet<Module>} */

@@ -106,6 +106,7 @@ class ModuleGraph {
 
 		/** @type {Map<Module, Set<ModuleGraphConnection>>} */
 		this._originMap = new Map();
+
 		/** @type {Map<any, Object>} */
 		this._metaMap = new Map();
 
@@ -184,13 +185,18 @@ class ModuleGraph {
 			dependency.weak,
 			dependency.getCondition(this)
 		);
+		// NOTE:
+		// 当前依赖 => 模块连接
 		this._dependencyMap.set(dependency, connection);
+
 		const connections = this._getModuleGraphModule(module).incomingConnections;
 		connections.add(connection);
 		const mgm = this._getModuleGraphModule(originModule);
 		if (mgm.outgoingConnections === undefined) {
 			mgm.outgoingConnections = new Set();
 		}
+
+		// NOTE:
 		mgm.outgoingConnections.add(connection);
 	}
 

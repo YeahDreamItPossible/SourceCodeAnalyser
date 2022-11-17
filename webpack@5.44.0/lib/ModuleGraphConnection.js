@@ -72,6 +72,7 @@ class ModuleGraphConnection {
 		this.originModule = originModule;
 
 		this.resolvedOriginModule = originModule;
+		// NOTE:
 		this.dependency = dependency;
 		this.resolvedModule = module;
 
