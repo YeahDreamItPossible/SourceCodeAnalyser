@@ -2202,6 +2202,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		}
 		this.logger.time("finish modules");
 		const { modules } = this;
+
 		// NOTE:
 		// ResolverCachePlugin
 		// InferAsyncModulesPlugin
@@ -2296,6 +2297,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.logger.timeEnd("optimize dependencies");
 
 		this.logger.time("create chunks");
+
 		// NOTE:
 		// 空调用
 		this.hooks.beforeChunks.call();
