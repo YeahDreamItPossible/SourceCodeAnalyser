@@ -235,6 +235,7 @@ class ChunkGraph {
 		this._blockChunkGroups = new WeakMap();
 		/** @private @type {Map<string, string | number>} */
 		this._runtimeIds = new Map();
+
 		/** @type {ModuleGraph} */
 		this.moduleGraph = moduleGraph;
 

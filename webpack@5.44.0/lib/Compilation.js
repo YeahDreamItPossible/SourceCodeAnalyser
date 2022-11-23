@@ -889,8 +889,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		defineRemovedModuleTemplates(this.moduleTemplates);
 
 		this.moduleGraph = new ModuleGraph();
+
 		/** @type {ChunkGraph} */
 		this.chunkGraph = undefined;
+
 		/** @type {CodeGenerationResults} */
 		this.codeGenerationResults = undefined;
 
@@ -934,8 +936,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		 */
 		this.creatingModuleDuringBuild = new WeakMap();
 
+		// NOTE:
+		// 关于入口
 		/** @type {Map<string, EntryData>} */
 		this.entries = new Map();
+
 		/** @type {EntryData} */
 		this.globalEntry = {
 			dependencies: [],
@@ -944,24 +949,38 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				name: undefined
 			}
 		};
+
 		/** @type {Map<string, Entrypoint>} */
 		this.entrypoints = new Map();
+
 		/** @type {Entrypoint[]} */
 		this.asyncEntrypoints = [];
+
+
+		// NOTE:
+		// 关于chunk
 		/** @type {Set<Chunk>} */
 		this.chunks = new Set();
+
 		arrayToSetDeprecation(this.chunks, "Compilation.chunks");
+
 		/** @type {ChunkGroup[]} */
 		this.chunkGroups = [];
+
 		/** @type {Map<string, ChunkGroup>} */
 		this.namedChunkGroups = new Map();
+
 		/** @type {Map<string, Chunk>} */
 		this.namedChunks = new Map();
+
 		/** @type {Set<Module>} */
 		this.modules = new Set();
 		arrayToSetDeprecation(this.modules, "Compilation.modules");
+
 		/** @private @type {Map<string, Module>} */
 		this._modules = new Map();
+
+
 		this.records = null;
 		/** @type {string[]} */
 		this.additionalChunkAssets = [];
@@ -971,10 +990,15 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.assetsInfo = new Map();
 		/** @type {Map<string, Map<string, Set<string>>>} */
 		this._assetsRelatedIn = new Map();
+
+		// NOTE:
+		// 收集错误和警告
 		/** @type {WebpackError[]} */
 		this.errors = [];
 		/** @type {WebpackError[]} */
 		this.warnings = [];
+
+
 		/** @type {Compilation[]} */
 		this.children = [];
 		/** @type {Map<string, LogEntry[]>} */
@@ -2305,6 +2329,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.moduleGraph.freeze();
 		/** @type {Map<Entrypoint, Module[]>} */
 		const chunkGraphInit = new Map();
+
 		// NOTE:
 		// 目前看到大概只是 chunk
 		for (const [name, { dependencies, includeDependencies, options }] of this
@@ -2375,6 +2400,9 @@ Remove the 'runtime' option from the entrypoint.`);
 				err.chunk = entry.getEntrypointChunk();
 				this.errors.push(err);
 			}
+			// NOTE:
+			// entry dependOn 和 runtime
+			// 分离依赖
 			if (dependOn) {
 				const entry = this.entrypoints.get(name);
 				const referencedChunks = entry
@@ -2431,13 +2459,18 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				entry.setRuntimeChunk(chunk);
 			}
 		}
+
+		// NOTE:
+		// 这一步好像很关键 有空好好研究研究
 		buildChunkGraph(this, chunkGraphInit);
+
 		// NOTE:
 		// 空调用
 		this.hooks.afterChunks.call(this.chunks);
 		this.logger.timeEnd("create chunks");
 
 		this.logger.time("optimize");
+
 		// NOTE: 优化开始
 		// NOTE: 空调用
 		this.hooks.optimize.call();
@@ -2465,7 +2498,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		// 空调用
 		this.hooks.afterOptimizeChunks.call(this.chunks, this.chunkGroups);
 
-		// NOTE: 直接执行回调
+		// NOTE:
+		// 直接执行回调
 		this.hooks.optimizeTree.callAsync(this.chunks, this.modules, err => {
 			if (err) {
 				return finalCallback(
@@ -2473,10 +2507,12 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				);
 			}
 
-			// NOTE: 空调用
+			// NOTE:
+			// 空调用
 			this.hooks.afterOptimizeTree.call(this.chunks, this.modules);
 
-			// NOTE: 直接执行回调
+			// NOTE:
+			// 直接执行回调
 			this.hooks.optimizeChunkModules.callAsync(
 				this.chunks,
 				this.modules,
@@ -2493,25 +2529,37 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					// NOTE: 空调用
 					const shouldRecord = this.hooks.shouldRecord.call() !== false;
 
-					// NOTE: RecordIdsPlugin
+					// NOTE:
+					// RecordIdsPlugin
 					this.hooks.reviveModules.call(this.modules, this.records);
+
 					// NOTE: 空调用
 					this.hooks.beforeModuleIds.call(this.modules);
-					// NOTE: NamedModuleIdsPlugin
+
+					// NOTE:
+					// NamedModuleIdsPlugin
 					this.hooks.moduleIds.call(this.modules);
+
 					// NOTE: 空调用
 					this.hooks.optimizeModuleIds.call(this.modules);
+
 					// NOTE: 空调用
 					this.hooks.afterOptimizeModuleIds.call(this.modules);
 
-					// NOTE: RecordIdsPlugin
+					// NOTE:
+					// RecordIdsPlugin
 					this.hooks.reviveChunks.call(this.chunks, this.records);
+
 					// NOTE: 空调用
 					this.hooks.beforeChunkIds.call(this.chunks);
-					// NOTE: NamedChunkIdsPlugin
+
+					// NOTE:
+					// NamedChunkIdsPlugin
 					this.hooks.chunkIds.call(this.chunks);
+
 					// NOTE: 空调用
 					this.hooks.optimizeChunkIds.call(this.chunks);
+
 					// NOTE: 空调用
 					this.hooks.afterOptimizeChunkIds.call(this.chunks);
 
@@ -2520,27 +2568,36 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					this.sortItemsWithChunkIds();
 
 					if (shouldRecord) {
-						// NOTE: RecordIdsPlugin
+						// NOTE:
+						// RecordIdsPlugin
 						this.hooks.recordModules.call(this.modules, this.records);
-						// NOTE: RecordIdsPlugin
+						// NOTE:
+						// RecordIdsPlugin
 						this.hooks.recordChunks.call(this.chunks, this.records);
 					}
 
 					// NOTE: 空调用
 					this.hooks.optimizeCodeGeneration.call(this.modules);
-					this.logger.timeEnd("optimize");
 
+					this.logger.timeEnd("optimize");
 					this.logger.time("module hashing");
+
 					// NOTE: 空调用
 					this.hooks.beforeModuleHash.call();
+
+					// NOTE:
+					// 模块Hash
 					this.createModuleHashes();
+
 					// NOTE: 空调用
 					this.hooks.afterModuleHash.call();
-					this.logger.timeEnd("module hashing");
 
+					this.logger.timeEnd("module hashing");
 					this.logger.time("code generation");
+
 					// NOTE: 空调用
 					this.hooks.beforeCodeGeneration.call();
+
 					this.codeGeneration(err => {
 						if (err) {
 							return finalCallback(err);
@@ -2549,8 +2606,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						// NOTE:
 						// 空调用
 						this.hooks.afterCodeGeneration.call();
-						this.logger.timeEnd("code generation");
 
+						this.logger.timeEnd("code generation");
 						this.logger.time("runtime requirements");
 
 						// NOTE:
@@ -2564,22 +2621,27 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						// NOTE:
 						// 空调用
 						this.hooks.afterRuntimeRequirements.call();
-						this.logger.timeEnd("runtime requirements");
 
+						this.logger.timeEnd("runtime requirements");
 						this.logger.time("hashing");
+
 						// NOTE:
 						// 空调用
 						this.hooks.beforeHash.call();
+
+						// NOTE:
 						// 开始hash
 						const codeGenerationJobs = this.createHash();
 						// hash结束
+
 						// NOTE:
 						// 空调用
 						this.hooks.afterHash.call();
+
 						this.logger.timeEnd("hashing");
 
 						// NOTE:
-						// 该处的 codeGenerationJobs 目前好像是空数组 直接回调
+						// 该处的 codeGenerationJobs 目前好像是空数组 直接回调?
 						this._runCodeGenerationJobs(codeGenerationJobs, err => {
 							if (err) {
 								return finalCallback(err);
@@ -2593,6 +2655,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 							}
 
 							this.logger.time("module assets");
+
 							this.clearAssets();
 
 							// NOTE: 空调用
@@ -2611,6 +2674,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 									}
 									// NOTE: 空调用
 									this.hooks.afterProcessAssets.call(this.assets);
+
 									this.logger.timeEnd("process assets");
 									this.assets = soonFrozenObjectDeprecation(
 										this.assets,
@@ -2651,6 +2715,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 							if (this.hooks.shouldGenerateChunkAssets.call() !== false) {
 								// NOTE: 空调用
 								this.hooks.beforeChunkAssets.call();
+
 								// TODO: 需要仔细研究研究
 								this.createChunkAssets(err => {
 									this.logger.timeEnd("create chunk assets");
@@ -3251,6 +3316,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
+	// NOTE:
+	//
 	assignRuntimeIds() {
 		const { chunkGraph } = this;
 		const processEntrypoint = ep => {

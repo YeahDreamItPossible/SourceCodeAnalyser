@@ -87,8 +87,10 @@ class ChunkGroup {
 		/** @type {SortableSet<ChunkGroup>} */
 		this._asyncEntrypoints = new SortableSet(undefined, sortById);
 		this._blocks = new SortableSet();
+
 		/** @type {Chunk[]} */
 		this.chunks = [];
+
 		/** @type {OriginRecord[]} */
 		this.origins = [];
 		/** Indices in top-down order */
