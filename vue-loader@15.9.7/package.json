@@ -23,9 +23,6 @@
     "type": "git",
     "url": "https://github.com/vuejs/vue-loader.git"
   },
-  "gitHooks": {
-    "pre-commit": "lint-staged"
-  },
   "lint-staged": {
     "lib/**/*.js": [
       "eslint --fix",
