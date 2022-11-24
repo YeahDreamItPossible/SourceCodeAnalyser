@@ -62,11 +62,14 @@ const createCompiler = rawOptions => {
 	// NOTE:
 	// normalizer(标准化) options
 	const options = getNormalizedWebpackOptions(rawOptions);
+
 	// NOTE:
 	// options 初始化默认值
 	applyWebpackOptionsBaseDefaults(options);
+
 	const compiler = new Compiler(options.context);
 	compiler.options = options;
+
 	// NOTE:
 	// 1. 生成日志插件 compiler.infrastructureLogger
 	// 2. 生成输入流 和 输出流 compiler.inputFileSystem compiler.outputFileSystem
@@ -85,6 +88,7 @@ const createCompiler = rawOptions => {
 			}
 		}
 	}
+
 	// NOTE:
 	// options 再次初始化默认值
 	applyWebpackOptionsDefaults(options);
