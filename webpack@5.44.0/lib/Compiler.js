@@ -178,8 +178,10 @@ class Compiler {
 
 			// TODO the following hooks are weirdly located here
 			// TODO move them for webpack 5
+			// NOTE: 空调用
 			/** @type {SyncHook<[]>} */
 			environment: new SyncHook([]),
+			// NOTE: 空调用
 			/** @type {SyncHook<[]>} */
 			afterEnvironment: new SyncHook([]),
 			/** @type {SyncHook<[Compiler]>} */
