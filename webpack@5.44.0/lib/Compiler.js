@@ -251,6 +251,7 @@ class Compiler {
 		this.options = /** @type {WebpackOptions} */ ({});
 
 		// NOTE:
+		// 默认使用 Node.js 进程的当前工作目录 __dirname
 		// /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo
 		this.context = context;
 
@@ -398,6 +399,8 @@ class Compiler {
 		}
 	}
 
+	// NOTE:
+	// 开启监听模式 如果检测文件发生变化 会再次自动构建
 	/**
 	 * @param {WatchOptions} watchOptions the watcher's options
 	 * @param {Callback<Stats>} handler signals when the call finishes

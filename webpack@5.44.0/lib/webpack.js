@@ -68,6 +68,8 @@ const createCompiler = rawOptions => {
 	applyWebpackOptionsBaseDefaults(options);
 
 	const compiler = new Compiler(options.context);
+	// NOTE:
+	// 手动绑定 options
 	compiler.options = options;
 
 	// NOTE:
@@ -78,7 +80,7 @@ const createCompiler = rawOptions => {
 	}).apply(compiler);
 
 	// NOTE:
-	// 使用用户自定义插件
+	// 注册用户自定义插件
 	if (Array.isArray(options.plugins)) {
 		for (const plugin of options.plugins) {
 			if (typeof plugin === "function") {

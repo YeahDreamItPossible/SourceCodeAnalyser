@@ -93,6 +93,9 @@ const mergeExports = (obj, exports) => {
 };
 
 const fn = lazyFunction(() => require("./webpack"));
+
+// NOTE:
+// 导出 webpack 函数 并在绑定静态方法 和 属性
 module.exports = mergeExports(fn, {
 	get webpack() {
 		return require("./webpack");
