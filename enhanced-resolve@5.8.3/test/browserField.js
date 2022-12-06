@@ -2,7 +2,7 @@ require("should");
 
 var path = require("path");
 var fs = require("fs");
-var { ResolverFactory } = require("../");
+var { ResolverFactory } = require("..");
 
 var browserModule = path.join(__dirname, "fixtures", "browser-module");
 

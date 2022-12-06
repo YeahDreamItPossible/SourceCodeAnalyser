@@ -1,6 +1,6 @@
 require("should");
 
-var { CachedInputFileSystem } = require("../");
+var { CachedInputFileSystem } = require("..");
 
 describe("pr-53", function () {
 	it("should allow to readJsonSync in CachedInputFileSystem", function () {

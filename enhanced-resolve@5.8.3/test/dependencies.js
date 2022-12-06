@@ -1,7 +1,7 @@
 require("should");
 
 var { Volume } = require("memfs");
-var resolve = require("../");
+var resolve = require("..");
 
 describe("dependencies", function () {
 	var resolver;

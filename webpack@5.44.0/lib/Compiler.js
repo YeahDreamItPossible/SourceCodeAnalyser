@@ -241,7 +241,7 @@ class Compiler {
 		this.fsStartTime = undefined;
 
 		// NOTE:
-		// 路径解析
+		// 路径解析 具体源码未研究 ??
 		/** @type {ResolverFactory} */
 		this.resolverFactory = new ResolverFactory();
 
@@ -255,6 +255,8 @@ class Compiler {
 		// /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo
 		this.context = context;
 
+		// NOTE:
+		// 该类好像是将 loader 的家在路径变换成 绝对路径 ???
 		this.requestShortener = new RequestShortener(context, this.root);
 
 		this.cache = new Cache();

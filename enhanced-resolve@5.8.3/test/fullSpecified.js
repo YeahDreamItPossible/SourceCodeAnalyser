@@ -1,7 +1,7 @@
 require("should");
 
 const { Volume } = require("memfs");
-const { ResolverFactory } = require("../");
+const { ResolverFactory } = require("..");
 
 describe("fullSpecified", function () {
 	const fileSystem = Volume.fromJSON(

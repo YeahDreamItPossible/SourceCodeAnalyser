@@ -2,7 +2,7 @@ require("should");
 
 const path = require("path");
 const fs = require("fs");
-const { ResolverFactory, CachedInputFileSystem } = require("../");
+const { ResolverFactory, CachedInputFileSystem } = require("..");
 
 /** @typedef {import("../lib/PnpPlugin").PnpApiImpl} PnpApi */
 

@@ -1,6 +1,6 @@
 var should = require("should");
 
-var { CachedInputFileSystem } = require("../");
+var { CachedInputFileSystem } = require("..");
 
 describe("CachedInputFileSystem OperationMergerBackend ('stat' and 'statSync')", function () {
 	this.timeout(3000);

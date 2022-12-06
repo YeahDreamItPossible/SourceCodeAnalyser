@@ -1,7 +1,7 @@
 var should = require("should");
 
 var path = require("path");
-var resolve = require("../");
+var resolve = require("..");
 
 describe("missing", function () {
 	/**

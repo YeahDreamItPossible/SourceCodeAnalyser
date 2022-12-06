@@ -2,7 +2,7 @@ require("should");
 
 const path = require("path");
 const fs = require("fs");
-const { CachedInputFileSystem, ResolverFactory } = require("../");
+const { CachedInputFileSystem, ResolverFactory } = require("..");
 
 const fixture = path.join(__dirname, "fixtures", "scoped");
 

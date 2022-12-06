@@ -3,7 +3,7 @@
 require("should");
 
 const path = require("path");
-const { ResolverFactory, CloneBasenamePlugin } = require("../");
+const { ResolverFactory, CloneBasenamePlugin } = require("..");
 
 describe("plugins", function () {
 	it("should resolve with the CloneBasenamePlugin", function (done) {

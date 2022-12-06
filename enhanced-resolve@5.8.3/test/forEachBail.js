@@ -1,6 +1,6 @@
 require("should");
 
-const { forEachBail } = require("../");
+const { forEachBail } = require("..");
 
 describe("forEachBail", () => {
 	it("should iterate correctly", done => {

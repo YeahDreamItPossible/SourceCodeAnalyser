@@ -1,9 +1,9 @@
 require("should");
 
 var { Volume } = require("memfs");
-var { ResolverFactory } = require("../");
+var { ResolverFactory } = require("..");
 
-describe("fallback", function () {
+describe("alias", function () {
 	var resolver;
 
 	beforeEach(function () {
@@ -13,8 +13,6 @@ describe("fallback", function () {
 				"/a/dir/index": "",
 				"/recursive/index": "",
 				"/recursive/dir/index": "",
-				"/recursive/dir/file": "",
-				"/recursive/dir/dir/index": "",
 				"/b/index": "",
 				"/b/dir/index": "",
 				"/c/index": "",
@@ -28,7 +26,7 @@ describe("fallback", function () {
 			"/"
 		);
 		resolver = ResolverFactory.createResolver({
-			fallback: {
+			alias: {
 				aliasA: "a",
 				b$: "a/index",
 				c$: "/a/index",
@@ -50,7 +48,7 @@ describe("fallback", function () {
 		resolver.resolveSync({}, "/", "a/dir").should.be.eql("/a/dir/index");
 		resolver.resolveSync({}, "/", "a/dir/index").should.be.eql("/a/dir/index");
 	});
-	it("should resolve an fallback module", function () {
+	it("should resolve an aliased module", function () {
 		resolver.resolveSync({}, "/", "aliasA").should.be.eql("/a/index");
 		resolver.resolveSync({}, "/", "aliasA/index").should.be.eql("/a/index");
 		resolver.resolveSync({}, "/", "aliasA/dir").should.be.eql("/a/dir/index");
@@ -64,23 +62,24 @@ describe("fallback", function () {
 	it("should resolve a recursive aliased module", function () {
 		resolver
 			.resolveSync({}, "/", "recursive")
-			.should.be.eql("/recursive/index");
+			.should.be.eql("/recursive/dir/index");
 		resolver
 			.resolveSync({}, "/", "recursive/index")
-			.should.be.eql("/recursive/index");
+			.should.be.eql("/recursive/dir/index");
 		resolver
 			.resolveSync({}, "/", "recursive/dir")
 			.should.be.eql("/recursive/dir/index");
 		resolver
 			.resolveSync({}, "/", "recursive/dir/index")
 			.should.be.eql("/recursive/dir/index");
-		resolver
-			.resolveSync({}, "/", "recursive/file")
-			.should.be.eql("/recursive/dir/file");
+	});
+	it("should resolve a file aliased module", function () {
+		resolver.resolveSync({}, "/", "b").should.be.eql("/a/index");
+		resolver.resolveSync({}, "/", "c").should.be.eql("/a/index");
 	});
 	it("should resolve a file aliased module with a query", function () {
-		resolver.resolveSync({}, "/", "b?query").should.be.eql("/b/index?query");
-		resolver.resolveSync({}, "/", "c?query").should.be.eql("/c/index?query");
+		resolver.resolveSync({}, "/", "b?query").should.be.eql("/a/index?query");
+		resolver.resolveSync({}, "/", "c?query").should.be.eql("/a/index?query");
 	});
 	it("should resolve a path in a file aliased module", function () {
 		resolver.resolveSync({}, "/", "b/index").should.be.eql("/b/index");
@@ -89,6 +88,10 @@ describe("fallback", function () {
 		resolver.resolveSync({}, "/", "c/index").should.be.eql("/c/index");
 		resolver.resolveSync({}, "/", "c/dir").should.be.eql("/c/dir/index");
 		resolver.resolveSync({}, "/", "c/dir/index").should.be.eql("/c/dir/index");
+	});
+	it("should resolve a file aliased file", function () {
+		resolver.resolveSync({}, "/", "d").should.be.eql("/c/index");
+		resolver.resolveSync({}, "/", "d/dir/index").should.be.eql("/c/dir/index");
 	});
 	it("should resolve a file in multiple aliased dirs", function () {
 		resolver
@@ -112,9 +115,6 @@ describe("fallback", function () {
 					"resolve 'aliasA/dir' in '/'",
 					"  Parsed request is a module",
 					"  No description file found in / or above",
-					"  resolve as module",
-					"    looking for modules in /",
-					"      /aliasA doesn't exist",
 					"  aliased with mapping 'aliasA': 'a' to 'a/dir'",
 					"    Parsed request is a module",
 					"    No description file found in / or above",

@@ -2,7 +2,7 @@ require("should");
 
 var path = require("path");
 var fs = require("fs");
-var { CachedInputFileSystem, ResolverFactory } = require("../");
+var { CachedInputFileSystem, ResolverFactory } = require("..");
 
 var fixtures = path.join(__dirname, "fixtures", "incorrect-package");
 const nodeFileSystem = new CachedInputFileSystem(fs, 4000);
