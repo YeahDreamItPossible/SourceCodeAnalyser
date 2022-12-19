@@ -1899,6 +1899,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				? optionsOrName
 				: { name: optionsOrName };
 
+		// entry 为 EntryDependency 的实例
 		this._addEntryItem(context, entry, "dependencies", options, callback);
 	}
 

@@ -13,7 +13,6 @@ if (__DEV__) {
 
 const compileCache: Record<string, RenderFunction> = Object.create(null)
 
-// NOTE:
 function compileToFunction(
   template: string | HTMLElement,
   options?: CompilerOptions
