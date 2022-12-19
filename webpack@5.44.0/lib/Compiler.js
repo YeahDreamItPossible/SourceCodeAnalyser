@@ -1073,8 +1073,7 @@ class Compiler {
 
 		// NOTE:
 		// thisCompilation 和 compilation
-		// 主要是给 compilation 使用用插件
-		// hooks 不同 hook 注册函数
+		// 主要是给 compilation hooks 不同 hook 注册函数
 
 		// NOTE:
 		// 串行 使用插件
