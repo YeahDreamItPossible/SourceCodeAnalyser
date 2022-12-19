@@ -1966,7 +1966,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		}
 
-		// NOTE: 空调用
+		// NOTE: 
+		// 空调用
 		this.hooks.addEntry.call(entry, options);
 
 		this.addModuleTree(
