@@ -2467,6 +2467,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		// NOTE:
 		// 空调用
 		this.hooks.afterChunks.call(this.chunks);
+
 		this.logger.timeEnd("create chunks");
 
 		this.logger.time("optimize");
