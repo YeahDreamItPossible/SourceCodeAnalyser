@@ -1966,7 +1966,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		}
 
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
 		this.hooks.addEntry.call(entry, options);
 
 		this.addModuleTree(
@@ -2295,6 +2296,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			this.addModuleQueue.clear();
 			return callback(err);
 		};
+
 		const chunkGraph = new ChunkGraph(this.moduleGraph);
 		this.chunkGraph = chunkGraph;
 
@@ -2305,17 +2307,21 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// NOTE:
 		// WarnCaseSensitiveModulesPlugin
 		// 还是收集 errors
+		// compilation 对象停止接收新的模块时触发
 		this.hooks.seal.call();
 
 		this.logger.time("optimize dependencies");
+
 		// NOTE:
 		// SideEffectsFlagPlugin 插件
+		// 依赖优化开始时触发
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
 		}
 
 		// NOTE:
 		// 空调用
+		// 依赖优化之后触发
 		this.hooks.afterOptimizeDependencies.call(this.modules);
 
 		this.logger.timeEnd("optimize dependencies");
@@ -2472,17 +2478,22 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 		this.logger.time("optimize");
 
-		// NOTE: 优化开始
-		// NOTE: 空调用
+		// NOTE:
+		// 优化开始
+		// 空调用
+		// 优化阶段开始时触发
 		this.hooks.optimize.call();
 
 		// NOTE:
 		// 空调用
+		// 在模块优化阶段开始时调用
 		while (this.hooks.optimizeModules.call(this.modules)) {
 			/* empty */
 		}
 
-		// NOTE: 空调用
+		// NOTE:
+		// 空调用
+		// 在模块优化完成之后调用
 		this.hooks.afterOptimizeModules.call(this.modules);
 
 		// NOTE: 串行调用插件
@@ -2491,16 +2502,19 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		// MergeDuplicateChunksPlugin
 		// SplitChunksPlugin
 		// RemoveEmptyChunksPlugin
+		// 在 chunk 优化阶段开始时调用
 		while (this.hooks.optimizeChunks.call(this.chunks, this.chunkGroups)) {
 			/* empty */
 		}
 
 		// NOTE:
 		// 空调用
+		// chunk 优化完成之后触发
 		this.hooks.afterOptimizeChunks.call(this.chunks, this.chunkGroups);
 
 		// NOTE:
 		// 直接执行回调
+		// 在优化依赖树之前调用
 		this.hooks.optimizeTree.callAsync(this.chunks, this.modules, err => {
 			if (err) {
 				return finalCallback(
@@ -2510,10 +2524,12 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 			// NOTE:
 			// 空调用
+			// 在依赖树优化成功完成之后调用
 			this.hooks.afterOptimizeTree.call(this.chunks, this.modules);
 
 			// NOTE:
 			// 直接执行回调
+			// 在树优化之后，chunk 模块优化开始时调用
 			this.hooks.optimizeChunkModules.callAsync(
 				this.chunks,
 				this.modules,
@@ -2524,44 +2540,63 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						);
 					}
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// 在 chunk 模块优化成功完成之后调用
 					this.hooks.afterOptimizeChunkModules.call(this.chunks, this.modules);
 
 					// NOTE: 空调用
+					// 调用来决定是否存储 record
 					const shouldRecord = this.hooks.shouldRecord.call() !== false;
 
 					// NOTE:
 					// RecordIdsPlugin
+					// 从 record 中恢复模块信息
 					this.hooks.reviveModules.call(this.modules, this.records);
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// 在为每个模块分配 id 之前执行
 					this.hooks.beforeModuleIds.call(this.modules);
 
 					// NOTE:
 					// NamedModuleIdsPlugin
+					// 调用来每个模块分配一个 id
 					this.hooks.moduleIds.call(this.modules);
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// 在模块 id 优化开始时调用
 					this.hooks.optimizeModuleIds.call(this.modules);
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// 在模块 id 优化完成时调用
 					this.hooks.afterOptimizeModuleIds.call(this.modules);
 
 					// NOTE:
 					// RecordIdsPlugin
+					// 从 record 中恢复 chunk 信息
 					this.hooks.reviveChunks.call(this.chunks, this.records);
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// 在为每个 chunk 分配 id 之前执行
 					this.hooks.beforeChunkIds.call(this.chunks);
 
 					// NOTE:
 					// NamedChunkIdsPlugin
+					// 调用时，会为每个 chunk 分配一个 id
 					this.hooks.chunkIds.call(this.chunks);
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// 在 chunk id 优化阶段开始时调用
 					this.hooks.optimizeChunkIds.call(this.chunks);
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// chunk id 优化结束之后触发
 					this.hooks.afterOptimizeChunkIds.call(this.chunks);
 
 					this.assignRuntimeIds();
@@ -2571,9 +2606,11 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					if (shouldRecord) {
 						// NOTE:
 						// RecordIdsPlugin
+						// 将模块信息存储到 record 中
 						this.hooks.recordModules.call(this.modules, this.records);
 						// NOTE:
 						// RecordIdsPlugin
+						// 将 chunk 存储到 record 中
 						this.hooks.recordChunks.call(this.chunks, this.records);
 					}
 
@@ -2583,20 +2620,25 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					this.logger.timeEnd("optimize");
 					this.logger.time("module hashing");
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// 在创建模块哈希（hash）之前
 					this.hooks.beforeModuleHash.call();
 
 					// NOTE:
 					// 模块Hash
 					this.createModuleHashes();
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
+					// 在创建模块哈希（hash）之后
 					this.hooks.afterModuleHash.call();
 
 					this.logger.timeEnd("module hashing");
 					this.logger.time("code generation");
 
-					// NOTE: 空调用
+					// NOTE:
+					// 空调用
 					this.hooks.beforeCodeGeneration.call();
 
 					this.codeGeneration(err => {
@@ -2628,6 +2670,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 						// NOTE:
 						// 空调用
+						// 在 compilation 添加哈希（hash）之前
 						this.hooks.beforeHash.call();
 
 						// NOTE:
@@ -2637,6 +2680,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 						// NOTE:
 						// 空调用
+						// 在 compilation 添加哈希（hash）之后
 						this.hooks.afterHash.call();
 
 						this.logger.timeEnd("hashing");
@@ -2659,21 +2703,30 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 							this.clearAssets();
 
-							// NOTE: 空调用
+							// NOTE:
+							// 空调用
+							// 在创建模块 asset 之前执行
 							this.hooks.beforeModuleAssets.call();
 
+							// NOTE:
+							// 值得好好看看
 							this.createModuleAssets();
+
 							this.logger.timeEnd("module assets");
 
 							const cont = () => {
 								this.logger.time("process assets");
+
+								// asset 处理
 								this.hooks.processAssets.callAsync(this.assets, err => {
 									if (err) {
 										return finalCallback(
 											makeWebpackError(err, "Compilation.hooks.processAssets")
 										);
 									}
-									// NOTE: 空调用
+
+									// NOTE:
+									// 空调用
 									this.hooks.afterProcessAssets.call(this.assets);
 
 									this.logger.timeEnd("process assets");
@@ -2692,12 +2745,16 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 										this.hooks.record.call(this, this.records);
 									}
 
-									// NOTE: 空调用
+									// NOTE:
+									// 空调用
+									// 调用来决定 compilation 是否需要解除 seal 以引入其他文件
 									if (this.hooks.needAdditionalSeal.call()) {
 										this.unseal();
 										return this.seal(callback);
 									}
-									// NOTE: 直接执行回调
+
+									// NOTE:
+									// 直接执行回调
 									return this.hooks.afterSeal.callAsync(err => {
 										if (err) {
 											return finalCallback(
@@ -2712,12 +2769,18 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 							this.logger.time("create chunk assets");
 
-							// NOTE: 空调用
+							// NOTE:
+							// 空调用
+							// 调用以确定是否生成 chunk asset
 							if (this.hooks.shouldGenerateChunkAssets.call() !== false) {
-								// NOTE: 空调用
+
+								// NOTE:
+								// 空调用
+								// 在创建 chunk asset 之前
 								this.hooks.beforeChunkAssets.call();
 
-								// TODO: 需要仔细研究研究
+								// TODO:
+								// 需要仔细研究研究
 								this.createChunkAssets(err => {
 									this.logger.timeEnd("create chunk assets");
 									if (err) {

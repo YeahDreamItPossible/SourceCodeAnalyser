@@ -1225,7 +1225,9 @@ class Compiler {
 								if (err) return callback(err);
 
 								logger.time("afterCompile hook");
-								// NOTE: 直接执行回调
+
+								// NOTE:
+								// 直接执行回调
 								this.hooks.afterCompile.callAsync(compilation, err => {
 									logger.timeEnd("afterCompile hook");
 									if (err) return callback(err);
