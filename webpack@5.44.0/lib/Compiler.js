@@ -241,7 +241,7 @@ class Compiler {
 		this.fsStartTime = undefined;
 
 		// NOTE:
-		// 路径解析 具体源码未研究 ??
+		// 路径解析 根据上下文 和 扩展名 将相对路径 通过同步 or 异步的方式解析成 绝对路径
 		/** @type {ResolverFactory} */
 		this.resolverFactory = new ResolverFactory();
 
@@ -256,7 +256,7 @@ class Compiler {
 		this.context = context;
 
 		// NOTE:
-		// 该类好像是将 loader 的家在路径变换成 绝对路径 ???
+		// 该类好像是将 loader 的家在路径变换成 绝对路径 ??
 		this.requestShortener = new RequestShortener(context, this.root);
 
 		this.cache = new Cache();
@@ -1073,8 +1073,7 @@ class Compiler {
 
 		// NOTE:
 		// thisCompilation 和 compilation
-		// 主要是给 compilation 使用用插件
-		// hooks 不同 hook 注册函数
+		// 主要是给 compilation hooks 不同 hook 注册函数
 
 		// NOTE:
 		// 串行 使用插件
@@ -1093,6 +1092,7 @@ class Compiler {
 		// 串行使用插件(此处插件根据不同情况 使用较多 可以跳过)
 		// ChunkPrefetchPreloadPlugin
 		// ModuleInfoHeaderPlugin
+
 		// EvalDevToolModulePlugin
 		// JavascriptModulesPlugin
 		// JsonModulesPlugin
@@ -1115,6 +1115,7 @@ class Compiler {
 		// WebpackIsIncludedPlugin
 		// ConstPlugin
 		// UseStrictPlugin
+
 		// RequireIncludePlugin
 		// RequireEnsurePlugin
 		// RequireContextPlugin
@@ -1137,7 +1138,7 @@ class Compiler {
 		// TemplatedPathPlugin
 		// RecordIdsPlugin
 		// WarnCaseSensitiveModulesPlugin
-		// ...
+		// 主要是给 compilation 不同的hook 注册事件
 		this.hooks.compilation.call(compilation, params);
 
 		return compilation;
@@ -1193,6 +1194,8 @@ class Compiler {
 
 			// NOTE:
 			// ExternalsPlugin
+			// normalModuleFactory.hooks.factorize 注册钩子
+			// 主要时 从输出的bundle排除依赖(该依赖通过cdn 或者别的方式 以什么样的方式 引入)
 			this.hooks.compile.call(params);
 
 			const compilation = this.newCompilation(params);
@@ -1202,6 +1205,8 @@ class Compiler {
 			logger.time("make hook");
 			// NOTE:
 			// EntryPlugin
+			// compilation.addEntry 
+			// 添加入口 开始编译
 			this.hooks.make.callAsync(compilation, err => {
 				logger.timeEnd("make hook");
 				if (err) return callback(err);
