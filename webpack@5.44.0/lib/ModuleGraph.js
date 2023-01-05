@@ -75,6 +75,7 @@ class ModuleGraphModule {
 
 		/** @type {Module | null} */
 		this.issuer = undefined;
+
 		/** @type {(string | OptimizationBailoutFunction)[]} */
 		this.optimizationBailout = [];
 		/** @type {ExportsInfo} */
@@ -85,8 +86,11 @@ class ModuleGraphModule {
 		this.postOrderIndex = null;
 		/** @type {number} */
 		this.depth = null;
+
+		// NOTE:
 		/** @type {ModuleProfile} */
 		this.profile = undefined;
+
 		/** @type {boolean} */
 		this.async = false;
 	}

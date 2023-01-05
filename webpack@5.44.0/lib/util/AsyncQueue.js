@@ -66,10 +66,13 @@ class AsyncQueue {
 		this._processor = processor;
 		this._getKey =
 			getKey || /** @type {(T) => K} */ (item => /** @type {any} */ (item));
+
 		/** @type {Map<K, AsyncQueueEntry<T, K, R>>} */
 		this._entries = new Map();
+
 		/** @type {ArrayQueue<AsyncQueueEntry<T, K, R>>} */
 		this._queued = new ArrayQueue();
+
 		/** @type {AsyncQueue<any, any, any>[]} */
 		this._children = undefined;
 		this._activeTasks = 0;
@@ -108,7 +111,8 @@ class AsyncQueue {
 	 */
 	add(item, callback) {
 		if (this._stopped) return callback(new WebpackError("Queue was stopped"));
-		// NOTE: 直接执行回调
+		// NOTE:
+		// 直接执行回调
 		this.hooks.beforeAdd.callAsync(item, err => {
 			if (err) {
 				callback(
@@ -149,7 +153,8 @@ class AsyncQueue {
 					root._willEnsureProcessing = true;
 					setImmediate(root._ensureProcessing);
 				}
-				// NOTE: 空调用
+				// NOTE:
+				// 空调用
 				this.hooks.added.call(item);
 			}
 		});

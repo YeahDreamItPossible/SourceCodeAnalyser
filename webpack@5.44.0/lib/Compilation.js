@@ -902,6 +902,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			parallelism: options.parallelism || 100,
 			processor: this._processModuleDependencies.bind(this)
 		});
+
+		// NOTE:
+		//
 		/** @type {AsyncQueue<Module, string, Module>} */
 		this.addModuleQueue = new AsyncQueue({
 			name: "addModule",
@@ -909,6 +912,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			getKey: module => module.identifier(),
 			processor: this._addModule.bind(this)
 		});
+
 		/** @type {AsyncQueue<FactorizeModuleOptions, string, Module>} */
 		this.factorizeQueue = new AsyncQueue({
 			name: "factorize",

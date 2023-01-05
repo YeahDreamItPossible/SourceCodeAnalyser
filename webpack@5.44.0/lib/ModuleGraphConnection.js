@@ -72,8 +72,10 @@ class ModuleGraphConnection {
 		this.originModule = originModule;
 
 		this.resolvedOriginModule = originModule;
-		// NOTE:
+
+		// NOTE: 当前module的依赖
 		this.dependency = dependency;
+
 		this.resolvedModule = module;
 
 		// NOTE: 当前module
