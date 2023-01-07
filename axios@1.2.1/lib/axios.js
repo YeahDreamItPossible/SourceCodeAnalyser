@@ -75,6 +75,8 @@ axios.mergeConfig = mergeConfig;
 
 axios.AxiosHeaders = AxiosHeaders;
 
+// NOTE:
+// 将 FormData(HTMLFormElement DOM) 转换成 Javascript Object
 axios.formToJSON = thing => formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
 
 axios.default = axios;

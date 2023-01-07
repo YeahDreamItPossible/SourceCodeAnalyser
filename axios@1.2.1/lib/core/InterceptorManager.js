@@ -22,6 +22,7 @@ class InterceptorManager {
       synchronous: options ? options.synchronous : false,
       runWhen: options ? options.runWhen : null
     });
+    // 返回当前项在数组中的索引 便于移除
     return this.handlers.length - 1;
   }
 

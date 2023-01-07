@@ -20,6 +20,8 @@ const validators = validator.validators;
  */
 class Axios {
   constructor(instanceConfig) {
+    // NOTE:
+    // 默认配置
     this.defaults = instanceConfig;
     this.interceptors = {
       request: new InterceptorManager(),
@@ -37,7 +39,10 @@ class Axios {
    */
   request(configOrUrl, config) {
     /*eslint no-param-reassign:0*/
+
     // Allow for axios('example/url'[, config]) a la fetch API
+    // NOTE:
+    // 正常化参数
     if (typeof configOrUrl === 'string') {
       config = config || {};
       config.url = configOrUrl;
@@ -45,6 +50,8 @@ class Axios {
       config = configOrUrl || {};
     }
 
+    // NOTE:
+    // 每次请求时 将默认参数 和 当前请求参数 再次合并
     config = mergeConfig(this.defaults, config);
 
     const {transitional, paramsSerializer, headers} = config;
@@ -85,18 +92,26 @@ class Axios {
     config.headers = AxiosHeaders.concat(contextHeaders, headers);
 
     // filter out skipped interceptors
+    // NOTE:
+    // 请求拦截器 实质上为 栈
+    // 先注册的拦截器 后调用
     const requestInterceptorChain = [];
     let synchronousRequestInterceptors = true;
     this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
+      // NOTE:
+      // 当 runWhen 函数返回 false 时 该拦截器将不再执行
       if (typeof interceptor.runWhen === 'function' && interceptor.runWhen(config) === false) {
         return;
       }
 
+      // NOTE:
+      // 拦截器默认是异步执行
       synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
 
       requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
     });
 
+    // 响应拦截链 实质上为 队列
     const responseInterceptorChain = [];
     this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
       responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
@@ -106,6 +121,8 @@ class Axios {
     let i = 0;
     let len;
 
+    // NOTE:
+    // 默认 异步执行 拦截器 及 请求
     if (!synchronousRequestInterceptors) {
       const chain = [dispatchRequest.bind(this), undefined];
       chain.unshift.apply(chain, requestInterceptorChain);
@@ -127,6 +144,7 @@ class Axios {
 
     i = 0;
 
+    // 
     while (i < len) {
       const onFulfilled = requestInterceptorChain[i++];
       const onRejected = requestInterceptorChain[i++];
