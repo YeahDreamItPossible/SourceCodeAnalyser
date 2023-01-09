@@ -1,6 +1,5 @@
 const sayHello = async () => {
-  // return 'Hello'
-  throw new Error('?')
+  return 'Hello'
 }
 
 const doSay = async () => {
@@ -8,6 +7,12 @@ const doSay = async () => {
   return result
 }
 
-doSay().catch(err => {
-  console.log(err.toString())
-})
+// doSay().catch(err => {
+//   console.log(err.toString())
+// })
+
+import.meta.webpack = 5
+
+console.log(import.meta)
+console.log(import.meta.__proto__)
+// console.log(import.meta instanceof Null)
