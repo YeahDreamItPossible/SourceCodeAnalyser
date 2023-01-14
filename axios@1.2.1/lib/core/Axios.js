@@ -23,6 +23,8 @@ class Axios {
     // NOTE:
     // 默认配置
     this.defaults = instanceConfig;
+    // NOTE:
+    // 拦截器
     this.interceptors = {
       request: new InterceptorManager(),
       response: new InterceptorManager()
@@ -180,6 +182,9 @@ class Axios {
 }
 
 // Provide aliases for supported request methods
+// NOTE:
+// 扩展 get head options delete 请求方法
+// 内部还是调用request方法
 utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
   /*eslint func-names:0*/
   Axios.prototype[method] = function(url, config) {
@@ -191,6 +196,9 @@ utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData
   };
 });
 
+// NOTE:
+// 扩展 post put patch postForm putForm patchForm 请求方法
+// 主要参数传递不同
 utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
   /*eslint func-names:0*/
 

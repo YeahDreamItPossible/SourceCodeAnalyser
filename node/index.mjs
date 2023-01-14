@@ -1,18 +1,5 @@
-const sayHello = async () => {
-  return 'Hello'
-}
+import fs from 'node:fs'
 
-const doSay = async () => {
-  let result = await sayHello()
-  return result
-}
-
-// doSay().catch(err => {
-//   console.log(err.toString())
-// })
-
-import.meta.webpack = 5
-
-console.log(import.meta)
-console.log(import.meta.__proto__)
-// console.log(import.meta instanceof Null)
+fs.access('./index.html', fs.constants.F_OK, err => {
+  console.log(2, err)
+})

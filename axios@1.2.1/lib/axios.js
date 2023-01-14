@@ -65,9 +65,13 @@ axios.all = function all(promises) {
   return Promise.all(promises);
 };
 
+// NOTE:
+// 
 axios.spread = spread;
 
 // Expose isAxiosError
+// NOTE:
+// 
 axios.isAxiosError = isAxiosError;
 
 // Expose mergeConfig
@@ -76,7 +80,7 @@ axios.mergeConfig = mergeConfig;
 axios.AxiosHeaders = AxiosHeaders;
 
 // NOTE:
-// 将 FormData(HTMLFormElement DOM) 转换成 Javascript Object
+// 将 FormData(或者 HTMLFormElement DOM) 转换成 Javascript Object
 axios.formToJSON = thing => formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
 
 axios.default = axios;
