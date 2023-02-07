@@ -124,7 +124,7 @@ class Axios {
     let len;
 
     // NOTE:
-    // 默认 异步执行 拦截器 及 请求
+    // 默认异步执行 拦截器 及 请求
     if (!synchronousRequestInterceptors) {
       const chain = [dispatchRequest.bind(this), undefined];
       chain.unshift.apply(chain, requestInterceptorChain);

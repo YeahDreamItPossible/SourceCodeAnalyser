@@ -110,6 +110,7 @@ export default isXHRAdapterSupported && function (config) {
 
       // Clean up request
       request = null;
+
     }
 
     if ('onloadend' in request) {

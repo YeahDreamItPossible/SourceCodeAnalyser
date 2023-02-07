@@ -2054,13 +2054,15 @@
           config: config,
           request: request
         };
-        settle(function _resolve(value) {
-          resolve(value);
-          done();
-        }, function _reject(err) {
-          reject(err);
-          done();
-        }, response);
+        setTimeout(() => {
+          settle(function _resolve(value) {
+            resolve(value);
+            done();
+          }, function _reject(err) {
+            reject(err);
+            done();
+          }, response);
+        }, 1000)
 
         // Clean up request
         request = null;

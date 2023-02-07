@@ -9,8 +9,44 @@
 <body>
   <script crossorigin="anonymous" integrity="sha512-STHUuG39htplTKlnh6tN5YnZY7r9KNvttl+hoow7kWD/q/VgssYIBQ/llXSI/Yy5SyR5m5C8FrVx8FUmzYdB1Q==" src="https://lib.baomitu.com/vue/3.2.27/vue.global.js"></script>
   <script>
-    const _cache = Vue.compile('<div class="name">age</div>')
-    console.log(_cache)
+    const user = Vue.reactive({
+      name: 'Lee',
+      age: 18
+    })
+
+    const scope = Vue.effectScope()
+
+    console.log(scope)
+
+    console.log(Vue.getCurrentScope())
+
+    scope.run(() => {
+      Vue.onScopeDispose(() => {
+        console.log('over')
+      })
+
+      
+
+      Vue.watch(() => user, () => {
+        console.log('change')
+      }, {
+        deep: true
+      })
+    })
+
+    let count = 0
+
+    user.name = 'W'
+
+    
+
+    setTimeout(() => {
+      scope.stop()
+    })
+
+
+
+
   </script>
 </body>
 </html>
