@@ -7,45 +7,54 @@
   <title>Document</title>
 </head>
 <body>
+  <div id="app">
+    x: {{ position.x }},
+    y: {{ position.y }},
+
+    {{ u }}
+
+    <button @click="onToggle">btn</button>
+  </div>
   <script crossorigin="anonymous" integrity="sha512-STHUuG39htplTKlnh6tN5YnZY7r9KNvttl+hoow7kWD/q/VgssYIBQ/llXSI/Yy5SyR5m5C8FrVx8FUmzYdB1Q==" src="https://lib.baomitu.com/vue/3.2.27/vue.global.js"></script>
   <script>
-    const user = Vue.reactive({
-      name: 'Lee',
-      age: 18
+    const app = Vue.createApp({
+      setup () {
+        const position = Vue.reactive({
+          x: 0,
+          y:0
+        })
+
+        const onMousemove = (e) => {
+          position.x = e.x
+          position.y = e.y
+        }
+
+        let timer = null
+        window.addEventListener('mousemove', (e) => {
+          if (timer) clearTimeout(timer)
+          timer = setTimeout(() => {
+            onMousemove(e)
+          }, 10)
+        })
+
+        let u = Vue.ref('Lee')
+        console.log(u)
+        
+        return { position, u }
+      },
+
+      mounted () {
+      },
+
+      methods: {
+        onToggle () {
+          console.log(this.u)
+          this.u = this.u.split('').reverse().join('')
+        }
+      }
     })
 
-    const scope = Vue.effectScope()
-
-    console.log(scope)
-
-    console.log(Vue.getCurrentScope())
-
-    scope.run(() => {
-      Vue.onScopeDispose(() => {
-        console.log('over')
-      })
-
-      
-
-      Vue.watch(() => user, () => {
-        console.log('change')
-      }, {
-        deep: true
-      })
-    })
-
-    let count = 0
-
-    user.name = 'W'
-
-    
-
-    setTimeout(() => {
-      scope.stop()
-    })
-
-
-
+    app.mount('#app')
 
   </script>
 </body>

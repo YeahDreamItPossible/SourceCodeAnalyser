@@ -192,6 +192,8 @@ export type ToRefs<T = any> = {
   [K in keyof T]: ToRef<T[K]>
 }
 export function toRefs<T extends object>(object: T): ToRefs<T> {
+  // NOTE:
+  // 开发环境 如何该对象是代理对象会警告
   if (__DEV__ && !isProxy(object)) {
     console.warn(`toRefs() expects a reactive object but received a plain one.`)
   }
