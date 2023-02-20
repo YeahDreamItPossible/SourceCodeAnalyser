@@ -77,12 +77,10 @@ axios.all = function all(promises) {
 };
 
 // NOTE:
-// 
 axios.spread = spread;
 
 // Expose isAxiosError
-// NOTE:
-// 
+// NOTE: 标记当前Error类型是自定义AxiosError
 axios.isAxiosError = isAxiosError;
 
 // Expose mergeConfig

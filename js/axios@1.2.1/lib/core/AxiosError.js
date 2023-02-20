@@ -30,6 +30,7 @@ function AxiosError(message, code, config, request, response) {
   response && (this.response = response);
 }
 
+// NOTE: 扩展AxiosError.prototype toJSON方法
 utils.inherits(AxiosError, Error, {
   toJSON: function toJSON() {
     return {
@@ -73,7 +74,10 @@ const descriptors = {};
   descriptors[code] = {value: code};
 });
 
+// TODO: 将自定义错误类型常量定义为AxiosError静态属性
 Object.defineProperties(AxiosError, descriptors);
+
+// TODO: 定义原型属性 isAxiosError 来判断当前error 是否是 AxiosError 的实例
 Object.defineProperty(prototype, 'isAxiosError', {value: true});
 
 // eslint-disable-next-line func-names

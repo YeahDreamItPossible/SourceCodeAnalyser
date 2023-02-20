@@ -44,6 +44,7 @@ const defaults = {
   // NOTE: 请求库兼容方式(可扩展)
   adapter: ['xhr', 'http'],
 
+  // NOTE: 主要是 接口请求头 content-type 对请求参数 data 做处理
   transformRequest: [function transformRequest(data, headers) {
     const contentType = headers.getContentType() || '';
     const hasJSONContentType = contentType.indexOf('application/json') > -1;
@@ -104,6 +105,7 @@ const defaults = {
     return data;
   }],
 
+  // NOTE: 主要是 响应 反序列化
   transformResponse: [function transformResponse(data) {
     const transitional = this.transitional || defaults.transitional;
     const forcedJSONParsing = transitional && transitional.forcedJSONParsing;
