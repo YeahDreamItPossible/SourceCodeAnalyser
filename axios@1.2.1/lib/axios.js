@@ -64,6 +64,7 @@ axios.VERSION = VERSION;
 // NOTE: 
 axios.toFormData = toFormData;
 
+// NOTE: 自定义Error错误
 // Expose AxiosError class
 axios.AxiosError = AxiosError;
 
