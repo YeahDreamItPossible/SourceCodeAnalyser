@@ -146,7 +146,7 @@ class Axios {
 
     i = 0;
 
-    // 
+    // 同步执行
     while (i < len) {
       const onFulfilled = requestInterceptorChain[i++];
       const onRejected = requestInterceptorChain[i++];

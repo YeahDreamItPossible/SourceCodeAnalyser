@@ -41,6 +41,7 @@ const defaults = {
 
   transitional: transitionalDefaults,
 
+  // NOTE: 请求库兼容方式(可扩展)
   adapter: ['xhr', 'http'],
 
   transformRequest: [function transformRequest(data, headers) {

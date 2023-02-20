@@ -11,7 +11,11 @@
 
   <script src="./axios.js"></script>
   <script>
-    const instance = new axios.Axios({})
+    const instance = new axios.Axios({
+      adapter: config => new Promise((resolve, reject) => {
+        console.log('====')
+      })
+    })
 
     instance.interceptors.request.use(config => {
       // setTimeout(() => {

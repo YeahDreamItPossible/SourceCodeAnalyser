@@ -41,6 +41,7 @@ function createInstance(defaultConfig) {
   return instance;
 }
 
+// NOTE: 创建默认配置的实例(便于使用者不做任何配置,快速开发)
 // Create the default instance to be exported
 const axios = createInstance(defaults);
 
@@ -49,9 +50,18 @@ axios.Axios = Axios;
 
 // Expose Cancel & CancelToken
 axios.CanceledError = CanceledError;
+
+// NOTE: 取消接口请求
 axios.CancelToken = CancelToken;
+
+// NOTE: 标记当前请求错误类型
 axios.isCancel = isCancel;
+
+// NOTE: 标记当前库版本
+// 缺点: 是自定义变量来控制 个人觉得最好通过package 版本来控制更合理些
 axios.VERSION = VERSION;
+
+// NOTE: 
 axios.toFormData = toFormData;
 
 // Expose AxiosError class
@@ -83,6 +93,7 @@ axios.AxiosHeaders = AxiosHeaders;
 // 将 FormData(或者 HTMLFormElement DOM) 转换成 Javascript Object
 axios.formToJSON = thing => formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
 
+// NOTE：值得注意
 axios.default = axios;
 
 // this module should only have a default export
