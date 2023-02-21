@@ -245,6 +245,7 @@ export function trackEffects(
   }
 
   if (shouldTrack) {
+    // NOTE: 在TypeScript中，后缀!从表达式的类型中删除null和undefined
     dep.add(activeEffect!)
     activeEffect!.deps.push(dep)
     if (__DEV__ && activeEffect!.onTrack) {
