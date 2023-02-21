@@ -7,6 +7,34 @@
   <title>Document</title>
 </head>
 <body>
+  <div id="app"></div>
+
   <script crossorigin="anonymous" integrity="sha512-STHUuG39htplTKlnh6tN5YnZY7r9KNvttl+hoow7kWD/q/VgssYIBQ/llXSI/Yy5SyR5m5C8FrVx8FUmzYdB1Q==" src="https://lib.baomitu.com/vue/3.2.27/vue.global.js"></script>
+  
+  <script>
+    const app = Vue.createApp({
+      setup () {
+        const user = Vue.ref({
+          name: 'Lee'
+        })
+
+        console.log(user)
+
+        return { user }
+      },
+
+      render () {
+        console.log(Reflect.ownKeys(this))
+        return Vue.h('div', {
+          style: {
+            color: '#ff0000'
+          }
+        }, [`Hello ${this.user.name}`])
+      }
+    })
+
+    app.mount('#app')
+
+  </script>
 </body>
 </html>

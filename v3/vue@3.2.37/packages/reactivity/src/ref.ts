@@ -99,6 +99,8 @@ class RefImpl<T> {
   private _rawValue: T
 
   public dep?: Dep = undefined
+
+  // NOTE: 作为 isRef 的判断条件
   public readonly __v_isRef = true
 
   constructor(value: T, public readonly __v_isShallow: boolean) {
@@ -107,6 +109,7 @@ class RefImpl<T> {
   }
 
   get value() {
+    // TODO: 收集依赖
     trackRefValue(this)
     return this._value
   }
@@ -116,6 +119,7 @@ class RefImpl<T> {
     if (hasChanged(newVal, this._rawValue)) {
       this._rawValue = newVal
       this._value = this.__v_isShallow ? newVal : toReactive(newVal)
+      // TODO: 派发依赖
       triggerRefValue(this, newVal)
     }
   }
