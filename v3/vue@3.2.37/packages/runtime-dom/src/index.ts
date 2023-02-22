@@ -71,6 +71,9 @@ export const createApp = ((...args) => {
     injectCompilerOptionsCheck(app)
   }
 
+  // NOTE: 
+  // 增强 mount 方法
+  // 一是为了正常化参数 二是render函数 三是为了对容器的元素进行处理
   const { mount } = app
   app.mount = (containerOrSelector: Element | ShadowRoot | string): any => {
     const container = normalizeContainer(containerOrSelector)

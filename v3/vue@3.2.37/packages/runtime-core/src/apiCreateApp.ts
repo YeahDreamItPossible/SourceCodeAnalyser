@@ -195,10 +195,19 @@ export function createAppAPI<HostElement>(
 
     const app: App = (context.app = {
       _uid: uid++,
+
+      // NOTE: 当前根组件
       _component: rootComponent as ConcreteComponent,
+      
       _props: rootProps,
+
+      // NOTE: 当前容器元素
       _container: null,
+
+      // NOTE: app上下文
       _context: context,
+
+      // NOTE:
       _instance: null,
 
       version,
