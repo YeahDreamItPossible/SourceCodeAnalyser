@@ -13,11 +13,23 @@ import {
 } from './collectionHandlers'
 import type { UnwrapRefSimple, Ref, RawSymbol } from './ref'
 
+// NOTE: 
+// 响应式标识 非常巧妙
+// 本身并不绑定在响应式对象上 但是访问时 会返回初始化的默认值
 export const enum ReactiveFlags {
+  // NOTE: 标识当前对象是否可以被reactive
   SKIP = '__v_skip',
+
+  // NOTE: 标识当前对象是否是reactive
   IS_REACTIVE = '__v_isReactive',
+
+  // NOTE: 标识当前对象是否是只读的
   IS_READONLY = '__v_isReadonly',
+
+  // NOTE: 标识当前对象是否是浅reactive
   IS_SHALLOW = '__v_isShallow',
+
+  // NOTE: 返回源对象
   RAW = '__v_raw'
 }
 
@@ -37,8 +49,13 @@ export const readonlyMap = new WeakMap<Target, any>()
 export const shallowReadonlyMap = new WeakMap<Target, any>()
 
 const enum TargetType {
+  // NOTE: 非引用数据类型
   INVALID = 0,
+
+  // NOTE: Array || Object
   COMMON = 1,
+
+  // NOTE: Map || WeakMap || Set || WeakSet
   COLLECTION = 2
 }
 
@@ -187,12 +204,14 @@ function createReactiveObject(
   collectionHandlers: ProxyHandler<any>,
   proxyMap: WeakMap<Target, any>
 ) {
+  // NOTE: reactive 数据必须是对象
   if (!isObject(target)) {
     if (__DEV__) {
       console.warn(`value cannot be made reactive: ${String(target)}`)
     }
     return target
   }
+
   // target is already a Proxy, return it.
   // exception: calling readonly() on a reactive object
   if (
@@ -201,16 +220,21 @@ function createReactiveObject(
   ) {
     return target
   }
+
+  // NOTE: 数据缓存
   // target already has corresponding Proxy
   const existingProxy = proxyMap.get(target)
   if (existingProxy) {
     return existingProxy
   }
+
+  // NOTE: 非引用数据时返回当前值(递归reactive)
   // only specific value types can be observed.
   const targetType = getTargetType(target)
   if (targetType === TargetType.INVALID) {
     return target
   }
+
   const proxy = new Proxy(
     target,
     targetType === TargetType.COLLECTION ? collectionHandlers : baseHandlers
@@ -243,6 +267,7 @@ export function toRaw<T>(observed: T): T {
   return raw ? toRaw(raw) : observed
 }
 
+// NOTE: 通过设置响应式标识 ReactiveFlags.SKIP 来标识
 export function markRaw<T extends object>(
   value: T
 ): T & { [RawSymbol]?: true } {

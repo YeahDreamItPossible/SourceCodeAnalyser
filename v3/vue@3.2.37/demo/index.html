@@ -48,6 +48,21 @@
 
     app.mount('#app')
 
+    const user = Vue.reactive({name: 'Lee'})
+
+    const scope = Vue.effectScope()
+
+    const stop = scope.run(() => {
+      console.log(22, user.name)
+      console.log(Vue.getCurrentScope())
+    })
+
+    setTimeout(() => {
+      user.name = 'Wang'
+    }, 100)
+
+    
+
   </script>
 </body>
 </html>
