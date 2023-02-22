@@ -14,7 +14,7 @@ if (__DEV__) {
 const compileCache: Record<string, RenderFunction> = Object.create(null)
 
 // NOTE:
-// runtime + compile 
+// runtime + compile (运行时 + 编译)
 function compileToFunction(
   template: string | HTMLElement,
   options?: CompilerOptions
@@ -28,6 +28,7 @@ function compileToFunction(
     }
   }
 
+  // NOTE: 缓存
   const key = template
   const cached = compileCache[key]
   if (cached) {

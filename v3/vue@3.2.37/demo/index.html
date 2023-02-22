@@ -14,17 +14,30 @@
   <script>
     const app = Vue.createApp({
       setup () {
+        console.log('setup')
         const user = Vue.ref({
           name: 'Lee'
         })
-
-        console.log(user)
-
         return { user }
       },
 
+      beforeCreate () {
+        console.log('beforeCreate')
+      },
+
+      created () {
+        console.log('created')
+      },
+
+      beforeMount () {
+        console.log('beforeMount')
+      },
+
+      mounted () {
+        console.log('mounted')
+      },
+
       render () {
-        console.log(Reflect.ownKeys(this))
         return Vue.h('div', {
           style: {
             color: '#ff0000'
