@@ -1227,6 +1227,7 @@ function baseCreateRenderer(
       if (__DEV__) {
         startMeasure(instance, `init`)
       }
+      // NOTE: 解析 setup函数
       setupComponent(instance)
       if (__DEV__) {
         endMeasure(instance, `init`)
@@ -1297,6 +1298,7 @@ function baseCreateRenderer(
     }
   }
 
+  // TODO: 这个地方很关键 需要好好看看
   const setupRenderEffect: SetupRenderEffectFn = (
     instance,
     initialVNode,

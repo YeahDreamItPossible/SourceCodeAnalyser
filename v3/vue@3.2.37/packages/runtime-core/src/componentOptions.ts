@@ -546,6 +546,10 @@ function createDuplicateChecker() {
 
 export let shouldCacheAccess = true
 
+// NOTE: 
+// 对用户配置的options进行初始化
+// 在初始化之前 调用beforeCreate
+// 在初始化之后 调用created
 export function applyOptions(instance: ComponentInternalInstance) {
   const options = resolveMergedOptions(instance)
   const publicThis = instance.proxy! as any
@@ -757,6 +761,7 @@ export function applyOptions(instance: ComponentInternalInstance) {
     }
   }
 
+  // TODO: 暂时未看懂这个地方
   registerLifecycleHook(onBeforeMount, beforeMount)
   registerLifecycleHook(onMounted, mounted)
   registerLifecycleHook(onBeforeUpdate, beforeUpdate)

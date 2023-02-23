@@ -39,6 +39,8 @@ let renderer: Renderer<Element | ShadowRoot> | HydrationRenderer
 
 let enabledHydration = false
 
+// NOTE:
+// 
 function ensureRenderer() {
   return (
     renderer ||

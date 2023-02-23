@@ -459,6 +459,7 @@ const emptyAppContext = createAppContext()
 
 let uid = 0
 
+// NOTE: 创建组件实例
 export function createComponentInstance(
   vnode: VNode,
   parent: ComponentInternalInstance | null,
@@ -469,7 +470,9 @@ export function createComponentInstance(
   const appContext =
     (parent ? parent.appContext : vnode.appContext) || emptyAppContext
 
+  // NOTE: 组件实例
   const instance: ComponentInternalInstance = {
+    // NOTE: 根组件的uid 一定是0
     uid: uid++,
     vnode,
     type,
@@ -586,12 +589,15 @@ export function validateComponentName(name: string, config: AppConfig) {
   }
 }
 
+// NOTE: 判断当前组件类型 是根据vnode 的 shapeFlag 来进行标识
 export function isStatefulComponent(instance: ComponentInternalInstance) {
   return instance.vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT
 }
 
 export let isInSSRComponentSetup = false
 
+// NOTE:
+// 在解析组件的setup函数之前 要先解析props 和 slots
 export function setupComponent(
   instance: ComponentInternalInstance,
   isSSR = false
@@ -610,6 +616,7 @@ export function setupComponent(
   return setupResult
 }
 
+// NOTE: 主要用来解析 状态组件 的setup 钩子
 function setupStatefulComponent(
   instance: ComponentInternalInstance,
   isSSR: boolean
@@ -656,6 +663,8 @@ function setupStatefulComponent(
 
     setCurrentInstance(instance)
     pauseTracking()
+
+    // NOTE: setup函数入参分别是 props setupContext
     const setupResult = callWithErrorHandling(
       setup,
       instance,
@@ -665,6 +674,8 @@ function setupStatefulComponent(
     resetTracking()
     unsetCurrentInstance()
 
+    // NOTE: 
+    // setup函数返回值 可能是 Promise || Render Function || Object
     if (isPromise(setupResult)) {
       setupResult.then(unsetCurrentInstance, unsetCurrentInstance)
       if (isSSR) {
@@ -838,6 +849,7 @@ export function finishComponentSetup(
   if (__FEATURE_OPTIONS_API__ && !(__COMPAT__ && skipOptions)) {
     setCurrentInstance(instance)
     pauseTracking()
+    // NOTE: 兼容v2版本 对配置options 进行处理
     applyOptions(instance)
     resetTracking()
     unsetCurrentInstance()
@@ -893,9 +905,11 @@ function createAttrsProxy(instance: ComponentInternalInstance): Data {
   )
 }
 
+// NOTE: setup 函数上下文参数 且该上下文开发环境下不可扩展
 export function createSetupContext(
   instance: ComponentInternalInstance
 ): SetupContext {
+  // NOTE: expose 函数用来暴露 通过模板引用访问该组件的实例api
   const expose: SetupContext['expose'] = exposed => {
     if (__DEV__ && instance.exposed) {
       warn(`expose() should be called only once per setup().`)

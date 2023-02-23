@@ -188,11 +188,17 @@ export function createAppAPI<HostElement>(
       rootProps = null
     }
 
+    // NOTE: 应用上下文
     const context = createAppContext()
+
+    // NOTE: 缓存的插件set
     const installedPlugins = new Set()
 
     let isMounted = false
 
+    // NOTE: 根应用
+    // 当createApp后 只是返回一个纯的根应用(未与业务绑定)
+    // 只有当mount时才会对这个根饮用进行处理(与业务关联)
     const app: App = (context.app = {
       _uid: uid++,
 
@@ -207,7 +213,7 @@ export function createAppAPI<HostElement>(
       // NOTE: app上下文
       _context: context,
 
-      // NOTE:
+      // NOTE: 当前组件实例
       _instance: null,
 
       version,
@@ -293,6 +299,7 @@ export function createAppAPI<HostElement>(
         isSVG?: boolean
       ): any {
         if (!isMounted) {
+          // NOTE: 根元素 __vue_app__ 标识 防止多次挂载
           // #5571
           if (__DEV__ && (rootContainer as any).__vue_app__) {
             warn(
