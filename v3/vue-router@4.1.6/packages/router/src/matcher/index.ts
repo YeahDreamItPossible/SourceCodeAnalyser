@@ -61,6 +61,8 @@ export function createRouterMatcher(
   // normalized ordered array of matchers
   const matchers: RouteRecordMatcher[] = []
   const matcherMap = new Map<RouteRecordName, RouteRecordMatcher>()
+
+  // NOTE: 合并默认选项
   globalOptions = mergeOptions(
     { strict: false, end: true, sensitive: false } as PathParserOptions,
     globalOptions
