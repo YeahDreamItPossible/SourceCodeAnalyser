@@ -1,0 +1,63 @@
+{
+  "name": "@vue/router-root",
+  "private": true,
+  "packageManager": "pnpm@7.26.0",
+  "engines": {
+    "node": ">=16.5.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "release": "node scripts/release.mjs",
+    "size": "pnpm run -r size",
+    "build": "pnpm run -r build",
+    "build:dts": "pnpm run -r build:dts",
+    "docs:api": "pnpm run --filter ./packages/docs -r docs:api",
+    "docs:build": "pnpm run docs:api && pnpm run --filter ./packages/docs -r docs:build",
+    "play": "pnpm run -r play",
+    "build:size": "pnpm run -r build:size",
+    "lint": "pnpm run lint:script && pnpm run lint:html",
+    "lint:script": "prettier -c --parser typescript \"packages/*/{src,__tests__,e2e}/**/*.[jt]s?(x)\"",
+    "lint:html": "prettier -c --parser html \"packages/**/*.html\"",
+    "lint:fix": "pnpm run lint:script --write && pnpm run lint:html --write",
+    "test": "pnpm run -r test"
+  },
+  "devDependencies": {
+    "brotli": "^1.3.3",
+    "chalk": "^4.1.2",
+    "enquirer": "^2.3.6",
+    "execa": "^6.1.0",
+    "globby": "^13.1.3",
+    "lint-staged": "^13.1.2",
+    "minimist": "^1.2.8",
+    "p-series": "^3.0.0",
+    "prettier": "^2.8.4",
+    "semver": "^7.3.8",
+    "typedoc": "^0.23.25",
+    "typedoc-plugin-markdown": "^3.14.0",
+    "typescript": "~4.9.4",
+    "yorkie": "^2.0.0"
+  },
+  "gitHooks": {
+    "pre-commit": "lint-staged",
+    "commit-msg": "node scripts/verifyCommit.js"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write"
+    ],
+    "*.ts?(x)": [
+      "prettier --parser=typescript --write"
+    ]
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "react",
+        "@types/react",
+        "react-dom"
+      ]
+    }
+  }
+}
