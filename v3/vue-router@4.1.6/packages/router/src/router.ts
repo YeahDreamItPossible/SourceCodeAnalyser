@@ -360,19 +360,29 @@ export interface Router {
  * @param options - {@link RouterOptions}
  */
 export function createRouter(options: RouterOptions): Router {
+  // NOTE: 
   const matcher = createRouterMatcher(options.routes, options)
+
+  // NOTE: 自定义 解析查询
   const parseQuery = options.parseQuery || originalParseQuery
+
+  // NOTE: 自定义 序列化解析查询
   const stringifyQuery = options.stringifyQuery || originalStringifyQuery
+
   const routerHistory = options.history
+
   if (__DEV__ && !routerHistory)
     throw new Error(
       'Provide the "history" option when calling "createRouter()":' +
         ' https://next.router.vuejs.org/api/#history.'
     )
 
+  // NOTE: 拦截器
   const beforeGuards = useCallbacks<NavigationGuardWithThis<undefined>>()
   const beforeResolveGuards = useCallbacks<NavigationGuardWithThis<undefined>>()
   const afterGuards = useCallbacks<NavigationHookAfter>()
+
+  // NOTE: 当前路由
   const currentRoute = shallowRef<RouteLocationNormalizedLoaded>(
     START_LOCATION_NORMALIZED
   )
@@ -558,6 +568,7 @@ export function createRouter(options: RouterOptions): Router {
     )
   }
 
+  // NOTE: 正常化路由参数
   function locationAsObject(
     to: RouteLocationRaw | RouteLocationNormalized
   ): Exclude<RouteLocationRaw, string> | RouteLocationNormalized {
@@ -1199,9 +1210,12 @@ export function createRouter(options: RouterOptions): Router {
 
     install(app: App) {
       const router = this
+    
+      // NOTE: 全局注册组件
       app.component('RouterLink', RouterLink)
       app.component('RouterView', RouterView)
 
+      // NOTE: 全局注册 $router 和 $route 属性
       app.config.globalProperties.$router = router
       Object.defineProperty(app.config.globalProperties, '$route', {
         enumerable: true,
@@ -1235,6 +1249,7 @@ export function createRouter(options: RouterOptions): Router {
         reactiveRoute[key] = computed(() => currentRoute.value[key])
       }
 
+      // NOTE: 应用注入 便于useRouter useRoute
       app.provide(routerKey, router)
       app.provide(routeLocationKey, reactive(reactiveRoute))
       app.provide(routerViewLocationKey, currentRoute)

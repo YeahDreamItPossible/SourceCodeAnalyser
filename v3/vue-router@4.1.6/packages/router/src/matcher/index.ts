@@ -62,7 +62,7 @@ export function createRouterMatcher(
   const matchers: RouteRecordMatcher[] = []
   const matcherMap = new Map<RouteRecordName, RouteRecordMatcher>()
 
-  // NOTE: 合并默认选项
+  // NOTE: 将 默认选项 和 用户选项 进行合并
   globalOptions = mergeOptions(
     { strict: false, end: true, sensitive: false } as PathParserOptions,
     globalOptions
@@ -79,12 +79,17 @@ export function createRouterMatcher(
   ) {
     // used later on to remove by name
     const isRootAdd = !originalRecord
+
+    // NOTE: 正常化用户 route
     const mainNormalizedRecord = normalizeRouteRecord(record)
+
     if (__DEV__) {
       checkChildMissingNameWithEmptyPath(mainNormalizedRecord, parent)
     }
     // we might be the child of an alias
     mainNormalizedRecord.aliasOf = originalRecord && originalRecord.record
+
+    // 
     const options: PathParserOptions = mergeOptions(globalOptions, record)
     // generate an array of records to correctly handle aliases
     const normalizedRecords: (typeof mainNormalizedRecord)[] = [
@@ -395,6 +400,7 @@ export function normalizeRouteRecord(
   }
 }
 
+// NOTE: 正常化 route props
 /**
  * Normalize the optional `props` in a record to always be an object similar to
  * components. Also accept a boolean for components.

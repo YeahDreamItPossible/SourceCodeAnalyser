@@ -230,7 +230,9 @@ export const RouterLinkImpl = /*#__PURE__*/ defineComponent({
     }))
 
     return () => {
+      // NOTE: 作用域插槽
       const children = slots.default && slots.default(link)
+      // NOTE: custom 是否将内容包囊在a元素内 默认不包囊
       return props.custom
         ? children
         : h(

@@ -7,7 +7,10 @@
   <title>Document</title>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+
+    <router-link>你好</router-link>
+  </div>
 
   <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.47/vue.global.js"></script>
   <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/4.1.6/vue-router.global.js"></script>
@@ -19,7 +22,7 @@
       routes: [
         {
           name: 'Home',
-          paht: '/',
+          path: '/',
           component: () => Vue.h('div', { style: {color: '#ff0000'}}, 'Hello')
         }
       ]
@@ -32,12 +35,16 @@
           class: 'root'
         }, [
           'Today',
-          // Vue.h(VueRouter.RouterView, '???')
+          Vue.h(VueRouter.RouterLink, {
+            to: '/'
+          }, '你好')
         ])
       }
     })
+    app.use(router)
 
     app.mount('#app')
+
   </script>
 </body>
 </html>
