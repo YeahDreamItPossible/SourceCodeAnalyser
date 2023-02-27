@@ -349,6 +349,7 @@ function baseCreateRenderer(
     insertStaticContent: hostInsertStaticContent
   } = options
 
+  // NOTE: n1 旧vnode n2 新vnode
   // Note: functions inside this closure should use `const xxx = () => {}`
   // style in order to prevent being inlined by minifiers.
   const patch: PatchFn = (
@@ -1150,6 +1151,7 @@ function baseCreateRenderer(
     }
   }
 
+  // NOTE: 解析组件
   const processComponent = (
     n1: VNode | null,
     n2: VNode,
@@ -2327,10 +2329,12 @@ function baseCreateRenderer(
 
   const render: RootRenderFunction = (vnode, container, isSVG) => {
     if (vnode == null) {
+      // NOTE: 没有新的vnode 且 容器的_vnode 存在 则销毁容器
       if (container._vnode) {
         unmount(container._vnode, null, null, true)
       }
     } else {
+      // NOTE: 更新 or 挂载
       patch(container._vnode || null, vnode, container, null, null, null, isSVG)
     }
     flushPostFlushCbs()

@@ -40,7 +40,6 @@ let renderer: Renderer<Element | ShadowRoot> | HydrationRenderer
 let enabledHydration = false
 
 // NOTE:
-// 
 function ensureRenderer() {
   return (
     renderer ||
@@ -75,7 +74,7 @@ export const createApp = ((...args) => {
 
   // NOTE: 
   // 增强 mount 方法
-  // 一是为了正常化参数 二是render函数 三是为了对容器的元素进行处理
+  // 一是为了正常化参数 二是获取render函数 三是为了对容器的元素进行处理
   const { mount } = app
   app.mount = (containerOrSelector: Element | ShadowRoot | string): any => {
     const container = normalizeContainer(containerOrSelector)
@@ -103,6 +102,7 @@ export const createApp = ((...args) => {
       }
     }
 
+    // NOTE: 移除容器内之前的内容
     // clear content before mounting
     container.innerHTML = ''
     const proxy = mount(container, false, container instanceof SVGElement)

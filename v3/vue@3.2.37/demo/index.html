@@ -5,63 +5,81 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <style>
+    .app {
+      width: 400px;
+    }
+    .el-input {
+      width: 100%;
+      line-height: 40px;
+    }
+    .el-button {
+      display: inline-block;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      
+    }
+  </style>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app" class="app">
+  </div>
+  <div id="my"></div>
 
   <script crossorigin="anonymous" integrity="sha512-STHUuG39htplTKlnh6tN5YnZY7r9KNvttl+hoow7kWD/q/VgssYIBQ/llXSI/Yy5SyR5m5C8FrVx8FUmzYdB1Q==" src="https://lib.baomitu.com/vue/3.2.27/vue.global.js"></script>
   
   <script>
-    const app = Vue.createApp({
-      setup () {
-        console.log('setup')
-        const user = Vue.ref({
-          name: 'Lee'
-        })
-        return { user }
-      },
+    const {
+      h,
+      ref,
+      computed,
+      reactive,
+      nextTick,
+      effectScope,
+      defineProps,
+      defineEmits,
+      createApp
+    } = Vue
+  </script>
 
-      beforeCreate () {
-        console.log('beforeCreate')
-      },
-
-      created () {
-        console.log('created')
-      },
-
-      beforeMount () {
-        console.log('beforeMount')
-      },
-
-      mounted () {
-        console.log('mounted')
-      },
-
-      render () {
-        return Vue.h('div', {
-          style: {
-            color: '#ff0000'
+  <script>
+    function ElInput (props, {emit, attr, slots}) {
+      return h('div', {
+        class: 'el-input-container'
+      }, [
+        h('input', {
+          class: 'el-input',
+          value: props.title,
+          onClick (e) {
+            emit('update:title', e.target.value)
           }
-        }, [`Hello ${this.user.name}`])
+        })
+      ])
+    }
+
+  </script>
+
+  <script>
+
+    const app = createApp({
+      setup () {
+        console.log(Vue.resolveDirective('v-bind'))
+        return () => h(ElInput, {
+          class: 'input',
+          onVnodeBeforeMount () {
+            console.log('onVnodeBeforeMount')
+          }
+        })
       }
     })
 
+    debugger
     app.mount('#app')
 
-    const user = Vue.reactive({name: 'Lee'})
-
-    const scope = Vue.effectScope()
-
-    const stop = scope.run(() => {
-      console.log(22, user.name)
-      console.log(Vue.getCurrentScope())
-    })
-
-    setTimeout(() => {
-      user.name = 'Wang'
-    }, 100)
-
-    
+    // console.log(Vue.render(Vue.h('div', {style: {color: '#ff0000'}}, 'Hello World~'),'#my'))
 
   </script>
 </body>

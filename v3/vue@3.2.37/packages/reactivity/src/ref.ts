@@ -105,6 +105,7 @@ class RefImpl<T> {
 
   constructor(value: T, public readonly __v_isShallow: boolean) {
     this._rawValue = __v_isShallow ? value : toRaw(value)
+    // NOTE: 如果该值是对象 且非shallow 时 将调用 reactive
     this._value = __v_isShallow ? value : toReactive(value)
   }
 

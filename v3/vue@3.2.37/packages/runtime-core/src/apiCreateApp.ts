@@ -145,6 +145,7 @@ export type Plugin =
       install: PluginInstallFunction
     }
 
+// NOTE: app context 被整个应用继承
 export function createAppContext(): AppContext {
   return {
     app: null as any,
@@ -312,6 +313,8 @@ export function createAppAPI<HostElement>(
             rootComponent as ConcreteComponent,
             rootProps
           )
+          
+          // NOTE: vnode的appContext 是指整个应用上下文
           // store app context on the root VNode.
           // this will be set on the root instance on initial mount.
           vnode.appContext = context

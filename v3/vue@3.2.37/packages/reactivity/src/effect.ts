@@ -55,6 +55,7 @@ export class ReactiveEffect<T = any> {
   deps: Dep[] = []
   parent: ReactiveEffect | undefined = undefined
 
+  // NOTE: 标记 计算属性 的effect
   /**
    * Can be attached after creation
    * @internal
@@ -350,6 +351,8 @@ export function triggerEffects(
 ) {
   // spread into array for stabilization
   const effects = isArray(dep) ? dep : [...dep]
+  
+  // TODO: 这里优先计算属性的effect
   for (const effect of effects) {
     if (effect.computed) {
       triggerEffect(effect, debuggerEventExtraInfo)

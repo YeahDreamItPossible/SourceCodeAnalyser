@@ -160,6 +160,7 @@ export function watch<T = any, Immediate extends Readonly<boolean> = false>(
   cb: any,
   options?: WatchOptions<Immediate>
 ): WatchStopHandle {
+  // NOTE: api 参数警告
   if (__DEV__ && !isFunction(cb)) {
     warn(
       `\`watch(fn, options?)\` signature has been moved to a separate API. ` +

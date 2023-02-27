@@ -412,6 +412,7 @@ function createBaseVNode(
   needFullChildrenNormalization = false
 ) {
   const vnode = {
+    // NOTE: vnode 标识
     __v_isVNode: true,
     __v_skip: true,
     type,

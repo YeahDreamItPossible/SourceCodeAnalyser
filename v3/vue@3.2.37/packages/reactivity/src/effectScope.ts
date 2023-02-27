@@ -8,25 +8,34 @@ export class EffectScope {
    * @internal
    */
   active = true
+
+  // NOTE: effects
   /**
    * @internal
    */
   effects: ReactiveEffect[] = []
+
+  // NOTE: 任务队列
   /**
    * @internal
    */
   cleanups: (() => void)[] = []
 
+  // NOTE: 允许层级嵌套
   /**
    * only assigned by undetached scope
    * @internal
    */
   parent: EffectScope | undefined
+
+  // NOTE:
   /**
    * record undetached scopes
    * @internal
    */
   scopes: EffectScope[] | undefined
+
+  // NOTE: 当前scope 在数组中的索引
   /**
    * track a child scope's index in its parent's scopes array for optimized
    * removal
@@ -46,6 +55,7 @@ export class EffectScope {
 
   run<T>(fn: () => T): T | undefined {
     if (this.active) {
+      // NOTE: 动态绑定上下文
       const currentEffectScope = activeEffectScope
       try {
         activeEffectScope = this
@@ -58,6 +68,7 @@ export class EffectScope {
     }
   }
 
+  // NOTE: 动态绑定上下文
   /**
    * This should only be called on non-detached scopes
    * @internal
@@ -66,6 +77,7 @@ export class EffectScope {
     activeEffectScope = this
   }
 
+  // NOTE: 动态绑定上下文
   /**
    * This should only be called on non-detached scopes
    * @internal
