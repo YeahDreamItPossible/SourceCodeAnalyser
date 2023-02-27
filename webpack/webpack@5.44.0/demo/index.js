@@ -15,7 +15,11 @@ const compiler = webpack({
 		// filename: 'dist.js'
 	},
 	plugins: [
-		new MyPlugin({name: 'MyPlugin'})
+		new MyPlugin({name: 'MyPlugin'}),
+
+		new webpack.BannerPlugin({
+			banner: 'Hello World~'
+		})
 	],
 	module: {
 		rules: [
