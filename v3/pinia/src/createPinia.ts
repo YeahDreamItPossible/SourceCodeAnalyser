@@ -47,10 +47,16 @@ export function createPinia(): Pinia {
     },
 
     _p,
+
+    // NOTE: 根应用
     // it's actually undefined here
     // @ts-expect-error
     _a: null,
+
+    // NOTE:
     _e: scope,
+
+    // NOTE: 子store Map<id, Store>
     _s: new Map<string, StoreGeneric>(),
     state,
   })

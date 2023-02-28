@@ -74,6 +74,8 @@
   },
   "dependencies": {
     "@vue/devtools-api": "^6.5.0",
+    "rimraf": "^4.1.2",
+    "rollup": "^3.17.3",
     "vue-demi": "*"
   },
   "peerDependencies": {
