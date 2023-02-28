@@ -17,16 +17,20 @@
  * flags are handled during diff.
  */
 export const enum PatchFlags {
+
+  // NOTE: 动态文本
   /**
    * Indicates an element with dynamic textContent (children fast path)
    */
   TEXT = 1,
 
+  // NOTE: 动态类名
   /**
    * Indicates an element with dynamic class binding.
    */
   CLASS = 1 << 1,
 
+  // NOTE: 动态样式
   /**
    * Indicates an element with dynamic style
    * The compiler pre-compiles static string styles into static objects

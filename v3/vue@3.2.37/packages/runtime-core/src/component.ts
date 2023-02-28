@@ -472,7 +472,7 @@ export function createComponentInstance(
 
   // NOTE: 组件实例
   const instance: ComponentInternalInstance = {
-    // NOTE: 根组件的uid 一定是0
+    // NOTE: 理论上根组件的uid 一定是0
     uid: uid++,
     vnode,
     type,
@@ -778,6 +778,8 @@ export function registerRuntimeCompiler(_compile: any) {
 // dev only
 export const isRuntimeOnly = () => !compile
 
+
+// NOTE: 1. 绑定render函数(setup) 2. 对用户options进行加工处理
 export function finishComponentSetup(
   instance: ComponentInternalInstance,
   isSSR: boolean,

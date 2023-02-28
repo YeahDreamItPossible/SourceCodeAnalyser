@@ -203,7 +203,7 @@ export function createAppAPI<HostElement>(
     const app: App = (context.app = {
       _uid: uid++,
 
-      // NOTE: 当前根组件
+      // NOTE: 用户传入的参数
       _component: rootComponent as ConcreteComponent,
       
       _props: rootProps,

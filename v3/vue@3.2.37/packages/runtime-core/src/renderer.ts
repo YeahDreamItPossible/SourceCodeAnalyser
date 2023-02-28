@@ -367,6 +367,7 @@ function baseCreateRenderer(
       return
     }
 
+    // NOTE: 旧vnode存在 但是 新vnode与旧vnode不一致 说明整棵树已变化(卸载旧树)
     // patching & not same type, unmount old tree
     if (n1 && !isSameVNodeType(n1, n2)) {
       anchor = getNextHostNode(n1)
@@ -382,9 +383,11 @@ function baseCreateRenderer(
     const { type, ref, shapeFlag } = n2
     switch (type) {
       case Text:
+        // NOTE: 文本节点
         processText(n1, n2, container, anchor)
         break
       case Comment:
+        // NOTE: 注释节点
         processCommentNode(n1, n2, container, anchor)
         break
       case Static:
@@ -1300,7 +1303,7 @@ function baseCreateRenderer(
     }
   }
 
-  // TODO: 这个地方很关键 需要好好看看
+  // TODO: 启动渲染副作用(这个地方很关键 需要好好看看)
   const setupRenderEffect: SetupRenderEffectFn = (
     instance,
     initialVNode,
@@ -2329,7 +2332,7 @@ function baseCreateRenderer(
 
   const render: RootRenderFunction = (vnode, container, isSVG) => {
     if (vnode == null) {
-      // NOTE: 没有新的vnode 且 容器的_vnode 存在 则销毁容器
+      // NOTE: 没有新的vnode 且 容器的_vnode 存在 则卸载
       if (container._vnode) {
         unmount(container._vnode, null, null, true)
       }

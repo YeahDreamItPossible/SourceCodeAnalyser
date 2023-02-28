@@ -20,7 +20,9 @@
       padding: 10px 20px;
       border-radius: 4px;
       cursor: pointer;
-      
+    }
+    .red {
+      color: #ff0000;
     }
   </style>
 </head>
@@ -30,7 +32,11 @@
   <div id="my"></div>
 
   <script crossorigin="anonymous" integrity="sha512-STHUuG39htplTKlnh6tN5YnZY7r9KNvttl+hoow7kWD/q/VgssYIBQ/llXSI/Yy5SyR5m5C8FrVx8FUmzYdB1Q==" src="https://lib.baomitu.com/vue/3.2.27/vue.global.js"></script>
-  
+  <script>
+    const VueDemi = Vue
+  </script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/pinia/2.0.32/pinia.iife.js"></script>
+
   <script>
     const {
       h,
@@ -41,7 +47,8 @@
       effectScope,
       defineProps,
       defineEmits,
-      createApp
+      createApp,
+      defineComponent
     } = Vue
   </script>
 
@@ -60,25 +67,88 @@
       ])
     }
 
-  </script>
+    const ElText = defineComponent({
+      name: 'ElText',
 
-  <script>
+      setup (props, ctx) {
+        const userStore = useUserStore()
 
-    const app = createApp({
-      setup () {
-        console.log(Vue.resolveDirective('v-bind'))
-        return () => h(ElInput, {
-          class: 'input',
-          onVnodeBeforeMount () {
-            console.log('onVnodeBeforeMount')
+        let reversedTitle = computed({
+          get: () => {
+            return userStore.title.split('').reverse().join('').toUpperCase()
           }
         })
+
+        return () => h('div', {
+          class: 'el-text'
+        }, [
+          h('div', {
+            class: 'red'
+          }, ['标题: ', userStore.title]),
+          h('div', ['反转后的标题: ', reversedTitle.value])
+        ])
       }
     })
 
-    debugger
+    const Container = defineComponent({
+      name: 'Container',
+
+      beforeMount () {
+      },
+
+      render () {
+        const userStore = useUserStore()
+        return h('div', {
+          class: 'container'
+        },[
+          h(ElInput, {
+            class: 'input',
+            onVnodeBeforeMount () {
+              console.log('onVnodeBeforeMount')
+            },
+            onInput (e) {
+              userStore.updateTitle(e.target.value)
+            }
+          }),
+          h(ElText)
+        ])
+      }
+    })
+  </script>
+
+  <script>
+    const app = createApp({
+      setup () {
+        return () => h(Container)
+      }
+    })
+
+    const store = Pinia.createPinia()
+
+    app.use(store)
+
+    const useUserStore = Pinia.defineStore('user',{
+      state () {
+        return {
+          title: 'Title'
+        }
+      },
+
+      actions: {
+        updateTitle (title) {
+          this.title = title
+        }
+      }
+    })
+
+    app.component('ElInput', ElInput)
+    app.component('ElText', ElText)
+
     app.mount('#app')
 
+  </script>
+
+  <script>
     // console.log(Vue.render(Vue.h('div', {style: {color: '#ff0000'}}, 'Hello World~'),'#my'))
 
   </script>

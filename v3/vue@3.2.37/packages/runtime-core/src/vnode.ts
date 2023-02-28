@@ -554,6 +554,7 @@ function _createVNode(
     }
   }
 
+  // NOTE: 标识 vnode 类型shapeFlag
   // encode the vnode type information into a bitmap
   const shapeFlag = isString(type)
     ? ShapeFlags.ELEMENT
@@ -741,6 +742,8 @@ export function cloneIfMounted(child: VNode): VNode {
   return child.el === null || child.memo ? child : cloneVNode(child)
 }
 
+// TODO:
+// 这里为什么重新标记 vnode shapeFlag 暂时没看懂
 export function normalizeChildren(vnode: VNode, children: unknown) {
   let type = 0
   const { shapeFlag } = vnode
