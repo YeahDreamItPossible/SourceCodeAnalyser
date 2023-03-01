@@ -761,7 +761,8 @@ export function applyOptions(instance: ComponentInternalInstance) {
     }
   }
 
-  // TODO: 暂时未看懂这个地方
+  // NOTE: 
+  // 向instance的钩子中注入回掉函数(如 bc c)
   registerLifecycleHook(onBeforeMount, beforeMount)
   registerLifecycleHook(onMounted, mounted)
   registerLifecycleHook(onBeforeUpdate, beforeUpdate)

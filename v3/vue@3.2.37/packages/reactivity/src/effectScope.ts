@@ -3,6 +3,7 @@ import { warn } from './warning'
 
 let activeEffectScope: EffectScope | undefined
 
+// NOTE: 副作用作用域
 export class EffectScope {
   /**
    * @internal
@@ -28,7 +29,7 @@ export class EffectScope {
    */
   parent: EffectScope | undefined
 
-  // NOTE:
+  // NOTE: 子级scope
   /**
    * record undetached scopes
    * @internal
@@ -44,6 +45,7 @@ export class EffectScope {
   private index: number | undefined
 
   constructor(detached = false) {
+    // NOTE: detached 是绑定嵌套关联的
     if (!detached && activeEffectScope) {
       this.parent = activeEffectScope
       this.index =
@@ -55,7 +57,9 @@ export class EffectScope {
 
   run<T>(fn: () => T): T | undefined {
     if (this.active) {
-      // NOTE: 动态绑定上下文
+      // NOTE: 
+      // 动态绑定上下文
+      // 用于嵌套scoped中
       const currentEffectScope = activeEffectScope
       try {
         activeEffectScope = this
@@ -95,11 +99,14 @@ export class EffectScope {
       for (i = 0, l = this.cleanups.length; i < l; i++) {
         this.cleanups[i]()
       }
+      // NOTE: 清除子级scope
       if (this.scopes) {
         for (i = 0, l = this.scopes.length; i < l; i++) {
           this.scopes[i].stop(true)
         }
       }
+      
+      // NOTE: 父scope中清除当前scope
       // nested scope, dereference from parent to avoid memory leaks
       if (this.parent && !fromParent) {
         // optimized O(1) removal

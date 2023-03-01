@@ -26,7 +26,11 @@ export function createPinia(): Pinia {
       setActivePinia(pinia)
       if (!isVue2) {
         pinia._a = app
+
+        // NOTE: 注入应用
         app.provide(piniaSymbol, pinia)
+
+        // NOTE: 应用绑定
         app.config.globalProperties.$pinia = pinia
         /* istanbul ignore else */
         if (USE_DEVTOOLS) {
@@ -46,6 +50,7 @@ export function createPinia(): Pinia {
       return this
     },
 
+    // NOTE: 插件
     _p,
 
     // NOTE: 根应用
@@ -58,6 +63,8 @@ export function createPinia(): Pinia {
 
     // NOTE: 子store Map<id, Store>
     _s: new Map<string, StoreGeneric>(),
+
+    // NOTE: 全局state
     state,
   })
 

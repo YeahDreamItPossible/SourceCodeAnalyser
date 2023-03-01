@@ -779,7 +779,9 @@ export function registerRuntimeCompiler(_compile: any) {
 export const isRuntimeOnly = () => !compile
 
 
-// NOTE: 1. 绑定render函数(setup) 2. 对用户options进行加工处理
+// NOTE: 
+// 1. 绑定render函数(setup, template, render) 
+// 2. 对用户options进行加工处理
 export function finishComponentSetup(
   instance: ComponentInternalInstance,
   isSSR: boolean,
