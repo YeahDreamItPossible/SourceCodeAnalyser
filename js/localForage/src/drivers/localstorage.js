@@ -83,9 +83,7 @@ function clear(callback) {
 	return promise;
 }
 
-// Retrieve an item from the store. Unlike the original async_storage
-// library in Gaia, we don't modify return values at all. If a key's value
-// is `undefined`, we pass that value to the callback function.
+// NOTE: 异步获取
 function getItem(key, callback) {
 	var self = this;
 

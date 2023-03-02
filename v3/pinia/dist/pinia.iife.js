@@ -213,30 +213,17 @@ var Pinia = (function (exports, vueDemi) {
       typeof o.toJSON !== "function"
     );
   }
-  // type DeepReadonly<T> = { readonly [P in keyof T]: DeepReadonly<T[P]> }
-  // TODO: can we change these to numbers?
-  // mutation type(突变类型)
+  
+  // mutation type enum(突变类型枚举)
   exports.MutationType = void 0;
   (function (MutationType) {
-    /**
-     * Direct mutation of the state:
-     *
-     * - `store.name = 'new name'`
-     * - `store.$state.name = 'new name'`
-     * - `store.list.push('new item')`
-     */
+    // 标识：直接通过state[key] = value 的方式修改状态
     MutationType["direct"] = "direct";
-    /**
-     * Mutated the state with `$patch` and an object
-     *
-     * - `store.$patch({ name: 'newName' })`
-     */
+    
+    // 标识: 通过对象($patch({ ... }))的方式修改状态
     MutationType["patchObject"] = "patch object";
-    /**
-     * Mutated the state with `$patch` and a function
-     *
-     * - `store.$patch(state => state.name = 'newName')`
-     */
+    
+    // 标识: 通过函数($patch(state => state[key] = value))的方式修改状态
     MutationType["patchFunction"] = "patch function";
     // maybe reset? for $state = {} and $reset
   })(exports.MutationType || (exports.MutationType = {}));
@@ -1481,9 +1468,12 @@ var Pinia = (function (exports, vueDemi) {
       );
     }
     store = createSetupStore(id, setup, options, pinia, hot, true);
+    
+    // 实现setup类型substore的$reset方法 实现状态重置
     store.$reset = function $reset() {
       const newState = state ? state() : {};
-      // we use a patch to group all changes into one single subscription
+      // 这里之所以使用函数入参方式 主要是能批量重置所有状态的key
+      // 如果使用对象入参方式的话 也是可以的
       this.$patch(($state) => {
         assign($state, newState);
       });
@@ -1830,9 +1820,8 @@ var Pinia = (function (exports, vueDemi) {
       // Make `storeToRefs()` work with `reactive()` #799
       assign(vueDemi.toRaw(store), setupStore);
     }
-    // use this instead of a computed with setter to be able to create it anywhere
-    // without linking the computed lifespan to wherever the store is first
-    // created.
+    
+    // $state 我觉得纯粹是为了兼容vuex的用法(暂时没看出特殊之处)
     Object.defineProperty(store, "$state", {
       get: () => (hot ? hotState.value : pinia.state.value[$id]),
       set: (state) => {
@@ -2135,30 +2124,23 @@ var Pinia = (function (exports, vueDemi) {
       return reduced;
     }, {});
   }
-  /**
-   * Allows using state and getters from one store without using the composition
-   * API (`setup()`) by generating an object to be spread in the `computed` field
-   * of a component.
-   *
-   * @param useStore - store to map from
-   * @param keysOrMapper - array or object
-   */
-  // 
+  
+  // 辅助函数: 将substore中的state选择性映射到组件的state中
+  // 第一个参数是 useStore 不是substore
+  // 第二个参数是 Array || Object
   function mapState(useStore, keysOrMapper) {
     return Array.isArray(keysOrMapper)
       ? keysOrMapper.reduce((reduced, key) => {
           reduced[key] = function () {
+            // 这里的this是vue组件实例
             return useStore(this.$pinia)[key];
           };
           return reduced;
         }, {})
       : Object.keys(keysOrMapper).reduce((reduced, key) => {
-          // @ts-expect-error
           reduced[key] = function () {
             const store = useStore(this.$pinia);
             const storeKey = keysOrMapper[key];
-            // for some reason TS is unable to infer the type of storeKey to be a
-            // function
             return typeof storeKey === "function"
               ? storeKey.call(this, store)
               : store[storeKey];
@@ -2166,30 +2148,23 @@ var Pinia = (function (exports, vueDemi) {
           return reduced;
         }, {});
   }
-  /**
-   * Alias for `mapState()`. You should use `mapState()` instead.
-   * @deprecated use `mapState()` instead.
-   */
+ 
+  // 辅助函数:  将substore中的getter选择性映射到组件的getter中
+  // 作用同mapState
   const mapGetters = mapState;
-  /**
-   * Allows directly using actions from your store without using the composition
-   * API (`setup()`) by generating an object to be spread in the `methods` field
-   * of a component.
-   *
-   * @param useStore - store to map from
-   * @param keysOrMapper - array or object
-   */
+  
+  // 辅助函数:  将substore中的action选择性映射到组件的methods中
+  // 第一个参数是 useStore 不是substore
+  // 第二个参数是 Array || Object
   function mapActions(useStore, keysOrMapper) {
     return Array.isArray(keysOrMapper)
       ? keysOrMapper.reduce((reduced, key) => {
-          // @ts-expect-error
           reduced[key] = function (...args) {
             return useStore(this.$pinia)[key](...args);
           };
           return reduced;
         }, {})
       : Object.keys(keysOrMapper).reduce((reduced, key) => {
-          // @ts-expect-error
           reduced[key] = function (...args) {
             return useStore(this.$pinia)[keysOrMapper[key]](...args);
           };

@@ -2812,5 +2812,8 @@ var localforage_js = new LocalForage();
 
 module.exports = localforage_js;
 
+console.log(11, DefaultDrivers)
+console.log(22, DefaultDriverOrder)
+
 },{"3":3}]},{},[4])(4)
 });

@@ -171,6 +171,7 @@ class LocalForage {
           return;
         }
 
+        // NOTE: 动态绑定特定方法到driver
         const driverMethods = LibraryMethods.concat('_initStorage');
         for (let i = 0, len = driverMethods.length; i < len; i++) {
           const driverMethodName = driverMethods[i];
@@ -189,7 +190,6 @@ class LocalForage {
             return;
           }
         }
-
         const configureMissingMethods = function () {
           const methodNotImplementedFactory = function (methodName) {
             return function () {
@@ -220,7 +220,6 @@ class LocalForage {
             }
           }
         };
-
         configureMissingMethods();
 
         const setDriverSupport = function (support) {
@@ -351,6 +350,7 @@ class LocalForage {
         ? this._driverSet.catch(() => Promise.resolve())
         : Promise.resolve();
 
+    // NOTE: 设置支持的默认driver
     this._driverSet = oldDriverSetDone
       .then(() => {
         const driverName = supportedDrivers[0];
