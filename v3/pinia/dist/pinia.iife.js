@@ -1,29 +1,32 @@
-/*!
- * pinia v2.0.32
- * (c) 2023 Eduardo San Martin Morote
- * @license MIT
+// 逐行阅读源码
+
+/**
+ * 注释中的名词解释
+ * root store       =>   根状态应用(通过createPinia创建, 一个vue应用中只能有一个根状态应用)
+ * substore         =>   子状态应用(通过defineStore创建,可以有多个,可以共享某个state、getter、action)
+ * options substore =>   选项型子状态应用(通过defineStore创建, 参数是对象）
+ * setup substore   =>   启动型子状态应用(通过defineStore创建, 参数是setup函数）
+ * root state       =>   根状态(根状态应用中的状态)
+ * substate         =>   子状态(根状态应用中的状态)
  */
+
 var Pinia = (function (exports, vueDemi) {
   "use strict";
 
-  /**
-   * setActivePinia must be called to handle SSR at the top of functions like
-   * `fetch`, `setup`, `serverPrefetch` and others
-   */
+  // 当前正在使用的root store
   let activePinia;
-  /**
-   * Sets or unsets the active pinia. Used in SSR and internally when calling
-   * actions and getters
-   *
-   * @param pinia - Pinia instance
-   */
+
+  // 手动设置 当前激活的root store
+  // 优点: 使用函数的方式而不是通过直接修改 便于追踪
   const setActivePinia = (pinia) => (activePinia = pinia);
-  /**
-   * Get the currently active pinia if there is any.
-   */
+
+  // 获取当前激活的root store
+  // 可以通过注入的方式 或者 直接获取当前使用的root store
   const getActivePinia = () =>
     (vueDemi.getCurrentInstance() && vueDemi.inject(piniaSymbol)) ||
     activePinia;
+
+  // 标识: 便于全局提供 注入
   const piniaSymbol = Symbol("pinia");
 
   function getDevtoolsGlobalHook() {
@@ -37,6 +40,7 @@ var Pinia = (function (exports, vueDemi) {
       ? global
       : {};
   }
+
   const isProxyAvailable = typeof Proxy === "function";
 
   const HOOK_SETUP = "devtools-plugin:setup";
@@ -211,9 +215,7 @@ var Pinia = (function (exports, vueDemi) {
   }
   // type DeepReadonly<T> = { readonly [P in keyof T]: DeepReadonly<T[P]> }
   // TODO: can we change these to numbers?
-  /**
-   * Possible types for SubscriptionCallback
-   */
+  // mutation type(突变类型)
   exports.MutationType = void 0;
   (function (MutationType) {
     /**
@@ -240,12 +242,6 @@ var Pinia = (function (exports, vueDemi) {
   })(exports.MutationType || (exports.MutationType = {}));
 
   const IS_CLIENT = typeof window !== "undefined";
-  /**
-   * Should we add the devtools plugins.
-   * - only if dev mode or forced through the prod devtools flag
-   * - not in test
-   * - only if window exists (could change in the future)
-   */
   const USE_DEVTOOLS = IS_CLIENT;
 
   /*
@@ -1185,27 +1181,33 @@ var Pinia = (function (exports, vueDemi) {
     );
   }
 
-  /**
-   * Creates a Pinia instance to be used by the application
-   */
+  // 创建root store实例
   function createPinia() {
+    // 独立顶级作用域
     const scope = vueDemi.effectScope(true);
-    // NOTE: here we could check the window object for a state and directly set it
-    // if there is anything like it with Vue 3 SSR
+
+    // root state
     const state = scope.run(() => vueDemi.ref({}));
+
+    // 插件集合
     let _p = [];
-    // plugins added before calling app.use(pinia)
+
+    // 插件集合
+    // 与_p区别: 防止用户在app.use(store)前 store.use(插件)
     let toBeInstalled = [];
     const pinia = vueDemi.markRaw({
       install(app) {
-        // this allows calling useStore() outside of a component setup after
-        // installing pinia's plugin
         setActivePinia(pinia);
         if (!vueDemi.isVue2) {
+          // root 
           pinia._a = app;
+
+          // 根应用全局提供 pinia
           app.provide(piniaSymbol, pinia);
+
+          // 根应用 绑定全局变量$pinia
           app.config.globalProperties.$pinia = pinia;
-          /* istanbul ignore else */
+
           if (USE_DEVTOOLS) {
             registerPiniaDevtools(app, pinia);
           }
@@ -1213,6 +1215,8 @@ var Pinia = (function (exports, vueDemi) {
           toBeInstalled = [];
         }
       },
+
+      // 使用插件
       use(plugin) {
         if (!this._a && !vueDemi.isVue2) {
           toBeInstalled.push(plugin);
@@ -1221,16 +1225,23 @@ var Pinia = (function (exports, vueDemi) {
         }
         return this;
       },
+
+      // 插件集合
       _p,
-      // it's actually undefined here
-      // @ts-expect-error
+      
+      // vue 根应用
       _a: null,
+
+      // 顶级作用域
       _e: scope,
+
+      // substore Map<id, substore>
       _s: new Map(),
+
+      // root state
       state,
     });
-    // pinia devtools rely on dev only features so they cannot be forced unless
-    // the dev build of Vue is used. Avoid old browsers like IE11.
+    
     if (USE_DEVTOOLS && typeof Proxy !== "undefined") {
       pinia.use(devtoolsPlugin);
     }
@@ -1421,6 +1432,9 @@ var Pinia = (function (exports, vueDemi) {
   function isComputed(o) {
     return !!(vueDemi.isRef(o) && o.effect);
   }
+
+  // 创建 options substore实例
+  // createSetupStore的语法糖 包装了setup函数 并重写了substore的$reset函数
   function createOptionsStore(id, options, pinia, hot) {
     const { state, actions, getters } = options;
     const initialState = pinia.state.value[id];
@@ -1476,6 +1490,8 @@ var Pinia = (function (exports, vueDemi) {
     };
     return store;
   }
+  
+  // 创建 setup substore实例
   function createSetupStore(
     $id,
     setup,
@@ -1486,15 +1502,18 @@ var Pinia = (function (exports, vueDemi) {
   ) {
     let scope;
     const optionsForPlugin = assign({ actions: {} }, options);
-    /* istanbul ignore if */
+
+    // 当前root store已卸载
     if (!pinia._e.active) {
       throw new Error("Pinia destroyed");
     }
-    // watcher options for $subscribe
+
+    // mutation订阅选项
     const $subscribeOptions = {
       deep: true,
       // flush: 'post',
     };
+
     /* istanbul ignore else */
     if (!vueDemi.isVue2) {
       $subscribeOptions.onTrigger = (event) => {
@@ -1515,15 +1534,24 @@ var Pinia = (function (exports, vueDemi) {
         }
       };
     }
-    // internal state
+
+    // 标识: 当前subscribe正在执行中
     let isListening; // set to true at the end
+
     let isSyncListening; // set to true at the end
+
+    // mutation订阅队列
     let subscriptions = vueDemi.markRaw([]);
+
+    // action订阅队列
     let actionSubscriptions = vueDemi.markRaw([]);
+
     let debuggerEvents;
+
+    // root state中缓存的substore 的state
     const initialState = pinia.state.value[$id];
-    // avoid setting the state for option stores if it is set
-    // by the setup
+    
+    // 给root state中缓存的substore 的state 设置默认值(空对象)
     if (!isOptionsStore && !initialState && !hot) {
       /* istanbul ignore if */
       if (vueDemi.isVue2) {
@@ -1532,10 +1560,14 @@ var Pinia = (function (exports, vueDemi) {
         pinia.state.value[$id] = {};
       }
     }
+
     const hotState = vueDemi.ref({});
+
     // avoid triggering too many listeners
     // https://github.com/vuejs/pinia/issues/1129
+    // 当前正在执行的订阅任务(为了解决该链接的bug)
     let activeListener;
+
     function $patch(partialStateOrMutator) {
       let subscriptionMutation;
       isListening = isSyncListening = false;
@@ -1574,18 +1606,22 @@ var Pinia = (function (exports, vueDemi) {
         pinia.state.value[$id]
       );
     }
+
     /* istanbul ignore next */
     const $reset = () => {
       throw new Error(
         `🍍: Store "${$id}" is built using the setup syntax and does not implement $reset().`
       );
     };
+
+    // 销毁当前substore 并将该substore从root store中移除
     function $dispose() {
       scope.stop();
       subscriptions = [];
       actionSubscriptions = [];
       pinia._s.delete($id);
     }
+
     /**
      * Wraps an action to handle subscriptions.
      *
@@ -1593,6 +1629,7 @@ var Pinia = (function (exports, vueDemi) {
      * @param action - action to wrap
      * @returns a wrapped action to handle subscriptions
      */
+    // 非常有用
     function wrapAction(name, action) {
       return function () {
         setActivePinia(pinia);
@@ -1637,12 +1674,15 @@ var Pinia = (function (exports, vueDemi) {
         return ret;
       };
     }
+
+    // HMR相关 与业务无关 跳过
     const _hmrPayload = /*#__PURE__*/ vueDemi.markRaw({
       actions: {},
       getters: {},
       state: [],
       hotState,
     });
+
     const partialStore = {
       _p: pinia,
       // _s: scope,
@@ -1679,11 +1719,12 @@ var Pinia = (function (exports, vueDemi) {
       },
       $dispose,
     };
-    /* istanbul ignore if */
+
     if (vueDemi.isVue2) {
       // start as non ready
       partialStore._r = false;
     }
+
     const store = vueDemi.reactive(
       assign(
         {
@@ -1695,14 +1736,16 @@ var Pinia = (function (exports, vueDemi) {
         // setupStore
       )
     );
-    // store the partial store now so the setup of stores can instantiate each other before they are finished without
-    // creating infinite loops.
+
+    // root store缓存当前substore
     pinia._s.set($id, store);
+
     // TODO: idea create skipSerialize that marks properties as non serializable and they are skipped
     const setupStore = pinia._e.run(() => {
       scope = vueDemi.effectScope();
       return scope.run(() => setup());
     });
+
     // overwrite existing actions to support $onAction
     for (const key in setupStore) {
       const prop = setupStore[key];
@@ -1951,8 +1994,10 @@ var Pinia = (function (exports, vueDemi) {
     isSyncListening = true;
     return store;
   }
+
+  // 创建substore
+  // 入参: (id, options) || ({id, ...options}) || (id,fn, options)
   function defineStore(
-    // TODO: add proper types from above
     idOrOptions,
     setup,
     setupOptions
@@ -1962,18 +2007,19 @@ var Pinia = (function (exports, vueDemi) {
     const isSetupStore = typeof setup === "function";
     if (typeof idOrOptions === "string") {
       id = idOrOptions;
-      // the option store setup will contain the actual options in this case
       options = isSetupStore ? setupOptions : setup;
     } else {
       options = idOrOptions;
       id = idOrOptions.id;
     }
     function useStore(pinia, hot) {
+      // 获取当前运行的组件实例
       const currentInstance = vueDemi.getCurrentInstance();
-      pinia =
-        // in test mode, ignore the argument provided as we can always retrieve a
-        // pinia instance with getActivePinia()
-        pinia || (currentInstance && vueDemi.inject(piniaSymbol, null));
+
+      // 获取当前运行的root store
+      pinia = pinia || (currentInstance && vueDemi.inject(piniaSymbol, null));
+      
+      // 这里防止用户在根应用未使用root store的情况下 使用 substore
       if (pinia) setActivePinia(pinia);
       if (!activePinia) {
         throw new Error(
@@ -1984,8 +2030,14 @@ var Pinia = (function (exports, vueDemi) {
         );
       }
       pinia = activePinia;
+
+      // 缓存substore 防止重复构造
       if (!pinia._s.has(id)) {
-        // creating the store registers it in `pinia._s`
+        
+        // setup 类型不同调用不同的api
+        // 其实 option
+        // options类型 和 setup类型调用不同的api
+        // 但是实际上 options类型只是包装了一个setup函数 最终仍然调用setup的api
         if (isSetupStore) {
           createSetupStore(id, setup, options, pinia);
         } else {
@@ -1997,6 +2049,7 @@ var Pinia = (function (exports, vueDemi) {
           useStore._pinia = pinia;
         }
       }
+
       const store = pinia._s.get(id);
       if (hot) {
         const hotId = "__hot:" + id;
@@ -2090,6 +2143,7 @@ var Pinia = (function (exports, vueDemi) {
    * @param useStore - store to map from
    * @param keysOrMapper - array or object
    */
+  // 
   function mapState(useStore, keysOrMapper) {
     return Array.isArray(keysOrMapper)
       ? keysOrMapper.reduce((reduced, key) => {

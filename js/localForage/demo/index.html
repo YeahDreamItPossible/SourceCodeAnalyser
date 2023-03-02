@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="status"></div>
+  
+  <script src="../dist/localforage.js"></script>
+  <script>
+    // localforage.setItem('user2', {name: 'Lee', age: 18}).then(res => {
+    //   console.log(11, res)
+    // }).catch(err => console.log(2, err))
+
+    let db
+
+    const request = indexedDB.open('my')
+
+    request.onsuccess =(e) => {
+    }
+
+    request.onerror = (err) => {
+      console.log(err)
+    }
+
+    request.onupgradeneeded = e => {
+      console.log(e)
+      db = e.target.result
+
+      db.createObjectStore('user', { keyPath: 'myKey' })
+    }
+  </script>
+</body>
+</html>

@@ -260,8 +260,10 @@ function createSetupStore<
     }
   }
 
+  // NOTE: 保证 
   // internal state
   let isListening: boolean // set to true at the end
+
   let isSyncListening: boolean // set to true at the end
 
   // NOTE: mutation 监听队列
@@ -351,6 +353,7 @@ function createSetupStore<
     pinia._s.delete($id)
   }
 
+  // NOTE: 主要作用就是增强用户的action 实现拦截
   /**
    * Wraps an action to handle subscriptions.
    *
