@@ -6,10 +6,21 @@
 
 - redux@4.2.0
 
+- redux-thunk@2.3.0
+
 - vue@2.6.14
+
+- pinia@2.0.32
+
+- tapable@2.2.1
+
 
 ## 进行中的库
 
 - webpack@5.44.0()
 
-- 
+- vue@3.2.37
+
+- vue-router@4.1.6
+
+- localforage@1.10.0
