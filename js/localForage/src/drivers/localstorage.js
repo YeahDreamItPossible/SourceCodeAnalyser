@@ -87,6 +87,7 @@ function clear(callback) {
 function getItem(key, callback) {
 	var self = this;
 
+  // NOTE: 正常化key(底层调用String(Key))
 	key = normalizeKey(key);
 
 	var promise = self.ready().then(function () {

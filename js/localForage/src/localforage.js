@@ -8,26 +8,32 @@ import executeTwoCallbacks from './utils/executeTwoCallbacks';
 import includes from './utils/includes';
 import isArray from './utils/isArray';
 
+// NOTE: 已安装的驱动
 // Drivers are stored here when `defineDriver()` is called.
 // They are shared across all instances of localForage.
 const DefinedDrivers = {};
 
+// NOTE: 驱动支持Map<驱动, Boolean>
 const DriverSupport = {};
 
+// NOTE: 默认驱动列表
 const DefaultDrivers = {
   INDEXEDDB: idbDriver,
   WEBSQL: websqlDriver,
   LOCALSTORAGE: localstorageDriver
 };
 
+// NOTE: 排序后的驱动名
 const DefaultDriverOrder = [
   DefaultDrivers.INDEXEDDB._driver,
   DefaultDrivers.WEBSQL._driver,
   DefaultDrivers.LOCALSTORAGE._driver
 ];
 
+// NOTE: 该api 单独提取出来??
 const OptionalDriverMethods = ['dropInstance'];
 
+// NOTE: 驱动公有api
 const LibraryMethods = [
   'clear',
   'getItem',
@@ -39,6 +45,7 @@ const LibraryMethods = [
   'setItem'
 ].concat(OptionalDriverMethods);
 
+// NOTE: 驱动默认配置
 const DefaultConfig = {
   description: '',
   driver: DefaultDriverOrder.slice(),
@@ -50,6 +57,7 @@ const DefaultConfig = {
   version: 1.0
 };
 
+// NOTE: 将驱动公有api绑定到localforage实例上，并做了一层包装
 function callWhenReady(localForageInstance, libraryMethod) {
   localForageInstance[libraryMethod] = function () {
     const _args = arguments;
@@ -90,6 +98,7 @@ class LocalForage {
         const driverName = driver._driver;
         this[driverTypeKey] = driverName;
 
+        // NOTE: 防止多次使用构造函数 重复安装驱动
         if (!DefinedDrivers[driverName]) {
           // we don't need to wait for the promise,
           // since the default drivers can be defined
@@ -106,7 +115,10 @@ class LocalForage {
     this._ready = false;
     this._dbInfo = null;
 
+    // NOTE: 将驱动公有api绑定到localforage实例上
     this._wrapLibraryMethodsWithReady();
+
+    //
     this.setDriver(this._config.driver).catch(() => { });
   }
 
@@ -190,6 +202,8 @@ class LocalForage {
             return;
           }
         }
+
+        // NOTE: 配置缺失的方法
         const configureMissingMethods = function () {
           const methodNotImplementedFactory = function (methodName) {
             return function () {
@@ -261,6 +275,7 @@ class LocalForage {
     return this._driver || null;
   }
 
+  // NOTE: 根据驱动名获取驱动 并执行回调函数
   getDriver(driverName, callback, errorCallback) {
     const getDriverPromise = DefinedDrivers[driverName]
       ? Promise.resolve(DefinedDrivers[driverName])
@@ -270,6 +285,7 @@ class LocalForage {
     return getDriverPromise;
   }
 
+  // NOTE: 获取序列化
   getSerializer(callback) {
     const serializerPromise = Promise.resolve(serializer);
     executeTwoCallbacks(serializerPromise, callback);
@@ -291,6 +307,7 @@ class LocalForage {
     return promise;
   }
 
+  // NOTE: 设置默认驱动
   setDriver(drivers, callback, errorCallback) {
     const self = this;
 
@@ -298,6 +315,7 @@ class LocalForage {
       drivers = [drivers];
     }
 
+    // NOTE: 获取运行环境支持的驱动列表
     const supportedDrivers = this._getSupportedDrivers(drivers);
 
     function setDriverToConfig() {
@@ -353,14 +371,19 @@ class LocalForage {
     // NOTE: 设置支持的默认driver
     this._driverSet = oldDriverSetDone
       .then(() => {
+        // NOTE:
+        // 设置默认驱动 顺序是: asyncStorage(IndexedDB) => webSQLStorage(webSQL) => localStorageWrapper(localStorage)
         const driverName = supportedDrivers[0];
         self._dbInfo = null;
         self._ready = null;
 
         return self.getDriver(driverName).then(driver => {
           self._driver = driver._driver;
+
           setDriverToConfig();
+
           self._wrapLibraryMethodsWithReady();
+
           self._initDriver = initDriver(supportedDrivers);
         });
       })
@@ -375,6 +398,7 @@ class LocalForage {
     return this._driverSet;
   }
 
+  // NOTE: 获取当前运行环境是否支持该驱动
   supports(driverName) {
     return !!DriverSupport[driverName];
   }
@@ -383,6 +407,7 @@ class LocalForage {
     extend(this, libraryMethodsAndProperties);
   }
 
+  // NOTE: 获取运行环境支持的驱动列表
   _getSupportedDrivers(drivers) {
     const supportedDrivers = [];
     for (let i = 0, len = drivers.length; i < len; i++) {
