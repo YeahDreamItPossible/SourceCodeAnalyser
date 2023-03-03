@@ -184,6 +184,9 @@ export function defineComponent<
   >
 ): DefineComponent<PropsOptions, RawBindings, D, C, M, Mixin, Extends, E, EE>
 
+// NOTE: 
+// 定义组件
+// 可以是选项式组件 也可以是组合式组件
 // implementation, close to no-op
 export function defineComponent(options: unknown) {
   return isFunction(options) ? { setup: options, name: options.name } : options

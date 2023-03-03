@@ -48,7 +48,8 @@
       defineProps,
       defineEmits,
       createApp,
-      defineComponent
+      defineComponent,
+      defineAsyncComponent
     } = Vue
   </script>
 
@@ -110,9 +111,16 @@
               userStore.updateTitle(e.target.value)
             }
           }),
-          h(ElText)
+          h(ElText),
+          h(ElAsync)
         ])
       }
+    })
+
+    const ElAsync = defineAsyncComponent(() => {
+      return new Promise((resolve) => {
+        resolve(h('div', 'AyncComponent'))
+      })
     })
   </script>
 
@@ -143,6 +151,7 @@
 
     app.component('ElInput', ElInput)
     app.component('ElText', ElText)
+    app.component('ElAsync', ElAsync)
 
     app.mount('#app')
 

@@ -415,7 +415,7 @@ function createBaseVNode(
     // NOTE: vnode 标识
     __v_isVNode: true,
     __v_skip: true,
-    type,
+    type, // 类型 
     props,
     key: props && normalizeKey(props),
     ref: props && normalizeRef(props),
@@ -426,7 +426,7 @@ function createBaseVNode(
     suspense: null,
     ssContent: null,
     ssFallback: null,
-    dirs: null,
+    dirs: null, // 指令集合
     transition: null,
     el: null,
     anchor: null,

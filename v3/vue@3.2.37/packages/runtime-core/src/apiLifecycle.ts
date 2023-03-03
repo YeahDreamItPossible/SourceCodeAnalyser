@@ -14,6 +14,9 @@ import { DebuggerEvent, pauseTracking, resetTracking } from '@vue/reactivity'
 
 export { onActivated, onDeactivated } from './components/KeepAlive'
 
+// NOTE: 
+// 注入hook 是将组件实例的不同hook队列(优先队列)中添加回调
+// 对回调函数增强
 export function injectHook(
   type: LifecycleHooks,
   hook: Function & { __weh?: Function },
@@ -63,6 +66,7 @@ export function injectHook(
   }
 }
 
+// NOTE: 创建hook函数(通过柯里化的方式)
 export const createHook =
   <T extends Function = () => any>(lifecycle: LifecycleHooks) =>
   (hook: T, target: ComponentInternalInstance | null = currentInstance) =>

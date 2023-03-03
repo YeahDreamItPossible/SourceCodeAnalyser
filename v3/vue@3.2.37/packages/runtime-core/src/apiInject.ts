@@ -5,6 +5,9 @@ import { warn } from './warning'
 
 export interface InjectionKey<T> extends Symbol {}
 
+// NOTE: 
+// 提供的原理就是 向app根应用的privides添加键值对
+// 目前发现每个组件实例都有provides属性
 export function provide<T>(key: InjectionKey<T> | string | number, value: T) {
   if (!currentInstance) {
     if (__DEV__) {
@@ -38,6 +41,8 @@ export function inject<T>(
   defaultValue: T | (() => T),
   treatDefaultAsFactory: true
 ): T
+
+// NOTE: 注入 会优先读取app中的provides 其次是组件实例的provides
 export function inject(
   key: InjectionKey<any> | string,
   defaultValue?: unknown,

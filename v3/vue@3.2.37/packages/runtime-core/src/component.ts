@@ -489,6 +489,7 @@ export function createComponentInstance(
     exposed: null,
     exposeProxy: null,
     withProxy: null,
+    // NOTE: 每个组件实例中都有provides属性(与app应用的provides 浅复制)
     provides: parent ? parent.provides : Object.create(appContext.provides),
     accessCache: null!,
     renderCache: [],

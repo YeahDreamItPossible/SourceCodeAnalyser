@@ -77,6 +77,7 @@ export type DirectiveArguments = Array<
   | [Directive, any, string, DirectiveModifiers]
 >
 
+// NOTE: withDirecitves 是将用户自定义指令添加到vnode.dirs集合中
 /**
  * Adds directives to a VNode.
  */
