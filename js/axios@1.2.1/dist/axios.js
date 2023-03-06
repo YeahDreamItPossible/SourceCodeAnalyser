@@ -1,16 +1,17 @@
 // 逐行阅读源码
 
 /**
+ * 名词介绍
  * driver       =>      驱动
  *
  */
 
-// Axios v1.2.1 Copyright (c) 2022 Matt Zabriskie and contributors
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.axios = factory());
-})(this, (function () { 'use strict';
+    typeof define === 'function' && define.amd ? define(factory) :
+      (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.axios = factory());
+})(this, (function () {
+  'use strict';
 
   function _typeof(obj) {
     "@babel/helpers - typeof";
@@ -21,11 +22,15 @@
       return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
     }, _typeof(obj);
   }
+
+  // 在创建实例时 检查this 是否是当前构造函数的实例
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
+
+  // 对某个对象进行扩展(属性描述符)
   function _defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
@@ -35,14 +40,19 @@
       Object.defineProperty(target, descriptor.key, descriptor);
     }
   }
+
+  // 对构造函数进行扩展(属性、方法、静态属性、静态方法)
   function _createClass(Constructor, protoProps, staticProps) {
+    // 扩展属性和方法
     if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    // 扩展静态属性和静态方法
     if (staticProps) _defineProperties(Constructor, staticProps);
     Object.defineProperty(Constructor, "prototype", {
       writable: false
     });
     return Constructor;
   }
+
   function _slicedToArray(arr, i) {
     return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
   }
@@ -398,7 +408,7 @@
    * @returns {Object} Result of all merge properties
    */
   function /* obj1, obj2, obj3, ... */
-  merge() {
+    merge() {
     var _ref2 = isContextDefined(this) && this || {},
       caseless = _ref2.caseless;
     var result = {};
@@ -668,7 +678,7 @@
     isArray(arrayOrString) ? define(arrayOrString) : define(String(arrayOrString).split(delimiter));
     return obj;
   };
-  var noop = function noop() {};
+  var noop = function noop() { };
   var toFiniteNumber = function toFiniteNumber(value, defaultValue) {
     value = +value;
     return Number.isFinite(value) ? value : defaultValue;
@@ -794,7 +804,7 @@
   var prototype$1 = AxiosError.prototype;
   var descriptors = {};
   ['ERR_BAD_OPTION_VALUE', 'ERR_BAD_OPTION', 'ECONNABORTED', 'ETIMEDOUT', 'ERR_NETWORK', 'ERR_FR_TOO_MANY_REDIRECTS', 'ERR_DEPRECATED', 'ERR_BAD_RESPONSE', 'ERR_BAD_REQUEST', 'ERR_CANCELED', 'ERR_NOT_SUPPORT', 'ERR_INVALID_URL'
-  // eslint-disable-next-line func-names
+    // eslint-disable-next-line func-names
   ].forEach(function (code) {
     descriptors[code] = {
       value: code
@@ -976,8 +986,8 @@
           key = removeBrackets(key);
           arr.forEach(function each(el, index) {
             !(utils.isUndefined(el) || el === null) && formData.append(
-            // eslint-disable-next-line no-nested-ternary
-            indexes === true ? renderKey([key], index, dots) : indexes === null ? key : key + '[]', convertValue(el));
+              // eslint-disable-next-line no-nested-ternary
+              indexes === true ? renderKey([key], index, dots) : indexes === null ? key : key + '[]', convertValue(el));
           });
           return false;
         }
@@ -1107,80 +1117,64 @@
     return url;
   }
 
+  // 拦截器类
   var InterceptorManager = /*#__PURE__*/function () {
     function InterceptorManager() {
       _classCallCheck(this, InterceptorManager);
+      // 拦截队列(先进先出)
       this.handlers = [];
     }
 
-    /**
-     * Add a new interceptor to the stack
-     *
-     * @param {Function} fulfilled The function to handle `then` for a `Promise`
-     * @param {Function} rejected The function to handle `reject` for a `Promise`
-     *
-     * @return {Number} An ID used to remove interceptor later
-     */
-    _createClass(InterceptorManager, [{
-      key: "use",
-      value: function use(fulfilled, rejected, options) {
-        this.handlers.push({
-          fulfilled: fulfilled,
-          rejected: rejected,
-          synchronous: options ? options.synchronous : false,
-          runWhen: options ? options.runWhen : null
-        });
-        return this.handlers.length - 1;
-      }
-
-      /**
-       * Remove an interceptor from the stack
-       *
-       * @param {Number} id The ID that was returned by `use`
-       *
-       * @returns {Boolean} `true` if the interceptor was removed, `false` otherwise
-       */
-    }, {
-      key: "eject",
-      value: function eject(id) {
-        if (this.handlers[id]) {
-          this.handlers[id] = null;
+    
+    // 对InterceptorManager.prototype扩展
+    _createClass(InterceptorManager, [
+      // 使用某个拦截器
+      {
+        key: "use",
+        value: function use(fulfilled, rejected, options) {
+          this.handlers.push({
+            fulfilled: fulfilled,
+            rejected: rejected,
+            synchronous: options ? options.synchronous : false,
+            runWhen: options ? options.runWhen : null
+          });
+          // 返回当前回调函数在拦截队列中的索引
+          return this.handlers.length - 1;
         }
-      }
+      }, 
 
-      /**
-       * Clear all interceptors from the stack
-       *
-       * @returns {void}
-       */
-    }, {
-      key: "clear",
-      value: function clear() {
-        if (this.handlers) {
-          this.handlers = [];
-        }
-      }
-
-      /**
-       * Iterate over all the registered interceptors
-       *
-       * This method is particularly useful for skipping over any
-       * interceptors that may have become `null` calling `eject`.
-       *
-       * @param {Function} fn The function to call for each interceptor
-       *
-       * @returns {void}
-       */
-    }, {
-      key: "forEach",
-      value: function forEach(fn) {
-        utils.forEach(this.handlers, function forEachHandler(h) {
-          if (h !== null) {
-            fn(h);
+      // 根据索引移除拦截队列中某个拦截器
+      {
+        key: "eject",
+        value: function eject(id) {
+          if (this.handlers[id]) {
+            this.handlers[id] = null;
           }
-        });
+        }
+      }, 
+
+      // 清空整个拦截队列
+      {
+        key: "clear",
+        value: function clear() {
+          if (this.handlers) {
+            this.handlers = [];
+          }
+        }
+      },
+      
+      // 依次调用拦截队列中的每一个拦截器
+      {
+        key: "forEach",
+        value: function forEach(fn) {
+          utils.forEach(this.handlers, function forEachHandler(h) {
+            if (h !== null) {
+              fn(h);
+            }
+          });
+        }
       }
-    }]);
+    ]);
     return InterceptorManager;
   }();
   var InterceptorManager$1 = InterceptorManager;
@@ -1808,45 +1802,45 @@
   }
 
   var cookies = platform.isStandardBrowserEnv ?
-  // Standard browser envs support document.cookie
-  function standardBrowserEnv() {
-    return {
-      write: function write(name, value, expires, path, domain, secure) {
-        var cookie = [];
-        cookie.push(name + '=' + encodeURIComponent(value));
-        if (utils.isNumber(expires)) {
-          cookie.push('expires=' + new Date(expires).toGMTString());
+    // Standard browser envs support document.cookie
+    function standardBrowserEnv() {
+      return {
+        write: function write(name, value, expires, path, domain, secure) {
+          var cookie = [];
+          cookie.push(name + '=' + encodeURIComponent(value));
+          if (utils.isNumber(expires)) {
+            cookie.push('expires=' + new Date(expires).toGMTString());
+          }
+          if (utils.isString(path)) {
+            cookie.push('path=' + path);
+          }
+          if (utils.isString(domain)) {
+            cookie.push('domain=' + domain);
+          }
+          if (secure === true) {
+            cookie.push('secure');
+          }
+          document.cookie = cookie.join('; ');
+        },
+        read: function read(name) {
+          var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+          return match ? decodeURIComponent(match[3]) : null;
+        },
+        remove: function remove(name) {
+          this.write(name, '', Date.now() - 86400000);
         }
-        if (utils.isString(path)) {
-          cookie.push('path=' + path);
-        }
-        if (utils.isString(domain)) {
-          cookie.push('domain=' + domain);
-        }
-        if (secure === true) {
-          cookie.push('secure');
-        }
-        document.cookie = cookie.join('; ');
-      },
-      read: function read(name) {
-        var match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
-        return match ? decodeURIComponent(match[3]) : null;
-      },
-      remove: function remove(name) {
-        this.write(name, '', Date.now() - 86400000);
-      }
-    };
-  }() :
-  // Non standard browser env (web workers, react-native) lack needed support.
-  function nonStandardBrowserEnv() {
-    return {
-      write: function write() {},
-      read: function read() {
-        return null;
-      },
-      remove: function remove() {}
-    };
-  }();
+      };
+    }() :
+    // Non standard browser env (web workers, react-native) lack needed support.
+    function nonStandardBrowserEnv() {
+      return {
+        write: function write() { },
+        read: function read() {
+          return null;
+        },
+        remove: function remove() { }
+      };
+    }();
 
   /**
    * Determines whether the specified URL is absolute
@@ -1892,59 +1886,59 @@
   }
 
   var isURLSameOrigin = platform.isStandardBrowserEnv ?
-  // Standard browser envs have full support of the APIs needed to test
-  // whether the request URL is of the same origin as current location.
-  function standardBrowserEnv() {
-    var msie = /(msie|trident)/i.test(navigator.userAgent);
-    var urlParsingNode = document.createElement('a');
-    var originURL;
+    // Standard browser envs have full support of the APIs needed to test
+    // whether the request URL is of the same origin as current location.
+    function standardBrowserEnv() {
+      var msie = /(msie|trident)/i.test(navigator.userAgent);
+      var urlParsingNode = document.createElement('a');
+      var originURL;
 
-    /**
-    * Parse a URL to discover it's components
-    *
-    * @param {String} url The URL to be parsed
-    * @returns {Object}
-    */
-    function resolveURL(url) {
-      var href = url;
-      if (msie) {
-        // IE needs attribute set twice to normalize properties
+      /**
+      * Parse a URL to discover it's components
+      *
+      * @param {String} url The URL to be parsed
+      * @returns {Object}
+      */
+      function resolveURL(url) {
+        var href = url;
+        if (msie) {
+          // IE needs attribute set twice to normalize properties
+          urlParsingNode.setAttribute('href', href);
+          href = urlParsingNode.href;
+        }
         urlParsingNode.setAttribute('href', href);
-        href = urlParsingNode.href;
+
+        // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
+        return {
+          href: urlParsingNode.href,
+          protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
+          host: urlParsingNode.host,
+          search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
+          hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
+          hostname: urlParsingNode.hostname,
+          port: urlParsingNode.port,
+          pathname: urlParsingNode.pathname.charAt(0) === '/' ? urlParsingNode.pathname : '/' + urlParsingNode.pathname
+        };
       }
-      urlParsingNode.setAttribute('href', href);
+      originURL = resolveURL(window.location.href);
 
-      // urlParsingNode provides the UrlUtils interface - http://url.spec.whatwg.org/#urlutils
-      return {
-        href: urlParsingNode.href,
-        protocol: urlParsingNode.protocol ? urlParsingNode.protocol.replace(/:$/, '') : '',
-        host: urlParsingNode.host,
-        search: urlParsingNode.search ? urlParsingNode.search.replace(/^\?/, '') : '',
-        hash: urlParsingNode.hash ? urlParsingNode.hash.replace(/^#/, '') : '',
-        hostname: urlParsingNode.hostname,
-        port: urlParsingNode.port,
-        pathname: urlParsingNode.pathname.charAt(0) === '/' ? urlParsingNode.pathname : '/' + urlParsingNode.pathname
+      /**
+      * Determine if a URL shares the same origin as the current location
+      *
+      * @param {String} requestURL The URL to test
+      * @returns {boolean} True if URL shares the same origin, otherwise false
+      */
+      return function isURLSameOrigin(requestURL) {
+        var parsed = utils.isString(requestURL) ? resolveURL(requestURL) : requestURL;
+        return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
       };
-    }
-    originURL = resolveURL(window.location.href);
-
-    /**
-    * Determine if a URL shares the same origin as the current location
-    *
-    * @param {String} requestURL The URL to test
-    * @returns {boolean} True if URL shares the same origin, otherwise false
-    */
-    return function isURLSameOrigin(requestURL) {
-      var parsed = utils.isString(requestURL) ? resolveURL(requestURL) : requestURL;
-      return parsed.protocol === originURL.protocol && parsed.host === originURL.host;
-    };
-  }() :
-  // Non standard browser envs (web workers, react-native) lack needed support.
-  function nonStandardBrowserEnv() {
-    return function isURLSameOrigin() {
-      return true;
-    };
-  }();
+    }() :
+    // Non standard browser envs (web workers, react-native) lack needed support.
+    function nonStandardBrowserEnv() {
+      return function isURLSameOrigin() {
+        return true;
+      };
+    }();
 
   function parseProtocol(url) {
     var match = /^([-+\w]{1,25})(:?\/\/|:)/.exec(url);
@@ -2400,6 +2394,7 @@
     return config;
   }
 
+  // 当前版本
   var VERSION = "1.2.1";
 
   var validators$1 = {};
@@ -2486,10 +2481,12 @@
    *
    * @return {Axios} A new instance of Axios
    */
-  var Axios = /*#__PURE__*/function () {
+  // Axios类
+  var Axios = function () {
     function Axios(instanceConfig) {
       _classCallCheck(this, Axios);
       this.defaults = instanceConfig;
+      // 拦截器
       this.interceptors = {
         request: new InterceptorManager$1(),
         response: new InterceptorManager$1()
@@ -2504,108 +2501,112 @@
      *
      * @returns {Promise} The Promise to be fulfilled
      */
-    _createClass(Axios, [{
-      key: "request",
-      value: function request(configOrUrl, config) {
-        /*eslint no-param-reassign:0*/
-        // Allow for axios('example/url'[, config]) a la fetch API
-        if (typeof configOrUrl === 'string') {
-          config = config || {};
-          config.url = configOrUrl;
-        } else {
-          config = configOrUrl || {};
-        }
-        config = mergeConfig(this.defaults, config);
-        var _config = config,
-          transitional = _config.transitional,
-          paramsSerializer = _config.paramsSerializer,
-          headers = _config.headers;
-        if (transitional !== undefined) {
-          validator.assertOptions(transitional, {
-            silentJSONParsing: validators.transitional(validators["boolean"]),
-            forcedJSONParsing: validators.transitional(validators["boolean"]),
-            clarifyTimeoutError: validators.transitional(validators["boolean"])
-          }, false);
-        }
-        if (paramsSerializer !== undefined) {
-          validator.assertOptions(paramsSerializer, {
-            encode: validators["function"],
-            serialize: validators["function"]
-          }, true);
-        }
-
-        // Set config.method
-        config.method = (config.method || this.defaults.method || 'get').toLowerCase();
-        var contextHeaders;
-
-        // Flatten headers
-        contextHeaders = headers && utils.merge(headers.common, headers[config.method]);
-        contextHeaders && utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch', 'common'], function (method) {
-          delete headers[method];
-        });
-        config.headers = AxiosHeaders$1.concat(contextHeaders, headers);
-
-        // filter out skipped interceptors
-        var requestInterceptorChain = [];
-        var synchronousRequestInterceptors = true;
-        this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
-          if (typeof interceptor.runWhen === 'function' && interceptor.runWhen(config) === false) {
-            return;
+    //  对Axios.prototype扩展
+    _createClass(Axios, [
+      {
+        key: "request",
+        value: function request(configOrUrl, config) {
+          /*eslint no-param-reassign:0*/
+          // Allow for axios('example/url'[, config]) a la fetch API
+          if (typeof configOrUrl === 'string') {
+            config = config || {};
+            config.url = configOrUrl;
+          } else {
+            config = configOrUrl || {};
           }
-          synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
-          requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
-        });
-        var responseInterceptorChain = [];
-        this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
-          responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
-        });
-        var promise;
-        var i = 0;
-        var len;
-        if (!synchronousRequestInterceptors) {
-          var chain = [dispatchRequest.bind(this), undefined];
-          chain.unshift.apply(chain, requestInterceptorChain);
-          chain.push.apply(chain, responseInterceptorChain);
-          len = chain.length;
-          promise = Promise.resolve(config);
+          config = mergeConfig(this.defaults, config);
+          var _config = config,
+            transitional = _config.transitional,
+            paramsSerializer = _config.paramsSerializer,
+            headers = _config.headers;
+          if (transitional !== undefined) {
+            validator.assertOptions(transitional, {
+              silentJSONParsing: validators.transitional(validators["boolean"]),
+              forcedJSONParsing: validators.transitional(validators["boolean"]),
+              clarifyTimeoutError: validators.transitional(validators["boolean"])
+            }, false);
+          }
+          if (paramsSerializer !== undefined) {
+            validator.assertOptions(paramsSerializer, {
+              encode: validators["function"],
+              serialize: validators["function"]
+            }, true);
+          }
+
+          // Set config.method
+          config.method = (config.method || this.defaults.method || 'get').toLowerCase();
+          var contextHeaders;
+
+          // Flatten headers
+          contextHeaders = headers && utils.merge(headers.common, headers[config.method]);
+          contextHeaders && utils.forEach(['delete', 'get', 'head', 'post', 'put', 'patch', 'common'], function (method) {
+            delete headers[method];
+          });
+          config.headers = AxiosHeaders$1.concat(contextHeaders, headers);
+
+          // filter out skipped interceptors
+          var requestInterceptorChain = [];
+          var synchronousRequestInterceptors = true;
+          this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
+            if (typeof interceptor.runWhen === 'function' && interceptor.runWhen(config) === false) {
+              return;
+            }
+            synchronousRequestInterceptors = synchronousRequestInterceptors && interceptor.synchronous;
+            requestInterceptorChain.unshift(interceptor.fulfilled, interceptor.rejected);
+          });
+          var responseInterceptorChain = [];
+          this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
+            responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
+          });
+          var promise;
+          var i = 0;
+          var len;
+          if (!synchronousRequestInterceptors) {
+            var chain = [dispatchRequest.bind(this), undefined];
+            chain.unshift.apply(chain, requestInterceptorChain);
+            chain.push.apply(chain, responseInterceptorChain);
+            len = chain.length;
+            promise = Promise.resolve(config);
+            while (i < len) {
+              promise = promise.then(chain[i++], chain[i++]);
+            }
+            return promise;
+          }
+          len = requestInterceptorChain.length;
+          var newConfig = config;
+          i = 0;
           while (i < len) {
-            promise = promise.then(chain[i++], chain[i++]);
+            var onFulfilled = requestInterceptorChain[i++];
+            var onRejected = requestInterceptorChain[i++];
+            try {
+              newConfig = onFulfilled(newConfig);
+            } catch (error) {
+              onRejected.call(this, error);
+              break;
+            }
+          }
+          try {
+            promise = dispatchRequest.call(this, newConfig);
+          } catch (error) {
+            return Promise.reject(error);
+          }
+          i = 0;
+          len = responseInterceptorChain.length;
+          while (i < len) {
+            promise = promise.then(responseInterceptorChain[i++], responseInterceptorChain[i++]);
           }
           return promise;
         }
-        len = requestInterceptorChain.length;
-        var newConfig = config;
-        i = 0;
-        while (i < len) {
-          var onFulfilled = requestInterceptorChain[i++];
-          var onRejected = requestInterceptorChain[i++];
-          try {
-            newConfig = onFulfilled(newConfig);
-          } catch (error) {
-            onRejected.call(this, error);
-            break;
-          }
+      }, 
+      {
+        key: "getUri",
+        value: function getUri(config) {
+          config = mergeConfig(this.defaults, config);
+          var fullPath = buildFullPath(config.baseURL, config.url);
+          return buildURL(fullPath, config.params, config.paramsSerializer);
         }
-        try {
-          promise = dispatchRequest.call(this, newConfig);
-        } catch (error) {
-          return Promise.reject(error);
-        }
-        i = 0;
-        len = responseInterceptorChain.length;
-        while (i < len) {
-          promise = promise.then(responseInterceptorChain[i++], responseInterceptorChain[i++]);
-        }
-        return promise;
       }
-    }, {
-      key: "getUri",
-      value: function getUri(config) {
-        config = mergeConfig(this.defaults, config);
-        var fullPath = buildFullPath(config.baseURL, config.url);
-        return buildURL(fullPath, config.params, config.paramsSerializer);
-      }
-    }]);
+    ]);
     return Axios;
   }(); // Provide aliases for supported request methods
   utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
@@ -2820,10 +2821,10 @@
     return instance;
   }
 
-  // Create the default instance to be exported
+  // 创建Axios实例
   var axios = createInstance(defaults$1);
 
-  // Expose Axios class to allow class inheritance
+  // 在axios上绑定静态方法
   axios.Axios = Axios$1;
 
   // Expose Cancel & CancelToken
@@ -2859,4 +2860,3 @@
   return axios;
 
 }));
-//# sourceMappingURL=axios.js.map
