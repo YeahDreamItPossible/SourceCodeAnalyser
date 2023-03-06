@@ -195,6 +195,7 @@ function getContext(): SetupContext {
  * only.
  * @internal
  */
+// TODO: 有需要的时候详细看看
 export function mergeDefaults(
   raw: ComponentPropsOptions,
   defaults: Record<string, any>

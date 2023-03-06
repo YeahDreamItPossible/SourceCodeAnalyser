@@ -117,11 +117,23 @@
       }
     })
 
-    const ElAsync = defineAsyncComponent(() => {
-      return new Promise((resolve) => {
-        resolve(h('div', 'AyncComponent'))
-      })
-    })
+    const ElAsync = defineAsyncComponent(({
+      loader: () => new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(h('div', 'AyncComponent'))
+        }, 5000)
+      }),
+      // timeout: 3000,
+      delay: 1000,
+      loadingComponent: defineComponent({
+        render () {
+          return h('div', 'loading')
+        }
+      }),
+      onError (err, retry, fail, count) {
+        console.log(err, retry, fail, count)
+      }
+    }))
   </script>
 
   <script>

@@ -58,10 +58,16 @@ export function defineAsyncComponent<
     onError: userOnError
   } = source
 
+  // NOTE: 正在等待中的请求(防止多次重复加载,因为有重试机制)
   let pendingRequest: Promise<ConcreteComponent> | null = null
+
+  // NOTE: 动态加载的组件数据
   let resolvedComp: ConcreteComponent | undefined
 
+  // NOTE: 重新加载异步组件次数
   let retries = 0
+
+  // NOTE: 重新异步加载(重试机制)
   const retry = () => {
     retries++
     pendingRequest = null
@@ -80,6 +86,7 @@ export function defineAsyncComponent<
               return new Promise((resolve, reject) => {
                 const userRetry = () => resolve(retry())
                 const userFail = () => reject(err)
+                // NOTE: 正常加载异步组件失败(非耗时)后 则回调用户onError函数
                 userOnError(err, userRetry, userFail, retries + 1)
               })
             } else {
@@ -159,16 +166,23 @@ export function defineAsyncComponent<
           })
       }
 
+      // NOTE: 标识: 动态组件加载成功
       const loaded = ref(false)
+
+      // NOTE: 
       const error = ref()
+
+      // NOTE: 是否延时展示加载组件
       const delayed = ref(!!delay)
 
+      // NOTE: 如果有延时 则在延时时间后展示 加载组件
       if (delay) {
         setTimeout(() => {
           delayed.value = false
         }, delay)
       }
 
+      // 加载耗时则直接报错
       if (timeout != null) {
         setTimeout(() => {
           if (!loaded.value && !error.value) {
@@ -195,14 +209,22 @@ export function defineAsyncComponent<
           error.value = err
         })
 
+      // 首先: 异步组件 错误组件 加载组件都有可能是异步组件
+      // 其次: 有delay参数
+      // 所以: 至于展示哪个组件 取决于当前组件加载速度 展示优先级: 异步组件 => 错误组件 => 加载组件
       return () => {
         if (loaded.value && resolvedComp) {
+          // 展示异步组件
           return createInnerComp(resolvedComp, instance)
-        } else if (error.value && errorComponent) {
+        } 
+        else if (error.value && errorComponent) {
+          // 展示错误组件
           return createVNode(errorComponent as ConcreteComponent, {
             error: error.value
           })
-        } else if (loadingComponent && !delayed.value) {
+        } 
+        else if (loadingComponent && !delayed.value) {
+          // 展示加载组件
           return createVNode(loadingComponent as ConcreteComponent)
         }
       }

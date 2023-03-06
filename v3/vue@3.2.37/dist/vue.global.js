@@ -3,19 +3,15 @@
 /**
  * 注释中的名词解释
  * app       					=>   根应用(通过createApp创建, 一个vue应用中只能有一个根状态应用)
- * component instance => 	组件实例
+ * component instance => 	 组件实例
  */
 
 var Vue = (function (exports) {
 	'use strict';
 
-	/**
-	 * Make a map and return a function for checking if a key
-	 * is in that map.
-	 * IMPORTANT: all calls of this function must be prefixed with
-	 * \/\*#\_\_PURE\_\_\*\/
-	 * So that rollup can tree-shake them if necessary.
-	 */
+	// 高阶函数: 
+	// 在函数内部创建map Map<String, Boolean>
+	// 返回一个函数 通过调用这个函数来判断val 是否存在该map中
 	function makeMap(str, expectsLowerCase) {
 		const map = Object.create(null);
 		const list = str.split(',');
@@ -54,6 +50,7 @@ var Vue = (function (exports) {
 		[3 /* FORWARDED */]: 'FORWARDED'
 	};
 
+	// 全局白名单
 	const GLOBALS_WHITE_LISTED = 'Infinity,undefined,NaN,isFinite,isNaN,parseFloat,parseInt,decodeURI,' +
 		'decodeURIComponent,encodeURI,encodeURIComponent,Math,Number,Date,Array,' +
 		'Object,Boolean,String,RegExp,Map,Set,JSON,Intl,BigInt';
@@ -217,20 +214,17 @@ var Vue = (function (exports) {
 		'polygon,polyline,radialGradient,rect,set,solidcolor,stop,switch,symbol,' +
 		'text,textPath,title,tspan,unknown,use,view';
 	const VOID_TAGS = 'area,base,br,col,embed,hr,img,input,link,meta,param,source,track,wbr';
-	/**
-	 * Compiler only.
-	 * Do NOT use in runtime code paths unless behind `true` flag.
-	 */
+	
+	// 是否是HTML标签
 	const isHTMLTag = /*#__PURE__*/ makeMap(HTML_TAGS);
 	/**
 	 * Compiler only.
 	 * Do NOT use in runtime code paths unless behind `true` flag.
 	 */
+	// 是否是SVG标签
 	const isSVGTag = /*#__PURE__*/ makeMap(SVG_TAGS);
-	/**
-	 * Compiler only.
-	 * Do NOT use in runtime code paths unless behind `true` flag.
-	 */
+	
+	// 是否是
 	const isVoidTag = /*#__PURE__*/ makeMap(VOID_TAGS);
 
 	function looseCompareArrays(a, b) {
