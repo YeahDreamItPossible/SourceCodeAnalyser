@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+
+  <script src="../dist/redux.js"></script>
+  <script>
+    const state = ({user: null})
+
+    const userReducer = (state = null, action) => {
+      console.log(11, action.type, action.user)
+      switch (action.type) {
+        case 'Update':
+          return Object.assign({}, state = {}, (action.user || {}))
+      }
+      return state
+    }
+
+    const reducers = Redux.combineReducers({user: userReducer})
+
+    const load = () => {
+      const store = Redux.createStore(reducers, state)
+
+      console.log(store)
+      console.log(store.getState())
+
+
+      store.dispatch({
+        type: 'Update',
+        user: {
+          name: 'Lee'
+        }
+      })
+
+      console.log(store.getState().user)
+
+      store.replaceReducer(reducers)
+      console.log(store.getState().user)
+    }
+
+    window.addEventListener('load', load)
+
+  </script>
+</body>
+</html>

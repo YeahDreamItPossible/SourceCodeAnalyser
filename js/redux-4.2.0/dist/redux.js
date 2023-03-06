@@ -1,8 +1,10 @@
 // 逐行阅读源码
 
 /**
- * driver       =>      驱动
- *
+ * 名词介绍
+ * state tree         =>      当前状态树
+ * current node state =>      当前节点状态
+ * shallow copy       =>      浅复制
  */
 
 (function (global, factory) {
@@ -13,20 +15,19 @@
   'use strict';
 
   // Inlined version of the `symbol-observable` polyfill
+  // 常量:
   var $$observable = (function () {
     return typeof Symbol === 'function' && Symbol.observable || '@@observable';
   })();
 
-  /**
-   * These are private action types reserved by Redux.
-   * For any unknown actions, you must return the current state.
-   * If the current state is undefined, you must return the initial state.
-   * Do not reference these action types directly in your code.
-   */
-
+  // 获取随机字串
   var randomString = function randomString() {
+    // Number.prototype.toString(36) 转换成36进制
     return Math.random().toString(36).substring(7).split('').join('.');
   };
+
+  // 常量: action type 用于内部逻辑
+  // 测试用户reducer是否合理
   var ActionTypes = {
     INIT: "@@redux/INIT" + randomString(),
     REPLACE: "@@redux/REPLACE" + randomString(),
@@ -36,10 +37,7 @@
   };
   var ActionTypes$1 = ActionTypes;
 
-  /**
-   * @param {any} obj The object to inspect.
-   * @returns {boolean} True if the argument appears to be a plain object.
-   */
+  // 类型断言: 判断当前值是否是Object
   function isPlainObject(obj) {
     if (typeof obj !== 'object' || obj === null) return false;
     var proto = obj;
@@ -49,7 +47,8 @@
     return Object.getPrototypeOf(obj) === proto;
   }
 
-  // Inlined / shortened version of `kindOf` from https://github.com/jonschlinkert/kind-of
+  // 获取数据类型
+  // (kindO(https://github.com/jonschlinkert/kind-of)简易实现)
   function miniKindOf(val) {
     if (val === void 0) return 'undefined';
     if (val === null) return 'null';
@@ -81,16 +80,24 @@
     // other
     return type.slice(8, -1).toLowerCase().replace(/\s/g, '');
   }
+
+  // 获取构造函数名
   function ctorName(val) {
     return typeof val.constructor === 'function' ? val.constructor.name : null;
   }
+
+  // 类型断言: 判断当前值是否是Error Instance
   function isError(val) {
     return val instanceof Error || typeof val.message === 'string' && val.constructor && typeof val.constructor.stackTraceLimit === 'number';
   }
+
+  // 类型断言: 判断当前值是否是Date Instance
   function isDate(val) {
     if (val instanceof Date) return true;
     return typeof val.toDateString === 'function' && typeof val.getDate === 'function' && typeof val.setDate === 'function';
   }
+
+  // 获取数据类型
   function kindOf(val) {
     var typeOfVal = typeof val;
     {
@@ -99,33 +106,10 @@
     return typeOfVal;
   }
 
-  /**
-   * @deprecated
-   *
-   * **We recommend using the `configureStore` method
-   * of the `@reduxjs/toolkit` package**, which replaces `createStore`.
-   *
-   * Redux Toolkit is our recommended approach for writing Redux logic today,
-   * including store setup, reducers, data fetching, and more.
-   *
-   * **For more details, please read this Redux docs page:**
-   * **https://redux.js.org/introduction/why-rtk-is-redux-today**
-   *
-   * `configureStore` from Redux Toolkit is an improved version of `createStore` that
-   * simplifies setup and helps avoid common bugs.
-   *
-   * You should not be using the `redux` core package by itself today, except for learning purposes.
-   * The `createStore` method from the core `redux` package will not be removed, but we encourage
-   * all users to migrate to using Redux Toolkit for all Redux code.
-   *
-   * If you want to use `createStore` without this visual deprecation warning, use
-   * the `legacy_createStore` import instead:
-   *
-   * `import { legacy_createStore as createStore} from 'redux'`
-   *
-   */
+  // 创建store
   function createStore(reducer, preloadedState, enhancer) {
     var _ref2;
+    // 正常化参数,并做版本兼容
     if (typeof preloadedState === 'function' && typeof enhancer === 'function' || typeof enhancer === 'function' && typeof arguments[3] === 'function') {
       throw new Error('It looks like you are passing several store enhancers to ' + 'createStore(). This is not supported. Instead, compose them ' + 'together to a single function. See https://redux.js.org/tutorials/fundamentals/part-4-store#creating-a-store-with-enhancers for an example.');
     }
@@ -133,70 +117,51 @@
       enhancer = preloadedState;
       preloadedState = undefined;
     }
+    // enhancer(插件)必须是函数
     if (typeof enhancer !== 'undefined') {
       if (typeof enhancer !== 'function') {
         throw new Error("Expected the enhancer to be a function. Instead, received: '" + kindOf(enhancer) + "'");
       }
       return enhancer(createStore)(reducer, preloadedState);
     }
+    // reducer必须是函数
     if (typeof reducer !== 'function') {
       throw new Error("Expected the root reducer to be a function. Instead, received: '" + kindOf(reducer) + "'");
     }
+
+    // 应用reducer
     var currentReducer = reducer;
+
+    // state tree
     var currentState = preloadedState;
+
     var currentListeners = [];
+
+    // 应用监听队列
     var nextListeners = currentListeners;
+
+    // 状态标识: 标识当前处于dispatch阶段
     var isDispatching = false;
 
-    /**
-     * This makes a shallow copy of currentListeners so we can use
-     * nextListeners as a temporary list while dispatching.
-     *
-     * This prevents any bugs around consumers calling
-     * subscribe/unsubscribe in the middle of a dispatch.
-     */
+    // 浅复制监听队列
     function ensureCanMutateNextListeners() {
       if (nextListeners === currentListeners) {
         nextListeners = currentListeners.slice();
       }
     }
 
-    /**
-     * Reads the state tree managed by the store.
-     *
-     * @returns {any} The current state tree of your application.
-     */
+    // 获取当前状态树
     function getState() {
+      // 处于 dispatch 阶段时 因为state tree此时经过reducer可能发生变更
       if (isDispatching) {
         throw new Error('You may not call store.getState() while the reducer is executing. ' + 'The reducer has already received the state as an argument. ' + 'Pass it down from the top reducer instead of reading it from the store.');
       }
       return currentState;
     }
 
-    /**
-     * Adds a change listener. It will be called any time an action is dispatched,
-     * and some part of the state tree may potentially have changed. You may then
-     * call `getState()` to read the current state tree inside the callback.
-     *
-     * You may call `dispatch()` from a change listener, with the following
-     * caveats:
-     *
-     * 1. The subscriptions are snapshotted just before every `dispatch()` call.
-     * If you subscribe or unsubscribe while the listeners are being invoked, this
-     * will not have any effect on the `dispatch()` that is currently in progress.
-     * However, the next `dispatch()` call, whether nested or not, will use a more
-     * recent snapshot of the subscription list.
-     *
-     * 2. The listener should not expect to see all state changes, as the state
-     * might have been updated multiple times during a nested `dispatch()` before
-     * the listener is called. It is, however, guaranteed that all subscribers
-     * registered before the `dispatch()` started will be called with the latest
-     * state by the time it exits.
-     *
-     * @param {Function} listener A callback to be invoked on every dispatch.
-     * @returns {Function} A function to remove this change listener.
-     */
+    // 监听状态变更
     function subscribe(listener) {
+      // 监听者必须是函数
       if (typeof listener !== 'function') {
         throw new Error("Expected the listener to be a function. Instead, received: '" + kindOf(listener) + "'");
       }
@@ -206,6 +171,8 @@
       var isSubscribed = true;
       ensureCanMutateNextListeners();
       nextListeners.push(listener);
+
+      // 返回值: 移除监听者,移除监听队列中的当前监听者
       return function unsubscribe() {
         if (!isSubscribed) {
           return;
@@ -247,12 +214,16 @@
      * return something else (for example, a Promise you can await).
      */
     function dispatch(action) {
+      // action 必须是对象
       if (!isPlainObject(action)) {
         throw new Error("Actions must be plain objects. Instead, the actual type was: '" + kindOf(action) + "'. You may need to add middleware to your store setup to handle dispatching other values, such as 'redux-thunk' to handle dispatching functions. See https://redux.js.org/tutorials/fundamentals/part-4-store#middleware and https://redux.js.org/tutorials/fundamentals/part-6-async-logic#using-the-redux-thunk-middleware for examples.");
       }
+      // action.type 必须存在,一般是常量
+      // TODO: 主要是 reducer 混合后的
       if (typeof action.type === 'undefined') {
         throw new Error('Actions may not have an undefined "type" property. You may have misspelled an action type string constant.');
       }
+
       if (isDispatching) {
         throw new Error('Reducers may not dispatch actions.');
       }
@@ -262,34 +233,27 @@
       } finally {
         isDispatching = false;
       }
+
+      // 在状态变更后 监听
       var listeners = currentListeners = nextListeners;
       for (var i = 0; i < listeners.length; i++) {
         var listener = listeners[i];
         listener();
       }
+
+      // TODO: 返回用户自定义的action 是实现中间件的
+      // 之前我觉得这个地方应该返回 store 便于链式编程
       return action;
     }
 
-    /**
-     * Replaces the reducer currently used by the store to calculate the state.
-     *
-     * You might need this if your app implements code splitting and you want to
-     * load some of the reducers dynamically. You might also need this if you
-     * implement a hot reloading mechanism for Redux.
-     *
-     * @param {Function} nextReducer The reducer for the store to use instead.
-     * @returns {void}
-     */
+    // 替换当前应用reducer
     function replaceReducer(nextReducer) {
       if (typeof nextReducer !== 'function') {
         throw new Error("Expected the nextReducer to be a function. Instead, received: '" + kindOf(nextReducer));
       }
       currentReducer = nextReducer;
 
-      // This action has a similiar effect to ActionTypes.INIT.
-      // Any reducers that existed in both the new and old rootReducer
-      // will receive the previous state. This effectively populates
-      // the new state tree with any relevant data from the old one.
+      // 初始化(但是仍然保存之前的state tree)
       dispatch({
         type: ActionTypes$1.REPLACE
       });
@@ -339,6 +303,7 @@
     dispatch({
       type: ActionTypes$1.INIT
     });
+
     return _ref2 = {
       dispatch: dispatch,
       subscribe: subscribe,
@@ -347,67 +312,38 @@
     }, _ref2[$$observable] = observable, _ref2;
   }
 
-  /**
-   * Creates a Redux store that holds the state tree.
-   *
-   * **We recommend using `configureStore` from the
-   * `@reduxjs/toolkit` package**, which replaces `createStore`:
-   * **https://redux.js.org/introduction/why-rtk-is-redux-today**
-   *
-   * The only way to change the data in the store is to call `dispatch()` on it.
-   *
-   * There should only be a single store in your app. To specify how different
-   * parts of the state tree respond to actions, you may combine several reducers
-   * into a single reducer function by using `combineReducers`.
-   *
-   * @param {Function} reducer A function that returns the next state tree, given
-   * the current state tree and the action to handle.
-   *
-   * @param {any} [preloadedState] The initial state. You may optionally specify it
-   * to hydrate the state from the server in universal apps, or to restore a
-   * previously serialized user session.
-   * If you use `combineReducers` to produce the root reducer function, this must be
-   * an object with the same shape as `combineReducers` keys.
-   *
-   * @param {Function} [enhancer] The store enhancer. You may optionally specify it
-   * to enhance the store with third-party capabilities such as middleware,
-   * time travel, persistence, etc. The only store enhancer that ships with Redux
-   * is `applyMiddleware()`.
-   *
-   * @returns {Store} A Redux store that lets you read the state, dispatch actions
-   * and subscribe to changes.
-   */
+  // 前缀legacy是为了以后版本升级
   var legacy_createStore = createStore;
 
-  /**
-   * Prints a warning in the console if it exists.
-   *
-   * @param {String} message The warning message.
-   * @returns {void}
-   */
+  // 输出错误
   function warning(message) {
-    /* eslint-disable no-console */
     if (typeof console !== 'undefined' && typeof console.error === 'function') {
       console.error(message);
     }
-    /* eslint-enable no-console */
     try {
-      // This error was thrown as a convenience so that if you enable
-      // "break on all exceptions" in your console,
-      // it would pause the execution at this line.
       throw new Error(message);
-    } catch (e) { } // eslint-disable-line no-empty
+    } catch (e) { }
   }
 
+  // 收集错误
+  // 1. 无效的混合后的reducers错误
+  // 2. 无效的state错误(非对象)
+  // 3. 混合后的reducers的key 与 state tree 中key 可能存在不一致
   function getUnexpectedStateShapeWarningMessage(inputState, reducers, action, unexpectedKeyCache) {
     var reducerKeys = Object.keys(reducers);
     var argumentName = action && action.type === ActionTypes$1.INIT ? 'preloadedState argument passed to createStore' : 'previous state received by the reducer';
+
+    // 无效的reducers错误
     if (reducerKeys.length === 0) {
       return 'Store does not have a valid reducer. Make sure the argument passed ' + 'to combineReducers is an object whose values are reducers.';
     }
+
+    // 无效的state错误()
     if (!isPlainObject(inputState)) {
       return "The " + argumentName + " has unexpected type of \"" + kindOf(inputState) + "\". Expected argument to be an object with the following " + ("keys: \"" + reducerKeys.join('", "') + "\"");
     }
+
+    // 混合后的reducers的key 与 state tree 中key 可能存在不一致
     var unexpectedKeys = Object.keys(inputState).filter(function (key) {
       return !reducers.hasOwnProperty(key) && !unexpectedKeyCache[key];
     });
@@ -419,15 +355,21 @@
       return "Unexpected " + (unexpectedKeys.length > 1 ? 'keys' : 'key') + " " + ("\"" + unexpectedKeys.join('", "') + "\" found in " + argumentName + ". ") + "Expected to find one of the known reducer keys instead: " + ("\"" + reducerKeys.join('", "') + "\". Unexpected keys will be ignored.");
     }
   }
+
+  // 断言: 保证reducer函数的初始状态不能为undefined,否则抛出Error
   function assertReducerShape(reducers) {
     Object.keys(reducers).forEach(function (key) {
       var reducer = reducers[key];
       var initialState = reducer(undefined, {
         type: ActionTypes$1.INIT
       });
+
+      // 保证reducer中的初始状态值不能为undefined
       if (typeof initialState === 'undefined') {
         throw new Error("The slice reducer for key \"" + key + "\" returned undefined during initialization. " + "If the state passed to the reducer is undefined, you must " + "explicitly return the initial state. The initial state may " + "not be undefined. If you don't want to set a value for this reducer, " + "you can use null instead of undefined.");
       }
+
+      // 感觉没啥意义
       if (typeof reducer(undefined, {
         type: ActionTypes$1.PROBE_UNKNOWN_ACTION()
       }) === 'undefined') {
@@ -436,25 +378,17 @@
     });
   }
 
-  /**
-   * Turns an object whose values are different reducer functions, into a single
-   * reducer function. It will call every child reducer, and gather their results
-   * into a single state object, whose keys correspond to the keys of the passed
-   * reducer functions.
-   *
-   * @param {Object} reducers An object whose values correspond to different
-   * reducer functions that need to be combined into one. One handy way to obtain
-   * it is to use ES6 `import * as reducers` syntax. The reducers may never return
-   * undefined for any action. Instead, they should return their initial state
-   * if the state passed to them was undefined, and the current state for any
-   * unrecognized action.
-   *
-   * @returns {Function} A reducer function that invokes every reducer inside the
-   * passed object, and builds a state object with the same shape.
-   */
+  // 混合reducer
+  // 1. 筛选符合特定类型<Function>的reducer
+  // 2. 保证每个reducer的初始状态不能为undefined,否则抛出Error
   function combineReducers(reducers) {
+    // reducers类型: Map<String, Function>
     var reducerKeys = Object.keys(reducers);
+
+    // 筛选后的reducers
     var finalReducers = {};
+
+    // 筛选(保证reducer<Function>类型)
     for (var i = 0; i < reducerKeys.length; i++) {
       var key = reducerKeys[i];
       {
@@ -466,48 +400,71 @@
         finalReducers[key] = reducers[key];
       }
     }
+
+    // 筛选后reducers对应的key
     var finalReducerKeys = Object.keys(finalReducers);
 
-    // This is used to make sure we don't warn about the same
-    // keys multiple times.
     var unexpectedKeyCache;
     {
       unexpectedKeyCache = {};
     }
+
+    // 收集Error(某个reducer的初始状态为undefined)
     var shapeAssertionError;
     try {
       assertReducerShape(finalReducers);
     } catch (e) {
       shapeAssertionError = e;
     }
+
+    // 返回混合后的reducer
     return function combination(state, action) {
       if (state === void 0) {
         state = {};
       }
+
+      // 抛出某个reducer的初始状态为undefined的错误
       if (shapeAssertionError) {
         throw shapeAssertionError;
       }
+
+      // 再次输入错误
       {
         var warningMessage = getUnexpectedStateShapeWarningMessage(state, finalReducers, action, unexpectedKeyCache);
         if (warningMessage) {
           warning(warningMessage);
         }
       }
+
       var hasChanged = false;
       var nextState = {};
       for (var _i = 0; _i < finalReducerKeys.length; _i++) {
         var _key = finalReducerKeys[_i];
         var reducer = finalReducers[_key];
+
+        // 某个reducer初始状态
         var previousStateForKey = state[_key];
+
+        // 某个reducer后的状态
         var nextStateForKey = reducer(previousStateForKey, action);
+
+        // 保证每个reducer后的状态不能是undefined
         if (typeof nextStateForKey === 'undefined') {
           var actionType = action && action.type;
           throw new Error("When called with an action of type " + (actionType ? "\"" + String(actionType) + "\"" : '(unknown type)') + ", the slice reducer for key \"" + _key + "\" returned undefined. " + "To ignore an action, you must explicitly return the previous state. " + "If you want this reducer to hold no value, you can return null instead of undefined.");
         }
+
+        // 局部变更state tree中某个节点状态
         nextState[_key] = nextStateForKey;
+
+        // 标识: state tree是否发生变更(通过判断state tree 和 current node state )
         hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
       }
+
+      // 标识: state tree是否发生变更
       hasChanged = hasChanged || finalReducerKeys.length !== Object.keys(state).length;
+
+      // 缓存: 如果state tree某个节点update 则替换掉整个state tree 否则则返回当前 state tree
       return hasChanged ? nextState : state;
     };
   }
@@ -556,16 +513,21 @@
     return boundActionCreators;
   }
 
+  // 返回当前对象所拥有的key
+  // enumerableOnly<Boolean>: 是否返回可遍历的symbol类型的key
   function ownKeys(object, enumerableOnly) {
     var keys = Object.keys(object);
     if (Object.getOwnPropertySymbols) {
       var symbols = Object.getOwnPropertySymbols(object);
+      // 返回可遍历的symbol类型的key
       enumerableOnly && (symbols = symbols.filter(function (sym) {
         return Object.getOwnPropertyDescriptor(object, sym).enumerable;
       })), keys.push.apply(keys, symbols);
     }
     return keys;
   }
+
+  //
   function _objectSpread2(target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = null != arguments[i] ? arguments[i] : {};
@@ -577,6 +539,8 @@
     }
     return target;
   }
+
+  // 对某个对象扩展key 并赋值
   function _defineProperty(obj, key, value) {
     key = _toPropertyKey(key);
     if (key in obj) {
@@ -591,6 +555,8 @@
     }
     return obj;
   }
+
+  //
   function _toPrimitive(input, hint) {
     if (typeof input !== "object" || input === null) return input;
     var prim = input[Symbol.toPrimitive];
@@ -601,22 +567,14 @@
     }
     return (hint === "string" ? String : Number)(input);
   }
+
+  // 序列化key
   function _toPropertyKey(arg) {
     var key = _toPrimitive(arg, "string");
     return typeof key === "symbol" ? key : String(key);
   }
 
-  /**
-   * Composes single-argument functions from right to left. The rightmost
-   * function can take multiple arguments as it provides the signature for
-   * the resulting composite function.
-   *
-   * @param {...Function} funcs The functions to compose.
-   * @returns {Function} A function obtained by composing the argument functions
-   * from right to left. For example, compose(f, g, h) is identical to doing
-   * (...args) => f(g(h(...args))).
-   */
-
+  // 函数组合(中间件的基础)
   function compose() {
     for (var _len = arguments.length, funcs = new Array(_len), _key = 0; _key < _len; _key++) {
       funcs[_key] = arguments[_key];
@@ -652,6 +610,7 @@
    * @param {...Function} middlewares The middleware chain to be applied.
    * @returns {Function} A store enhancer applying the middleware.
    */
+  // 使用中间件
   function applyMiddleware() {
     for (var _len = arguments.length, middlewares = new Array(_len), _key = 0; _key < _len; _key++) {
       middlewares[_key] = arguments[_key];
@@ -679,10 +638,7 @@
     };
   }
 
-  /*
-   * This is a dummy function to check if the function name has been altered by minification.
-   * If the function has been minified and NODE_ENV !== 'production', warn the user.
-   */
+  // 通过dummy fn(伪函数)来测试生产环境 代码是否被压缩混淆
   function isCrushed() { }
   if (typeof isCrushed.name === 'string' && isCrushed.name !== 'isCrushed') {
     warning('You are currently using minified code outside of NODE_ENV === "production". ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or setting mode to production in webpack (https://webpack.js.org/concepts/mode/) ' + 'to ensure you have the correct code for your production build.');

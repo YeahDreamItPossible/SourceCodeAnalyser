@@ -29,7 +29,11 @@ import { kindOf } from './utils/kindOf'
  * `import { legacy_createStore as createStore} from 'redux'`
  *
  */
+// NOTE: 创建store
 export function createStore(reducer, preloadedState, enhancer) {
+  // NOTE: 正常化参数(normalize)
+  // 1. 保证 reducer 和 enhancer 必须是函数 preloadedState 是Object
+  // 2.
   if (
     (typeof preloadedState === 'function' && typeof enhancer === 'function') ||
     (typeof enhancer === 'function' && typeof arguments[3] === 'function')
@@ -46,6 +50,7 @@ export function createStore(reducer, preloadedState, enhancer) {
     preloadedState = undefined
   }
 
+  // NOTE: enhancer 插件必须是函数
   if (typeof enhancer !== 'undefined') {
     if (typeof enhancer !== 'function') {
       throw new Error(
@@ -58,6 +63,7 @@ export function createStore(reducer, preloadedState, enhancer) {
     return enhancer(createStore)(reducer, preloadedState)
   }
 
+  // NOTE: reducer 必须是函数
   if (typeof reducer !== 'function') {
     throw new Error(
       `Expected the root reducer to be a function. Instead, received: '${kindOf(
@@ -125,7 +131,9 @@ export function createStore(reducer, preloadedState, enhancer) {
    * @param {Function} listener A callback to be invoked on every dispatch.
    * @returns {Function} A function to remove this change listener.
    */
+  // NOTE: 监听
   function subscribe(listener) {
+    // NOTE: 监听者必须是回调函数
     if (typeof listener !== 'function') {
       throw new Error(
         `Expected the listener to be a function. Instead, received: '${kindOf(

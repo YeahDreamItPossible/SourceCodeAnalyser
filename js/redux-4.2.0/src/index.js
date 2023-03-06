@@ -10,6 +10,7 @@ import __DO_NOT_USE__ActionTypes from './utils/actionTypes'
  * This is a dummy function to check if the function name has been altered by minification.
  * If the function has been minified and NODE_ENV !== 'production', warn the user.
  */
+// NOTE: 通过dummy fn(伪函数)来测试生产环境 代码是否被压缩混淆
 function isCrushed() {}
 
 if (
