@@ -2,25 +2,36 @@
 
 ## 目前已看完的库
 
-- axios@1.2.1
+- axios
 
-- [redux@4.2.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/redux-4.2.0/dist/redux.js)
+  - [axios@1.2.1](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/axios%401.2.1/dist/axios.js)
 
-- redux-thunk@2.3.0
+- redux
 
-- vue@2.6.14
+  - [redux@4.2.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/redux%404.2.0/dist/redux.js)
 
-- pinia@2.0.32
+  - [redux-thunk@2.3.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/redux-thunk%402.3.0/dist/index.js)
 
-- tapable@2.2.1
+- vue3
+
+  - [vue@3.2.37](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/v3/vue%403.2.37/dist/vue.global.js)
+
+  - [vue-router@]()
+
+  - [pinia@2.0.32](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/v3/pinia/dist/pinia.iife.js)
+
+  - [vuex@4.0.2]()
+
+
+- webpack
+
+  - [webpack@5.44.0]()
+
+  - [tapable@2.2.1]()
+
+- localforage
+
+  - [localforage@1.10.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/localforage%401.10.0/dist/localforage.js)
 
 
 ## 进行中的库
-
-- webpack@5.44.0()
-
-- vue@3.2.37
-
-- vue-router@4.1.6
-
-- localforage@1.10.0
