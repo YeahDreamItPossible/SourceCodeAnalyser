@@ -6,6 +6,8 @@
  * component instance => 	 组件实例
  * effect scope				=> 	 作用域
  * effect							=> 	 副作用
+ * root component     =>   根组件
+ * root props         =>   根属性
  */
 
 var Vue = (function (exports) {
@@ -323,6 +325,7 @@ var Vue = (function (exports) {
 		return val;
 	};
 
+  // 工具类
 	const EMPTY_OBJ = Object.freeze({})
 		;
 	const EMPTY_ARR = Object.freeze([]);
@@ -362,9 +365,9 @@ var Vue = (function (exports) {
 	const objectToString = Object.prototype.toString;
 	const toTypeString = (value) => objectToString.call(value);
 	const toRawType = (value) => {
-		// extract "RawType" from strings like "[object RawType]"
 		return toTypeString(value).slice(8, -1);
 	};
+
 	const isPlainObject = (val) => toTypeString(val) === '[object Object]';
 	const isIntegerKey = (key) => isString(key) &&
 		key !== 'NaN' &&
@@ -422,6 +425,8 @@ var Vue = (function (exports) {
 		const n = parseFloat(val);
 		return isNaN(n) ? val : n;
 	};
+
+  // 全局对象
 	let _globalThis;
 	const getGlobalThis = () => {
 		return (_globalThis ||
@@ -5898,6 +5903,7 @@ var Vue = (function (exports) {
 		}
 	};
 
+  // TODO: 创建应用上下文(可)
 	function createAppContext() {
 		return {
 			app: null,
@@ -5919,9 +5925,12 @@ var Vue = (function (exports) {
 			emitsCache: new WeakMap()
 		};
 	}
+
+  // 返回app with api
 	let uid = 0;
 	function createAppAPI(render, hydrate) {
 		return function createApp(rootComponent, rootProps = null) {
+      // rootComponent 可能是函数式组件 也可能是选项式组件
 			if (!isFunction(rootComponent)) {
 				rootComponent = Object.assign({}, rootComponent);
 			}
@@ -5929,25 +5938,47 @@ var Vue = (function (exports) {
 				warn$1(`root props passed to app.mount() must be an object.`);
 				rootProps = null;
 			}
+
+      // 创建应用上下文
 			const context = createAppContext();
+
+      // 安装的插件 防止重复安装
 			const installedPlugins = new Set();
+
+      // 标识: 标记当前应用是否已挂载
 			let isMounted = false;
+
 			const app = (context.app = {
+        // 标识: 根应用 uid 理论上是0
 				_uid: uid++,
+
+        // 用户传入的root component
 				_component: rootComponent,
+
+        // 用户传入的root props
 				_props: rootProps,
+
 				_container: null,
+
+        // 应用上下文
 				_context: context,
+
 				_instance: null,
-				version,
-				get config() {
+				
+        // 版本
+        version,
+				
+        get config() {
 					return context.config;
 				},
+
 				set config(v) {
 					{
 						warn$1(`app.config cannot be replaced. Modify individual options instead.`);
 					}
 				},
+
+        // 使用插件
 				use(plugin, ...options) {
 					if (installedPlugins.has(plugin)) {
 						warn$1(`Plugin has already been applied to target app.`);
@@ -5966,6 +5997,8 @@ var Vue = (function (exports) {
 					}
 					return app;
 				},
+
+        // 全局混合
 				mixin(mixin) {
 					{
 						if (!context.mixins.includes(mixin)) {
@@ -5978,6 +6011,8 @@ var Vue = (function (exports) {
 					}
 					return app;
 				},
+
+        // 注册全局组件
 				component(name, component) {
 					{
 						validateComponentName(name, context.config);
@@ -5991,6 +6026,8 @@ var Vue = (function (exports) {
 					context.components[name] = component;
 					return app;
 				},
+
+        // 注册全局指令
 				directive(name, directive) {
 					{
 						validateDirectiveName(name);
@@ -6004,14 +6041,18 @@ var Vue = (function (exports) {
 					context.directives[name] = directive;
 					return app;
 				},
+
+        // 挂载应用
 				mount(rootContainer, isHydrate, isSVG) {
 					if (!isMounted) {
 						// #5571
+            // 标识：容器 __vue_app__ 标识应用已挂载
 						if (rootContainer.__vue_app__) {
 							warn$1(`There is already an app instance mounted on the host container.\n` +
 								` If you want to mount another app on the same host container,` +
 								` you need to unmount the previous app by calling \`app.unmount()\` first.`);
 						}
+
 						const vnode = createVNode(rootComponent, rootProps);
 						// store app context on the root VNode.
 						// this will be set on the root instance on initial mount.
@@ -6044,6 +6085,8 @@ var Vue = (function (exports) {
 							`mount - e.g. \`const createMyApp = () => createApp(App)\``);
 					}
 				},
+
+        // 卸载应用
 				unmount() {
 					if (isMounted) {
 						render(null, app._container);
@@ -6057,6 +6100,8 @@ var Vue = (function (exports) {
 						warn$1(`Cannot unmount an app that is not mounted.`);
 					}
 				},
+
+        // 全局提供
 				provide(key, value) {
 					if (key in context.provides) {
 						warn$1(`App already provides property with key "${String(key)}". ` +
@@ -6555,31 +6600,21 @@ var Vue = (function (exports) {
 
 	const queuePostRenderEffect = queueEffectWithSuspense
 		;
-	/**
-	 * The createRenderer function accepts two generic arguments:
-	 * HostNode and HostElement, corresponding to Node and Element types in the
-	 * host environment. For example, for runtime-dom, HostNode would be the DOM
-	 * `Node` interface and HostElement would be the DOM `Element` interface.
-	 *
-	 * Custom renderers can pass in the platform specific types like this:
-	 *
-	 * ``` js
-	 * const { render, createApp } = createRenderer<Node, Element>({
-	 *   patchProp,
-	 *   ...nodeOps
-	 * })
-	 * ```
-	 */
+	
+  // 创建自定义渲染器
 	function createRenderer(options) {
 		return baseCreateRenderer(options);
 	}
+
 	// Separate API for creating hydration-enabled renderer.
 	// Hydration logic is only used when calling this function, making it
 	// tree-shakable.
 	function createHydrationRenderer(options) {
 		return baseCreateRenderer(options, createHydrationFunctions);
 	}
+
 	// implementation
+  // 
 	function baseCreateRenderer(options, createHydrationFns) {
 		const target = getGlobalThis();
 		target.__VUE__ = true;
@@ -7807,6 +7842,7 @@ var Vue = (function (exports) {
 		if (createHydrationFns) {
 			[hydrate, hydrateNode] = createHydrationFns(internals);
 		}
+
 		return {
 			render,
 			hydrate,
@@ -10885,11 +10921,14 @@ var Vue = (function (exports) {
 	}
 
 	const rendererOptions = /*#__PURE__*/ extend({ patchProp }, nodeOps);
+
 	// lazy create the renderer - this makes core renderer logic tree-shakable
 	// in case the user only imports reactivity utilities from Vue.
+  // 渲染器
 	let renderer;
 	let enabledHydration = false;
 	function ensureRenderer() {
+    // 缓存
 		return (renderer ||
 			(renderer = createRenderer(rendererOptions)));
 	}
@@ -10900,7 +10939,9 @@ var Vue = (function (exports) {
 		enabledHydration = true;
 		return renderer;
 	}
-	// use explicit type casts here to avoid import() calls in rolled-up d.ts
+
+  // render函数将vnode渲染到container中
+  // 参数: vnode, container, isSVG = false
 	const render = ((...args) => {
 		ensureRenderer().render(...args);
 	});
@@ -10914,11 +10955,14 @@ var Vue = (function (exports) {
 	const createApp = ((...args) => {
 		const app = ensureRenderer().createApp(...args);
 		{
+      // app.config 扩展 isNativeTag 属性
 			injectNativeTagCheck(app);
+      // 开发环境下警告 app.config下的 isCustomElement compilerOptions
 			injectCompilerOptionsCheck(app);
 		}
 		const { mount } = app;
 		app.mount = (containerOrSelector) => {
+      // container<DOM>
 			const container = normalizeContainer(containerOrSelector);
 			if (!container)
 				return;
@@ -10930,7 +10974,8 @@ var Vue = (function (exports) {
 				// rendered by the server, the template should not contain any user data.
 				component.template = container.innerHTML;
 			}
-			// clear content before mounting
+
+      // 移除容器中的子元素
 			container.innerHTML = '';
 			const proxy = mount(container, false, container instanceof SVGElement);
 			if (container instanceof Element) {
@@ -10959,15 +11004,17 @@ var Vue = (function (exports) {
 		return app;
 	});
 
+  // app.config 扩展 isNativeTag 属性(该属性不可被更改)
 	function injectNativeTagCheck(app) {
-		// Inject `isNativeTag`
-		// this is used for component name validation (dev only)
 		Object.defineProperty(app.config, 'isNativeTag', {
 			value: (tag) => isHTMLTag(tag) || isSVGTag(tag),
 			writable: false
 		});
 	}
-	// dev only
+
+  // 开发环境下警告: 
+  // 1. app.config.isCustomElement已被废弃 可用app.config.compilerOptions.isCustomElement替代
+  // 2. app.config.compilerOptions仅仅用于完整构建版本
 	function injectCompilerOptionsCheck(app) {
 		if (isRuntimeOnly()) {
 			const isCustomElement = app.config.isCustomElement;
@@ -10999,6 +11046,8 @@ var Vue = (function (exports) {
 			});
 		}
 	}
+
+  // 正常化容器(获取DOM元素)
 	function normalizeContainer(container) {
 		if (isString(container)) {
 			const res = document.querySelector(container);
@@ -11007,6 +11056,7 @@ var Vue = (function (exports) {
 			}
 			return res;
 		}
+    // ShadowRoot 接口是一个 DOM 子树的根节点
 		if (window.ShadowRoot &&
 			container instanceof window.ShadowRoot &&
 			container.mode === 'closed') {
