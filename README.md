@@ -22,6 +22,12 @@
 
   - [vuex@4.0.2]()
 
+- localforage
+
+  - [localforage@1.10.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/localforage%401.10.0/dist/localforage.js)
+
+
+## 进行中的库
 
 - webpack
 
@@ -29,9 +35,8 @@
 
   - [tapable@2.2.1]()
 
-- localforage
+- node
 
-  - [localforage@1.10.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/localforage%401.10.0/dist/localforage.js)
+  - [egg@3.1.5]()
 
-
-## 进行中的库
+  - [koa@3.0.0-alpha.0]()
