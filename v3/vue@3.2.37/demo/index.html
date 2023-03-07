@@ -24,6 +24,9 @@
     .red {
       color: #ff0000;
     }
+    .app div {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -54,6 +57,7 @@
   </script>
 
   <script>
+    // 函数式组件
     function ElInput (props, {emit, attr, slots}) {
       return h('div', {
         class: 'el-input-container'
@@ -68,6 +72,7 @@
       ])
     }
 
+    // 类组件
     const ElText = defineComponent({
       name: 'ElText',
 
@@ -91,6 +96,7 @@
       }
     })
 
+    // 类组件
     const Container = defineComponent({
       name: 'Container',
 
@@ -117,10 +123,11 @@
       }
     })
 
+    // 异步组件
     const ElAsync = defineAsyncComponent(({
       loader: () => new Promise((resolve, reject) => {
         setTimeout(() => {
-          reject(h('div', 'AyncComponent'))
+          resolve(h('div', 'AyncComponent'))
         }, 5000)
       }),
       // timeout: 3000,
@@ -164,6 +171,8 @@
     app.component('ElInput', ElInput)
     app.component('ElText', ElText)
     app.component('ElAsync', ElAsync)
+
+    app.provide('__app_runtime_env__', {v: '1', env: 'window'})
 
     app.mount('#app')
 

@@ -94,6 +94,7 @@ export const isBuiltInDirective = /*#__PURE__*/ makeMap(
   'bind,cloak,else-if,else,for,html,if,model,on,once,pre,show,slot,text,memo'
 )
 
+// NOTE: 缓存字符串函数
 const cacheStringFunction = <T extends (str: string) => string>(fn: T): T => {
   const cache: Record<string, string> = Object.create(null)
   return ((str: string) => {
@@ -106,6 +107,8 @@ const camelizeRE = /-(\w)/g
 /**
  * @private
  */
+// NOTE: 将短横线(-)链接符去掉 并将连符号后面的单个字符转换为大写字符
+// 示例: '-hello-world-today' => 'HelloWorldToday'
 export const camelize = cacheStringFunction((str: string): string => {
   return str.replace(camelizeRE, (_, c) => (c ? c.toUpperCase() : ''))
 })
@@ -114,6 +117,8 @@ const hyphenateRE = /\B([A-Z])/g
 /**
  * @private
  */
+// NOTE:
+// 示例: 
 export const hyphenate = cacheStringFunction((str: string) =>
   str.replace(hyphenateRE, '-$1').toLowerCase()
 )

@@ -36,6 +36,7 @@ export type StoreToRefs<SS extends StoreGeneric> = ToRefs<
  *
  * @param store - store to extract the refs from
  */
+// NOTE: 在解构赋值时保证引用关系存在
 export function storeToRefs<SS extends StoreGeneric>(
   store: SS
 ): StoreToRefs<SS> {

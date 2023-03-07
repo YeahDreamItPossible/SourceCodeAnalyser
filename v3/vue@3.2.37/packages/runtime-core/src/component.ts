@@ -554,6 +554,8 @@ export function createComponentInstance(
     instance.ctx = { _: instance }
   }
   instance.root = parent ? parent.root : instance
+  
+  // NOTE: 绑定emit
   instance.emit = emit.bind(null, instance)
 
   // apply custom element special handling

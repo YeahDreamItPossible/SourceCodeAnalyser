@@ -4,6 +4,8 @@
  * 注释中的名词解释
  * app       					=>   根应用(通过createApp创建, 一个vue应用中只能有一个根状态应用)
  * component instance => 	 组件实例
+ * effect scope				=> 	 作用域
+ * effect							=> 	 副作用
  */
 
 var Vue = (function (exports) {
@@ -341,6 +343,8 @@ var Vue = (function (exports) {
 	};
 	const hasOwnProperty = Object.prototype.hasOwnProperty;
 	const hasOwn = (val, key) => hasOwnProperty.call(val, key);
+
+	// 断言: 判断当前值数据类型
 	const isArray = Array.isArray;
 	const isMap = (val) => toTypeString(val) === '[object Map]';
 	const isSet = (val) => toTypeString(val) === '[object Set]';
@@ -352,6 +356,9 @@ var Vue = (function (exports) {
 	const isPromise = (val) => {
 		return isObject(val) && isFunction(val.then) && isFunction(val.catch);
 	};
+	
+	// 获取当前值类型 
+	// 通过调用 Object.prototype.toStirng.call(value).slice(8, -1)
 	const objectToString = Object.prototype.toString;
 	const toTypeString = (value) => objectToString.call(value);
 	const toRawType = (value) => {
@@ -434,27 +441,30 @@ var Vue = (function (exports) {
 		console.warn(`[Vue warn] ${msg}`, ...args);
 	}
 
+	/* 逻辑分类: 作用域开始 */
+
+	// 当前激活的作用域
 	let activeEffectScope;
+
 	class EffectScope {
 		constructor(detached = false) {
-			/**
-			 * @internal
-			 */
 			this.active = true;
-			/**
-			 * @internal
-			 */
+			
+			// 副作用集合
 			this.effects = [];
-			/**
-			 * @internal
-			 */
+			
+			// 清除队列队列
 			this.cleanups = [];
+
+			// detached 是否独立构建作用域, 默认会构建嵌套关联关系
 			if (!detached && activeEffectScope) {
 				this.parent = activeEffectScope;
 				this.index =
 					(activeEffectScope.scopes || (activeEffectScope.scopes = [])).push(this) - 1;
 			}
 		}
+
+		// TODO: 主要是收集依赖
 		run(fn) {
 			if (this.active) {
 				const currentEffectScope = activeEffectScope;
@@ -470,20 +480,18 @@ var Vue = (function (exports) {
 				warn(`cannot run an inactive effect scope.`);
 			}
 		}
-		/**
-		 * This should only be called on non-detached scopes
-		 * @internal
-		 */
+		
+		// 绑定当前作用域
 		on() {
 			activeEffectScope = this;
 		}
-		/**
-		 * This should only be called on non-detached scopes
-		 * @internal
-		 */
+		
+		// 解绑当前作用域(绑定当前作用域的父级)
 		off() {
 			activeEffectScope = this.parent;
 		}
+
+		// 
 		stop(fromParent) {
 			if (this.active) {
 				let i, l;
@@ -511,17 +519,25 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
+	// 创建 作用域
 	function effectScope(detached) {
 		return new EffectScope(detached);
 	}
+
+	// 
 	function recordEffectScope(effect, scope = activeEffectScope) {
 		if (scope && scope.active) {
 			scope.effects.push(effect);
 		}
 	}
+
+	// 获取当前的作用域
 	function getCurrentScope() {
 		return activeEffectScope;
 	}
+
+	// 当前作用域 注册清除任务
 	function onScopeDispose(fn) {
 		if (activeEffectScope) {
 			activeEffectScope.cleanups.push(fn);
@@ -531,6 +547,8 @@ var Vue = (function (exports) {
 				` to be associated with.`);
 		}
 	}
+
+	/* 逻辑分类: 副作用域结束 */
 
 	const createDep = (effects) => {
 		const dep = new Set(effects);
@@ -566,6 +584,8 @@ var Vue = (function (exports) {
 			deps.length = ptr;
 		}
 	};
+
+	/*	逻辑分类: 副作用开始 */
 
 	const targetMap = new WeakMap();
 	// The number of effects currently being tracked recursively.
@@ -816,6 +836,8 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
+	/* 逻辑分类: 副作用结束 */
 
 	const isNonTrackableKeys = /*#__PURE__*/ makeMap(`__proto__,__v_isRef,__isVue`);
 	const builtInSymbols = new Set(
@@ -1241,6 +1263,19 @@ var Vue = (function (exports) {
 		];
 	}
 	const [mutableInstrumentations, readonlyInstrumentations, shallowInstrumentations, shallowReadonlyInstrumentations] = /* #__PURE__*/ createInstrumentations();
+	
+	/* 逻辑分类: 响应式开始 */
+
+	/**
+	 * 响应式包 关键词说明
+	 * __v_skip							=>		标识当前值不可被reactive
+	 * __v_isReactive				=>		标识当前值是否是响应式对象
+	 * __v_isReadonly				=>		标识当前值是否是只读的
+	 * __v_isShallow				=>		标识当前值是否是浅层作用
+	 * __v_raw							=>		标识当前值是否已经被reactive,如果是,则返回原始值
+	 * __v_isRef						=>		标识当前值是ref值
+	 */
+
 	function createInstrumentationGetter(isReadonly, shallow) {
 		const instrumentations = shallow
 			? isReadonly
@@ -1264,18 +1299,24 @@ var Vue = (function (exports) {
 				: target, key, receiver);
 		};
 	}
+
+	// reactive proxy getter函数
 	const mutableCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(false, false)
 	};
+	// shallow reactive proxy getter函数
 	const shallowCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(false, true)
 	};
+	// readonly reactive proxy getter函数
 	const readonlyCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(true, false)
 	};
+	// readonly shallow reactive proxy getter函数
 	const shallowReadonlyCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(true, true)
 	};
+
 	function checkIdentityKeys(target, has, key) {
 		const rawKey = toRaw(key);
 		if (rawKey !== key && has.call(target, rawKey)) {
@@ -1288,10 +1329,17 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 缓存的响应式值 WeakMap<target, proxy>
+	// 缓存 深层所用响应式值
 	const reactiveMap = new WeakMap();
+	// 缓存 浅层作用响应式值
 	const shallowReactiveMap = new WeakMap();
+	// 缓存 只读深层作用响应式值
 	const readonlyMap = new WeakMap();
+	// 缓存 只读浅层作用响应式值
 	const shallowReadonlyMap = new WeakMap();
+
+	// TODO: 
 	function targetTypeMap(rawType) {
 		switch (rawType) {
 			case 'Object':
@@ -1306,43 +1354,40 @@ var Vue = (function (exports) {
 				return 0 /* INVALID */;
 		}
 	}
+
+	// 获取当前值的对象类型(TargetType)
 	function getTargetType(value) {
 		return value["__v_skip" /* SKIP */] || !Object.isExtensible(value)
 			? 0 /* INVALID */
 			: targetTypeMap(toRawType(value));
 	}
+
+	// 创建 深度作用响应式值
 	function reactive(target) {
-		// if trying to observe a readonly proxy, return the readonly version.
 		if (isReadonly(target)) {
 			return target;
 		}
 		return createReactiveObject(target, false, mutableHandlers, mutableCollectionHandlers, reactiveMap);
 	}
-	/**
-	 * Return a shallowly-reactive copy of the original object, where only the root
-	 * level properties are reactive. It also does not auto-unwrap refs (even at the
-	 * root level).
-	 */
+
+	// 创建 浅度作用响应式值
 	function shallowReactive(target) {
 		return createReactiveObject(target, false, shallowReactiveHandlers, shallowCollectionHandlers, shallowReactiveMap);
 	}
-	/**
-	 * Creates a readonly copy of the original object. Note the returned copy is not
-	 * made reactive, but `readonly` can be called on an already reactive object.
-	 */
+	
+	// 创建 只读深度作用响应式值
 	function readonly(target) {
 		return createReactiveObject(target, true, readonlyHandlers, readonlyCollectionHandlers, readonlyMap);
 	}
-	/**
-	 * Returns a reactive-copy of the original object, where only the root level
-	 * properties are readonly, and does NOT unwrap refs nor recursively convert
-	 * returned properties.
-	 * This is used for creating the props proxy object for stateful components.
-	 */
+	
+	// 创建 只读浅度作用响应式值
 	function shallowReadonly(target) {
 		return createReactiveObject(target, true, shallowReadonlyHandlers, shallowReadonlyCollectionHandlers, shallowReadonlyMap);
 	}
+
+	// 创建 响应式值
 	function createReactiveObject(target, isReadonly, baseHandlers, collectionHandlers, proxyMap) {
+		// 当前值非对象时警告 并放回当前值
 		if (!isObject(target)) {
 			{
 				console.warn(`value cannot be made reactive: ${String(target)}`);
@@ -1351,47 +1396,71 @@ var Vue = (function (exports) {
 		}
 		// target is already a Proxy, return it.
 		// exception: calling readonly() on a reactive object
+		// 当前值 已经是响应式值
 		if (target["__v_raw" /* RAW */] &&
 			!(isReadonly && target["__v_isReactive" /* IS_REACTIVE */])) {
 			return target;
 		}
-		// target already has corresponding Proxy
+
+		// 缓存Map中如果存在 则直接返回该值的响应式值
 		const existingProxy = proxyMap.get(target);
 		if (existingProxy) {
 			return existingProxy;
 		}
-		// only specific value types can be observed.
+
+		// 非引用类型值时 直接返回当前值
 		const targetType = getTargetType(target);
 		if (targetType === 0 /* INVALID */) {
 			return target;
 		}
 		const proxy = new Proxy(target, targetType === 2 /* COLLECTION */ ? collectionHandlers : baseHandlers);
+		
+		// 缓存当前响应式值
 		proxyMap.set(target, proxy);
+
+		// 返回代理对象
 		return proxy;
 	}
+
+	// 断言: 当前值 是否是响应式的
+	// 原理: 响应式 属性 __v_isReactive 为true
 	function isReactive(value) {
 		if (isReadonly(value)) {
 			return isReactive(value["__v_raw" /* RAW */]);
 		}
 		return !!(value && value["__v_isReactive" /* IS_REACTIVE */]);
 	}
+
+	// 断言: 当前值 是否是只读
+	// 原理: 只读值 属性 __v_isReadonly 为true
 	function isReadonly(value) {
 		return !!(value && value["__v_isReadonly" /* IS_READONLY */]);
 	}
+
+	// 断言: 当前值 是否是浅复制
+	// 原理: 只读值 属性 __v_isShallow 为true
 	function isShallow(value) {
 		return !!(value && value["__v_isShallow" /* IS_SHALLOW */]);
 	}
+
+	// 断言: 当前值 是否可代理的
 	function isProxy(value) {
 		return isReactive(value) || isReadonly(value);
 	}
+
+	// TODO: 返回当前对象的最初的值
 	function toRaw(observed) {
 		const raw = observed && observed["__v_raw" /* RAW */];
 		return raw ? toRaw(raw) : observed;
 	}
+
+	// 标识: 标记当前值不能转化为响应式
+	// 原理: 实际上就是给当前值新增属性 __v_skipe 为true
 	function markRaw(value) {
 		def(value, "__v_skip" /* SKIP */, true);
 		return value;
 	}
+
 	const toReactive = (value) => isObject(value) ? reactive(value) : value;
 	const toReadonly = (value) => isObject(value) ? readonly(value) : value;
 
@@ -1420,33 +1489,55 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
+	// 断言: 当前值 是否是浅复制
+	// 原理: 只读值 属性 __v_isRef 为true
 	function isRef(r) {
 		return !!(r && r.__v_isRef === true);
 	}
+
+	// 创建 深层作用ref对象(内部值会被深层递归地转为响应式)
 	function ref(value) {
+		// 默认深层ref对象
 		return createRef(value, false);
 	}
+
+	// 创建 浅层作用ref对象
 	function shallowRef(value) {
 		return createRef(value, true);
 	}
+
+	// 返回 RefImpl 的实例
 	function createRef(rawValue, shallow) {
 		if (isRef(rawValue)) {
 			return rawValue;
 		}
 		return new RefImpl(rawValue, shallow);
 	}
+
+	// RefImpl类
 	class RefImpl {
 		constructor(value, __v_isShallow) {
+			// 标识: 标记当前value是深层作用 还是浅层作用
 			this.__v_isShallow = __v_isShallow;
+
 			this.dep = undefined;
+
+			// 标记: 标记当前对象是ref对象
 			this.__v_isRef = true;
+
 			this._rawValue = __v_isShallow ? value : toRaw(value);
+
+			// 如果当前值是要深层作用 则会调用reactive
+			// 示例: const user = ref({name: 'Lee'})
 			this._value = __v_isShallow ? value : toReactive(value);
 		}
+
 		get value() {
 			trackRefValue(this);
 			return this._value;
 		}
+
 		set value(newVal) {
 			newVal = this.__v_isShallow ? newVal : toRaw(newVal);
 			if (hasChanged(newVal, this._rawValue)) {
@@ -1456,6 +1547,8 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
+	// 
 	function triggerRef(ref) {
 		triggerRefValue(ref, ref.value);
 	}
@@ -1582,6 +1675,8 @@ var Vue = (function (exports) {
 		}
 		return cRef;
 	}
+
+	/* 逻辑分类: 响应式结束 */
 
 	const stack = [];
 	function pushWarningContext(vnode) {
