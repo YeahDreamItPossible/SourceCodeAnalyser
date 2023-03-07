@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+
+  <script src="../dist/redux.js"></script>
+  <script>
+    const state = ({user: null})
+
+    const userReducer = (state = null, action) => {
+      switch (action.type) {
+        case 'Update':
+          return Object.assign({}, state = {}, (action.user || {}))
+      }
+      return state
+    }
+
+    const reducers = Redux.combineReducers({user: userReducer})
+
+    const logger = ({getState, dispatch}) => (_dispatch) => action => {
+      console.log(66, action)
+      console.log(dispatch)
+      console.log(_dispatch)
+      return _dispatch(action)
+    }
+
+    const thunk = ({getState}) => dispatch => action => {
+      if (typeof action === 'function') {
+        return action(dispatch)
+      }
+      return dispatch(action)
+    }
+
+    const middlewares = Redux.applyMiddleware(thunk, logger)
+
+    const load = () => {
+      const store = Redux.createStore(reducers, state, middlewares)
+
+      store['@@observable']().subscribe({
+        next (state) {
+          console.log(77, state)
+        }
+      })
+
+      console.log(store.getState())
+
+
+      store.dispatch((dispatch) => dispatch({
+        type: 'Update',
+        user: {
+          name: 'Lee'
+        }
+      }))
+
+      console.log(store.getState().user)
+
+
+      // Redux.bindActionCreators(
+      //   (user) => ({
+      //     type: 'Update',
+      //     user
+      //   })
+      // , store.dispatch)({name: 'Wang'})
+
+      // console.log(store.getState().user)
+    }
+
+    window.addEventListener('load', load)
+
+  </script>
+</body>
+</html>

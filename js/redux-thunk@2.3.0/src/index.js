@@ -1,5 +1,6 @@
 function createThunkMiddleware(extraArgument) {
   return ({ dispatch, getState }) => next => action => {
+    // 控制反转IOC
     if (typeof action === 'function') {
       return action(dispatch, getState, extraArgument);
     }

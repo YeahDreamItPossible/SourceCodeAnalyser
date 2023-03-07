@@ -14,7 +14,6 @@
 })(this, (function (exports) {
   'use strict';
 
-  // Inlined version of the `symbol-observable` polyfill
   // 常量:
   var $$observable = (function () {
     return typeof Symbol === 'function' && Symbol.observable || '@@observable';
@@ -122,6 +121,8 @@
       if (typeof enhancer !== 'function') {
         throw new Error("Expected the enhancer to be a function. Instead, received: '" + kindOf(enhancer) + "'");
       }
+
+      // 使用中间件
       return enhancer(createStore)(reducer, preloadedState);
     }
     // reducer必须是函数
@@ -188,31 +189,7 @@
       };
     }
 
-    /**
-     * Dispatches an action. It is the only way to trigger a state change.
-     *
-     * The `reducer` function, used to create the store, will be called with the
-     * current state tree and the given `action`. Its return value will
-     * be considered the **next** state of the tree, and the change listeners
-     * will be notified.
-     *
-     * The base implementation only supports plain object actions. If you want to
-     * dispatch a Promise, an Observable, a thunk, or something else, you need to
-     * wrap your store creating function into the corresponding middleware. For
-     * example, see the documentation for the `redux-thunk` package. Even the
-     * middleware will eventually dispatch plain object actions using this method.
-     *
-     * @param {Object} action A plain object representing “what changed”. It is
-     * a good idea to keep actions serializable so you can record and replay user
-     * sessions, or use the time travelling `redux-devtools`. An action must have
-     * a `type` property which may not be `undefined`. It is a good idea to use
-     * string constants for action types.
-     *
-     * @returns {Object} For convenience, the same action object you dispatched.
-     *
-     * Note that, if you use a custom middleware, it may wrap `dispatch()` to
-     * return something else (for example, a Promise you can await).
-     */
+    // 中间件核心: 就是包装dispatch方法
     function dispatch(action) {
       // action 必须是对象
       if (!isPlainObject(action)) {
@@ -243,6 +220,7 @@
 
       // TODO: 返回用户自定义的action 是实现中间件的
       // 之前我觉得这个地方应该返回 store 便于链式编程
+      // 但是看了中间件之后 觉得返回action 简直是神来之笔
       return action;
     }
 
@@ -259,24 +237,11 @@
       });
     }
 
-    /**
-     * Interoperability point for observable/reactive libraries.
-     * @returns {observable} A minimal observable of state changes.
-     * For more information, see the observable proposal:
-     * https://github.com/tc39/proposal-observable
-     */
+    // 在状态变更前和变更后分别监听
     function observable() {
       var _ref;
       var outerSubscribe = subscribe;
       return _ref = {
-        /**
-         * The minimal observable subscription method.
-         * @param {Object} observer Any object that can be used as an observer.
-         * The observer object should have a `next` method.
-         * @returns {subscription} An object with an `unsubscribe` method that can
-         * be used to unsubscribe the observable from the store, and prevent further
-         * emission of values from the observable.
-         */
         subscribe: function subscribe(observer) {
           if (typeof observer !== 'object' || observer === null) {
             throw new Error("Expected the observer to be an object. Instead, received: '" + kindOf(observer) + "'");
@@ -297,9 +262,7 @@
       }, _ref;
     }
 
-    // When a store is created, an "INIT" action is dispatched so that every
-    // reducer returns their initial state. This effectively populates
-    // the initial state tree.
+    // 初始化 获取初始状态
     dispatch({
       type: ActionTypes$1.INIT
     });
@@ -469,33 +432,14 @@
     };
   }
 
+  // 绑定单个actioin
   function bindActionCreator(actionCreator, dispatch) {
     return function () {
       return dispatch(actionCreator.apply(this, arguments));
     };
   }
 
-  /**
-   * Turns an object whose values are action creators, into an object with the
-   * same keys, but with every function wrapped into a `dispatch` call so they
-   * may be invoked directly. This is just a convenience method, as you can call
-   * `store.dispatch(MyActionCreators.doSomething())` yourself just fine.
-   *
-   * For convenience, you can also pass an action creator as the first argument,
-   * and get a dispatch wrapped function in return.
-   *
-   * @param {Function|Object} actionCreators An object whose values are action
-   * creator functions. One handy way to obtain it is to use ES6 `import * as`
-   * syntax. You may also pass a single function.
-   *
-   * @param {Function} dispatch The `dispatch` function available on your Redux
-   * store.
-   *
-   * @returns {Function|Object} The object mimicking the original object, but with
-   * every action creator wrapped into the `dispatch` call. If you passed a
-   * function as `actionCreators`, the return value will also be a single
-   * function.
-   */
+  // 绑定多个action
   function bindActionCreators(actionCreators, dispatch) {
     if (typeof actionCreators === 'function') {
       return bindActionCreator(actionCreators, dispatch);
@@ -527,7 +471,7 @@
     return keys;
   }
 
-  //
+  // 对象扩展
   function _objectSpread2(target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = null != arguments[i] ? arguments[i] : {};
@@ -611,13 +555,21 @@
    * @returns {Function} A store enhancer applying the middleware.
    */
   // 使用中间件
+  // Middleware 只是包装了 store 的 dispatch 方法
   function applyMiddleware() {
+    // 1. 先把用户入参解析成插件数组
     for (var _len = arguments.length, middlewares = new Array(_len), _key = 0; _key < _len; _key++) {
       middlewares[_key] = arguments[_key];
     }
+
+    // 2. 函数柯里化
+    // 2.1 (createStore) => _createStore
+    // 2.2 (reducer, state) => store
+    // 包装store的dispatch方法是在步骤2.2生成store后
     return function (createStore) {
       return function () {
         var store = createStore.apply(void 0, arguments);
+        // _dispatch作用: 保证在获得chain时返回的必须是一个函数
         var _dispatch = function dispatch() {
           throw new Error('Dispatching while constructing your middleware is not allowed. ' + 'Other middleware would not be applied to this dispatch.');
         };
@@ -630,7 +582,11 @@
         var chain = middlewares.map(function (middleware) {
           return middleware(middlewareAPI);
         });
+
+        // 绑定用户包装后的dispatch函数
         _dispatch = compose.apply(void 0, chain)(store.dispatch);
+
+        // 扩展store中dispatch
         return _objectSpread2(_objectSpread2({}, store), {}, {
           dispatch: _dispatch
         });

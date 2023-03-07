@@ -4,7 +4,7 @@
 
 - axios@1.2.1
 
-- redux@4.2.0
+- [redux@4.2.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/redux-4.2.0/dist/redux.js)
 
 - redux-thunk@2.3.0
 
