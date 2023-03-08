@@ -6,6 +6,9 @@ const doc = (typeof document !== 'undefined' ? document : null) as Document
 
 const templateContainer = doc && /*#__PURE__*/ doc.createElement('template')
 
+
+// NOTE: 与DOM增删改查相关
+// 也是自定义渲染器时必须要实现的api
 export const nodeOps: Omit<RendererOptions<Node, Element>, 'patchProp'> = {
   insert: (child, parent, anchor) => {
     parent.insertBefore(child, anchor || null)

@@ -34,16 +34,17 @@
   </div>
   <div id="my"></div>
 
-  <script crossorigin="anonymous" integrity="sha512-STHUuG39htplTKlnh6tN5YnZY7r9KNvttl+hoow7kWD/q/VgssYIBQ/llXSI/Yy5SyR5m5C8FrVx8FUmzYdB1Q==" src="https://lib.baomitu.com/vue/3.2.27/vue.global.js"></script>
+  <!-- <script crossorigin="anonymous" integrity="sha512-STHUuG39htplTKlnh6tN5YnZY7r9KNvttl+hoow7kWD/q/VgssYIBQ/llXSI/Yy5SyR5m5C8FrVx8FUmzYdB1Q==" src="https://lib.baomitu.com/vue/3.2.27/vue.global.js"></script> -->
+  <script src="../dist/vue.global.js"></script>
   <script>
     const VueDemi = Vue
   </script>
   <script src="https://cdn.bootcdn.net/ajax/libs/pinia/2.0.32/pinia.iife.js"></script>
-
   <script>
     const {
       h,
       ref,
+      toRaw,
       computed,
       reactive,
       nextTick,
@@ -54,6 +55,13 @@
       defineComponent,
       defineAsyncComponent
     } = Vue
+  </script>
+
+  <script>
+    Vue.transformVNodeArgs(_ => {
+      console.log('vnode args: ', ..._)
+      return _
+    })
   </script>
 
   <script>
@@ -105,6 +113,7 @@
 
       render () {
         const userStore = useUserStore()
+        console.log(111, toRaw(this.$slots))
         return h('div', {
           class: 'container'
         },[
@@ -118,7 +127,8 @@
             }
           }),
           h(ElText),
-          h(ElAsync)
+          h(ElAsync),
+          this.$slots.default()
         ])
       }
     })
@@ -145,9 +155,18 @@
 
   <script>
     const app = createApp({
+      props: {
+        user: {
+          type: Object,
+        }
+      },
       setup () {
-        return () => h(Container)
+        return () => h(Container,null, {
+          default: () => h('div', 'default slot')
+        })
       }
+    }, {
+      user: {name: 'Lee'}
     })
 
     const store = Pinia.createPinia()
@@ -174,7 +193,7 @@
 
     app.provide('__app_runtime_env__', {v: '1', env: 'window'})
 
-    app.mount('#app')
+    const instance = app.mount('#app')
 
   </script>
 

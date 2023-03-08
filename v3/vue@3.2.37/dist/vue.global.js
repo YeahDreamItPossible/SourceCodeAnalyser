@@ -8,6 +8,8 @@
  * effect							=> 	 副作用
  * root component     =>   根组件
  * root props         =>   根属性
+ * stateful component =>   选项式组件或者状态组件(通过配置options生成的组件)
+ * functional component => 函数式组件
  */
 
 var Vue = (function (exports) {
@@ -2404,6 +2406,9 @@ var Vue = (function (exports) {
 			callWithAsyncErrorHandling(onceHandler, instance, 6 /* COMPONENT_EVENT_HANDLER */, args);
 		}
 	}
+
+	// 正常化emit
+	// app._context.emitsCache<Component, Object<String, null>>
 	function normalizeEmitsOptions(comp, appContext, asMixin = false) {
 		const cache = appContext.emitsCache;
 		const cached = cache.get(comp);
@@ -2445,6 +2450,7 @@ var Vue = (function (exports) {
 		cache.set(comp, normalized);
 		return normalized;
 	}
+
 	// Check if an incoming prop key is a declared emit event listener.
 	// e.g. With `emits: { click: null }`, props named `onClick` and `onclick` are
 	// both considered matched listeners.
@@ -3265,6 +3271,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 提供
 	function provide(key, value) {
 		if (!currentInstance) {
 			{
@@ -3286,6 +3293,8 @@ var Vue = (function (exports) {
 			provides[key] = value;
 		}
 	}
+
+	// 注入
 	function inject(key, defaultValue, treatDefaultAsFactory = false) {
 		// fallback to `currentRenderingInstance` so that this can be called in
 		// a functional component
@@ -3887,12 +3896,14 @@ var Vue = (function (exports) {
 		return ret;
 	}
 
-	// implementation, close to no-op
+	// 定义选项式组件
 	function defineComponent(options) {
 		return isFunction(options) ? { setup: options, name: options.name } : options;
 	}
 
 	const isAsyncWrapper = (i) => !!i.type.__asyncLoader;
+
+	// 定义异步组件
 	function defineAsyncComponent(source) {
 		if (isFunction(source)) {
 			source = { loader: source };
@@ -4023,6 +4034,7 @@ var Vue = (function (exports) {
 			}
 		});
 	}
+
 	function createInnerComp(comp, { vnode: { ref, props, children, shapeFlag }, parent }) {
 		const vnode = createVNode(comp, props, children);
 		// ensure inner component inherits the async wrapper's ref owner
@@ -4381,12 +4393,12 @@ var Vue = (function (exports) {
 		[bar, this.y]
 	])
 	*/
+	// 验证指令名(防止与内置指令重名)
 	function validateDirectiveName(name) {
 		if (isBuiltInDirective(name)) {
 			warn$1('Do not use built-in directive ids as custom directive id: ' + name);
 		}
 	}
-	
 
 	// 使用指令
 	// 是将用户自定义指令添加到vnode.dirs集合中
@@ -4870,10 +4882,9 @@ var Vue = (function (exports) {
 			return has;
 		}
 	});
-	// dev only
-	// In dev mode, the proxy target exposes the same properties as seen on `this`
-	// for easier console inspection. In prod mode it will be an empty object so
-	// these properties definitions can be skipped.
+
+	// 开发模式下 创建渲染上下文
+	// 生产模式下 控对象
 	function createDevRenderContext(instance) {
 		const target = {};
 		// expose internal instance for proxy handlers
@@ -4895,6 +4906,7 @@ var Vue = (function (exports) {
 		});
 		return target;
 	}
+
 	// dev only
 	function exposePropsOnRenderContext(instance) {
 		const { ctx, propsOptions: [propsOptions] } = instance;
@@ -5345,11 +5357,14 @@ var Vue = (function (exports) {
 		return merged;
 	}
 
-	function initProps(instance, rawProps, isStateful, // result of bitwise flag comparison
-		isSSR = false) {
+	// 给instance的props和attrs属性赋值
+	function initProps(instance, rawProps, isStateful,isSSR = false) {
 		const props = {};
 		const attrs = {};
+
+		// TODO: 暂时没看懂 为什么设置 attrs.__vInternal = 1
 		def(attrs, InternalObjectKey, 1);
+
 		instance.propsDefaults = Object.create(null);
 		setFullProps(instance, rawProps, props, attrs);
 		// ensure all declared prop keys are present
@@ -5358,7 +5373,8 @@ var Vue = (function (exports) {
 				props[key] = undefined;
 			}
 		}
-		// validation
+		
+		// 验证每一个prop的type required validator
 		{
 			validateProps(rawProps || {}, props, instance);
 		}
@@ -5378,6 +5394,8 @@ var Vue = (function (exports) {
 		}
 		instance.attrs = attrs;
 	}
+
+	// 更新props
 	function updateProps(instance, rawProps, rawPrevProps, optimized) {
 		const { props, attrs, vnode: { patchFlag } } = instance;
 		const rawCurrentProps = toRaw(props);
@@ -5476,12 +5494,15 @@ var Vue = (function (exports) {
 			validateProps(rawProps || {}, props, instance);
 		}
 	}
+
 	function setFullProps(instance, rawProps, props, attrs) {
 		const [options, needCastKeys] = instance.propsOptions;
 		let hasAttrsChanged = false;
 		let rawCastValues;
 		if (rawProps) {
 			for (let key in rawProps) {
+				
+				// 防止与内置props冲突
 				// key, ref are reserved and never passed down
 				if (isReservedProp(key)) {
 					continue;
@@ -5516,6 +5537,7 @@ var Vue = (function (exports) {
 		}
 		return hasAttrsChanged;
 	}
+
 	function resolvePropValue(options, props, key, value, instance, isAbsent) {
 		const opt = options[key];
 		if (opt != null) {
@@ -5551,6 +5573,9 @@ var Vue = (function (exports) {
 		}
 		return value;
 	}
+
+	// 正常化 props 选项
+	// app._context.propsCache<Component, []>
 	function normalizePropsOptions(comp, appContext, asMixin = false) {
 		const cache = appContext.propsCache;
 		const cached = cache.get(comp);
@@ -5585,6 +5610,7 @@ var Vue = (function (exports) {
 			return EMPTY_ARR;
 		}
 		if (isArray(raw)) {
+			// 数组形式的props每一项必须是String
 			for (let i = 0; i < raw.length; i++) {
 				if (!isString(raw[i])) {
 					warn$1(`props must be strings when using array syntax.`, raw[i]);
@@ -5623,6 +5649,8 @@ var Vue = (function (exports) {
 		cache.set(comp, res);
 		return res;
 	}
+
+	// 验证prop name(不能以$开头, $var经常表示实例属性)
 	function validatePropName(key) {
 		if (key[0] !== '$') {
 			return true;
@@ -5632,6 +5660,7 @@ var Vue = (function (exports) {
 		}
 		return false;
 	}
+
 	// use function string name to check type constructors
 	// so that it works across vms / iframes.
 	function getType(ctor) {
@@ -5650,9 +5679,8 @@ var Vue = (function (exports) {
 		}
 		return -1;
 	}
-	/**
-	 * dev only
-	 */
+	
+	// 开发环境下 验证props
 	function validateProps(rawProps, props, instance) {
 		const resolvedValues = toRaw(props);
 		const options = instance.propsOptions[0];
@@ -5663,9 +5691,8 @@ var Vue = (function (exports) {
 			validateProp(key, resolvedValues[key], opt, !hasOwn(rawProps, key) && !hasOwn(rawProps, hyphenate(key)));
 		}
 	}
-	/**
-	 * dev only
-	 */
+	
+	// 开发环境下 验证prop 中的各种属性(type, required, validator)
 	function validateProp(name, value, prop, isAbsent) {
 		const { type, required, validator } = prop;
 		// required!
@@ -5698,6 +5725,7 @@ var Vue = (function (exports) {
 			warn$1('Invalid prop: custom validator check failed for prop "' + name + '".');
 		}
 	}
+
 	const isSimpleType = /*#__PURE__*/ makeMap('String,Number,Boolean,Function,Symbol,BigInt');
 	/**
 	 * dev only
@@ -5820,6 +5848,8 @@ var Vue = (function (exports) {
 			}
 		}
 	};
+
+	
 	const normalizeVNodeSlots = (instance, children) => {
 		if (!isKeepAlive(instance.vnode) &&
 			!(false)) {
@@ -5829,6 +5859,8 @@ var Vue = (function (exports) {
 		const normalized = normalizeSlotValue(children);
 		instance.slots.default = () => normalized;
 	};
+
+	// 给instance的slots属性赋值
 	const initSlots = (instance, children) => {
 		if (instance.vnode.shapeFlag & 32 /* SLOTS_CHILDREN */) {
 			const type = children._;
@@ -5851,6 +5883,8 @@ var Vue = (function (exports) {
 		}
 		def(instance.slots, InternalObjectKey, 1);
 	};
+
+	// 更新 slots
 	const updateSlots = (instance, children, optimized) => {
 		const { vnode, slots } = instance;
 		let needDeletionCheck = true;
@@ -5903,7 +5937,7 @@ var Vue = (function (exports) {
 		}
 	};
 
-  // TODO: 创建应用上下文(可)
+  // TODO: 创建应用上下文(任何组件均可访问到)
 	function createAppContext() {
 		return {
 			app: null,
@@ -5926,9 +5960,11 @@ var Vue = (function (exports) {
 		};
 	}
 
-  // 返回app with api
+  // 高阶函数: 
 	let uid = 0;
 	function createAppAPI(render, hydrate) {
+		// 这里主要主要是返回一个纯净的app实例(可以当做一个模版)
+		// 仅仅是绑定用户的入参 rootComponent 和 rootProps
 		return function createApp(rootComponent, rootProps = null) {
       // rootComponent 可能是函数式组件 也可能是选项式组件
 			if (!isFunction(rootComponent)) {
@@ -5958,11 +5994,13 @@ var Vue = (function (exports) {
         // 用户传入的root props
 				_props: rootProps,
 
+				// 容器
 				_container: null,
 
         // 应用上下文
 				_context: context,
 
+				// 根组件实例
 				_instance: null,
 				
         // 版本
@@ -5979,6 +6017,8 @@ var Vue = (function (exports) {
 				},
 
         // 使用插件
+				// 1. installedPlugins添加该插件
+				// 2. 插件(app, ...options)
 				use(plugin, ...options) {
 					if (installedPlugins.has(plugin)) {
 						warn$1(`Plugin has already been applied to target app.`);
@@ -5999,6 +6039,7 @@ var Vue = (function (exports) {
 				},
 
         // 全局混合
+				// app._context.mixins属性添加该mixin
 				mixin(mixin) {
 					{
 						if (!context.mixins.includes(mixin)) {
@@ -6013,6 +6054,7 @@ var Vue = (function (exports) {
 				},
 
         // 注册全局组件
+				// app._context.components<Id, Component>属性添加组件
 				component(name, component) {
 					{
 						validateComponentName(name, context.config);
@@ -6028,6 +6070,7 @@ var Vue = (function (exports) {
 				},
 
         // 注册全局指令
+				// app._context.directives<Id, Directive>属性添加组件
 				directive(name, directive) {
 					{
 						validateDirectiveName(name);
@@ -6046,19 +6089,21 @@ var Vue = (function (exports) {
 				mount(rootContainer, isHydrate, isSVG) {
 					if (!isMounted) {
 						// #5571
-            // 标识：容器 __vue_app__ 标识应用已挂载
+            // 标识：容器(DOM) __vue_app__ 标识应用已挂载
 						if (rootContainer.__vue_app__) {
 							warn$1(`There is already an app instance mounted on the host container.\n` +
 								` If you want to mount another app on the same host container,` +
 								` you need to unmount the previous app by calling \`app.unmount()\` first.`);
 						}
 
+						// 创建根组件的vnode
 						const vnode = createVNode(rootComponent, rootProps);
-						// store app context on the root VNode.
-						// this will be set on the root instance on initial mount.
+
+						// vnode appContext 绑定应用上下文
 						vnode.appContext = context;
 						// HMR root reload
 						{
+							// 开发环境下热启动
 							context.reload = () => {
 								render(cloneVNode(vnode), rootContainer, isSVG);
 							};
@@ -6071,6 +6116,7 @@ var Vue = (function (exports) {
 						}
 						isMounted = true;
 						app._container = rootContainer;
+						// 标识: 标识当前容器已挂在应用
 						rootContainer.__vue_app__ = app;
 						{
 							app._instance = vnode.component;
@@ -6102,6 +6148,7 @@ var Vue = (function (exports) {
 				},
 
         // 全局提供
+				// app._context.provides<Key, Value>属性添加键值对
 				provide(key, value) {
 					if (key in context.provides) {
 						warn$1(`App already provides property with key "${String(key)}". ` +
@@ -6602,6 +6649,8 @@ var Vue = (function (exports) {
 		;
 	
   // 创建自定义渲染器
+	// 这里的options 主要是与 DOM 增删改查的api 以及 DOM props(包括DOM attrs 和 vue directives)
+	// 可以通过自定义options 实现一套运行在某个环境的渲染器
 	function createRenderer(options) {
 		return baseCreateRenderer(options);
 	}
@@ -6613,8 +6662,7 @@ var Vue = (function (exports) {
 		return baseCreateRenderer(options, createHydrationFunctions);
 	}
 
-	// implementation
-  // 
+  // render api 实现
 	function baseCreateRenderer(options, createHydrationFns) {
 		const target = getGlobalThis();
 		target.__VUE__ = true;
@@ -6624,7 +6672,10 @@ var Vue = (function (exports) {
 		const { insert: hostInsert, remove: hostRemove, patchProp: hostPatchProp, createElement: hostCreateElement, createText: hostCreateText, createComment: hostCreateComment, setText: hostSetText, setElementText: hostSetElementText, parentNode: hostParentNode, nextSibling: hostNextSibling, setScopeId: hostSetScopeId = NOOP, cloneNode: hostCloneNode, insertStaticContent: hostInsertStaticContent } = options;
 		// Note: functions inside this closure should use `const xxx = () => {}`
 		// style in order to prevent being inlined by minifiers.
+		// 打补丁
 		const patch = (n1, n2, container, anchor = null, parentComponent = null, parentSuspense = null, isSVG = false, slotScopeIds = null, optimized = isHmrUpdating ? false : !!n2.dynamicChildren) => {
+			// n1 旧vnode
+			// n2 新vnode
 			if (n1 === n2) {
 				return;
 			}
@@ -6679,6 +6730,7 @@ var Vue = (function (exports) {
 				setRef(ref, n1 && n1.ref, parentSuspense, n2 || n1, !n2);
 			}
 		};
+
 		const processText = (n1, n2, container, anchor) => {
 			if (n1 == null) {
 				hostInsert((n2.el = hostCreateText(n2.children)), container, anchor);
@@ -7053,6 +7105,8 @@ var Vue = (function (exports) {
 				}
 			}
 		};
+
+		// 解析组件
 		const processComponent = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			n2.slotScopeIds = slotScopeIds;
 			if (n1 == null) {
@@ -7067,6 +7121,8 @@ var Vue = (function (exports) {
 				updateComponent(n1, n2, optimized);
 			}
 		};
+
+		// 挂载组件
 		const mountComponent = (initialVNode, container, anchor, parentComponent, parentSuspense, isSVG, optimized) => {
 			const instance = (initialVNode.component = createComponentInstance(initialVNode, parentComponent, parentSuspense));
 			if (instance.type.__hmrId) {
@@ -7085,6 +7141,7 @@ var Vue = (function (exports) {
 				{
 					startMeasure(instance, `init`);
 				}
+				// 
 				setupComponent(instance);
 				{
 					endMeasure(instance, `init`);
@@ -7108,6 +7165,8 @@ var Vue = (function (exports) {
 				endMeasure(instance, `mount`);
 			}
 		};
+
+		// 更新组件
 		const updateComponent = (n1, n2, optimized) => {
 			const instance = (n2.component = n1.component);
 			if (shouldUpdateComponent(n1, n2, optimized)) {
@@ -7813,18 +7872,22 @@ var Vue = (function (exports) {
 			}
 			return hostNextSibling((vnode.anchor || vnode.el));
 		};
+
 		const render = (vnode, container, isSVG) => {
 			if (vnode == null) {
+				// 卸载
 				if (container._vnode) {
 					unmount(container._vnode, null, null, true);
 				}
 			}
 			else {
+				// 挂载
 				patch(container._vnode || null, vnode, container, null, null, null, isSVG);
 			}
 			flushPostFlushCbs();
 			container._vnode = vnode;
 		};
+
 		const internals = {
 			p: patch,
 			um: unmount,
@@ -7849,6 +7912,7 @@ var Vue = (function (exports) {
 			createApp: createAppAPI(render, hydrate)
 		};
 	}
+
 	function toggleRecurse({ effect, update }, allowed) {
 		effect.allowRecurse = update.allowRecurse = allowed;
 	}
@@ -8134,6 +8198,8 @@ var Vue = (function (exports) {
 	// Force-casted public typing for h and TSX props inference
 	const Teleport = TeleportImpl;
 
+	/* 逻辑分类: vnode开始 */
+
 	const Fragment = Symbol('Fragment');
 	const Text = Symbol('Text');
 	const Comment = Symbol('Comment');
@@ -8232,21 +8298,21 @@ var Vue = (function (exports) {
 		}
 		return n1.type === n2.type && n1.key === n2.key;
 	}
+
+	// 自定义转换vnode args (预处理vnode)
+	// 如果设置该转换函数 则会先调用该转换函数 后调用_createVNode函数
 	let vnodeArgsTransformer;
-	/**
-	 * Internal API for registering an arguments transform for createVNode
-	 * used for creating stubs in the test-utils
-	 * It is *internal* but needs to be exposed for test-utils to pick up proper
-	 * typings
-	 */
+	
 	function transformVNodeArgs(transformer) {
 		vnodeArgsTransformer = transformer;
 	}
+
 	const createVNodeWithArgsTransform = (...args) => {
 		return _createVNode(...(vnodeArgsTransformer
 			? vnodeArgsTransformer(args, currentRenderingInstance)
 			: args));
 	};
+
 	const InternalObjectKey = `__vInternal`;
 	const normalizeKey = ({ key }) => key != null ? key : null;
 	const normalizeRef = ({ ref, ref_key, ref_for }) => {
@@ -8256,6 +8322,8 @@ var Vue = (function (exports) {
 				: ref
 			: null);
 	};
+
+	// 创建vnode
 	function createBaseVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, shapeFlag = type === Fragment ? 0 : 1 /* ELEMENT */, isBlockNode = false, needFullChildrenNormalization = false) {
 		const vnode = {
 			__v_isVNode: true,
@@ -8320,7 +8388,11 @@ var Vue = (function (exports) {
 		}
 		return vnode;
 	}
+
+	// 创建vnode
 	const createVNode = (createVNodeWithArgsTransform);
+
+	// 真正创建 vnode
 	function _createVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, isBlockNode = false) {
 		if (!type || type === NULL_DYNAMIC_COMPONENT) {
 			if (!type) {
@@ -8368,7 +8440,13 @@ var Vue = (function (exports) {
 				props.style = normalizeStyle(style);
 			}
 		}
-		// encode the vnode type information into a bitmap
+
+		// 将vnode type编码成位图
+		// 1 元素(ELEMENT) 
+		// 128 SUSPENSE 
+		// 64 TELEPORT 
+		// 4 选项式组件(STATEFUL_COMPONENT) 
+		// 2 函数式组件(FUNCTIONAL_COMPONENT)
 		const shapeFlag = isString(type)
 			? 1 /* ELEMENT */
 			: isSuspense(type)
@@ -8389,6 +8467,7 @@ var Vue = (function (exports) {
 		}
 		return createBaseVNode(type, props, children, patchFlag, dynamicProps, shapeFlag, isBlockNode, true);
 	}
+
 	function guardReactiveProps(props) {
 		if (!props)
 			return null;
@@ -8612,8 +8691,11 @@ var Vue = (function (exports) {
 		]);
 	}
 
+	/* 逻辑分类: vnode结束 */
+
 	const emptyAppContext = createAppContext();
 	let uid$1 = 0;
+	// 创建组件实例
 	function createComponentInstance(vnode, parent, suspense) {
 		const type = vnode.type;
 		// inherit parent app context - or - if root, adopt from root vnode
@@ -8711,28 +8793,46 @@ var Vue = (function (exports) {
 		currentInstance = null;
 	};
 	const isBuiltInTag = /*#__PURE__*/ makeMap('slot,component');
+
+	// 验证组件名(非内置标签 or 非原生标签)
 	function validateComponentName(name, config) {
 		const appIsNativeTag = config.isNativeTag || NO;
 		if (isBuiltInTag(name) || appIsNativeTag(name)) {
 			warn$1('Do not use built-in or reserved HTML elements as component id: ' + name);
 		}
 	}
+
+	// 断言: 是否是选项式组件
 	function isStatefulComponent(instance) {
 		return instance.vnode.shapeFlag & 4 /* STATEFUL_COMPONENT */;
 	}
+
+	// 标识: 是否是服务端渲染期间
 	let isInSSRComponentSetup = false;
+
+	// 安装组件
+	// 1. 初始化props attrs slots
+	// 2. 处理setup函数
+	// 3. 获取render函数
+	// 4. 应用用户入参options
 	function setupComponent(instance, isSSR = false) {
 		isInSSRComponentSetup = isSSR;
 		const { props, children } = instance.vnode;
 		const isStateful = isStatefulComponent(instance);
+		
+		// 必须先初始化 props 和slots
+		// 因为解析setup函数时 需要props 和 slots
 		initProps(instance, props, isStateful, isSSR);
 		initSlots(instance, children);
+
 		const setupResult = isStateful
 			? setupStatefulComponent(instance, isSSR)
 			: undefined;
 		isInSSRComponentSetup = false;
 		return setupResult;
 	}
+
+	// 安装选项式组件,主要是处理setup函数
 	function setupStatefulComponent(instance, isSSR) {
 		var _a;
 		const Component = instance.type;
@@ -8809,6 +8909,8 @@ var Vue = (function (exports) {
 			finishComponentSetup(instance, isSSR);
 		}
 	}
+
+	// 处理 setup 函数的结果
 	function handleSetupResult(instance, setupResult, isSSR) {
 		if (isFunction(setupResult)) {
 			// setup returned an inline render function
@@ -8836,12 +8938,13 @@ var Vue = (function (exports) {
 		}
 		finishComponentSetup(instance, isSSR);
 	}
+
+	// 标识: 标记当前版本是运行时版本
+	// 编译函数: template => render
 	let compile;
+
 	let installWithProxy;
-	/**
-	 * For runtime-dom to register the compiler.
-	 * Note the exported method uses any to avoid d.ts relying on the compiler types.
-	 */
+
 	function registerRuntimeCompiler(_compile) {
 		compile = _compile;
 		installWithProxy = i => {
@@ -8850,15 +8953,19 @@ var Vue = (function (exports) {
 			}
 		};
 	}
-	// dev only
+
+	// 断言: 断言当前版本是否值运行时版本
 	const isRuntimeOnly = () => !compile;
+
+	// 在解析setup后 1. 解析组件的render函数 2. 应用用户的options选项
+	// render 函数的来源
+	// 1. setup
+	// 2. 用户自定义render
+	// 3. template(通过compile生成render)
 	function finishComponentSetup(instance, isSSR, skipOptions) {
 		const Component = instance.type;
-		// template / render function normalization
-		// could be already set when returned from setup()
+
 		if (!instance.render) {
-			// only do on-the-fly compile if not in SSR - SSR on-the-fly compilation
-			// is done by server-renderer
 			if (!isSSR && compile && !Component.render) {
 				const template = Component.template;
 				if (template) {
@@ -8878,9 +8985,6 @@ var Vue = (function (exports) {
 				}
 			}
 			instance.render = (Component.render || NOOP);
-			// for runtime-compiled render functions using `with` blocks, the render
-			// proxy used needs a different `has` handler which is more performant and
-			// also only allows a whitelist of globals to fallthrough.
 			if (installWithProxy) {
 				installWithProxy(instance);
 			}
@@ -8908,6 +9012,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
 	function createAttrsProxy(instance) {
 		return new Proxy(instance.attrs, {
 			get(target, key) {
@@ -9159,6 +9264,7 @@ var Vue = (function (exports) {
 	}
 
 	// Actual implementation
+	// ast => vnode
 	function h(type, propsOrChildren, children) {
 		const l = arguments.length;
 		if (l === 2) {

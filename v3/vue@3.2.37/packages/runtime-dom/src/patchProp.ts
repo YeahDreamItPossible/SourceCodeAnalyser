@@ -10,6 +10,7 @@ const nativeOnRE = /^on[a-z]/
 
 type DOMRendererOptions = RendererOptions<Node, Element>
 
+// NOTE: props patch(包括dom attr 和 vue directives)
 export const patchProp: DOMRendererOptions['patchProp'] = (
   el,
   key,
