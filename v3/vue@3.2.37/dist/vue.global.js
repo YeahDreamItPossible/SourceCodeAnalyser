@@ -4,10 +4,13 @@
  * 注释中的名词解释
  * app       					=>   根应用(通过createApp创建, 一个vue应用中只能有一个根状态应用)
  * component instance => 	 组件实例
+ * 
  * effect scope				=> 	 作用域
  * effect							=> 	 副作用
+ * 
  * root component     =>   根组件
  * root props         =>   根属性
+ * 
  * stateful component =>   选项式组件或者状态组件(通过配置options生成的组件)
  * functional component => 函数式组件
  */
@@ -448,16 +451,17 @@ var Vue = (function (exports) {
 		console.warn(`[Vue warn] ${msg}`, ...args);
 	}
 
-	/* 逻辑分类: 作用域开始 */
+	/* 逻辑分层: 作用域开始 */
 
 	// 当前激活的作用域
 	let activeEffectScope;
 
 	class EffectScope {
 		constructor(detached = false) {
+			// 标识: 标记当前作用域是激活的
 			this.active = true;
 			
-			// 副作用集合
+			// 当前作用域下的副作用集合
 			this.effects = [];
 			
 			// 清除队列队列
@@ -532,7 +536,7 @@ var Vue = (function (exports) {
 		return new EffectScope(detached);
 	}
 
-	// 
+	// 当前作用域下的副作用域集合 添加该副作用
 	function recordEffectScope(effect, scope = activeEffectScope) {
 		if (scope && scope.active) {
 			scope.effects.push(effect);
@@ -555,7 +559,7 @@ var Vue = (function (exports) {
 		}
 	}
 
-	/* 逻辑分类: 副作用域结束 */
+	/* 逻辑分层: 副作用域结束 */
 
 	const createDep = (effects) => {
 		const dep = new Set(effects);
@@ -592,7 +596,7 @@ var Vue = (function (exports) {
 		}
 	};
 
-	/*	逻辑分类: 副作用开始 */
+	/*	逻辑分层: 副作用开始 */
 
 	const targetMap = new WeakMap();
 	// The number of effects currently being tracked recursively.
@@ -607,15 +611,30 @@ var Vue = (function (exports) {
 	let activeEffect;
 	const ITERATE_KEY = Symbol('iterate');
 	const MAP_KEY_ITERATE_KEY = Symbol('Map key iterate');
+	
+	// TODO: 好好研究研究
 	class ReactiveEffect {
 		constructor(fn, scheduler = null, scope) {
+			// 回调函数ß
 			this.fn = fn;
+
+			// 调度者
 			this.scheduler = scheduler;
+
+			// 标识: 标识当前副作用是激活状态
 			this.active = true;
+
+			// 依赖
 			this.deps = [];
+
+			// 父副作用
 			this.parent = undefined;
+
+			// 当前作用域下记录该副作用
 			recordEffectScope(this, scope);
 		}
+
+		// 执行副作用的回调函数
 		run() {
 			if (!this.active) {
 				return this.fn();
@@ -654,6 +673,7 @@ var Vue = (function (exports) {
 				}
 			}
 		}
+
 		stop() {
 			// stopped while running itself - defer the cleanup
 			if (activeEffect === this) {
@@ -668,6 +688,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
 	function cleanupEffect(effect) {
 		const { deps } = effect;
 		if (deps.length) {
@@ -677,6 +698,7 @@ var Vue = (function (exports) {
 			deps.length = 0;
 		}
 	}
+
 	function effect(fn, options) {
 		if (fn.effect) {
 			fn = fn.effect.fn;
@@ -694,19 +716,29 @@ var Vue = (function (exports) {
 		runner.effect = _effect;
 		return runner;
 	}
+
 	function stop(runner) {
 		runner.effect.stop();
 	}
+
+	// 标识: 是否应追踪
 	let shouldTrack = true;
+
+	// 追踪栈
 	const trackStack = [];
+
+	// 停止追踪
 	function pauseTracking() {
 		trackStack.push(shouldTrack);
 		shouldTrack = false;
 	}
+
+	// 重置追踪
 	function resetTracking() {
 		const last = trackStack.pop();
 		shouldTrack = last === undefined ? true : last;
 	}
+
 	function track(target, type, key) {
 		if (shouldTrack && activeEffect) {
 			let depsMap = targetMap.get(target);
@@ -722,6 +754,7 @@ var Vue = (function (exports) {
 			trackEffects(dep, eventInfo);
 		}
 	}
+
 	function trackEffects(dep, debuggerEventExtraInfo) {
 		let shouldTrack = false;
 		if (effectTrackDepth <= maxMarkerBits) {
@@ -844,7 +877,7 @@ var Vue = (function (exports) {
 		}
 	}
 
-	/* 逻辑分类: 副作用结束 */
+	/* 逻辑分层: 副作用结束 */
 
 	const isNonTrackableKeys = /*#__PURE__*/ makeMap(`__proto__,__v_isRef,__isVue`);
 	const builtInSymbols = new Set(
@@ -1271,7 +1304,7 @@ var Vue = (function (exports) {
 	}
 	const [mutableInstrumentations, readonlyInstrumentations, shallowInstrumentations, shallowReadonlyInstrumentations] = /* #__PURE__*/ createInstrumentations();
 	
-	/* 逻辑分类: 响应式开始 */
+	/* 逻辑分层: 响应式开始 */
 
 	/**
 	 * 响应式包 关键词说明
@@ -1683,15 +1716,20 @@ var Vue = (function (exports) {
 		return cRef;
 	}
 
-	/* 逻辑分类: 响应式结束 */
+	/* 逻辑分层: 响应式结束 */
 
+	// 栈结构简易实现
 	const stack = [];
+	// 入栈
 	function pushWarningContext(vnode) {
 		stack.push(vnode);
 	}
+	// 出栈
 	function popWarningContext() {
 		stack.pop();
 	}
+
+	// 警告
 	function warn$1(msg, ...args) {
 		// avoid props formatting or warn handler tracking deps that might be mutated
 		// during patch, leading to infinite recursion.
@@ -1721,6 +1759,8 @@ var Vue = (function (exports) {
 		}
 		resetTracking();
 	}
+
+	// 获取component tree 中某个component node的路径
 	function getComponentTrace() {
 		let currentVNode = stack[stack.length - 1];
 		if (!currentVNode) {
@@ -1746,6 +1786,7 @@ var Vue = (function (exports) {
 		}
 		return normalizedStack;
 	}
+
 	/* istanbul ignore next */
 	function formatTrace(trace) {
 		const logs = [];
@@ -1754,6 +1795,7 @@ var Vue = (function (exports) {
 		});
 		return logs;
 	}
+
 	function formatTraceEntry({ vnode, recurseCount }) {
 		const postfix = recurseCount > 0 ? `... (${recurseCount} recursive calls)` : ``;
 		const isRoot = vnode.component ? vnode.component.parent == null : false;
@@ -1763,6 +1805,7 @@ var Vue = (function (exports) {
 			? [open, ...formatProps(vnode.props), close]
 			: [open + close];
 	}
+
 	/* istanbul ignore next */
 	function formatProps(props) {
 		const res = [];
@@ -1775,6 +1818,7 @@ var Vue = (function (exports) {
 		}
 		return res;
 	}
+
 	/* istanbul ignore next */
 	function formatProp(key, value, raw) {
 		if (isString(value)) {
@@ -1799,6 +1843,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 错误类型
 	const ErrorTypeStrings = {
 		["sp" /* SERVER_PREFETCH */]: 'serverPrefetch hook',
 		["bc" /* BEFORE_CREATE */]: 'beforeCreate hook',
@@ -1831,6 +1876,8 @@ var Vue = (function (exports) {
 		[14 /* SCHEDULER */]: 'scheduler flush. This is likely a Vue internals bug. ' +
 			'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core'
 	};
+
+	// 调用同步函数并捕捉错误
 	function callWithErrorHandling(fn, instance, type, args) {
 		let res;
 		try {
@@ -1841,6 +1888,8 @@ var Vue = (function (exports) {
 		}
 		return res;
 	}
+
+	// 调用异步函数并捕捉错误
 	function callWithAsyncErrorHandling(fn, instance, type, args) {
 		if (isFunction(fn)) {
 			const res = callWithErrorHandling(fn, instance, type, args);
@@ -1857,6 +1906,8 @@ var Vue = (function (exports) {
 		}
 		return values;
 	}
+
+	// 处理错误(主要是获取错误的上下文栈)
 	function handleError(err, instance, type, throwInDev = true) {
 		const contextVNode = instance ? instance.vnode : null;
 		if (instance) {
@@ -1885,6 +1936,8 @@ var Vue = (function (exports) {
 		}
 		logError(err, type, contextVNode, throwInDev);
 	}
+
+	// 输出错误
 	function logError(err, type, contextVNode, throwInDev = true) {
 		{
 			const info = ErrorTypeStrings[type];
@@ -2330,6 +2383,7 @@ var Vue = (function (exports) {
 		emit("component:emit" /* COMPONENT_EMIT */, component.appContext.app, component, event, params);
 	}
 
+	// component instance emit实现
 	function emit$1(instance, event, ...rawArgs) {
 		if (instance.isUnmounted)
 			return;
@@ -2468,39 +2522,30 @@ var Vue = (function (exports) {
 	 * mark the current rendering instance for asset resolution (e.g.
 	 * resolveComponent, resolveDirective) during render
 	 */
+	// 当前渲染树
 	let currentRenderingInstance = null;
+
+	// TODO: 
 	let currentScopeId = null;
-	/**
-	 * Note: rendering calls maybe nested. The function returns the parent rendering
-	 * instance if present, which should be restored after the render is done:
-	 *
-	 * ```js
-	 * const prev = setCurrentRenderingInstance(i)
-	 * // ...render
-	 * setCurrentRenderingInstance(prev)
-	 * ```
-	 */
+
+	// 设置当前渲染树
 	function setCurrentRenderingInstance(instance) {
 		const prev = currentRenderingInstance;
 		currentRenderingInstance = instance;
 		currentScopeId = (instance && instance.type.__scopeId) || null;
 		return prev;
 	}
-	/**
-	 * Set scope id when creating hoisted vnodes.
-	 * @private compiler helper
-	 */
+
+	// 设置ScopeId
 	function pushScopeId(id) {
 		currentScopeId = id;
 	}
-	/**
-	 * Technically we no longer need this after 3.0.8 but we need to keep the same
-	 * API for backwards compat w/ code generated by compilers.
-	 * @private
-	 */
+	
+	// 重置ScopeId
 	function popScopeId() {
 		currentScopeId = null;
 	}
+
 	/**
 	 * Only for backwards compat
 	 * @private
@@ -2558,6 +2603,10 @@ var Vue = (function (exports) {
 	function markAttrsAccessed() {
 		accessedAttrs = true;
 	}
+
+	// TODO: 渲染节点根
+	// 主要是调用 component render函数生成vnode
+	// 并解析vnode中dirs transition
 	function renderComponentRoot(instance) {
 		const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit, render, renderCache, data, setupState, ctx, inheritAttrs } = instance;
 		let result;
@@ -2688,6 +2737,7 @@ var Vue = (function (exports) {
 		setCurrentRenderingInstance(prev);
 		return result;
 	}
+
 	/**
 	 * dev only
 	 * In dev mode, template root level comments are rendered, which turns the
@@ -3901,6 +3951,7 @@ var Vue = (function (exports) {
 		return isFunction(options) ? { setup: options, name: options.name } : options;
 	}
 
+	// 断言: 是否是异步组件包装组件的vnode
 	const isAsyncWrapper = (i) => !!i.type.__asyncLoader;
 
 	// 定义异步组件
@@ -4953,17 +5004,20 @@ var Vue = (function (exports) {
 		};
 	}
 	let shouldCacheAccess = true;
+
+	// 应用用户根组件入参options
 	function applyOptions(instance) {
 		const options = resolveMergedOptions(instance);
 		const publicThis = instance.proxy;
 		const ctx = instance.ctx;
 		// do not cache property access on public proxy during state initialization
 		shouldCacheAccess = false;
-		// call beforeCreate first before accessing other options since
-		// the hook may mutate resolved options (#2791)
+
+		// 调用组件的onBeforeCreate hook
 		if (options.beforeCreate) {
 			callHook(options.beforeCreate, instance, "bc" /* BEFORE_CREATE */);
 		}
+
 		const {
 			// state
 			data: dataOptions, computed: computedOptions, methods, watch: watchOptions, provide: provideOptions, inject: injectOptions,
@@ -5096,9 +5150,12 @@ var Vue = (function (exports) {
 				provide(key, provides[key]);
 			});
 		}
+
+		// 调用组件的created hook
 		if (created) {
 			callHook(created, instance, "c" /* CREATED */);
 		}
+
 		function registerLifecycleHook(register, hook) {
 			if (isArray(hook)) {
 				hook.forEach(_hook => register(_hook.bind(publicThis)));
@@ -5147,6 +5204,7 @@ var Vue = (function (exports) {
 		if (directives)
 			instance.directives = directives;
 	}
+
 	function resolveInjections(injectOptions, ctx, checkDuplicateProperties = NOOP, unwrapRef = false) {
 		if (isArray(injectOptions)) {
 			injectOptions = normalizeInject(injectOptions);
@@ -6670,9 +6728,8 @@ var Vue = (function (exports) {
 			setDevtoolsHook(target.__VUE_DEVTOOLS_GLOBAL_HOOK__, target);
 		}
 		const { insert: hostInsert, remove: hostRemove, patchProp: hostPatchProp, createElement: hostCreateElement, createText: hostCreateText, createComment: hostCreateComment, setText: hostSetText, setElementText: hostSetElementText, parentNode: hostParentNode, nextSibling: hostNextSibling, setScopeId: hostSetScopeId = NOOP, cloneNode: hostCloneNode, insertStaticContent: hostInsertStaticContent } = options;
-		// Note: functions inside this closure should use `const xxx = () => {}`
-		// style in order to prevent being inlined by minifiers.
-		// 打补丁
+		
+		// 通过打补丁的方式 将vnode映射到真实dom中
 		const patch = (n1, n2, container, anchor = null, parentComponent = null, parentSuspense = null, isSVG = false, slotScopeIds = null, optimized = isHmrUpdating ? false : !!n2.dynamicChildren) => {
 			// n1 旧vnode
 			// n2 新vnode
@@ -6731,32 +6788,39 @@ var Vue = (function (exports) {
 			}
 		};
 
+		// 解析文本节点,并插入要父元素中
 		const processText = (n1, n2, container, anchor) => {
 			if (n1 == null) {
+				// 创建文本,并插入到父元素中
 				hostInsert((n2.el = hostCreateText(n2.children)), container, anchor);
 			}
 			else {
+				// 更新文本
 				const el = (n2.el = n1.el);
 				if (n2.children !== n1.children) {
 					hostSetText(el, n2.children);
 				}
 			}
 		};
+
+		// 解析注释节点,并插入要父元素中
 		const processCommentNode = (n1, n2, container, anchor) => {
 			if (n1 == null) {
 				hostInsert((n2.el = hostCreateComment(n2.children || '')), container, anchor);
 			}
 			else {
-				// there's no support for dynamic comments
+				// 注释不支持动态修改
 				n2.el = n1.el;
 			}
 		};
+
+		// 挂载静态节点
 		const mountStaticNode = (n2, container, anchor, isSVG) => {
 			[n2.el, n2.anchor] = hostInsertStaticContent(n2.children, container, anchor, isSVG, n2.el, n2.anchor);
-		};
-		/**
-		 * Dev / HMR only
-		 */
+		}
+
+		// 只有开发环境下 存在
+		// 对比静态节点并打补丁
 		const patchStaticNode = (n1, n2, container, isSVG) => {
 			// static nodes are only patched during dev for HMR
 			if (n2.children !== n1.children) {
@@ -6770,6 +6834,7 @@ var Vue = (function (exports) {
 				n2.anchor = n1.anchor;
 			}
 		};
+
 		const moveStaticNode = ({ el, anchor }, container, nextSibling) => {
 			let next;
 			while (el && el !== anchor) {
@@ -6788,6 +6853,8 @@ var Vue = (function (exports) {
 			}
 			hostRemove(anchor);
 		};
+
+		// 解析元素节点
 		const processElement = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			isSVG = isSVG || n2.type === 'svg';
 			if (n1 == null) {
@@ -6797,15 +6864,20 @@ var Vue = (function (exports) {
 				patchElement(n1, n2, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized);
 			}
 		};
+
+		// 挂载元素节点
 		const mountElement = (vnode, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			let el;
 			let vnodeHook;
 			const { type, props, shapeFlag, transition, patchFlag, dirs } = vnode;
 			{
+				// 创建元素DOM
 				el = vnode.el = hostCreateElement(vnode.type, isSVG, props && props.is, props);
+
 				// mount children first, since some props may rely on child content
 				// being already rendered, e.g. `<select value>`
 				if (shapeFlag & 8 /* TEXT_CHILDREN */) {
+					// 设置元素文本
 					hostSetElementText(el, vnode.children);
 				}
 				else if (shapeFlag & 16 /* ARRAY_CHILDREN */) {
@@ -6872,6 +6944,7 @@ var Vue = (function (exports) {
 				}, parentSuspense);
 			}
 		};
+
 		const setScopeId = (el, vnode, scopeId, slotScopeIds, parentComponent) => {
 			if (scopeId) {
 				hostSetScopeId(el, scopeId);
@@ -6894,6 +6967,8 @@ var Vue = (function (exports) {
 				}
 			}
 		};
+
+		// 挂载子元素
 		const mountChildren = (children, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized, start = 0) => {
 			for (let i = start; i < children.length; i++) {
 				const child = (children[i] = optimized
@@ -6902,6 +6977,8 @@ var Vue = (function (exports) {
 				patch(null, child, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized);
 			}
 		};
+
+		// 对比元素并打补丁
 		const patchElement = (n1, n2, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			const el = (n2.el = n1.el);
 			let { patchFlag, dynamicChildren, dirs } = n2;
@@ -6998,6 +7075,7 @@ var Vue = (function (exports) {
 				}, parentSuspense);
 			}
 		};
+
 		// The fast path for blocks.
 		const patchBlockChildren = (oldChildren, newChildren, fallbackContainer, parentComponent, parentSuspense, isSVG, slotScopeIds) => {
 			for (let i = 0; i < newChildren.length; i++) {
@@ -7048,6 +7126,7 @@ var Vue = (function (exports) {
 				}
 			}
 		};
+
 		const processFragment = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			const fragmentStartAnchor = (n2.el = n1 ? n1.el : hostCreateText(''));
 			const fragmentEndAnchor = (n2.anchor = n1 ? n1.anchor : hostCreateText(''));
@@ -7199,6 +7278,8 @@ var Vue = (function (exports) {
 				instance.vnode = n2;
 			}
 		};
+
+		// 渲染副作用
 		const setupRenderEffect = (instance, initialVNode, container, anchor, parentSuspense, isSVG, optimized) => {
 			const componentUpdateFn = () => {
 				if (!instance.isMounted) {
@@ -7207,16 +7288,19 @@ var Vue = (function (exports) {
 					const { bm, m, parent } = instance;
 					const isAsyncWrapperVNode = isAsyncWrapper(initialVNode);
 					toggleRecurse(instance, false);
-					// beforeMount hook
+					// 调用组件的beforeMount hook
 					if (bm) {
 						invokeArrayFns(bm);
 					}
-					// onVnodeBeforeMount
+
+					// 调用vnode的onVnodeBeforeMount hook
 					if (!isAsyncWrapperVNode &&
 						(vnodeHook = props && props.onVnodeBeforeMount)) {
 						invokeVNodeHook(vnodeHook, parent, initialVNode);
 					}
+
 					toggleRecurse(instance, true);
+
 					if (el && hydrateNode) {
 						// vnode has adopted host node - perform hydration instead of mount.
 						const hydrateSubTree = () => {
@@ -7264,7 +7348,8 @@ var Vue = (function (exports) {
 						}
 						initialVNode.el = subTree.el;
 					}
-					// mounted hook
+
+					// 调用组件的mounted hook
 					if (m) {
 						queuePostRenderEffect(m, parentSuspense);
 					}
@@ -7381,6 +7466,7 @@ var Vue = (function (exports) {
 			}
 			update();
 		};
+
 		const updateComponentPreRender = (instance, nextVNode, optimized) => {
 			nextVNode.component = instance;
 			const prevProps = instance.vnode.props;
@@ -7913,9 +7999,11 @@ var Vue = (function (exports) {
 		};
 	}
 
+	// TODO: 
 	function toggleRecurse({ effect, update }, allowed) {
 		effect.allowRecurse = update.allowRecurse = allowed;
 	}
+
 	/**
 	 * #1156
 	 * When a component is HMR-enabled, we need to make sure that all static nodes
@@ -8198,7 +8286,7 @@ var Vue = (function (exports) {
 	// Force-casted public typing for h and TSX props inference
 	const Teleport = TeleportImpl;
 
-	/* 逻辑分类: vnode开始 */
+	/* 逻辑分层: vnode开始 */
 
 	const Fragment = Symbol('Fragment');
 	const Text = Symbol('Text');
@@ -8287,6 +8375,9 @@ var Vue = (function (exports) {
 	function createBlock(type, props, children, patchFlag, dynamicProps) {
 		return setupBlock(createVNode(type, props, children, patchFlag, dynamicProps, true /* isBlock: prevent a block from tracking itself */));
 	}
+
+	// 断言: 断言当前值是否是vnode
+	// 原理: vnode.__v_isVNode = true
 	function isVNode(value) {
 		return value ? value.__v_isVNode === true : false;
 	}
@@ -8307,6 +8398,8 @@ var Vue = (function (exports) {
 		vnodeArgsTransformer = transformer;
 	}
 
+	// 创建vnode
+	// 函数包装: 可以在创建vnode之前 对vnode 参数进行预处理
 	const createVNodeWithArgsTransform = (...args) => {
 		return _createVNode(...(vnodeArgsTransformer
 			? vnodeArgsTransformer(args, currentRenderingInstance)
@@ -8323,25 +8416,47 @@ var Vue = (function (exports) {
 			: null);
 	};
 
-	// 创建vnode
+	// 创建最基础的vnode
 	function createBaseVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, shapeFlag = type === Fragment ? 0 : 1 /* ELEMENT */, isBlockNode = false, needFullChildrenNormalization = false) {
 		const vnode = {
+			// 标识: 标记当前是vnode
 			__v_isVNode: true,
+
+			// 标识: vnode 不能被响应式
 			__v_skip: true,
+
+			// 类型: VNodeTypes | ClassComponent || HTMLElement Name
 			type,
+			
+			// 属性
 			props,
+
 			key: props && normalizeKey(props),
+
 			ref: props && normalizeRef(props),
+
 			scopeId: currentScopeId,
 			slotScopeIds: null,
+
+			// 子元素(vnode)
 			children,
+
+			// 当前组件实例
 			component: null,
+
 			suspense: null,
 			ssContent: null,
 			ssFallback: null,
+
+			// 指令
 			dirs: null,
+
+			// 过渡
 			transition: null,
+
+			// 当前元素
 			el: null,
+
 			anchor: null,
 			target: null,
 			targetAnchor: null,
@@ -8350,6 +8465,8 @@ var Vue = (function (exports) {
 			patchFlag,
 			dynamicProps,
 			dynamicChildren: null,
+
+			// 应用上下文
 			appContext: null
 		};
 		if (needFullChildrenNormalization) {
@@ -8389,10 +8506,10 @@ var Vue = (function (exports) {
 		return vnode;
 	}
 
-	// 创建vnode
+	// 创建vnode(对外api)
 	const createVNode = (createVNodeWithArgsTransform);
 
-	// 真正创建 vnode
+	// 在创建vnode之前 先对vnode 参数进行预处理
 	function _createVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, isBlockNode = false) {
 		if (!type || type === NULL_DYNAMIC_COMPONENT) {
 			if (!type) {
@@ -8475,6 +8592,8 @@ var Vue = (function (exports) {
 			? extend({}, props)
 			: props;
 	}
+
+	// 克隆vnode
 	function cloneVNode(vnode, extraProps, mergeRef = false) {
 		// This is intentionally NOT using spread or extend to avoid the runtime
 		// key enumeration cost.
@@ -8532,6 +8651,7 @@ var Vue = (function (exports) {
 		};
 		return cloned;
 	}
+
 	/**
 	 * Dev only, for HMR of hoisted vnodes reused in v-for
 	 * https://github.com/vitejs/vite/issues/2022
@@ -8570,6 +8690,8 @@ var Vue = (function (exports) {
 			? (openBlock(), createBlock(Comment, null, text))
 			: createVNode(Comment, null, text);
 	}
+
+	// 正常化vnode(就是创建对应对应值的vnode)
 	function normalizeVNode(child) {
 		if (child == null || typeof child === 'boolean') {
 			// empty placeholder
@@ -8591,10 +8713,15 @@ var Vue = (function (exports) {
 			return createVNode(Text, null, String(child));
 		}
 	}
-	// optimized normalization for template-compiled render fns
+
+	// 克隆节点
+	// vnode如果已挂载 返回克隆后的vnode 否则放回当前值
+	// vnode如果已挂载 vnode.el是当前dom元素 
 	function cloneIfMounted(child) {
 		return child.el === null || child.memo ? child : cloneVNode(child);
 	}
+
+	// TODO: 正常化vnode的children属性, 并调整vnode的shapeFlag属性
 	function normalizeChildren(vnode, children) {
 		let type = 0;
 		const { shapeFlag } = vnode;
@@ -8607,6 +8734,7 @@ var Vue = (function (exports) {
 		else if (typeof children === 'object') {
 			if (shapeFlag & (1 /* ELEMENT */ | 64 /* TELEPORT */)) {
 				// Normalize slot to plain children for plain element and Teleport
+				// 默认插槽
 				const slot = children.default;
 				if (slot) {
 					// _c marker is added by withCtx() indicating this is a compiled slot
@@ -8653,6 +8781,8 @@ var Vue = (function (exports) {
 		vnode.children = children;
 		vnode.shapeFlag |= type;
 	}
+
+	// 合并props
 	function mergeProps(...args) {
 		const ret = {};
 		for (let i = 0; i < args.length; i++) {
@@ -8684,6 +8814,8 @@ var Vue = (function (exports) {
 		}
 		return ret;
 	}
+
+	// 调用vnode hook并捕捉错误
 	function invokeVNodeHook(hook, instance, vnode, prevVNode = null) {
 		callWithAsyncErrorHandling(hook, instance, 7 /* VNODE_HOOK */, [
 			vnode,
@@ -8691,9 +8823,10 @@ var Vue = (function (exports) {
 		]);
 	}
 
-	/* 逻辑分类: vnode结束 */
+	/* 逻辑分层: vnode结束 */
 
 	const emptyAppContext = createAppContext();
+
 	let uid$1 = 0;
 	// 创建组件实例
 	function createComponentInstance(vnode, parent, suspense) {
@@ -8792,6 +8925,8 @@ var Vue = (function (exports) {
 		currentInstance && currentInstance.scope.off();
 		currentInstance = null;
 	};
+
+	// 断言: 是否是内置组件名
 	const isBuiltInTag = /*#__PURE__*/ makeMap('slot,component');
 
 	// 验证组件名(非内置标签 or 非原生标签)
@@ -9013,6 +9148,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 创建setup上下文的attrs代理对象
 	function createAttrsProxy(instance) {
 		return new Proxy(instance.attrs, {
 			get(target, key) {
@@ -9031,6 +9167,8 @@ var Vue = (function (exports) {
 		}
 		);
 	}
+
+	// 创建setup上下文(返回{attr, slots, emit, expose})
 	function createSetupContext(instance) {
 		const expose = exposed => {
 			if (instance.exposed) {
@@ -9056,6 +9194,7 @@ var Vue = (function (exports) {
 			});
 		}
 	}
+
 	function getExposeProxy(instance) {
 		if (instance.exposed) {
 			return (instance.exposeProxy ||
@@ -9263,7 +9402,7 @@ var Vue = (function (exports) {
 		return [awaitable, () => setCurrentInstance(ctx)];
 	}
 
-	// Actual implementation
+	// 创建vnode
 	// ast => vnode
 	function h(type, propsOrChildren, children) {
 		const l = arguments.length;
