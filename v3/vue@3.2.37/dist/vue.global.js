@@ -13,6 +13,8 @@
  * 
  * stateful component =>   选项式组件或者状态组件(通过配置options生成的组件)
  * functional component => 函数式组件
+ * 
+ * target container   =>   目标容器
  */
 
 var Vue = (function (exports) {
@@ -373,17 +375,24 @@ var Vue = (function (exports) {
 		return toTypeString(value).slice(8, -1);
 	};
 
+	// 是否是纯对象
 	const isPlainObject = (val) => toTypeString(val) === '[object Object]';
+
+	// 是否是纯数字的key
 	const isIntegerKey = (key) => isString(key) &&
 		key !== 'NaN' &&
 		key[0] !== '-' &&
 		'' + parseInt(key, 10) === key;
+
+	// 
 	const isReservedProp = /*#__PURE__*/ makeMap(
 		// the leading comma is intentional so empty string "" is also included
 		',key,ref,ref_for,ref_key,' +
 		'onVnodeBeforeMount,onVnodeMounted,' +
 		'onVnodeBeforeUpdate,onVnodeUpdated,' +
 		'onVnodeBeforeUnmount,onVnodeUnmounted');
+
+	// 是否是内置指令
 	const isBuiltInDirective = /*#__PURE__*/ makeMap('bind,cloak,else-if,else,for,html,if,model,on,once,pre,show,slot,text,memo');
 	const cacheStringFunction = (fn) => {
 		const cache = Object.create(null);
@@ -2893,7 +2902,14 @@ var Vue = (function (exports) {
 		}
 	}
 
+	/* 逻辑分层: Suspense开始 */
+	// Suspense 用于协调对组件树中嵌套的异步依赖的处理
+	// TODO: 该组件仍然是试验性功能 暂时先跳过
+
+	// 断言: 是否是Suspense组件
+	// 原理: Suspense.__isSuspense = true
 	const isSuspense = (type) => type.__isSuspense;
+
 	// Suspense exposes a component-like API, and is treated like a component
 	// in the compiler, but internally it's a special built-in type that hooks
 	// directly into the renderer.
@@ -2908,9 +2924,11 @@ var Vue = (function (exports) {
 			// platform-specific impl passed from renderer
 			rendererInternals) {
 			if (n1 == null) {
+				// 挂载
 				mountSuspense(n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized, rendererInternals);
 			}
 			else {
+				// 更新
 				patchSuspense(n1, n2, container, anchor, parentComponent, isSVG, slotScopeIds, optimized, rendererInternals);
 			}
 		},
@@ -2918,6 +2936,7 @@ var Vue = (function (exports) {
 		create: createSuspenseBoundary,
 		normalize: normalizeSuspenseChildren
 	};
+
 	// Force-casted public typing for h and TSX props inference
 	const Suspense = (SuspenseImpl);
 	function triggerEvent(vnode, name) {
@@ -3322,6 +3341,8 @@ var Vue = (function (exports) {
 		}
 	}
 
+	/* 逻辑分层: Suspense结束 */
+
 	// 提供
 	function provide(key, value) {
 		if (!currentInstance) {
@@ -3612,6 +3633,8 @@ var Vue = (function (exports) {
 		}
 		return value;
 	}
+
+	/* 逻辑分层: Transition开始 */
 
 	function useTransitionState() {
 		const state = {
@@ -3947,6 +3970,8 @@ var Vue = (function (exports) {
 		return ret;
 	}
 
+	/* 逻辑分层: Transition结束 */
+
 	// 定义选项式组件
 	function defineComponent(options) {
 		return isFunction(options) ? { setup: options, name: options.name } : options;
@@ -4094,7 +4119,13 @@ var Vue = (function (exports) {
 		return vnode;
 	}
 
+	/* 逻辑分层: KeepAlive开始 */
+
+	// 断言: 是否是KeepAlive组件
+	// 原理: KeepAlive.__isKeepAlive = true
 	const isKeepAlive = (vnode) => vnode.type.__isKeepAlive;
+
+	// KeepAlive 类
 	const KeepAliveImpl = {
 		name: `KeepAlive`,
 		// Marker for special handling inside the renderer. We are not using a ===
@@ -4295,6 +4326,7 @@ var Vue = (function (exports) {
 			};
 		}
 	};
+
 	// export the public type for h/tsx inference
 	// also to avoid inline import() in generated d.ts files
 	const KeepAlive = KeepAliveImpl;
@@ -4370,6 +4402,8 @@ var Vue = (function (exports) {
 	function getInnerChild(vnode) {
 		return vnode.shapeFlag & 128 /* SUSPENSE */ ? vnode.ssContent : vnode;
 	}
+
+	/* 逻辑分层: KeepAlive结束 */
 
 	// 注入hook 是将组件实例的不同hook队列(优先队列)中添加回调
 	// 对回调函数增强
@@ -8085,9 +8119,19 @@ var Vue = (function (exports) {
 		return result;
 	}
 
+	/* 逻辑分层: Teleport开始 */
+
+	// 断言: 是否是内置组件Teleport
+	// 原理: Teleport.__isTeleport = true
 	const isTeleport = (type) => type.__isTeleport;
+
+	// 断言: 是否禁用,默认false,如果禁用则元素挂载在原始位置,否则则挂载在目标容器中
 	const isTeleportDisabled = (props) => props && (props.disabled || props.disabled === '');
+
+	// 断言: 目标容器是否是SVG
 	const isTargetSVG = (target) => typeof SVGElement !== 'undefined' && target instanceof SVGElement;
+
+	// 根据to属性来获取目标容器DOM
 	const resolveTarget = (props, select) => {
 		const targetSelector = props && props.to;
 		if (isString(targetSelector)) {
@@ -8114,6 +8158,8 @@ var Vue = (function (exports) {
 			return targetSelector;
 		}
 	};
+	
+	// Teleport 类
 	const TeleportImpl = {
 		__isTeleport: true,
 		process(n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized, internals) {
@@ -8127,13 +8173,17 @@ var Vue = (function (exports) {
 				dynamicChildren = null;
 			}
 			if (n1 == null) {
-				// insert anchors in the main view
+				// 挂载
 				const placeholder = (n2.el = createComment('teleport start')
 				);
 				const mainAnchor = (n2.anchor = createComment('teleport end')
 				);
+
+				// 先在原始位置 插入 两个注释节点
 				insert(placeholder, container, anchor);
 				insert(mainAnchor, container, anchor);
+
+				// 获取目标容器
 				const target = (n2.target = resolveTarget(n2.props, querySelector));
 				const targetAnchor = (n2.targetAnchor = createText(''));
 				if (target) {
@@ -8152,14 +8202,16 @@ var Vue = (function (exports) {
 					}
 				};
 				if (disabled) {
+					// 如果禁用元素 则挂载元素到原始位置
 					mount(container, mainAnchor);
 				}
 				else if (target) {
+					// 如果不禁用 则挂载元素到目标容器中
 					mount(target, targetAnchor);
 				}
 			}
 			else {
-				// update content
+				// 更新
 				n2.el = n1.el;
 				const mainAnchor = (n2.anchor = n1.anchor);
 				const target = (n2.target = n1.target);
@@ -8224,6 +8276,7 @@ var Vue = (function (exports) {
 		move: moveTeleport,
 		hydrate: hydrateTeleport
 	};
+
 	function moveTeleport(vnode, container, parentAnchor, { o: { insert }, m: move }, moveType = 2 /* REORDER */) {
 		// move target anchor if this is a target change.
 		if (moveType === 0 /* TARGET_CHANGE */) {
@@ -8287,6 +8340,8 @@ var Vue = (function (exports) {
 	}
 	// Force-casted public typing for h and TSX props inference
 	const Teleport = TeleportImpl;
+
+	/* 逻辑分层: Teleport结束 */
 
 	/* 逻辑分层: vnode开始 */
 
@@ -9440,6 +9495,8 @@ var Vue = (function (exports) {
 		}
 	};
 
+
+	// 自定义devtool 
 	function initCustomFormatter() {
 		/* eslint-disable no-restricted-globals */
 		if (typeof window === 'undefined') {
@@ -10703,6 +10760,8 @@ var Vue = (function (exports) {
 		return document.body.offsetHeight;
 	}
 
+	/* 逻辑分层: TransitionGroupImpl开始 */
+
 	const positionMap = new WeakMap();
 	const newPositionMap = new WeakMap();
 	const TransitionGroupImpl = {
@@ -10821,6 +10880,8 @@ var Vue = (function (exports) {
 		container.removeChild(clone);
 		return hasTransform;
 	}
+
+	/* 逻辑分层: TransitionGroupImpl结束 */
 
 	const getModelAssigner = (vnode) => {
 		const fn = vnode.props['onUpdate:modelValue'] ||
@@ -11316,6 +11377,9 @@ var Vue = (function (exports) {
 	 */
 	const initDirectivesForSSR = NOOP;
 
+	// 初始化环境
+	// 1. 使用开发环境提示
+	// 2. 自定义vue devtool 
 	function initDev() {
 		{
 			{
