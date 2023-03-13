@@ -447,6 +447,7 @@ var Vue = (function (exports) {
 								: {}));
 	};
 
+  // 警告
 	function warn(msg, ...args) {
 		console.warn(`[Vue warn] ${msg}`, ...args);
 	}
@@ -559,7 +560,7 @@ var Vue = (function (exports) {
 		}
 	}
 
-	/* 逻辑分层: 副作用域结束 */
+	/* 逻辑分层: 作用域结束 */
 
 	const createDep = (effects) => {
 		const dep = new Set(effects);
@@ -7101,6 +7102,7 @@ var Vue = (function (exports) {
 				patch(oldVNode, newVNode, container, null, parentComponent, parentSuspense, isSVG, slotScopeIds, true);
 			}
 		};
+    
 		const patchProps = (el, vnode, oldProps, newProps, parentComponent, parentSuspense, isSVG) => {
 			if (oldProps !== newProps) {
 				for (const key in newProps) {
