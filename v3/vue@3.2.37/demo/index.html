@@ -165,6 +165,7 @@
       emit: ['updateDOM'],
 
       setup () {
+        console.log(22, Vue.resolveComponent('ElInput'))
         return () => h(Container,null, {
           default: () => h('div', 'default slot'),
           header: () => h('div', 'header slot')

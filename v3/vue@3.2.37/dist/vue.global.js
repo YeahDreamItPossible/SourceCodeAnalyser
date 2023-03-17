@@ -5,6 +5,10 @@
  * app       					=>   根应用(通过createApp创建, 一个vue应用中只能有一个根状态应用)
  * component instance => 	 组件实例
  * 
+ * currentInstance    =>   当前组件实例
+ * currentRenderingInstance
+ * 
+ * 
  * effect scope				=> 	 作用域
  * effect							=> 	 副作用
  * 
@@ -2527,12 +2531,8 @@ var Vue = (function (exports) {
 			hasOwn(options, hyphenate(key)) ||
 			hasOwn(options, key));
 	}
-
-	/**
-	 * mark the current rendering instance for asset resolution (e.g.
-	 * resolveComponent, resolveDirective) during render
-	 */
-	// 当前渲染树
+	
+	// 当前渲染树(在渲染期间便于解析组件 指令)
 	let currentRenderingInstance = null;
 
 	// TODO: 
@@ -3638,9 +3638,13 @@ var Vue = (function (exports) {
 
 	function useTransitionState() {
 		const state = {
+			// 标识: 是否已挂载
 			isMounted: false,
+			// 标识: 是否已离开
 			isLeaving: false,
+			// 标识: 是否已卸载
 			isUnmounting: false,
+			// 
 			leavingVNodes: new Map()
 		};
 		onMounted(() => {
@@ -3651,7 +3655,9 @@ var Vue = (function (exports) {
 		});
 		return state;
 	}
+
 	const TransitionHookValidator = [Function, Array];
+
 	const BaseTransitionImpl = {
 		name: `BaseTransition`,
 		props: {
@@ -3683,10 +3689,11 @@ var Vue = (function (exports) {
 				if (!children || !children.length) {
 					return;
 				}
+
+				// Transition子元素必须只有一个节点(但是可以有多个注释节点)
 				let child = children[0];
 				if (children.length > 1) {
 					let hasFound = false;
-					// locate first non-comment child
 					for (const c of children) {
 						if (c.type !== Comment) {
 							if (hasFound) {
@@ -3700,28 +3707,31 @@ var Vue = (function (exports) {
 						}
 					}
 				}
-				// there's no need to track reactivity for these props so use the raw
-				// props for a bit better perf
+				
 				const rawProps = toRaw(props);
 				const { mode } = rawProps;
-				// check mode
+				// mode取值只能是 in-out(元素先进后出) | out-in(元素先出后进) | default(默认元素同时存在)
 				if (mode &&
 					mode !== 'in-out' &&
 					mode !== 'out-in' &&
 					mode !== 'default') {
 					warn$1(`invalid <transition> mode: ${mode}`);
 				}
+
 				if (state.isLeaving) {
 					return emptyPlaceholder(child);
 				}
+
 				// in the case of <transition><keep-alive/></transition>, we need to
 				// compare the type of the kept-alive children.
 				const innerChild = getKeepAliveChild(child);
 				if (!innerChild) {
 					return emptyPlaceholder(child);
 				}
+
 				const enterHooks = resolveTransitionHooks(innerChild, rawProps, state, instance);
 				setTransitionHooks(innerChild, enterHooks);
+
 				const oldChild = instance.subTree;
 				const oldInnerChild = oldChild && getKeepAliveChild(oldChild);
 				let transitionKeyChanged = false;
@@ -3736,6 +3746,7 @@ var Vue = (function (exports) {
 						transitionKeyChanged = true;
 					}
 				}
+
 				// handle mode
 				if (oldInnerChild &&
 					oldInnerChild.type !== Comment &&
@@ -3771,9 +3782,10 @@ var Vue = (function (exports) {
 			};
 		}
 	};
-	// export the public type for h/tsx inference
-	// also to avoid inline import() in generated d.ts files
+
+	// ts
 	const BaseTransition = BaseTransitionImpl;
+
 	function getLeavingNodesForType(state, vnode) {
 		const { leavingVNodes } = state;
 		let leavingVNodesCache = leavingVNodes.get(vnode.type);
@@ -3783,8 +3795,8 @@ var Vue = (function (exports) {
 		}
 		return leavingVNodesCache;
 	}
-	// The transition hooks are attached to the vnode as vnode.transition
-	// and will be called at appropriate timing in the renderer.
+
+	// 获取过渡hook 在渲染阶段合适时机调用
 	function resolveTransitionHooks(vnode, props, state, instance) {
 		const { appear, mode, persisted = false, onBeforeEnter, onEnter, onAfterEnter, onEnterCancelled, onBeforeLeave, onLeave, onAfterLeave, onLeaveCancelled, onBeforeAppear, onAppear, onAfterAppear, onAppearCancelled } = props;
 		const key = String(vnode.key);
@@ -3908,10 +3920,8 @@ var Vue = (function (exports) {
 		};
 		return hooks;
 	}
-	// the placeholder really only handles one special case: KeepAlive
-	// in the case of a KeepAlive in a leave phase we need to return a KeepAlive
-	// placeholder with empty content to avoid the KeepAlive instance from being
-	// unmounted.
+
+	// 清空占位节点
 	function emptyPlaceholder(vnode) {
 		if (isKeepAlive(vnode)) {
 			vnode = cloneVNode(vnode);
@@ -3919,6 +3929,9 @@ var Vue = (function (exports) {
 			return vnode;
 		}
 	}
+
+	// 如果子节点是KeepAlive 则需要获取子节点的子节点
+	// <transition><keep-alive><component></keep-alive></transition>
 	function getKeepAliveChild(vnode) {
 		return isKeepAlive(vnode)
 			? vnode.children
@@ -3926,6 +3939,8 @@ var Vue = (function (exports) {
 				: undefined
 			: vnode;
 	}
+
+	// vnode transition属性绑定过渡hooks
 	function setTransitionHooks(vnode, hooks) {
 		if (vnode.shapeFlag & 6 /* COMPONENT */ && vnode.component) {
 			setTransitionHooks(vnode.component.subTree, hooks);
@@ -3938,6 +3953,7 @@ var Vue = (function (exports) {
 			vnode.transition = hooks;
 		}
 	}
+
 	function getTransitionRawChildren(children, keepComment = false, parentKey) {
 		let ret = [];
 		let keyedFragmentCount = 0;
@@ -4546,16 +4562,15 @@ var Vue = (function (exports) {
 
 	const COMPONENTS = 'components';
 	const DIRECTIVES = 'directives';
-	/**
-	 * @private
-	 */
+	
+	// 根据组件名来获取组件(先在当前渲染组件中查找 再查找全局)
+	// 只能在render || setup 运行
 	function resolveComponent(name, maybeSelfReference) {
 		return resolveAsset(COMPONENTS, name, true, maybeSelfReference) || name;
 	}
+
 	const NULL_DYNAMIC_COMPONENT = Symbol();
-	/**
-	 * @private
-	 */
+	// 根据组件名来获取动态组件
 	function resolveDynamicComponent(component) {
 		if (isString(component)) {
 			return resolveAsset(COMPONENTS, component, false) || component;
@@ -4565,13 +4580,14 @@ var Vue = (function (exports) {
 			return (component || NULL_DYNAMIC_COMPONENT);
 		}
 	}
-	/**
-	 * @private
-	 */
+	
+	// 根据指令名来获取指令(先在当前渲染组件中查找 再查找全局)
+	// 只能在render || setup 运行
 	function resolveDirective(name) {
 		return resolveAsset(DIRECTIVES, name);
 	}
-	// implementation
+
+	// 解析组件 || 指令
 	function resolveAsset(type, name, warnMissing = true, maybeSelfReference = false) {
 		const instance = currentRenderingInstance || currentInstance;
 		if (instance) {
@@ -4587,10 +4603,9 @@ var Vue = (function (exports) {
 				}
 			}
 			const res =
-				// local registration
-				// check instance[type] first which is resolved for options API
+				// 局部组件
 				resolve(instance[type] || Component[type], name) ||
-				// global registration
+				// 全局组件
 				resolve(instance.appContext[type], name);
 			if (!res && maybeSelfReference) {
 				// fallback to implicit self-reference
@@ -4610,6 +4625,8 @@ var Vue = (function (exports) {
 				`can only be used in render() or setup().`);
 		}
 	}
+
+	// 解析
 	function resolve(registry, name) {
 		return (registry &&
 			(registry[name] ||
@@ -5357,6 +5374,8 @@ var Vue = (function (exports) {
 		cache.set(base, resolved);
 		return resolved;
 	}
+
+	// 合并选项策略
 	function mergeOptions(to, from, strats, asMixin = false) {
 		const { mixins, extends: extendsOptions } = from;
 		if (extendsOptions) {
@@ -5902,6 +5921,8 @@ var Vue = (function (exports) {
 		return args.some(elem => elem.toLowerCase() === 'boolean');
 	}
 
+	// 断言: 是否是内部键
+	// 原理: 内部键前缀带_ or $stable
 	const isInternalKey = (key) => key[0] === '_' || key === '$stable';
 	const normalizeSlotValue = (value) => isArray(value)
 		? value.map(normalizeVNode)
@@ -5922,6 +5943,7 @@ var Vue = (function (exports) {
 		normalized._c = false;
 		return normalized;
 	};
+	
 	const normalizeObjectSlots = (rawSlots, slots, instance) => {
 		const ctx = rawSlots._ctx;
 		for (const key in rawSlots) {
@@ -6030,7 +6052,7 @@ var Vue = (function (exports) {
 		}
 	};
 
-  // TODO: 创建应用上下文(任何组件均可访问到)
+  // 创建应用上下文(任何组件均可访问到)
 	function createAppContext() {
 		return {
 			app: null,
@@ -7821,6 +7843,8 @@ var Vue = (function (exports) {
 				hostInsert(el, container, anchor);
 			}
 		};
+
+		// 卸载
 		const unmount = (vnode, parentComponent, parentSuspense, doRemove = false, optimized = false) => {
 			const { type, props, ref, children, dynamicChildren, shapeFlag, patchFlag, dirs } = vnode;
 			// unset ref
@@ -7879,6 +7903,7 @@ var Vue = (function (exports) {
 				}, parentSuspense);
 			}
 		};
+
 		const remove = vnode => {
 			const { type, el, anchor, transition } = vnode;
 			if (type === Fragment) {
@@ -7926,6 +7951,7 @@ var Vue = (function (exports) {
 				performRemove();
 			}
 		};
+
 		const removeFragment = (cur, end) => {
 			// For fragments, directly remove all contained DOM nodes.
 			// (fragment child nodes cannot have transition)
@@ -7937,15 +7963,18 @@ var Vue = (function (exports) {
 			}
 			hostRemove(end);
 		};
+
+		// 卸载组件
 		const unmountComponent = (instance, parentSuspense, doRemove) => {
 			if (instance.type.__hmrId) {
 				unregisterHMR(instance);
 			}
 			const { bum, scope, update, subTree, um } = instance;
-			// beforeUnmount hook
+			// 调用beforeUnmount hook
 			if (bum) {
 				invokeArrayFns(bum);
 			}
+
 			// stop effects in component scope
 			scope.stop();
 			// update may be null if a component is unmounted before its async
@@ -7955,10 +7984,12 @@ var Vue = (function (exports) {
 				update.active = false;
 				unmount(subTree, instance, parentSuspense, doRemove);
 			}
-			// unmounted hook
+
+			// 调用unmounted hook
 			if (um) {
 				queuePostRenderEffect(um, parentSuspense);
 			}
+
 			queuePostRenderEffect(() => {
 				instance.isUnmounted = true;
 			}, parentSuspense);
@@ -7997,7 +8028,7 @@ var Vue = (function (exports) {
 
 		const render = (vnode, container, isSVG) => {
 			if (vnode == null) {
-				// 卸载
+				// 卸载容器
 				if (container._vnode) {
 					unmount(container._vnode, null, null, true);
 				}
@@ -8345,10 +8376,12 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: vnode开始 */
 
+	// 标识:
 	const Fragment = Symbol('Fragment');
 	const Text = Symbol('Text');
 	const Comment = Symbol('Comment');
 	const Static = Symbol('Static');
+
 	// Since v-if and v-for are the two possible ways node structure can dynamically
 	// change, once we consider v-if branches and each v-for fragment a block, we
 	// can divide a template into nested blocks, and within each block the node
@@ -8456,7 +8489,7 @@ var Vue = (function (exports) {
 	}
 
 	// 创建vnode
-	// 函数包装: 可以在创建vnode之前 对vnode 参数进行预处理
+	// 函数包装: 暴漏api给用户 可以在让用户在创建vnode之前对vnode参数进行预处理
 	const createVNodeWithArgsTransform = (...args) => {
 		return _createVNode(...(vnodeArgsTransformer
 			? vnodeArgsTransformer(args, currentRenderingInstance)
@@ -8508,7 +8541,7 @@ var Vue = (function (exports) {
 			// 指令
 			dirs: null,
 
-			// 过渡
+			// 过渡hook
 			transition: null,
 
 			// 当前元素
@@ -8567,6 +8600,7 @@ var Vue = (function (exports) {
 	const createVNode = (createVNodeWithArgsTransform);
 
 	// 在创建vnode之前 先对vnode 参数进行预处理
+	// 函数包装: 主要是内部处理 type shapeFlag
 	function _createVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, isBlockNode = false) {
 		if (!type || type === NULL_DYNAMIC_COMPONENT) {
 			if (!type) {
@@ -8748,7 +8782,7 @@ var Vue = (function (exports) {
 			: createVNode(Comment, null, text);
 	}
 
-	// 正常化vnode(就是创建对应对应值的vnode)
+	// 正常化vnode(就是创建对应对应值node的vnode)
 	function normalizeVNode(child) {
 		if (child == null || typeof child === 'boolean') {
 			// empty placeholder
@@ -11230,8 +11264,6 @@ var Vue = (function (exports) {
 
 	const rendererOptions = /*#__PURE__*/ extend({ patchProp }, nodeOps);
 
-	// lazy create the renderer - this makes core renderer logic tree-shakable
-	// in case the user only imports reactivity utilities from Vue.
   // 渲染器
 	let renderer;
 	let enabledHydration = false;
@@ -11268,6 +11300,7 @@ var Vue = (function (exports) {
       // 开发环境下警告 app.config下的 isCustomElement compilerOptions
 			injectCompilerOptionsCheck(app);
 		}
+		// 增强app.mount方法
 		const { mount } = app;
 		app.mount = (containerOrSelector) => {
       // container<DOM>
