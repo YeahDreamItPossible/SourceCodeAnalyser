@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .el-container {
+      max-width: 300px;
+    }
+    .el-button {
+      display: inline-block;
+      margin-top: 10px;
+      box-sizing: border-box;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="app"></div>
+
+  <script src="../dist/vue.global.js"></script>
+  <script>
+    const {
+      h,
+      createApp,
+      defineComponent
+    } = Vue
+  </script>
+
+  <script>
+    const App = defineComponent({
+      name: 'App',
+
+      data () {
+        return {
+          name: 'Hello'
+        }
+      },
+
+      methods: {
+        toggle () {
+          this.name = this.name.split('').reverse().join('')
+        }
+      },
+
+      render () {
+        return h('div', { class: 'el-container'},
+        [
+          h('div', null, this.name),
+          h('div', {
+            class: 'el-button',
+            onClick: this.toggle
+          }, 'toggle')
+        ])
+      }
+    })
+  </script>
+
+  <script>
+    const app = createApp(App)
+    app.mount('#app')
+  </script>
+</body>
+</html>

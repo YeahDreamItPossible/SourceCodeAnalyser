@@ -19,6 +19,19 @@
  * functional component => 函数式组件
  * 
  * target container   =>   目标容器
+ * 
+ * 
+ * ReactiveEffect		  =>
+ * 
+ * 
+ * 
+ * 
+ * vnode.component		=>   保存着当前组件实例
+ * 
+ * 
+ * // TODO: 目前理解可能不全面
+ * instance.vnode		  =>    仅仅是用于描述创建当前该vnode的描述
+ * instance.subTree   =>    该组件真正的vnode
  */
 
 var Vue = (function (exports) {
@@ -622,14 +635,18 @@ var Vue = (function (exports) {
 	 * When recursion depth is greater, fall back to using a full cleanup.
 	 */
 	const maxMarkerBits = 30;
+
+	// 当前激活的副作用
 	let activeEffect;
+
 	const ITERATE_KEY = Symbol('iterate');
 	const MAP_KEY_ITERATE_KEY = Symbol('Map key iterate');
 	
 	// TODO: 好好研究研究
+	// 响应式副作用
 	class ReactiveEffect {
 		constructor(fn, scheduler = null, scope) {
-			// 回调函数ß
+			// 回调函数
 			this.fn = fn;
 
 			// 调度者
@@ -703,6 +720,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 清除副作用
 	function cleanupEffect(effect) {
 		const { deps } = effect;
 		if (deps.length) {
@@ -713,6 +731,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 
 	function effect(fn, options) {
 		if (fn.effect) {
 			fn = fn.effect.fn;
@@ -789,6 +808,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
 	function trigger(target, type, key, newValue, oldValue, oldTarget) {
 		const depsMap = targetMap.get(target);
 		if (!depsMap) {
@@ -863,6 +883,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
 	function triggerEffects(dep, debuggerEventExtraInfo) {
 		// spread into array for stabilization
 		const effects = isArray(dep) ? dep : [...dep];
@@ -877,6 +898,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+	
 	function triggerEffect(effect, debuggerEventExtraInfo) {
 		if (effect !== activeEffect || effect.allowRecurse) {
 			if (effect.onTrigger) {
@@ -904,6 +926,7 @@ var Vue = (function (exports) {
 			.map(key => Symbol[key])
 			.filter(isSymbol));
 	const get = /*#__PURE__*/ createGetter();
+
 	const shallowGet = /*#__PURE__*/ createGetter(false, true);
 	const readonlyGet = /*#__PURE__*/ createGetter(true);
 	const shallowReadonlyGet = /*#__PURE__*/ createGetter(true, true);
@@ -937,6 +960,7 @@ var Vue = (function (exports) {
 		});
 		return instrumentations;
 	}
+
 	function createGetter(isReadonly = false, shallow = false) {
 		return function get(target, key, receiver) {
 			if (key === "__v_isReactive" /* IS_REACTIVE */) {
@@ -986,8 +1010,11 @@ var Vue = (function (exports) {
 			return res;
 		};
 	}
+
 	const set = /*#__PURE__*/ createSetter();
+
 	const shallowSet = /*#__PURE__*/ createSetter(true);
+
 	function createSetter(shallow = false) {
 		return function set(target, key, value, receiver) {
 			let oldValue = target[key];
@@ -1020,6 +1047,7 @@ var Vue = (function (exports) {
 			return result;
 		};
 	}
+
 	function deleteProperty(target, key) {
 		const hadKey = hasOwn(target, key);
 		const oldValue = target[key];
@@ -1241,6 +1269,7 @@ var Vue = (function (exports) {
 			return type === "delete" /* DELETE */ ? false : this;
 		};
 	}
+
 	function createInstrumentations() {
 		const mutableInstrumentations = {
 			get(key) {
@@ -1316,6 +1345,7 @@ var Vue = (function (exports) {
 			shallowReadonlyInstrumentations
 		];
 	}
+
 	const [mutableInstrumentations, readonlyInstrumentations, shallowInstrumentations, shallowReadonlyInstrumentations] = /* #__PURE__*/ createInstrumentations();
 	
 	/* 逻辑分层: 响应式开始 */
@@ -1358,14 +1388,17 @@ var Vue = (function (exports) {
 	const mutableCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(false, false)
 	};
+
 	// shallow reactive proxy getter函数
 	const shallowCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(false, true)
 	};
+
 	// readonly reactive proxy getter函数
 	const readonlyCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(true, false)
 	};
+
 	// readonly shallow reactive proxy getter函数
 	const shallowReadonlyCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(true, true)
@@ -1974,6 +2007,8 @@ var Vue = (function (exports) {
 
 	let isFlushing = false;
 	let isFlushPending = false;
+
+	// 任务队列
 	const queue = [];
 	let flushIndex = 0;
 	const pendingPreFlushCbs = [];
@@ -1986,14 +2021,17 @@ var Vue = (function (exports) {
 	let currentFlushPromise = null;
 	let currentPreFlushParentJob = null;
 	const RECURSION_LIMIT = 100;
+
 	function nextTick(fn) {
 		const p = currentFlushPromise || resolvedPromise;
 		return fn ? p.then(this ? fn.bind(this) : fn) : p;
 	}
+
 	// #2768
 	// Use binary-search to find a suitable position in the queue,
 	// so that the queue maintains the increasing order of job's id,
 	// which can prevent the job from being skipped and also can avoid repeated patching.
+	// 二分搜索
 	function findInsertionIndex(id) {
 		// the start index should be `flushIndex + 1`
 		let start = flushIndex + 1;
@@ -2005,6 +2043,8 @@ var Vue = (function (exports) {
 		}
 		return start;
 	}
+
+	// 入队
 	function queueJob(job) {
 		// the dedupe search uses the startIndex argument of Array.includes()
 		// by default the search index includes the current job that is being run
@@ -2024,18 +2064,21 @@ var Vue = (function (exports) {
 			queueFlush();
 		}
 	}
+
 	function queueFlush() {
 		if (!isFlushing && !isFlushPending) {
 			isFlushPending = true;
 			currentFlushPromise = resolvedPromise.then(flushJobs);
 		}
 	}
+
 	function invalidateJob(job) {
 		const i = queue.indexOf(job);
 		if (i > flushIndex) {
 			queue.splice(i, 1);
 		}
 	}
+
 	function queueCb(cb, activeQueue, pendingQueue, index) {
 		if (!isArray(cb)) {
 			if (!activeQueue ||
@@ -2051,12 +2094,15 @@ var Vue = (function (exports) {
 		}
 		queueFlush();
 	}
+
 	function queuePreFlushCb(cb) {
 		queueCb(cb, activePreFlushCbs, pendingPreFlushCbs, preFlushIndex);
 	}
+
 	function queuePostFlushCb(cb) {
 		queueCb(cb, activePostFlushCbs, pendingPostFlushCbs, postFlushIndex);
 	}
+
 	function flushPreFlushCbs(seen, parentJob = null) {
 		if (pendingPreFlushCbs.length) {
 			currentPreFlushParentJob = parentJob;
@@ -2078,6 +2124,7 @@ var Vue = (function (exports) {
 			flushPreFlushCbs(seen, parentJob);
 		}
 	}
+
 	function flushPostFlushCbs(seen) {
 		// flush any pre cbs queued during the flush (e.g. pre watchers)
 		flushPreFlushCbs();
@@ -2104,7 +2151,9 @@ var Vue = (function (exports) {
 			postFlushIndex = 0;
 		}
 	}
+
 	const getId = (job) => job.id == null ? Infinity : job.id;
+
 	function flushJobs(seen) {
 		isFlushPending = false;
 		isFlushing = true;
@@ -2154,6 +2203,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
 	function checkRecursiveUpdates(seen, fn) {
 		if (!seen.has(fn)) {
 			seen.set(fn, 1);
@@ -3400,14 +3450,19 @@ var Vue = (function (exports) {
 	function watchEffect(effect, options) {
 		return doWatch(effect, null, options);
 	}
+
 	function watchPostEffect(effect, options) {
 		return doWatch(effect, null, (Object.assign(Object.assign({}, options), { flush: 'post' })));
 	}
+
 	function watchSyncEffect(effect, options) {
 		return doWatch(effect, null, (Object.assign(Object.assign({}, options), { flush: 'sync' })));
 	}
+
 	// initial value for watchers to trigger on undefined initial values
 	const INITIAL_WATCHER_VALUE = {};
+
+	// 
 	// implementation
 	function watch(source, cb, options) {
 		if (!isFunction(cb)) {
@@ -3417,6 +3472,7 @@ var Vue = (function (exports) {
 		}
 		return doWatch(source, cb, options);
 	}
+
 	function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EMPTY_OBJ) {
 		if (!cb) {
 			if (immediate !== undefined) {
@@ -3567,6 +3623,7 @@ var Vue = (function (exports) {
 			}
 		};
 	}
+
 	// this.$watch
 	function instanceWatch(source, value, options) {
 		const publicThis = this.proxy;
@@ -3594,6 +3651,7 @@ var Vue = (function (exports) {
 		}
 		return res;
 	}
+
 	function createPathGetter(ctx, path) {
 		const segments = path.split('.');
 		return () => {
@@ -3604,6 +3662,7 @@ var Vue = (function (exports) {
 			return cur;
 		};
 	}
+
 	function traverse(value, seen) {
 		if (!isObject(value) || value["__v_skip" /* SKIP */]) {
 			return value;
@@ -6901,6 +6960,7 @@ var Vue = (function (exports) {
 			}
 			hostInsert(anchor, container, nextSibling);
 		};
+
 		const removeStaticNode = ({ el, anchor }) => {
 			let next;
 			while (el && el !== anchor) {
@@ -6987,6 +7047,8 @@ var Vue = (function (exports) {
 			const needCallTransitionHooks = (!parentSuspense || (parentSuspense && !parentSuspense.pendingBranch)) &&
 				transition &&
 				!transition.persisted;
+
+			// Transition组件 调用beforeEnter钩子
 			if (needCallTransitionHooks) {
 				transition.beforeEnter(el);
 			}
@@ -7261,6 +7323,7 @@ var Vue = (function (exports) {
 
 		// 挂载组件
 		const mountComponent = (initialVNode, container, anchor, parentComponent, parentSuspense, isSVG, optimized) => {
+			// 创建组件实例
 			const instance = (initialVNode.component = createComponentInstance(initialVNode, parentComponent, parentSuspense));
 			if (instance.type.__hmrId) {
 				registerHMR(instance);
@@ -7525,6 +7588,7 @@ var Vue = (function (exports) {
 			update();
 		};
 
+		// TODO:
 		const updateComponentPreRender = (instance, nextVNode, optimized) => {
 			nextVNode.component = instance;
 			const prevProps = instance.vnode.props;
@@ -7538,6 +7602,7 @@ var Vue = (function (exports) {
 			flushPreFlushCbs(undefined, instance.update);
 			resetTracking();
 		};
+
 		const patchChildren = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized = false) => {
 			const c1 = n1 && n1.children;
 			const prevShapeFlag = n1 ? n1.shapeFlag : 0;
@@ -7614,6 +7679,7 @@ var Vue = (function (exports) {
 				mountChildren(c2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized, commonLength);
 			}
 		};
+
 		// can be all-keyed or mixed
 		const patchKeyedChildren = (c1, c2, container, parentAnchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			let i = 0;
@@ -7786,6 +7852,7 @@ var Vue = (function (exports) {
 				}
 			}
 		};
+
 		const move = (vnode, container, anchor, moveType, parentSuspense = null) => {
 			const { el, type, transition, children, shapeFlag } = vnode;
 			if (shapeFlag & 6 /* COMPONENT */) {
@@ -10241,6 +10308,7 @@ var Vue = (function (exports) {
 	});
 	const BaseClass = (typeof HTMLElement !== 'undefined' ? HTMLElement : class {
 	});
+
 	class VueElement extends BaseClass {
 		constructor(_def, _props = {}, hydrate) {
 			super();
@@ -10508,6 +10576,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 过渡组件
 	const TRANSITION = 'transition';
 	const ANIMATION = 'animation';
 	// DOM Transition is a higher-order-component based on the platform-agnostic
@@ -10557,6 +10626,8 @@ var Vue = (function (exports) {
 				: hook.length > 1
 			: false;
 	};
+
+	// 解析用户props 并将默认props合并
 	function resolveTransitionProps(rawProps) {
 		const baseProps = {};
 		for (const key in rawProps) {
@@ -10564,6 +10635,8 @@ var Vue = (function (exports) {
 				baseProps[key] = rawProps[key];
 			}
 		}
+
+		// 是否应用 CSS 过渡 class
 		if (rawProps.css === false) {
 			return baseProps;
 		}
@@ -10645,6 +10718,8 @@ var Vue = (function (exports) {
 			}
 		});
 	}
+
+	// 正常化 Transtion duration属性
 	function normalizeDuration(duration) {
 		if (duration == null) {
 			return null;
@@ -10657,11 +10732,15 @@ var Vue = (function (exports) {
 			return [n, n];
 		}
 	}
+	
+	// 将 value => number
 	function NumberOf(val) {
 		const res = toNumber(val);
 		validateDuration(res);
 		return res;
 	}
+
+	// 验证value是否是Number
 	function validateDuration(val) {
 		if (typeof val !== 'number') {
 			warn$1(`<transition> explicit duration is not a valid number - ` +
@@ -10672,11 +10751,15 @@ var Vue = (function (exports) {
 				'the duration expression might be incorrect.');
 		}
 	}
+
+	// 添加类名
 	function addTransitionClass(el, cls) {
 		cls.split(/\s+/).forEach(c => c && el.classList.add(c));
 		(el._vtc ||
 			(el._vtc = new Set())).add(cls);
 	}
+
+	// 移除类名
 	function removeTransitionClass(el, cls) {
 		cls.split(/\s+/).forEach(c => c && el.classList.remove(c));
 		const { _vtc } = el;
@@ -10687,6 +10770,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
 	function nextFrame(cb) {
 		requestAnimationFrame(() => {
 			requestAnimationFrame(cb);
@@ -11262,11 +11346,14 @@ var Vue = (function (exports) {
 		el.style.display = value ? el._vod : 'none';
 	}
 
+	// 渲染器选项(与 DOM 操作相关)
 	const rendererOptions = /*#__PURE__*/ extend({ patchProp }, nodeOps);
 
   // 渲染器
 	let renderer;
 	let enabledHydration = false;
+
+	// 保证渲染器存在(如果不存在 则创建并保存该渲染器, 如果存在 则直接返回)
 	function ensureRenderer() {
     // 缓存
 		return (renderer ||
@@ -11318,7 +11405,9 @@ var Vue = (function (exports) {
 
       // 移除容器中的子元素
 			container.innerHTML = '';
+			// 挂载
 			const proxy = mount(container, false, container instanceof SVGElement);
+			// 移除容器中指令
 			if (container instanceof Element) {
 				container.removeAttribute('v-cloak');
 				container.setAttribute('data-v-app', '');

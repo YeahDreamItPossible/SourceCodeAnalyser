@@ -18,7 +18,7 @@
       opacity: 0;
     }
     .fade-enter-active, .fade-leave-active {
-      transition: opacity 0.6s ease-in-out;
+      transition: opacity 1s ease-in-out;
     }
   </style>
 </head>
@@ -32,7 +32,8 @@
       h,
       ref,
       createApp,
-      Transition
+      Transition,
+      defineComponent
     } = Vue
   </script>
 
@@ -40,9 +41,6 @@
     function ElButton (props, {emit}) {
       return h('div', {
         class: 'el-button',
-        onClick: () => {
-          emit('update')
-        }
       }, 'toggle')
     }
 
@@ -54,7 +52,7 @@
     const TransitionTag = Vue.defineComponent({
       props: ['ok'],
 
-      template: `<Transition name="fade" mode="out-in"><div v-if="ok">Yes</div><div v-else>No</div></Transition>`
+      template: `<Transition appear name="fade" mode="out-in"><div v-if="ok">Yes</div><div v-else>No</div></Transition>`
     })
 
     // function TransitionTag (props, ctx) {
@@ -66,13 +64,13 @@
     // }
 
     // TransitionTag.props = ['ok']
-  </script>
 
-  <script>
-    const app = createApp({
+    const App = defineComponent({
+      name: 'App',
+
       data () {
         return {
-          ok: false
+          ok: true
         }
       },
 
@@ -83,16 +81,18 @@
       },
 
       render () {
-        return h('div',null, [
-          h(TransitionTag, {
-            ok: this.ok
-          }),
-          h(ElButton, {
-            onUpdate: this.update
-          })
+        return h('div', {
+          class: 'el-contianer'
+        }, [
+          h(TransitionTag, {ok: this.ok}),
+          h(ElButton, { onClick: this.update })
         ])
       }
     })
+  </script>
+
+  <script>
+    const app = createApp(App)
 
     app.mount('#root')
     
