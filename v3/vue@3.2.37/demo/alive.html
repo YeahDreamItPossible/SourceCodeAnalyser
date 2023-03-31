@@ -41,6 +41,7 @@
   <script>
     const {
       h,
+      ref,
       createApp,
       defineComponent,
       KeepAlive,
@@ -49,12 +50,33 @@
   </script>
 
   <script>
-    function ElTag () {
-      return h('span', {
-        class: 'el-tag'
-      }, 'ElTag')
-    }
+    const ElTag = defineComponent({
+      name: 'ElTag',
 
+      data () {
+        return {
+          name: 'ElTag'
+        }
+      },
+
+      render () {
+        const self = this
+        return h('div', {
+          class: 'el-tag'
+        }, 
+        [
+          this.name,
+          h('span', {
+            onClick () {
+              console.log(333, self.name)
+              self.name = self.name.split('').reverse().join('')
+              console.log(44, self.name)
+            }
+          }, 'change')
+        ]
+        )
+      }
+    })
 
     function ElInput () {
       return h('input', {
@@ -84,19 +106,19 @@
         }
       },
       
-      render () {
-        return h('div', {
-          class: 'el-container'
-        }, [
-          h(KeepAlive, null, resolveDynamicComponent(this.name)),
-          h('button', {
-            class: 'el-button',
-            onClick: this.onChange
-          }, 'change')
-        ])
-      },
+      // render () {
+      //   return h('div', {
+      //     class: 'el-container'
+      //   }, [
+      //     h(KeepAlive, null, resolveDynamicComponent(this.name)),
+      //     h('button', {
+      //       class: 'el-button',
+      //       onClick: this.onChange
+      //     }, 'change')
+      //   ])
+      // },
 
-      // template: `<div class="el-container"><KeepAlive><component :is="name" /></KeepAlive><div class="el-button" @click="onChange">change</div></div>`
+      template: `<div class="el-container"><KeepAlive><component :is="name" /></KeepAlive><div class="el-button" @click="onChange">change</div></div>`
     })
 
   </script>

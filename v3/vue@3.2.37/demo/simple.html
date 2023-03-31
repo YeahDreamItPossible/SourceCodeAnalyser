@@ -36,7 +36,10 @@
     const {
       createApp,
       defineComponent,
-      h
+      h,
+      reactive,
+      watchEffect,
+      ref
     } = Vue
   </script>
 
@@ -45,7 +48,6 @@
       return h('input', {
         class: 'el-input',
         onInput (e) {
-          console.log(22, e)
         },
         value: props.value
       })
@@ -64,8 +66,18 @@
 
       data () {
         return {
-          name: 'Lee'
+          // name: 'Lee'
         }
+      },
+
+      setup () {
+        let name = ref('Lee')
+        watchEffect(() => {
+          const n = ref(name)
+          console.log(n)
+        })
+
+        return {name}
       },
 
       render () {

@@ -6,7 +6,7 @@
  * component instance => 	 组件实例
  * 
  * currentInstance    =>   当前组件实例
- * currentRenderingInstance
+ * currentRenderingInstance  =>  当前渲染组件实例
  * 
  * 
  * effect scope				=> 	 作用域
@@ -491,7 +491,7 @@ var Vue = (function (exports) {
 			// 当前作用域下的副作用集合
 			this.effects = [];
 			
-			// 清除队列队列
+			// 清除队列
 			this.cleanups = [];
 
 			// detached 是否独立构建作用域, 默认会构建嵌套关联关系
@@ -529,7 +529,8 @@ var Vue = (function (exports) {
 			activeEffectScope = this.parent;
 		}
 
-		// 
+		// 停止作用域
+		// 1. 先停止当前作用域 2. 再停止当前作用域的子作用域集合 3. 从当前作用域的父作用域的子作用域集合移除当前作用域
 		stop(fromParent) {
 			if (this.active) {
 				let i, l;
@@ -544,9 +545,9 @@ var Vue = (function (exports) {
 						this.scopes[i].stop(true);
 					}
 				}
-				// nested scope, dereference from parent to avoid memory leaks
+
+				// 从父作用域中的作用域集合移除当前作用域
 				if (this.parent && !fromParent) {
-					// optimized O(1) removal
 					const last = this.parent.scopes.pop();
 					if (last && last !== this) {
 						this.parent.scopes[this.index] = last;
@@ -563,7 +564,7 @@ var Vue = (function (exports) {
 		return new EffectScope(detached);
 	}
 
-	// 当前作用域下的副作用域集合 添加该副作用
+	// 当前作用域下的副作用集合 添加该副作用
 	function recordEffectScope(effect, scope = activeEffectScope) {
 		if (scope && scope.active) {
 			scope.effects.push(effect);
@@ -590,12 +591,16 @@ var Vue = (function (exports) {
 
 	const createDep = (effects) => {
 		const dep = new Set(effects);
+		// 标记被追踪
 		dep.w = 0;
 		dep.n = 0;
 		return dep;
 	};
+
 	const wasTracked = (dep) => (dep.w & trackOpBit) > 0;
+
 	const newTracked = (dep) => (dep.n & trackOpBit) > 0;
+
 	const initDepMarkers = ({ deps }) => {
 		if (deps.length) {
 			for (let i = 0; i < deps.length; i++) {
@@ -603,6 +608,7 @@ var Vue = (function (exports) {
 			}
 		}
 	};
+
 	const finalizeDepMarkers = (effect) => {
 		const { deps } = effect;
 		if (deps.length) {
@@ -626,6 +632,7 @@ var Vue = (function (exports) {
 	/*	逻辑分层: 副作用开始 */
 
 	const targetMap = new WeakMap();
+
 	// The number of effects currently being tracked recursively.
 	let effectTrackDepth = 0;
 	let trackOpBit = 1;
@@ -683,6 +690,7 @@ var Vue = (function (exports) {
 				activeEffect = this;
 				shouldTrack = true;
 				trackOpBit = 1 << ++effectTrackDepth;
+				// 当1 << 31时便是负数，因此最大只能是30
 				if (effectTrackDepth <= maxMarkerBits) {
 					initDepMarkers(this);
 				}
@@ -782,12 +790,12 @@ var Vue = (function (exports) {
 			if (!dep) {
 				depsMap.set(key, (dep = createDep()));
 			}
-			const eventInfo = { effect: activeEffect, target, type, key }
-				;
+			const eventInfo = { effect: activeEffect, target, type, key };
 			trackEffects(dep, eventInfo);
 		}
 	}
 
+	// 追踪副作用
 	function trackEffects(dep, debuggerEventExtraInfo) {
 		let shouldTrack = false;
 		if (effectTrackDepth <= maxMarkerBits) {
@@ -884,6 +892,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 触发副作用
 	function triggerEffects(dep, debuggerEventExtraInfo) {
 		// spread into array for stabilization
 		const effects = isArray(dep) ? dep : [...dep];
@@ -898,7 +907,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
-	
+
 	function triggerEffect(effect, debuggerEventExtraInfo) {
 		if (effect !== activeEffect || effect.allowRecurse) {
 			if (effect.onTrigger) {
@@ -1474,7 +1483,7 @@ var Vue = (function (exports) {
 
 	// 创建 响应式值
 	function createReactiveObject(target, isReadonly, baseHandlers, collectionHandlers, proxyMap) {
-		// 当前值非对象时警告 并放回当前值
+		// 当前值非对象时警告 并返回当前值
 		if (!isObject(target)) {
 			{
 				console.warn(`value cannot be made reactive: ${String(target)}`);
@@ -1535,7 +1544,8 @@ var Vue = (function (exports) {
 		return isReactive(value) || isReadonly(value);
 	}
 
-	// TODO: 返回当前对象的最初的值
+	// 返回当前对象的原始值
+	// 递归获取 __v_raw 属性值
 	function toRaw(observed) {
 		const raw = observed && observed["__v_raw" /* RAW */];
 		return raw ? toRaw(raw) : observed;
@@ -1551,6 +1561,7 @@ var Vue = (function (exports) {
 	const toReactive = (value) => isObject(value) ? reactive(value) : value;
 	const toReadonly = (value) => isObject(value) ? readonly(value) : value;
 
+	// 追踪ref副作用
 	function trackRefValue(ref) {
 		if (shouldTrack && activeEffect) {
 			ref = toRaw(ref);
@@ -1563,6 +1574,8 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
+	// 触发ref副作用
 	function triggerRefValue(ref, newVal) {
 		ref = toRaw(ref);
 		if (ref.dep) {
@@ -1613,6 +1626,7 @@ var Vue = (function (exports) {
 			// 标记: 标记当前对象是ref对象
 			this.__v_isRef = true;
 
+			// 存储当前原始值
 			this._rawValue = __v_isShallow ? value : toRaw(value);
 
 			// 如果当前值是要深层作用 则会调用reactive
@@ -1635,13 +1649,18 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 
+	// 手动出发 ref 副作用
+	// 常用于 shallowRef
 	function triggerRef(ref) {
 		triggerRefValue(ref, ref.value);
 	}
+
+	// 返回ref的原始值
+	// 注意: 只是返回ref的原始值 该原始值可能是reactive
 	function unref(ref) {
 		return isRef(ref) ? ref.value : ref;
 	}
+
 	const shallowUnwrapHandlers = {
 		get: (target, key, receiver) => unref(Reflect.get(target, key, receiver)),
 		set: (target, key, value, receiver) => {
@@ -1655,11 +1674,14 @@ var Vue = (function (exports) {
 			}
 		}
 	};
+
+	// 代理ref
 	function proxyRefs(objectWithRefs) {
 		return isReactive(objectWithRefs)
 			? objectWithRefs
 			: new Proxy(objectWithRefs, shallowUnwrapHandlers);
 	}
+
 	class CustomRefImpl {
 		constructor(factory) {
 			this.dep = undefined;
@@ -1675,9 +1697,14 @@ var Vue = (function (exports) {
 			this._set(newVal);
 		}
 	}
+
+	// 自定义ref
 	function customRef(factory) {
 		return new CustomRefImpl(factory);
 	}
+
+	// 将一个响应式对象转换为一个普通对象
+	// 这个普通对象的每个属性都是指向源对象相应属性的 ref
 	function toRefs(object) {
 		if (!isProxy(object)) {
 			console.warn(`toRefs() expects a reactive object but received a plain one.`);
@@ -1688,6 +1715,7 @@ var Vue = (function (exports) {
 		}
 		return ret;
 	}
+
 	class ObjectRefImpl {
 		constructor(_object, _key, _defaultValue) {
 			this._object = _object;
@@ -1703,6 +1731,9 @@ var Vue = (function (exports) {
 			this._object[this._key] = newVal;
 		}
 	}
+
+	// 基于响应式对象上的一个属性，创建一个对应的 ref
+	// 这样创建的 ref 与其源属性保持同步
 	function toRef(object, key, defaultValue) {
 		const val = object[key];
 		return isRef(val)
@@ -1710,6 +1741,7 @@ var Vue = (function (exports) {
 			: new ObjectRefImpl(object, key, defaultValue);
 	}
 
+	// 计算属性Ref
 	class ComputedRefImpl {
 		constructor(getter, _setter, isReadonly, isSSR) {
 			this._setter = _setter;
@@ -1740,16 +1772,18 @@ var Vue = (function (exports) {
 			this._setter(newValue);
 		}
 	}
+
+	// 总结: 计算属性实质上是ref
 	function computed(getterOrOptions, debugOptions, isSSR = false) {
 		let getter;
 		let setter;
 		const onlyGetter = isFunction(getterOrOptions);
 		if (onlyGetter) {
 			getter = getterOrOptions;
+			// 如果getterOrOptions是函数时 则setter是只读的
 			setter = () => {
 				console.warn('Write operation failed: computed value is readonly');
-			}
-				;
+			};
 		}
 		else {
 			getter = getterOrOptions.get;
@@ -3474,6 +3508,8 @@ var Vue = (function (exports) {
 	}
 
 	function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EMPTY_OBJ) {
+		// options中的 immedidate、deep 属性只能watch api使用
+		// 如果 watchEffect watchPostEffect watchSyncEffect api使用时 报错
 		if (!cb) {
 			if (immediate !== undefined) {
 				warn$1(`watch() "immediate" option is only respected when using the ` +
@@ -3484,6 +3520,7 @@ var Vue = (function (exports) {
 					`watch(source, callback, options?) signature.`);
 			}
 		}
+		
 		const warnInvalidSource = (s) => {
 			warn$1(`Invalid watch source: `, s, `A watch source can only be a getter/effect function, a ref, ` +
 				`a reactive object, or an array of these types.`);
@@ -4841,6 +4878,7 @@ var Vue = (function (exports) {
 			return getExposeProxy(i) || i.proxy;
 		return getPublicInstance(i.parent);
 	};
+
 	const publicPropertiesMap =
   // Move PURE marker to new line to workaround compiler discarding it
   // due to type annotation
@@ -4860,7 +4898,10 @@ var Vue = (function (exports) {
 		$nextTick: i => i.n || (i.n = nextTick.bind(i.proxy)),
 		$watch: i => (instanceWatch.bind(i))
 	});
+
+	// 是否是保留前缀
 	const isReservedPrefix = (key) => key === '_' || key === '$';
+
 	const PublicInstanceProxyHandlers = {
 		get({ _: instance }, key) {
 			const { ctx, setupState, data, props, accessCache, type, appContext } = instance;
@@ -5083,11 +5124,14 @@ var Vue = (function (exports) {
 			});
 		}
 	}
-	// dev only
+
+	// 仅仅开发环境下
 	function exposeSetupStateOnRenderContext(instance) {
 		const { ctx, setupState } = instance;
 		Object.keys(toRaw(setupState)).forEach(key => {
 			if (!setupState.__isScriptSetup) {
+				// setup返回值如果直接返回某个响应式对象
+				// 该对象下 会有__v_xx 属性
 				if (isReservedPrefix(key[0])) {
 					warn$1(`setup() return property ${JSON.stringify(key)} should not start with "$" or "_" ` +
 						`which are reserved prefixes for Vue internals.`);
@@ -5455,6 +5499,7 @@ var Vue = (function (exports) {
 		}
 		return to;
 	}
+
 	const internalOptionMergeStrats = {
 		data: mergeDataFn,
 		props: mergeObjectOptions,
@@ -5486,6 +5531,7 @@ var Vue = (function (exports) {
 		provide: mergeDataFn,
 		inject: mergeInject
 	};
+
 	function mergeDataFn(to, from) {
 		if (!from) {
 			return to;
@@ -6819,8 +6865,7 @@ var Vue = (function (exports) {
 		return supported;
 	}
 
-	const queuePostRenderEffect = queueEffectWithSuspense
-		;
+	const queuePostRenderEffect = queueEffectWithSuspense;
 	
   // 创建自定义渲染器
 	// 这里的options 主要是与 DOM 增删改查的api 以及 DOM props(包括DOM attrs 和 vue directives)
@@ -8503,6 +8548,7 @@ var Vue = (function (exports) {
 	function setBlockTracking(value) {
 		isBlockTreeEnabled += value;
 	}
+
 	function setupBlock(vnode) {
 		// save current block children on the block vnode
 		vnode.dynamicChildren =
@@ -8538,6 +8584,7 @@ var Vue = (function (exports) {
 	function isVNode(value) {
 		return value ? value.__v_isVNode === true : false;
 	}
+
 	function isSameVNodeType(n1, n2) {
 		if (n2.shapeFlag & 6 /* COMPONENT */ &&
 			hmrDirtyComponents.has(n2.type)) {
@@ -8821,9 +8868,8 @@ var Vue = (function (exports) {
 		}
 		return cloned;
 	}
-	/**
-	 * @private
-	 */
+	
+	// 创建文本节点
 	function createTextVNode(text = ' ', flag = 0) {
 		return createVNode(Text, null, text, flag);
 	}
@@ -9204,15 +9250,17 @@ var Vue = (function (exports) {
 	}
 
 	// 处理 setup 函数的结果
+	// 返回值只能是: render函数 ｜ 响应式对象
 	function handleSetupResult(instance, setupResult, isSSR) {
 		if (isFunction(setupResult)) {
-			// setup returned an inline render function
+			// 返回render函数
 			{
 				instance.render = setupResult;
 			}
 		}
 		else if (isObject(setupResult)) {
 			if (isVNode(setupResult)) {
+				// 警告: setup函数不能返回vnode对象
 				warn$1(`setup() should not return VNodes directly - ` +
 					`return a render function instead.`);
 			}
@@ -9227,6 +9275,7 @@ var Vue = (function (exports) {
 			}
 		}
 		else if (setupResult !== undefined) {
+			// 警告: setup返回值不合预期
 			warn$1(`setup() should return an object. Received: ${setupResult === null ? 'null' : typeof setupResult}`);
 		}
 		finishComponentSetup(instance, isSSR);
@@ -9290,17 +9339,17 @@ var Vue = (function (exports) {
 			resetTracking();
 			unsetCurrentInstance();
 		}
-		// warn missing template/render
-		// the runtime compilation of template in SSR is done by server-render
+		
 		if (!Component.render && instance.render === NOOP && !isSSR) {
-			/* istanbul ignore if */
 			if (!compile && Component.template) {
+				// 警告: 运行时版本没有compile函数 无法解析template
 				warn$1(`Component provided template option but ` +
 					`runtime compilation is not supported in this build of Vue.` +
 					(` Use "vue.global.js" instead.`
 					) /* should not happen */);
 			}
 			else {
+				// 警告: 为提供template或者render函数
 				warn$1(`Component is missing template or render function.`);
 			}
 		}
@@ -9403,6 +9452,7 @@ var Vue = (function (exports) {
 		return isFunction(value) && '__vccOpts' in value;
 	}
 
+	// 计算属性
 	const computed$1 = ((getterOrOptions, debugOptions) => {
 		// @ts-ignore
 		return computed(getterOrOptions, debugOptions, isInSSRComponentSetup);
@@ -9595,7 +9645,6 @@ var Vue = (function (exports) {
 			warn$1(`useSSRContext() is not supported in the global build.`);
 		}
 	};
-
 
 	// 自定义devtool 
 	function initCustomFormatter() {

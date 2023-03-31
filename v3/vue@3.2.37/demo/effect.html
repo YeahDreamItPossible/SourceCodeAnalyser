@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script src="../dist/vue.global.js"></script>
+  <script>
+    const {
+      h,
+      createApp,
+      defineComponent,
+      ref,
+      watchEffect,
+      shallowRef,
+      computed,
+      triggerRef,
+      reactive,
+      customRef,
+    } = Vue
+  </script>
+
+  <script>
+    const One = defineComponent({
+      name: 'One',
+
+      template: '<div>One</div>'
+    })
+
+    const Tomorrow = defineComponent({
+      name: 'Tomorrow',
+
+      components: {
+        One
+      },
+
+      template: '<div>Tomorrow <One /></div>'
+    })
+
+
+    const Yesterday = defineComponent({
+      name: 'Yesterday',
+
+      components: {
+        Tomorrow
+      },
+
+      template: '<div>Yesterday <Tomorrow /></div>'
+    })
+
+    const Today = defineComponent({
+      name: 'Today',
+
+      components: {
+        Yesterday
+      },
+
+      template: '<div>Today <Yesterday /></div>'
+    })
+
+    const World = defineComponent({
+      name: 'World',
+
+      components: {
+        Today
+      },
+
+      template: '<div>World <Today /></div>'
+    })
+
+    const Hello = defineComponent({
+      name: 'Hello',
+
+      components: {
+        World
+      },
+
+      template: '<div>Hello <World /></div>'
+    })
+  </script>
+
+  <script>
+    const App = defineComponent({
+      setup () {
+
+        let user = ref({
+          name: 'Lee'
+        })
+
+        let name = computed(({
+          get () {
+            return user.value.name
+          },
+          set (val) {
+            console.log('???', val)
+            user.value.name = val
+          }
+        }))
+        // {
+        //   onTrack (t) {
+        //     console.log(1, t)
+        //   },
+
+        //   onTrigger (t) {
+        //     console.log(2, t)
+        //   }
+        // }
+
+        // let name = computed(() => user.value.name)
+        console.log(name)
+
+        // let user = customRef((track, trigger) => ({
+        //   get () {
+        //     track()
+        //     return {
+        //       name: 'Lee'
+        //     }
+        //   },
+        //   set (newVal) {
+        //     trigger(newVal)
+        //     console.log(newVal)
+
+        //   }
+        // }))
+
+        setTimeout(() => {
+          console.log(888)
+          name.value = 'Wang'
+        }, 3000)
+
+        return () => h('div', {
+          class: 'el-container',
+        }, [ 
+          // this.user.name
+          name.value
+          // user.value.name
+        ])
+      },
+
+      mounted () {
+        // setTimeout(() => {
+        //   console.log(888)
+        //   this.name.value = 'Wang'
+        // }, 3000)
+      }
+    })
+  </script>
+  
+  <script>
+    const app = createApp(App)
+    app.mount('#app')
+  </script>
+
+  <script>
+    // 支持数
+    // 跳转活动管理 => 查看结果 => 支持数明细页面 需要 活动ID 项目ID
+
+    // 评论数
+    // 跳转活动管理 => 评论管理页面 需要 活动ID 项目ID
+
+    // 建议
+    // 未知
+  </script>
+</body>
+</html>

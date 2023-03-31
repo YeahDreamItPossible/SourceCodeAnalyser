@@ -38,13 +38,15 @@
 
       data () {
         return {
-          name: 'Hello'
+          name: 'Hello',
+          age: 0,
         }
       },
 
       methods: {
         toggle () {
           this.name = this.name.split('').reverse().join('')
+          this.age += 1
         }
       },
 
@@ -52,6 +54,7 @@
         return h('div', { class: 'el-container'},
         [
           h('div', null, this.name),
+          h('div', null, this.age),
           h('div', {
             class: 'el-button',
             onClick: this.toggle
