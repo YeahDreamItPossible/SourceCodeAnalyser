@@ -5,6 +5,16 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <style>
+    .el-button {
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: transparent;
+    }
+  </style>
 </head>
 <body>
   <div class="app" id="app"></div>
@@ -22,6 +32,12 @@
       triggerRef,
       reactive,
       customRef,
+      EffectScope,
+      onUnmounted,
+      getCurrentScope,
+      onScopeDispose,
+      watch,
+      effectScope
     } = Vue
   </script>
 
@@ -87,66 +103,52 @@
   <script>
     const App = defineComponent({
       setup () {
-
         let user = ref({
           name: 'Lee'
         })
 
-        let name = computed(({
-          get () {
-            return user.value.name
-          },
-          set (val) {
-            console.log('???', val)
-            user.value.name = val
-          }
-        }))
-        // {
-        //   onTrack (t) {
-        //     console.log(1, t)
-        //   },
+        let reverserdName = computed(() => {
+          return user.value.name.split('').reverse().join('')
+        })
 
-        //   onTrigger (t) {
-        //     console.log(2, t)
-        //   }
-        // }
+        function onChange () {
+          user.value.name = user.value.name.split('').reverse().join('')
+        }
 
-        // let name = computed(() => user.value.name)
-        console.log(name)
+        // watch(() => user.value.name, () => {
+        //   console.error('change')
+        // })
 
-        // let user = customRef((track, trigger) => ({
-        //   get () {
-        //     track()
-        //     return {
-        //       name: 'Lee'
-        //     }
-        //   },
-        //   set (newVal) {
-        //     trigger(newVal)
-        //     console.log(newVal)
+        // const scope = new EffectScope()
+        const scope = effectScope()
 
-        //   }
-        // }))
+        scope.run(() => {
+          console.log(user)
 
-        setTimeout(() => {
-          console.log(888)
-          name.value = 'Wang'
-        }, 3000)
+          onScopeDispose(() => {
+            console.log('over')
+          })
+        })
+
+        window._ss = scope
+        window._s = getCurrentScope()
+
+        window._u = user
+        window._ru = reverserdName
 
         return () => h('div', {
           class: 'el-container',
         }, [ 
-          // this.user.name
-          name.value
-          // user.value.name
+          h('div', null, user.value.name),
+          // h('div', null, reverserdName.value),
+          h('button', {
+            class: 'el-button',
+            onClick: onChange
+          }, 'toggle')
         ])
       },
 
       mounted () {
-        // setTimeout(() => {
-        //   console.log(888)
-        //   this.name.value = 'Wang'
-        // }, 3000)
       }
     })
   </script>
@@ -154,17 +156,6 @@
   <script>
     const app = createApp(App)
     app.mount('#app')
-  </script>
-
-  <script>
-    // 支持数
-    // 跳转活动管理 => 查看结果 => 支持数明细页面 需要 活动ID 项目ID
-
-    // 评论数
-    // 跳转活动管理 => 评论管理页面 需要 活动ID 项目ID
-
-    // 建议
-    // 未知
   </script>
 </body>
 </html>

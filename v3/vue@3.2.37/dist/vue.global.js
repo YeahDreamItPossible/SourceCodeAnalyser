@@ -34,6 +34,13 @@
  * instance.subTree   =>    该组件真正的vnode
  */
 
+/**
+ * 创建组件实例createComponent => instance
+ * instance.scope = new EffectScope(true)
+ * computed watch 实质上是一个 ReactiveEffect 会绑定在instance.scope.effects上
+ * 当挂载组件时setupRenderEffect 会绑定instance.effect = new ReactiveEffect()
+ */
+
 var Vue = (function (exports) {
 	'use strict';
 
@@ -49,9 +56,7 @@ var Vue = (function (exports) {
 		return expectsLowerCase ? val => !!map[val.toLowerCase()] : val => !!map[val];
 	}
 
-	/**
-	 * dev only flag -> name mapping
-	 */
+	// dev only flag -> name mapping
 	const PatchFlagNames = {
 		[1 /* TEXT */]: `TEXT`,
 		[2 /* CLASS */]: `CLASS`,
@@ -69,16 +74,13 @@ var Vue = (function (exports) {
 		[-2 /* BAIL */]: `BAIL`
 	};
 
-	/**
-	 * Dev only
-	 */
 	const slotFlagsText = {
 		[1 /* STABLE */]: 'STABLE',
 		[2 /* DYNAMIC */]: 'DYNAMIC',
 		[3 /* FORWARDED */]: 'FORWARDED'
 	};
 
-	// 全局白名单
+	// 全局对象
 	const GLOBALS_WHITE_LISTED = 'Infinity,undefined,NaN,isFinite,isNaN,parseFloat,parseInt,decodeURI,' +
 		'decodeURIComponent,encodeURI,encodeURIComponent,Math,Number,Date,Array,' +
 		'Object,Boolean,String,RegExp,Map,Set,JSON,Intl,BigInt';
@@ -141,10 +143,8 @@ var Vue = (function (exports) {
 	 */
 	const specialBooleanAttrs = `itemscope,allowfullscreen,formnovalidate,ismap,nomodule,novalidate,readonly`;
 	const isSpecialBooleanAttr = /*#__PURE__*/ makeMap(specialBooleanAttrs);
-	/**
-	 * Boolean attributes should be included if the value is truthy or ''.
-	 * e.g. `<select multiple>` compiles to `{ multiple: '' }`
-	 */
+	
+	// e.g. `<select multiple>` compiles to `{ multiple: '' }`
 	function includeBooleanAttr(value) {
 		return !!value || value === '';
 	}
@@ -172,6 +172,7 @@ var Vue = (function (exports) {
 			return value;
 		}
 	}
+
 	const listDelimiterRE = /;(?![^(]*\))/g;
 	const propertyDelimiterRE = /:(.+)/;
 	function parseStringStyle(cssText) {
@@ -350,13 +351,9 @@ var Vue = (function (exports) {
 	};
 
   // 工具类
-	const EMPTY_OBJ = Object.freeze({})
-		;
+	const EMPTY_OBJ = Object.freeze({});
 	const EMPTY_ARR = Object.freeze([]);
 	const NOOP = () => { };
-	/**
-	 * Always return false.
-	 */
 	const NO = () => false;
 	const onRE = /^on[^a-z]/;
 	const isOn = (key) => onRE.test(key);
@@ -491,7 +488,7 @@ var Vue = (function (exports) {
 			// 当前作用域下的副作用集合
 			this.effects = [];
 			
-			// 清除队列
+			// 清除队列(通过onScopeDispose注册的回调函数)
 			this.cleanups = [];
 
 			// detached 是否独立构建作用域, 默认会构建嵌套关联关系
@@ -560,6 +557,7 @@ var Vue = (function (exports) {
 	}
 
 	// 创建 作用域
+	// detached 字段表示是否绑定父scope
 	function effectScope(detached) {
 		return new EffectScope(detached);
 	}
@@ -588,6 +586,8 @@ var Vue = (function (exports) {
 	}
 
 	/* 逻辑分层: 作用域结束 */
+
+	/*	逻辑分层: 副作用开始 */
 
 	const createDep = (effects) => {
 		const dep = new Set(effects);
@@ -628,8 +628,6 @@ var Vue = (function (exports) {
 			deps.length = ptr;
 		}
 	};
-
-	/*	逻辑分层: 副作用开始 */
 
 	const targetMap = new WeakMap();
 
@@ -780,6 +778,7 @@ var Vue = (function (exports) {
 		shouldTrack = last === undefined ? true : last;
 	}
 
+	// reactive
 	function track(target, type, key) {
 		if (shouldTrack && activeEffect) {
 			let depsMap = targetMap.get(target);
@@ -795,7 +794,7 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 追踪副作用
+	// 追踪副作用(reactive ref)
 	function trackEffects(dep, debuggerEventExtraInfo) {
 		let shouldTrack = false;
 		if (effectTrackDepth <= maxMarkerBits) {
@@ -809,6 +808,7 @@ var Vue = (function (exports) {
 			shouldTrack = !dep.has(activeEffect);
 		}
 		if (shouldTrack) {
+			// 收集依赖
 			dep.add(activeEffect);
 			activeEffect.deps.push(dep);
 			if (activeEffect.onTrack) {
@@ -870,8 +870,7 @@ var Vue = (function (exports) {
 					break;
 			}
 		}
-		const eventInfo = { target, type, key, newValue, oldValue, oldTarget }
-			;
+		const eventInfo = { target, type, key, newValue, oldValue, oldTarget };
 		if (deps.length === 1) {
 			if (deps[0]) {
 				{
@@ -1682,6 +1681,7 @@ var Vue = (function (exports) {
 			: new Proxy(objectWithRefs, shallowUnwrapHandlers);
 	}
 
+	// 自定义Ref类
 	class CustomRefImpl {
 		constructor(factory) {
 			this.dep = undefined;
@@ -2039,6 +2039,8 @@ var Vue = (function (exports) {
 		}
 	}
 
+	/* 逻辑分层: 任务调度开始  */
+
 	let isFlushing = false;
 	let isFlushPending = false;
 
@@ -2057,6 +2059,7 @@ var Vue = (function (exports) {
 	const RECURSION_LIMIT = 100;
 
 	function nextTick(fn) {
+		// TODO: 
 		const p = currentFlushPromise || resolvedPromise;
 		return fn ? p.then(this ? fn.bind(this) : fn) : p;
 	}
@@ -2208,8 +2211,7 @@ var Vue = (function (exports) {
 		// inside try-catch. This can leave all warning code unshaked. Although
 		// they would get eventually shaken by a minifier like terser, some minifiers
 		// would fail to do that (e.g. https://github.com/evanw/esbuild/issues/1610)
-		const check = (job) => checkRecursiveUpdates(seen, job)
-			;
+		const check = (job) => checkRecursiveUpdates(seen, job);
 		try {
 			for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
 				const job = queue[flushIndex];
@@ -2259,6 +2261,8 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
+	/* 逻辑分层: 任务调度结束  */
 
 	/* eslint-disable no-restricted-globals */
 	let isHmrUpdating = false;
