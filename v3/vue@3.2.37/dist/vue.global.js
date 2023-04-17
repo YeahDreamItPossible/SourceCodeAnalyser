@@ -7473,11 +7473,13 @@ var Vue = (function (exports) {
 		const setupRenderEffect = (instance, initialVNode, container, anchor, parentSuspense, isSVG, optimized) => {
 			const componentUpdateFn = () => {
 				if (!instance.isMounted) {
+					// 挂载
 					let vnodeHook;
 					const { el, props } = initialVNode;
 					const { bm, m, parent } = instance;
 					const isAsyncWrapperVNode = isAsyncWrapper(initialVNode);
 					toggleRecurse(instance, false);
+
 					// 调用组件的beforeMount hook
 					if (bm) {
 						invokeArrayFns(bm);
@@ -7566,6 +7568,7 @@ var Vue = (function (exports) {
 					initialVNode = container = anchor = null;
 				}
 				else {
+					// 更新
 					// updateComponent
 					// This is triggered by mutation of component's own state (next: null)
 					// OR parent calling processComponent (next: VNode)
@@ -7726,6 +7729,8 @@ var Vue = (function (exports) {
 				}
 			}
 		};
+
+		// TODO:
 		const patchUnkeyedChildren = (c1, c2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			c1 = c1 || EMPTY_ARR;
 			c2 = c2 || EMPTY_ARR;
@@ -7750,6 +7755,7 @@ var Vue = (function (exports) {
 		};
 
 		// can be all-keyed or mixed
+		// TODO:
 		const patchKeyedChildren = (c1, c2, container, parentAnchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			let i = 0;
 			const l2 = c2.length;
