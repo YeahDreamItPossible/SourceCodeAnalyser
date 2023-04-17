@@ -817,6 +817,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// reactive
 	function trigger(target, type, key, newValue, oldValue, oldTarget) {
 		const depsMap = targetMap.get(target);
 		if (!depsMap) {
@@ -2041,18 +2042,25 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: 任务调度开始  */
 
+	// 是否正在冲刷队列
 	let isFlushing = false;
+	// 是否正在
 	let isFlushPending = false;
 
 	// 任务队列
 	const queue = [];
 	let flushIndex = 0;
+	
+	// 预执行队列
 	const pendingPreFlushCbs = [];
 	let activePreFlushCbs = null;
 	let preFlushIndex = 0;
+
+	// 后执行队列
 	const pendingPostFlushCbs = [];
 	let activePostFlushCbs = null;
 	let postFlushIndex = 0;
+
 	const resolvedPromise = /*#__PURE__*/ Promise.resolve();
 	let currentFlushPromise = null;
 	let currentPreFlushParentJob = null;
@@ -2132,6 +2140,7 @@ var Vue = (function (exports) {
 		queueFlush();
 	}
 
+	// 挂起
 	function queuePreFlushCb(cb) {
 		queueCb(cb, activePreFlushCbs, pendingPreFlushCbs, preFlushIndex);
 	}
@@ -2140,6 +2149,7 @@ var Vue = (function (exports) {
 		queueCb(cb, activePostFlushCbs, pendingPostFlushCbs, postFlushIndex);
 	}
 
+	// 执行预执行回调函数
 	function flushPreFlushCbs(seen, parentJob = null) {
 		if (pendingPreFlushCbs.length) {
 			currentPreFlushParentJob = parentJob;
@@ -2162,6 +2172,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 执行后执行回调函数
 	function flushPostFlushCbs(seen) {
 		// flush any pre cbs queued during the flush (e.g. pre watchers)
 		flushPreFlushCbs();
@@ -2205,6 +2216,7 @@ var Vue = (function (exports) {
 		//    priority number)
 		// 2. If a component is unmounted during a parent component's update,
 		//    its update can be skipped.
+		// 优先队列
 		queue.sort((a, b) => getId(a) - getId(b));
 		// conditional usage of checkRecursiveUpdate must be determined out of
 		// try ... catch block since Rollup by default de-optimizes treeshaking
@@ -2219,7 +2231,6 @@ var Vue = (function (exports) {
 					if (true && check(job)) {
 						continue;
 					}
-					// console.log(`running:`, job.id)
 					callWithErrorHandling(job, null, 14 /* SCHEDULER */);
 				}
 			}
@@ -2240,6 +2251,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 更新时 防止递归调用陷入死循环
 	function checkRecursiveUpdates(seen, fn) {
 		if (!seen.has(fn)) {
 			seen.set(fn, 1);
@@ -2264,14 +2276,10 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: 任务调度结束  */
 
-	/* eslint-disable no-restricted-globals */
+	/* 逻辑分层: 热更新开始  */
+
 	let isHmrUpdating = false;
 	const hmrDirtyComponents = new Set();
-	// Expose the HMR runtime on the global object
-	// This makes it entirely tree-shakable without polluting the exports and makes
-	// it easier to be used in toolings like vue-loader
-	// Note: for a component to be eligible for HMR it also needs the __hmrId option
-	// to be set so that its instances can be registered / removed.
 	{
 		getGlobalThis().__VUE_HMR_RUNTIME__ = {
 			createRecord: tryWrap(createRecord),
@@ -2292,6 +2300,7 @@ var Vue = (function (exports) {
 	function unregisterHMR(instance) {
 		map.get(instance.type.__hmrId).instances.delete(instance);
 	}
+
 	function createRecord(id, initialDef) {
 		if (map.has(id)) {
 			return false;
@@ -2302,9 +2311,11 @@ var Vue = (function (exports) {
 		});
 		return true;
 	}
+
 	function normalizeClassComponent(component) {
 		return isClassComponent(component) ? component.__vccOpts : component;
 	}
+
 	function rerender(id, newRender) {
 		const record = map.get(id);
 		if (!record) {
@@ -2324,6 +2335,7 @@ var Vue = (function (exports) {
 			isHmrUpdating = false;
 		});
 	}
+
 	function reload(id, newComp) {
 		const record = map.get(id);
 		if (!record)
@@ -2384,6 +2396,7 @@ var Vue = (function (exports) {
 			}
 		});
 	}
+
 	function updateComponentDef(oldComp, newComp) {
 		extend(oldComp, newComp);
 		for (const key in oldComp) {
@@ -2392,6 +2405,7 @@ var Vue = (function (exports) {
 			}
 		}
 	}
+
 	function tryWrap(fn) {
 		return (id, arg) => {
 			try {
@@ -2404,6 +2418,10 @@ var Vue = (function (exports) {
 			}
 		};
 	}
+
+	/* 逻辑分层: 热更新结束  */
+
+	/* 逻辑分层: 调试工具开始  */
 
 	let buffer = [];
 	let devtoolsNotInstalled = false;
@@ -2484,6 +2502,8 @@ var Vue = (function (exports) {
 	function devtoolsComponentEmit(component, event, params) {
 		emit("component:emit" /* COMPONENT_EMIT */, component.appContext.app, component, event, params);
 	}
+
+	/* 逻辑分层: 调试工具结束  */
 
 	// component instance emit实现
 	function emit$1(instance, event, ...rawArgs) {
@@ -7519,10 +7539,10 @@ var Vue = (function (exports) {
 						initialVNode.el = subTree.el;
 					}
 
-					// 调用组件的mounted hook
 					if (m) {
 						queuePostRenderEffect(m, parentSuspense);
 					}
+
 					// onVnodeMounted
 					if (!isAsyncWrapperVNode &&
 						(vnodeHook = props && props.onVnodeMounted)) {
@@ -8877,6 +8897,7 @@ var Vue = (function (exports) {
 	function createTextVNode(text = ' ', flag = 0) {
 		return createVNode(Text, null, text, flag);
 	}
+
 	/**
 	 * @private
 	 */
@@ -8887,9 +8908,8 @@ var Vue = (function (exports) {
 		vnode.staticCount = numberOfNodes;
 		return vnode;
 	}
-	/**
-	 * @private
-	 */
+
+	// 创建注释节点
 	function createCommentVNode(text = '',
 		// when used as the v-else branch, the comment node must be created as a
 		// block to ensure correct updates.
@@ -9291,6 +9311,7 @@ var Vue = (function (exports) {
 
 	let installWithProxy;
 
+	// 完整版注册compile函数
 	function registerRuntimeCompiler(_compile) {
 		compile = _compile;
 		installWithProxy = i => {
@@ -9867,7 +9888,7 @@ var Vue = (function (exports) {
 		return true;
 	}
 
-	// Core API ------------------------------------------------------------------
+	// 版本 一般与package.json重的version字段保持一致
 	const version = "3.2.37";
 	/**
 	 * SSR utils for \@vue/server-renderer. Only exposed in ssr-possible builds.
@@ -10359,6 +10380,7 @@ var Vue = (function (exports) {
 		// @ts-ignore
 		return defineCustomElement(options, hydrate);
 	});
+
 	const BaseClass = (typeof HTMLElement !== 'undefined' ? HTMLElement : class {
 	});
 
@@ -11412,6 +11434,7 @@ var Vue = (function (exports) {
 		return (renderer ||
 			(renderer = createRenderer(rendererOptions)));
 	}
+
 	function ensureHydrationRenderer() {
 		renderer = enabledHydration
 			? renderer
@@ -11642,6 +11665,7 @@ var Vue = (function (exports) {
 		[50 /* __EXTEND_POINT__ */]: ``
 	};
 
+	// 标识:
 	const FRAGMENT = Symbol(`Fragment`);
 	const TELEPORT = Symbol(`Teleport`);
 	const SUSPENSE = Symbol(`Suspense`);
@@ -11740,6 +11764,7 @@ var Vue = (function (exports) {
 		start: { line: 1, column: 1, offset: 0 },
 		end: { line: 1, column: 1, offset: 0 }
 	};
+
 	function createRoot(children, loc = locStub) {
 		return {
 			type: 0 /* ROOT */,
@@ -11755,6 +11780,7 @@ var Vue = (function (exports) {
 			loc
 		};
 	}
+
 	function createVNodeCall(context, tag, props, children, patchFlag, dynamicProps, directives, isBlock = false, disableTracking = false, isComponent = false, loc = locStub) {
 		if (context) {
 			if (isBlock) {
@@ -11962,8 +11988,7 @@ var Vue = (function (exports) {
 		}
 		return !currentOpenBracketCount && !currentOpenParensCount;
 	};
-	const isMemberExpression = isMemberExpressionBrowser
-		;
+	const isMemberExpression = isMemberExpressionBrowser;
 	function getInnerRange(loc, offset, length) {
 		const source = loc.source.slice(offset, offset + length);
 		const newLoc = {
@@ -12287,6 +12312,8 @@ var Vue = (function (exports) {
 		apos: "'",
 		quot: '"'
 	};
+
+	// 默认解析选项
 	const defaultParserOptions = {
 		delimiters: [`{{`, `}}`],
 		getNamespace: () => 0 /* HTML */,
@@ -12299,16 +12326,19 @@ var Vue = (function (exports) {
 		onWarn: defaultOnWarn,
 		comments: true
 	};
+
+	// 将 template => ast
 	function baseParse(content, options = {}) {
 		const context = createParserContext(content, options);
 		const start = getCursor(context);
 		return createRoot(parseChildren(context, 0 /* DATA */, []), getSelection(context, start));
 	}
+
+	// 创建 parser context(解析上下文)
 	function createParserContext(content, rawOptions) {
 		const options = extend({}, defaultParserOptions);
 		let key;
 		for (key in rawOptions) {
-			// @ts-ignore
 			options[key] =
 				rawOptions[key] === undefined
 					? defaultParserOptions[key]
@@ -12326,6 +12356,7 @@ var Vue = (function (exports) {
 			onWarn: options.onWarn
 		};
 	}
+
 	function parseChildren(context, mode, ancestors) {
 		const parent = last(ancestors);
 		const ns = parent ? parent.ns : 0 /* HTML */;
@@ -12463,6 +12494,7 @@ var Vue = (function (exports) {
 		}
 		return removedWhitespace ? nodes.filter(Boolean) : nodes;
 	}
+
 	function pushNode(nodes, node) {
 		if (node.type === 2 /* TEXT */) {
 			const prev = last(nodes);
@@ -12951,10 +12983,13 @@ var Vue = (function (exports) {
 			return context.options.decodeEntities(rawText, mode === 4 /* ATTRIBUTE_VALUE */);
 		}
 	}
+
+	// 获取光标坐标
 	function getCursor(context) {
 		const { column, line, offset } = context;
 		return { column, line, offset };
 	}
+
 	function getSelection(context, start, end) {
 		end = end || getCursor(context);
 		return {
@@ -12963,12 +12998,15 @@ var Vue = (function (exports) {
 			source: context.originalSource.slice(start.offset, end.offset)
 		};
 	}
+
 	function last(xs) {
 		return xs[xs.length - 1];
 	}
+
 	function startsWith(source, searchString) {
 		return source.startsWith(searchString);
 	}
+
 	function advanceBy(context, numberOfCharacters) {
 		const { source } = context;
 		advancePositionWithMutation(context, source, numberOfCharacters);
@@ -13316,6 +13354,7 @@ var Vue = (function (exports) {
 		return flag ? parseInt(flag, 10) : undefined;
 	}
 
+	// 创建转换上下文(transform context)
 	function createTransformContext(root, { filename = '', prefixIdentifiers = false, hoistStatic = false, cacheHandlers = false, nodeTransforms = [], directiveTransforms = {}, transformHoist = null, isBuiltInComponent = NOOP, isCustomElement = NOOP, expressionPlugins = [], scopeId = null, slotted = true, ssr = false, inSSR = false, ssrCssVars = ``, bindingMetadata = EMPTY_OBJ, inline = false, isTS = false, onError = defaultOnError, onWarn = defaultOnWarn, compatConfig }) {
 		const nameMatch = filename.replace(/\?.*$/, '').match(/([^/\\]+)\.\w+$/);
 		const context = {
@@ -13442,6 +13481,8 @@ var Vue = (function (exports) {
 		};
 		return context;
 	}
+
+	// TODO: 具体转换
 	function transform(root, options) {
 		const context = createTransformContext(root, options);
 		traverseNode(root, context);
@@ -13460,6 +13501,7 @@ var Vue = (function (exports) {
 		root.temps = context.temps;
 		root.cached = context.cached;
 	}
+
 	function createRootCodegen(root, context) {
 		const { helper } = context;
 		const { children } = root;
@@ -13496,6 +13538,7 @@ var Vue = (function (exports) {
 		}
 		else;
 	}
+
 	function traverseChildren(parent, context) {
 		let i = 0;
 		const nodeRemoved = () => {
@@ -13511,6 +13554,7 @@ var Vue = (function (exports) {
 			traverseNode(child, context);
 		}
 	}
+
 	function traverseNode(node, context) {
 		context.currentNode = node;
 		// apply transform plugins
@@ -13569,6 +13613,7 @@ var Vue = (function (exports) {
 			exitFns[i]();
 		}
 	}
+
 	function createStructuralDirectiveTransform(name, fn) {
 		const matches = isString(name)
 			? (n) => n === name
@@ -13602,6 +13647,8 @@ var Vue = (function (exports) {
 
 	const PURE_ANNOTATION = `/*#__PURE__*/`;
 	const aliasHelper = (s) => `${helperNameMap[s]}: _${helperNameMap[s]}`;
+
+	// 创建代码生成上下文(code generate context)
 	function createCodegenContext(ast, { mode = 'function', prefixIdentifiers = mode === 'module', sourceMap = false, filename = `template.vue.html`, scopeId = null, optimizeImports = false, runtimeGlobalName = `Vue`, runtimeModuleName = `vue`, ssrRuntimeModuleName = 'vue/server-renderer', ssr = false, isTS = false, inSSR = false }) {
 		const context = {
 			mode,
@@ -13645,11 +13692,15 @@ var Vue = (function (exports) {
 				newline(context.indentLevel);
 			}
 		};
+		
+		// 换行 + 缩进
 		function newline(n) {
 			context.push('\n' + `  `.repeat(n));
 		}
 		return context;
 	}
+
+	// 代码生成
 	function generate(ast, options = {}) {
 		const context = createCodegenContext(ast, options);
 		if (options.onContextCreated)
@@ -13730,6 +13781,7 @@ var Vue = (function (exports) {
 			map: context.map ? context.map.toJSON() : undefined
 		};
 	}
+
 	function genFunctionPreamble(ast, context) {
 		const { ssr, prefixIdentifiers, push, newline, runtimeModuleName, runtimeGlobalName, ssrRuntimeModuleName } = context;
 		const VueBinding = runtimeGlobalName;
@@ -15868,8 +15920,11 @@ var Vue = (function (exports) {
 			}
 		];
 	}
-	// we name it `baseCompile` so that higher order compilers like
-	// @vue/compiler-dom can export `compile` while re-exporting everything else.
+
+	// 编译函数
+	// 1. 将 template => ast
+	// 2. 优化ast
+	// 3. 将 ast => render
 	function baseCompile(template, options = {}) {
 		const onError = options.onError || defaultOnError;
 		const isModuleMode = options.mode === 'module';
@@ -16355,6 +16410,7 @@ var Vue = (function (exports) {
 		transformStyle,
 		...([transformTransition])
 	];
+
 	const DOMDirectiveTransforms = {
 		cloak: noopDirectiveTransform,
 		html: transformVHtml,
@@ -16363,6 +16419,8 @@ var Vue = (function (exports) {
 		on: transformOn$1,
 		show: transformShow
 	};
+
+	
 	function compile$1(template, options = {}) {
 		return baseCompile(template, extend({}, parserOptions, options, {
 			nodeTransforms: [
@@ -16383,8 +16441,12 @@ var Vue = (function (exports) {
 		initDev();
 	}
 	const compileCache = Object.create(null);
+
+	// 编译函数
+	// 将template => render函数
 	function compileToFunction(template, options) {
 		if (!isString(template)) {
+			// DOM节点
 			if (template.nodeType) {
 				template = template.innerHTML;
 			}
@@ -16393,11 +16455,14 @@ var Vue = (function (exports) {
 				return NOOP;
 			}
 		}
+
+		// 缓存 避免重复编译
 		const key = template;
 		const cached = compileCache[key];
 		if (cached) {
 			return cached;
 		}
+
 		if (template[0] === '#') {
 			const el = document.querySelector(template);
 			if (!el) {
@@ -16409,11 +16474,13 @@ var Vue = (function (exports) {
 			// by the server, the template should not contain any user data.
 			template = el ? el.innerHTML : ``;
 		}
+
 		const { code } = compile$1(template, extend({
 			hoistStatic: true,
 			onError: onError,
 			onWarn: e => onError(e, true)
 		}, options));
+
 		function onError(err, asWarning = false) {
 			const message = asWarning
 				? err.message
@@ -16422,10 +16489,8 @@ var Vue = (function (exports) {
 				generateCodeFrame(template, err.loc.start.offset, err.loc.end.offset);
 			warn$1(codeFrame ? `${message}\n${codeFrame}` : message);
 		}
-		// The wildcard import results in a huge object with every export
-		// with keys that cannot be mangled, and can be quite heavy size-wise.
-		// In the global build we know `Vue` is available globally so we can avoid
-		// the wildcard object.
+
+		// TODO: 好像是为了解决因通配符导入造成打包体积过大
 		const render = (new Function(code)());
 		render._rc = true;
 		return (compileCache[key] = render);

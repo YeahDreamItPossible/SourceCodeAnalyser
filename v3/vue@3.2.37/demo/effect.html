@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -16,6 +17,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="app" id="app"></div>
 
@@ -102,7 +104,7 @@
 
   <script>
     const App = defineComponent({
-      setup () {
+      setup() {
         let user = ref({
           name: 'Lee'
         })
@@ -111,7 +113,7 @@
           return user.value.name.split('').reverse().join('')
         })
 
-        function onChange () {
+        function onChange() {
           user.value.name = user.value.name.split('').reverse().join('')
         }
 
@@ -138,7 +140,7 @@
 
         return () => h('div', {
           class: 'el-container',
-        }, [ 
+        }, [
           h('div', null, user.value.name),
           // h('div', null, reverserdName.value),
           h('button', {
@@ -148,14 +150,30 @@
         ])
       },
 
-      mounted () {
+      mounted() {
       }
     })
   </script>
-  
+
   <script>
     const app = createApp(App)
     app.mount('#app')
   </script>
+
+  <script>
+    function a () {
+      const _Vue = Vue; 
+      const { } = _Vue;; 
+      const _hoisted_1 = { class: "red" };; 
+      return function render(_ctx, _cache) { 
+        with (_ctx) { 
+          const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue; 
+          return (_openBlock(), _createElementBlock("div", _hoisted_1, "Hello")); 
+        }; 
+      }
+    }
+
+  </script>
 </body>
+
 </html>
