@@ -22,8 +22,11 @@
   <script>
     const App = defineComponent({
       name: 'App',
+
       render () {
-        return h(Vue.Static, null, [
+        return h('div', {
+          ref: 'container'
+        }, [
           h('div', {
             class: 'hello'
           }, 'Hello'),
@@ -31,6 +34,10 @@
             class: 'world'
           }, 'World')
         ])
+      },
+
+      mounted () {
+        console.log(this.$refs.container)
       }
     })
 

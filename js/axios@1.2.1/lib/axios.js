@@ -41,8 +41,7 @@ function createInstance(defaultConfig) {
   return instance;
 }
 
-// NOTE: 创建默认配置的实例(便于使用者不做任何配置,快速开发)
-// Create the default instance to be exported
+// 创建: 创建默认配置的实例(便于使用者不做任何配置,快速开发)
 const axios = createInstance(defaults);
 
 // Expose Axios class to allow class inheritance

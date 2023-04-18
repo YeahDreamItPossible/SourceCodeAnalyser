@@ -45,7 +45,16 @@
  * 常见单词释义
  * process					=>		 加工
  * resolve					=>		 解析
+ * transform				=>		 转换
+ * parser						=>		 语法分析器 解析器
+ * optimizer				=>		 优化器 优化程序
  * 
+ */
+
+/**
+ * 断言
+ * 标识
+ * 警告
  */
 
 var Vue = (function (exports) {
@@ -8608,6 +8617,7 @@ var Vue = (function (exports) {
 		}
 		return vnode;
 	}
+
 	/**
 	 * @private
 	 */
@@ -8631,6 +8641,7 @@ var Vue = (function (exports) {
 		return value ? value.__v_isVNode === true : false;
 	}
 
+	// 断言: n1 n2类型是否相同
 	function isSameVNodeType(n1, n2) {
 		if (n2.shapeFlag & 6 /* COMPONENT */ &&
 			hmrDirtyComponents.has(n2.type)) {
@@ -8643,7 +8654,6 @@ var Vue = (function (exports) {
 	// 自定义转换vnode args (预处理vnode)
 	// 如果设置该转换函数 则会先调用该转换函数 后调用_createVNode函数
 	let vnodeArgsTransformer;
-	
 	function transformVNodeArgs(transformer) {
 		vnodeArgsTransformer = transformer;
 	}
@@ -8920,9 +8930,7 @@ var Vue = (function (exports) {
 		return createVNode(Text, null, text, flag);
 	}
 
-	/**
-	 * @private
-	 */
+	// 创建静态节点
 	function createStaticVNode(content, numberOfNodes) {
 		// A static vnode can contain multiple stringified elements, and the number
 		// of elements is necessary for hydration.
