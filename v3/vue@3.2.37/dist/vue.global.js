@@ -41,6 +41,13 @@
  * 当挂载组件时setupRenderEffect 会绑定instance.effect = new ReactiveEffect()
  */
 
+/**
+ * 常见单词释义
+ * process					=>		 加工
+ * resolve					=>		 解析
+ * 
+ */
+
 var Vue = (function (exports) {
 	'use strict';
 
@@ -6921,12 +6928,14 @@ var Vue = (function (exports) {
 			if (n1 === n2) {
 				return;
 			}
+
 			// patching & not same type, unmount old tree
 			if (n1 && !isSameVNodeType(n1, n2)) {
 				anchor = getNextHostNode(n1);
 				unmount(n1, parentComponent, parentSuspense, true);
 				n1 = null;
 			}
+
 			if (n2.patchFlag === -2 /* BAIL */) {
 				optimized = false;
 				n2.dynamicChildren = null;
@@ -6973,7 +6982,7 @@ var Vue = (function (exports) {
 			}
 		};
 
-		// 解析文本节点,并插入要父元素中
+		// 加工文本节点
 		const processText = (n1, n2, container, anchor) => {
 			if (n1 == null) {
 				// 创建文本,并插入到父元素中
@@ -6988,9 +6997,10 @@ var Vue = (function (exports) {
 			}
 		};
 
-		// 解析注释节点,并插入要父元素中
+		// 加工注释节点(注释不支持动态修改)
 		const processCommentNode = (n1, n2, container, anchor) => {
 			if (n1 == null) {
+				// 插入要父元素中
 				hostInsert((n2.el = hostCreateComment(n2.children || '')), container, anchor);
 			}
 			else {
@@ -6999,7 +7009,7 @@ var Vue = (function (exports) {
 			}
 		};
 
-		// 挂载静态节点
+		// 挂载静态节点(目前只发现只能通过 h(Vue.Static, null, '文本'))
 		const mountStaticNode = (n2, container, anchor, isSVG) => {
 			[n2.el, n2.anchor] = hostInsertStaticContent(n2.children, container, anchor, isSVG, n2.el, n2.anchor);
 		}
@@ -7040,7 +7050,7 @@ var Vue = (function (exports) {
 			hostRemove(anchor);
 		};
 
-		// 解析元素节点
+		// 加工元素节点
 		const processElement = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			isSVG = isSVG || n2.type === 'svg';
 			if (n1 == null) {
@@ -7166,6 +7176,7 @@ var Vue = (function (exports) {
 			}
 		};
 
+		// 更新元素节点
 		// 对比元素并打补丁
 		const patchElement = (n1, n2, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			const el = (n2.el = n1.el);
@@ -7316,6 +7327,7 @@ var Vue = (function (exports) {
 			}
 		};
 
+		// 加工
 		const processFragment = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			const fragmentStartAnchor = (n2.el = n1 ? n1.el : hostCreateText(''));
 			const fragmentEndAnchor = (n2.anchor = n1 ? n1.anchor : hostCreateText(''));
@@ -7374,7 +7386,7 @@ var Vue = (function (exports) {
 			}
 		};
 
-		// 解析组件
+		// 加工组件
 		const processComponent = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			n2.slotScopeIds = slotScopeIds;
 			if (n1 == null) {
@@ -7473,13 +7485,11 @@ var Vue = (function (exports) {
 		const setupRenderEffect = (instance, initialVNode, container, anchor, parentSuspense, isSVG, optimized) => {
 			const componentUpdateFn = () => {
 				if (!instance.isMounted) {
-					// 挂载
 					let vnodeHook;
 					const { el, props } = initialVNode;
 					const { bm, m, parent } = instance;
 					const isAsyncWrapperVNode = isAsyncWrapper(initialVNode);
 					toggleRecurse(instance, false);
-
 					// 调用组件的beforeMount hook
 					if (bm) {
 						invokeArrayFns(bm);
@@ -7568,7 +7578,6 @@ var Vue = (function (exports) {
 					initialVNode = container = anchor = null;
 				}
 				else {
-					// 更新
 					// updateComponent
 					// This is triggered by mutation of component's own state (next: null)
 					// OR parent calling processComponent (next: VNode)
@@ -7675,6 +7684,7 @@ var Vue = (function (exports) {
 			resetTracking();
 		};
 
+		// 对比子元素
 		const patchChildren = (n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized = false) => {
 			const c1 = n1 && n1.children;
 			const prevShapeFlag = n1 ? n1.shapeFlag : 0;
@@ -7730,7 +7740,7 @@ var Vue = (function (exports) {
 			}
 		};
 
-		// TODO:
+		// TODO: 在没有key的情况下 对比
 		const patchUnkeyedChildren = (c1, c2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			c1 = c1 || EMPTY_ARR;
 			c2 = c2 || EMPTY_ARR;
@@ -7754,13 +7764,14 @@ var Vue = (function (exports) {
 			}
 		};
 
+		// TODO: 根据Key对比
 		// can be all-keyed or mixed
-		// TODO:
 		const patchKeyedChildren = (c1, c2, container, parentAnchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized) => {
 			let i = 0;
 			const l2 = c2.length;
 			let e1 = c1.length - 1; // prev ending index
 			let e2 = l2 - 1; // next ending index
+
 			// 1. sync from start
 			// (a b) c
 			// (a b) d e
@@ -7777,6 +7788,7 @@ var Vue = (function (exports) {
 				}
 				i++;
 			}
+
 			// 2. sync from end
 			// a (b c)
 			// d e (b c)
@@ -7794,6 +7806,7 @@ var Vue = (function (exports) {
 				e1--;
 				e2--;
 			}
+
 			// 3. common sequence + mount
 			// (a b)
 			// (a b) c
@@ -7813,6 +7826,7 @@ var Vue = (function (exports) {
 					}
 				}
 			}
+
 			// 4. common sequence + unmount
 			// (a b) c
 			// (a b)
@@ -7826,6 +7840,7 @@ var Vue = (function (exports) {
 					i++;
 				}
 			}
+
 			// 5. unknown sequence
 			// [i ... e1 + 1]: a b [c d e] f g
 			// [i ... e2 + 1]: a b [e d c h] f g
@@ -8153,6 +8168,7 @@ var Vue = (function (exports) {
 				devtoolsComponentRemoved(instance);
 			}
 		};
+
 		const unmountChildren = (children, parentComponent, parentSuspense, doRemove = false, optimized = false, start = 0) => {
 			for (let i = start; i < children.length; i++) {
 				unmount(children[i], parentComponent, parentSuspense, doRemove, optimized);

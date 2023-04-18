@@ -23,9 +23,6 @@
 
   <script src="../dist/vue.global.js"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ant-design-vue/3.2.17/antd.min.js" integrity="sha512-w4GE/iWNdVDzxk2JHgBRMwTp0t694H4T72t9Umle3UCp5m9DScjqTgkxZQL/K5F8dGxbsUpyLCHqOyccb6uStg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <link href="https://cdn.bootcdn.net/ajax/libs/ant-design-vue/3.2.17/antd.min.css" rel="stylesheet">
-
   <script>
     const {
       h,
@@ -105,6 +102,16 @@
 
       template: '<div>Hello <World /></div>'
     })
+
+    const AButton = defineComponent({
+      name: 'AButton',
+
+      render () {
+        return h('div', {
+          class: 'a-button'
+        }, 'Button')
+      }
+    })
   </script>
 
   <script>
@@ -156,7 +163,7 @@
             class: 'el-button',
             onClick: onChange
           }, 'toggle'),
-          // h()
+          h(AButton)
         ])
       },
 
