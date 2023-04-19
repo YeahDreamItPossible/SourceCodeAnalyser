@@ -23,18 +23,7 @@
     const App = defineComponent({
       name: 'App',
 
-      render () {
-        return h('div', {
-          ref: 'container'
-        }, [
-          h('div', {
-            class: 'hello'
-          }, 'Hello'),
-          h('div', {
-            class: 'world'
-          }, 'World')
-        ])
-      },
+      template: '<div>{{ decodeURI("%E4%BD%A0%E5%A5%BD") }}</div>',
 
       mounted () {
         console.log(this.$refs.container)

@@ -48,14 +48,47 @@
  * transform				=>		 转换
  * parser						=>		 语法分析器 解析器
  * optimizer				=>		 优化器 优化程序
- * 
+ * generator				=>		 生成器
  */
 
 /**
  * 断言
  * 标识
  * 警告
+ * 创建
+ * 示例
+ * 正常化
+ * 高阶函数
  */
+
+
+/**
+ * vnode hook(vnode.props)
+ * onVnodeBeforeMount
+ * onVnodeMounted
+ * onVnodeBeforeUpdate
+ * onVnodeUpdated
+ * onVnodeBeforeUnmount
+ * onVnodeUnmounted
+ * 
+ * vnode transition hook(vnode.transition)
+ */
+
+// onBeforeEnter: TransitionHookValidator,
+// onEnter: TransitionHookValidator,
+// onAfterEnter: TransitionHookValidator,
+// onEnterCancelled: TransitionHookValidator,
+// // leave
+// onBeforeLeave: TransitionHookValidator,
+// onLeave: TransitionHookValidator,
+// onAfterLeave: TransitionHookValidator,
+// onLeaveCancelled: TransitionHookValidator,
+// // appear
+// onBeforeAppear: TransitionHookValidator,
+// onAppear: TransitionHookValidator,
+// onAfterAppear: TransitionHookValidator,
+// onAppearCancelled: TransitionHookValidator
+
 
 var Vue = (function (exports) {
 	'use strict';
@@ -96,11 +129,11 @@ var Vue = (function (exports) {
 		[3 /* FORWARDED */]: 'FORWARDED'
 	};
 
-	// 全局对象
+	// 全局对象(Mustache语法中可直接使用的全局对象)
 	const GLOBALS_WHITE_LISTED = 'Infinity,undefined,NaN,isFinite,isNaN,parseFloat,parseInt,decodeURI,' +
 		'decodeURIComponent,encodeURI,encodeURIComponent,Math,Number,Date,Array,' +
 		'Object,Boolean,String,RegExp,Map,Set,JSON,Intl,BigInt';
-	const isGloballyWhitelisted = /*#__PURE__*/ makeMap(GLOBALS_WHITE_LISTED);
+	const isGloballyWhitelisted = makeMap(GLOBALS_WHITE_LISTED);
 
 	const range = 2;
 	function generateCodeFrame(source, start = 0, end = source.length) {
@@ -145,26 +178,16 @@ var Vue = (function (exports) {
 		}
 		return res.join('\n');
 	}
-
-	/**
-	 * On the client we only need to offer special cases for boolean attributes that
-	 * have different names from their corresponding dom properties:
-	 * - itemscope -> N/A
-	 * - allowfullscreen -> allowFullscreen
-	 * - formnovalidate -> formNoValidate
-	 * - ismap -> isMap
-	 * - nomodule -> noModule
-	 * - novalidate -> noValidate
-	 * - readonly -> readOnly
-	 */
+	
+	// 断言: 是否是Boolean Attr
 	const specialBooleanAttrs = `itemscope,allowfullscreen,formnovalidate,ismap,nomodule,novalidate,readonly`;
 	const isSpecialBooleanAttr = /*#__PURE__*/ makeMap(specialBooleanAttrs);
-	
-	// e.g. `<select multiple>` compiles to `{ multiple: '' }`
+	// 断言: 是否包含Boolean Attr
 	function includeBooleanAttr(value) {
 		return !!value || value === '';
 	}
 
+	// 正常化: 将不同类型的style正常化对象或者字符串值
 	function normalizeStyle(value) {
 		if (isArray(value)) {
 			const res = {};
@@ -188,9 +211,9 @@ var Vue = (function (exports) {
 			return value;
 		}
 	}
-
 	const listDelimiterRE = /;(?![^(]*\))/g;
 	const propertyDelimiterRE = /:(.+)/;
+	// 示例: 将 'display:flex;color:red;' => '{display: flex, color: red}'
 	function parseStringStyle(cssText) {
 		const ret = {};
 		cssText.split(listDelimiterRE).forEach(item => {
@@ -201,6 +224,8 @@ var Vue = (function (exports) {
 		});
 		return ret;
 	}
+	// 正常化: 将不同类型的 class值 正常化字符串
+	// 示例: 将 '{'el-button': isExit, 'el-button_loading': hasUserInfo}' || '['el-button', 'el-button_loading']' => 'el-button el-button_loading'
 	function normalizeClass(value) {
 		let res = '';
 		if (isString(value)) {
@@ -223,6 +248,7 @@ var Vue = (function (exports) {
 		}
 		return res.trim();
 	}
+	// 正常化: 正常化props中的class 和 style
 	function normalizeProps(props) {
 		if (!props)
 			return null;
@@ -236,8 +262,6 @@ var Vue = (function (exports) {
 		return props;
 	}
 
-	// These tag configs are shared between compiler-dom and runtime-dom, so they
-	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 	const HTML_TAGS = 'html,body,base,head,link,meta,style,title,address,article,aside,footer,' +
 		'header,h1,h2,h3,h4,h5,h6,nav,section,div,dd,dl,dt,figcaption,' +
 		'figure,picture,hr,img,li,main,ol,p,pre,ul,a,b,abbr,bdi,bdo,br,cite,code,' +
@@ -259,18 +283,13 @@ var Vue = (function (exports) {
 		'polygon,polyline,radialGradient,rect,set,solidcolor,stop,switch,symbol,' +
 		'text,textPath,title,tspan,unknown,use,view';
 	const VOID_TAGS = 'area,base,br,col,embed,hr,img,input,link,meta,param,source,track,wbr';
-	
-	// 是否是HTML标签
-	const isHTMLTag = /*#__PURE__*/ makeMap(HTML_TAGS);
-	/**
-	 * Compiler only.
-	 * Do NOT use in runtime code paths unless behind `true` flag.
-	 */
-	// 是否是SVG标签
-	const isSVGTag = /*#__PURE__*/ makeMap(SVG_TAGS);
-	
-	// 是否是
-	const isVoidTag = /*#__PURE__*/ makeMap(VOID_TAGS);
+	// 断言: 是否是HTML标签
+	const isHTMLTag = makeMap(HTML_TAGS);
+	// 断言: 是否是SVG标签及SVG标签属性
+	// 仅在开发环境下
+	const isSVGTag = makeMap(SVG_TAGS);
+	// 断言: 是否是无效标签
+	const isVoidTag = makeMap(VOID_TAGS);
 
 	function looseCompareArrays(a, b) {
 		if (a.length !== b.length)
@@ -414,8 +433,8 @@ var Vue = (function (exports) {
 		key[0] !== '-' &&
 		'' + parseInt(key, 10) === key;
 
-	// 
-	const isReservedProp = /*#__PURE__*/ makeMap(
+	// 断言: 是否是保留属性
+	const isReservedProp =  makeMap(
 		// the leading comma is intentional so empty string "" is also included
 		',key,ref,ref_for,ref_key,' +
 		'onVnodeBeforeMount,onVnodeMounted,' +
@@ -423,7 +442,9 @@ var Vue = (function (exports) {
 		'onVnodeBeforeUnmount,onVnodeUnmounted');
 
 	// 是否是内置指令
-	const isBuiltInDirective = /*#__PURE__*/ makeMap('bind,cloak,else-if,else,for,html,if,model,on,once,pre,show,slot,text,memo');
+	const isBuiltInDirective = makeMap('bind,cloak,else-if,else,for,html,if,model,on,once,pre,show,slot,text,memo');
+	
+	// 高阶函数: 缓存函数
 	const cacheStringFunction = (fn) => {
 		const cache = Object.create(null);
 		return ((str) => {
@@ -432,25 +453,15 @@ var Vue = (function (exports) {
 		});
 	};
 	const camelizeRE = /-(\w)/g;
-	/**
-	 * @private
-	 */
+	
 	const camelize = cacheStringFunction((str) => {
 		return str.replace(camelizeRE, (_, c) => (c ? c.toUpperCase() : ''));
 	});
 	const hyphenateRE = /\B([A-Z])/g;
-	/**
-	 * @private
-	 */
 	const hyphenate = cacheStringFunction((str) => str.replace(hyphenateRE, '-$1').toLowerCase());
-	/**
-	 * @private
-	 */
 	const capitalize = cacheStringFunction((str) => str.charAt(0).toUpperCase() + str.slice(1));
-	/**
-	 * @private
-	 */
 	const toHandlerKey = cacheStringFunction((str) => str ? `on${capitalize(str)}` : ``);
+
 	// compare whether a value has changed, accounting for NaN.
 	const hasChanged = (value, oldValue) => !Object.is(value, oldValue);
 	const invokeArrayFns = (fns, arg) => {
@@ -2082,8 +2093,8 @@ var Vue = (function (exports) {
 	let currentPreFlushParentJob = null;
 	const RECURSION_LIMIT = 100;
 
+	// 
 	function nextTick(fn) {
-		// TODO: 
 		const p = currentFlushPromise || resolvedPromise;
 		return fn ? p.then(this ? fn.bind(this) : fn) : p;
 	}
@@ -8913,10 +8924,8 @@ var Vue = (function (exports) {
 		return cloned;
 	}
 
-	/**
-	 * Dev only, for HMR of hoisted vnodes reused in v-for
-	 * https://github.com/vitejs/vite/issues/2022
-	 */
+	// 深克隆vnode
+	// 仅在开发环境下 用于v-for
 	function deepCloneVNode(vnode) {
 		const cloned = cloneVNode(vnode);
 		if (isArray(vnode.children)) {
@@ -8925,12 +8934,12 @@ var Vue = (function (exports) {
 		return cloned;
 	}
 	
-	// 创建文本节点
+	// 创建: 创建文本节点
 	function createTextVNode(text = ' ', flag = 0) {
 		return createVNode(Text, null, text, flag);
 	}
 
-	// 创建静态节点
+	// 创建: 创建静态节点
 	function createStaticVNode(content, numberOfNodes) {
 		// A static vnode can contain multiple stringified elements, and the number
 		// of elements is necessary for hydration.
@@ -8939,7 +8948,7 @@ var Vue = (function (exports) {
 		return vnode;
 	}
 
-	// 创建注释节点
+	// 创建: 创建注释节点
 	function createCommentVNode(text = '',
 		// when used as the v-else branch, the comment node must be created as a
 		// block to ensure correct updates.
@@ -8952,7 +8961,6 @@ var Vue = (function (exports) {
 	// 正常化vnode(就是创建对应对应值node的vnode)
 	function normalizeVNode(child) {
 		if (child == null || typeof child === 'boolean') {
-			// empty placeholder
 			return createVNode(Comment);
 		}
 		else if (isArray(child)) {
@@ -8962,12 +8970,9 @@ var Vue = (function (exports) {
 				child.slice());
 		}
 		else if (typeof child === 'object') {
-			// already vnode, this should be the most common since compiled templates
-			// always produce all-vnode children arrays
 			return cloneIfMounted(child);
 		}
 		else {
-			// strings and numbers
 			return createVNode(Text, null, String(child));
 		}
 	}
@@ -8979,7 +8984,8 @@ var Vue = (function (exports) {
 		return child.el === null || child.memo ? child : cloneVNode(child);
 	}
 
-	// TODO: 正常化vnode的children属性, 并调整vnode的shapeFlag属性
+	// 正常化: 正常化vnode的children属性
+	// 并调整vnode的shapeFlag属性
 	function normalizeChildren(vnode, children) {
 		let type = 0;
 		const { shapeFlag } = vnode;
@@ -16450,7 +16456,7 @@ var Vue = (function (exports) {
 		show: transformShow
 	};
 
-	
+	// 编译函数
 	function compile$1(template, options = {}) {
 		return baseCompile(template, extend({}, parserOptions, options, {
 			nodeTransforms: [
