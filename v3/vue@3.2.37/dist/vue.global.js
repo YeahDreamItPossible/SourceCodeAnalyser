@@ -8194,6 +8194,7 @@ var Vue = (function (exports) {
 				unmount(children[i], parentComponent, parentSuspense, doRemove, optimized);
 			}
 		};
+
 		const getNextHostNode = vnode => {
 			if (vnode.shapeFlag & 6 /* COMPONENT */) {
 				return getNextHostNode(vnode.component.subTree);
@@ -8678,7 +8679,9 @@ var Vue = (function (exports) {
 	};
 
 	const InternalObjectKey = `__vInternal`;
+	// 正常化: 正常化创建vnode中的props.key
 	const normalizeKey = ({ key }) => key != null ? key : null;
+	// 正常化: 正常化ref
 	const normalizeRef = ({ ref, ref_key, ref_for }) => {
 		return (ref != null
 			? isString(ref) || isRef(ref) || isFunction(ref)

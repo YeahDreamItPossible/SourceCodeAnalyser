@@ -23,10 +23,39 @@
     const App = defineComponent({
       name: 'App',
 
-      template: '<div>{{ decodeURI("%E4%BD%A0%E5%A5%BD") }}</div>',
+      data () {
+        return {
+          name: 'Hello World~'
+        }
+      },
 
-      mounted () {
-        console.log(this.$refs.container)
+      render () {
+        const self = this
+        return h('div', {
+          class: 'el-container',
+          onClick () {
+            self.name = self.name.split('').reverse().join('')
+          },
+
+          onVnodeBeforeMount () {
+            console.log('onVnodeBeforeMount')
+          },
+          onVnodeMounted () {
+            console.log('onVnodeMounted')
+          },
+          onVnodeBeforeUpdate () {
+            console.log('onVnodeBeforeUpdate')
+          },
+          onVnodeUpdated () {
+            console.log('onVnodeUpdated')
+          },
+          onVnodeBeforeUnmount () {
+            console.log('onVnodeBeforeUnmount')
+          },
+          onVnodeUnmounted () {
+            console.log('onVnodeUnmounted')
+          }
+        }, this.name)
       }
     })
 
@@ -34,8 +63,23 @@
 
   <script>
     const app = createApp({
+      data () {
+        return {
+          list: null
+        }
+      },
       render () {
-        return h(App)
+        return [h(App), h('div', {
+          onClick () {
+            console.log(app._instance.subTree)
+            app._instance.subTree.children[0].vnode = null
+          }
+        }, '移除'), ['Hello', 'World'].map(item => h('div', {
+          key: item,
+          ref: 'list',
+          ref_for: true,
+          ref_key: item
+        }, item))]
       }
     })
 
