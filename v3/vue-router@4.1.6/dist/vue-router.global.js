@@ -26,9 +26,11 @@ var VueRouter = (function (exports, vue) {
   // 断言: 是否是浏览器环境
   const isBrowser = typeof window !== "undefined";
 
+  // 断言: 是否是es module
   function isESModule(obj) {
     return obj.__esModule || obj[Symbol.toStringTag] === "Module";
   }
+
   const assign = Object.assign;
   function applyToParams(fn, params) {
     const newParams = {};
@@ -38,11 +40,9 @@ var VueRouter = (function (exports, vue) {
     }
     return newParams;
   }
+
   const noop = () => {};
-  /**
-   * Typesafe alternative to Array.isArray
-   * https://github.com/microsoft/TypeScript/pull/48228
-   */
+  
   const isArray = Array.isArray;
 
   function warn(msg) {
@@ -51,7 +51,9 @@ var VueRouter = (function (exports, vue) {
     console.warn.apply(console, ["[Vue Router warn]: " + msg].concat(args));
   }
 
+  // 反斜杠正则
   const TRAILING_SLASH_RE = /\/$/;
+  // 将字符串中反斜杠替换
   const removeTrailingSlash = (path) => path.replace(TRAILING_SLASH_RE, "");
   /**
    * Transforms a URI into a normalized history location
@@ -108,18 +110,14 @@ var VueRouter = (function (exports, vue) {
     const query = location.query ? stringifyQuery(location.query) : "";
     return location.path + (query && "?") + query + (location.hash || "");
   }
-  /**
-   * Strips off the base from the beginning of a location.pathname in a non-case-sensitive way.
-   *
-   * @param pathname - location.pathname
-   * @param base - base to strip off
-   */
+ 
+  // 将base 从pathname剥离出去 
   function stripBase(pathname, base) {
-    // no base or base is not found at the beginning
     if (!base || !pathname.toLowerCase().startsWith(base.toLowerCase()))
       return pathname;
     return pathname.slice(base.length) || "/";
   }
+
   /**
    * Checks if two RouteLocation are equal. This means that both locations are
    * pointing towards the same {@link RouteRecord} and that all `params`, `query`
@@ -279,10 +277,13 @@ var VueRouter = (function (exports, vue) {
       top: elRect.top - docRect.top - (offset.top || 0),
     };
   }
+
+  // 计算滚动位置
   const computeScrollPosition = () => ({
     left: window.pageXOffset,
     top: window.pageYOffset,
   });
+
   function scrollToPosition(position) {
     let scrollToOptions;
     if ("el" in position) {
@@ -394,7 +395,7 @@ var VueRouter = (function (exports, vue) {
    */
   function createCurrentLocation(base, location) {
     const { pathname, search, hash } = location;
-    // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
+    // 允许base值 #, /#, #/, #!, #!/, /#!/, or even /folder#end
     const hashPos = base.indexOf("#");
     if (hashPos > -1) {
       let slicePos = hash.includes(base.slice(hashPos))
@@ -408,6 +409,7 @@ var VueRouter = (function (exports, vue) {
     const path = stripBase(pathname, base);
     return path + search + hash;
   }
+
   function useHistoryListeners(base, historyState, currentLocation, replace) {
     let listeners = [];
     let teardowns = [];
@@ -449,9 +451,12 @@ var VueRouter = (function (exports, vue) {
         });
       });
     };
+    
     function pauseListeners() {
       pauseState = currentLocation.value;
     }
+
+    // 监听回调
     function listen(callback) {
       // set up the listener and prepare teardown callbacks
       listeners.push(callback);
@@ -462,6 +467,7 @@ var VueRouter = (function (exports, vue) {
       teardowns.push(teardown);
       return teardown;
     }
+
     function beforeUnloadListener() {
       const { history } = window;
       if (!history.state) return;
@@ -470,12 +476,15 @@ var VueRouter = (function (exports, vue) {
         ""
       );
     }
+
+    // 移除监听器
     function destroy() {
       for (const teardown of teardowns) teardown();
       teardowns = [];
       window.removeEventListener("popstate", popStateHandler);
       window.removeEventListener("beforeunload", beforeUnloadListener);
     }
+
     // set up the listeners and prepare teardown callbacks
     window.addEventListener("popstate", popStateHandler);
     window.addEventListener("beforeunload", beforeUnloadListener);
@@ -504,6 +513,7 @@ var VueRouter = (function (exports, vue) {
       scroll: computeScroll ? computeScrollPosition() : null,
     };
   }
+
   function useHistoryStateNavigation(base) {
     const { history, location } = window;
     // private variables
@@ -615,11 +625,7 @@ var VueRouter = (function (exports, vue) {
       replace,
     };
   }
-  /**
-   * Creates an HTML5 history. Most common history for single page applications.
-   *
-   * @param base -
-   */
+   
   // 创建: 创建HTML5 history模式路由
   function createWebHistory(base) {
     base = normalizeBase(base);
@@ -655,14 +661,8 @@ var VueRouter = (function (exports, vue) {
     });
     return routerHistory;
   }
-
-  /**
-   * Creates an in-memory based history. The main purpose of this history is to handle SSR. It starts in a special location that is nowhere.
-   * It's up to the user to replace that location with the starter location by either calling `router.push` or `router.replace`.
-   *
-   * @param base - Base applied to all urls, defaults to '/'
-   * @returns a history object that can be passed to the router constructor
-   */
+  
+  // 创建: 创建内存模式路由对象
   function createMemoryHistory(base = "") {
     let listeners = [];
     let queue = [START];
@@ -2475,7 +2475,7 @@ var VueRouter = (function (exports, vue) {
       : defaultClass;
 
   // RouterView
-  const RouterViewImpl = /*#__PURE__*/ vue.defineComponent({
+  const RouterViewImpl = vue.defineComponent({
     name: "RouterView",
     // #674 we manually inherit them
     inheritAttrs: false,
@@ -2621,17 +2621,21 @@ var VueRouter = (function (exports, vue) {
       };
     },
   });
+
+  // 正常化: 正常化插槽
   function normalizeSlot(slot, data) {
     if (!slot) return null;
     const slotContent = slot(data);
     return slotContent.length === 1 ? slotContent[0] : slotContent;
   }
+
   // export the public type for h/tsx inference
   // also to avoid inline import() in generated d.ts files
   /**
    * Component to display the current route the user is at.
    */
   const RouterView = RouterViewImpl;
+
   // warn against deprecated usage with <transition> & <keep-alive>
   // due to functional component being no longer eager in Vue 3
   function warnDeprecatedUsage() {
