@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .el-button {
+      box-sizing: border-box;
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: transparent;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script src="../../vue@3.2.37/dist/vue.global.js"></script>
+  <script src="../dist/vue-router.global.js"></script>
+
+  <script>
+    const {
+      h,
+      ref,
+      createTextVNode,
+      defineComponent,
+      createApp
+    } = Vue
+  </script>
+
+  <script>
+    const {
+      RouterView,
+      RouterLink,
+      createWebHistory,
+      createRouter
+    } = VueRouter
+  </script>
+
+  <script>
+    const Hello = defineComponent(() => {
+      return () => h('div', {
+        class: 'el-wrapper'
+      }, 'Hello')
+    })
+
+    const World = defineComponent(() => {
+      return () => h('div', {
+        class: 'el-wrapper'
+      }, 'World')
+    })
+  </script>
+
+  <script>
+    const router = createRouter({
+      history: createWebHistory(),
+      routes: [
+        {
+          name: 'Hello',
+          component: Hello,
+          path: '/one'
+        },
+        {
+          name: 'World',
+          component: World,
+          path: '/two'
+        }
+      ]
+    })
+  </script>
+
+  <script>
+    const App = defineComponent({
+      components: {
+        hello: Hello,
+        world: World
+      },
+      
+      setup () {
+        let name = ref('Hello')
+        return () => h('div', 
+          {
+            class: 'el-container'
+          }, 
+          h(RouterView),
+          h('button', {
+            class: 'el-button',
+            onClick () {
+              let route = name.value === 'Hello' ? {
+                name: 'World'
+              } : {
+                name: 'Hello'
+              }
+              router.push(route)
+            }
+          }, 'toggle'),
+          h(RouterLink, {
+            custom: true,
+            to: {
+              name: 'World'
+            }
+          }, h('button', {
+            class: 'el-button'
+          }, 'Hello World'))
+        )
+      }
+    })
+  </script>
+
+  
+
+  <script>
+    const app = createApp(App)
+    app.component('Hello', Hello)
+    app.use(router)
+    app.mount('#app')
+  </script>
+</body>
+</html>

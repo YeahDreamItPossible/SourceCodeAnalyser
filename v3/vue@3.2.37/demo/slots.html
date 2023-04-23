@@ -20,9 +20,18 @@
   
   <script>
     const ElButton = defineComponent({
+      data () {
+        return {
+          userInfo: {
+            name: 'Lee',
+            age: 18
+          }
+        }
+      },
+
       template: `<div class="el-button">
         <slot name="default">Button</slot>
-        <slot name="header"></slot>
+        <slot name="header" :userInfo="userInfo"></slot>
         <slot name="footer"></slot>
       </div>`
     })
@@ -36,7 +45,7 @@
 
       template: `<ElButton>
         <template v-slot:default><div>ElButton</div></template>
-        <template v-slot:header><div>Header</div></template>
+        <template v-slot:header="slots"><div>Header</div>{{slots.userInfo}}</template>
         <template v-slot:footer><div>Footer</div></template>
       </ElButton>`
     })

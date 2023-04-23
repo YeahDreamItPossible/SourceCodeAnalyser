@@ -14,48 +14,28 @@
   <script>
     const {
       h,
+      ref,
       createApp,
-      defineComponent
+      defineComponent,
+      resolveDirective,
+      defineExpose,
+      useAttrs,
+      getCurrentInstance
     } = Vue
   </script>
 
   <script>
-    const App = defineComponent({
-      name: 'App',
+    const App = defineComponent(() => {
+      let name = ref('Lee')
 
-      data () {
-        return {
-          name: 'Hello World~'
-        }
-      },
+      const attrs = useAttrs()
 
-      render () {
-        const self = this
+      console.log({...getCurrentInstance()})
+
+      return () => {
         return h('div', {
-          class: 'el-container',
-          onClick () {
-            self.name = self.name.split('').reverse().join('')
-          },
-
-          onVnodeBeforeMount () {
-            console.log('onVnodeBeforeMount')
-          },
-          onVnodeMounted () {
-            console.log('onVnodeMounted')
-          },
-          onVnodeBeforeUpdate () {
-            console.log('onVnodeBeforeUpdate')
-          },
-          onVnodeUpdated () {
-            console.log('onVnodeUpdated')
-          },
-          onVnodeBeforeUnmount () {
-            console.log('onVnodeBeforeUnmount')
-          },
-          onVnodeUnmounted () {
-            console.log('onVnodeUnmounted')
-          }
-        }, this.name)
+          class: 'container'
+        }, name.value)
       }
     })
 
@@ -65,21 +45,15 @@
     const app = createApp({
       data () {
         return {
-          list: null
+          list: null,
+          arr: [{name: 'Lee'}, {age: 18}]
         }
       },
+
       render () {
-        return [h(App), h('div', {
-          onClick () {
-            console.log(app._instance.subTree)
-            app._instance.subTree.children[0].vnode = null
-          }
-        }, '移除'), ['Hello', 'World'].map(item => h('div', {
-          key: item,
-          ref: 'list',
-          ref_for: true,
-          ref_key: item
-        }, item))]
+        return h(App, {
+          class: 'el-container'
+        })
       }
     })
 
