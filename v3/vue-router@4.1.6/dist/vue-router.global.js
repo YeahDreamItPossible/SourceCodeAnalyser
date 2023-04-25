@@ -12,7 +12,7 @@
  * matcher              =>   匹配器
  * parser						    =>		 语法分析器 解析器
  * 
- *  * process					=>		 加工
+ * process					=>		 加工
  * resolve					=>		 解析
  * transform				=>		 转换
  * optimizer				=>		 优化器 优化程序
