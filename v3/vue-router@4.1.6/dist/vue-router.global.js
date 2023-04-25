@@ -1302,13 +1302,6 @@ var VueRouter = (function (exports, vue) {
     return matcher;
   }
 
-  /**
-   * Creates a Router Matcher.
-   *
-   * @internal
-   * @param routes - array of initial routes
-   * @param globalOptions - global route options
-   */
   // 创建: 创建路由对象匹配器
   function createRouterMatcher(routes, globalOptions) {
     // 正常化且排序后的matcher数组
@@ -1326,6 +1319,7 @@ var VueRouter = (function (exports, vue) {
     function getRecordMatcher(name) {
       return matcherMap.get(name);
     }
+    
     function addRoute(record, parent, originalRecord) {
       // used later on to remove by name
       const isRootAdd = !originalRecord;
@@ -1435,6 +1429,7 @@ var VueRouter = (function (exports, vue) {
           }
         : noop;
     }
+
     function removeRoute(matcherRef) {
       if (isRouteName(matcherRef)) {
         const matcher = matcherMap.get(matcherRef);
@@ -1568,6 +1563,7 @@ var VueRouter = (function (exports, vue) {
         meta: mergeMetaFields(matched),
       };
     }
+
     // add initial routes
     routes.forEach((route) => addRoute(route));
     return { addRoute, resolve, removeRoute, getRoutes, getRecordMatcher };
@@ -1580,12 +1576,14 @@ var VueRouter = (function (exports, vue) {
     }
     return newParams;
   }
+
   /**
    * Normalizes a RouteRecordRaw. Creates a copy
    *
    * @param record
    * @returns the normalized version
    */
+  // 正常化: 正常化 RouteRecord
   function normalizeRouteRecord(record) {
     return {
       path: record.path,
@@ -1606,11 +1604,13 @@ var VueRouter = (function (exports, vue) {
           : record.component && { default: record.component },
     };
   }
+
   /**
    * Normalize the optional `props` in a record to always be an object similar to
    * components. Also accept a boolean for components.
    * @param record
    */
+  // 正常化: 正常化RouteRecord中props
   function normalizeRecordProps(record) {
     const propsObject = {};
     // props does not exist on redirect records, but we can set false directly
@@ -1679,12 +1679,10 @@ var VueRouter = (function (exports, vue) {
         );
     }
   }
-  /**
-   * A route with a name and a child with an empty path without a name should warn when adding the route
-   *
-   * @param mainNormalizedRecord - RouteRecordNormalized
-   * @param parent - RouteRecordMatcher
-   */
+ 
+  // 警告: 
+  // 当父RouteRecord 有name属性 且 children中有RouteRecord中path和name不存在 则警告
+  // 理由: 当渲染当前path时 直接渲染子RouteRecord 但是matcher无法保存当前子RouteRecord
   function checkChildMissingNameWithEmptyPath(mainNormalizedRecord, parent) {
     if (
       parent &&
