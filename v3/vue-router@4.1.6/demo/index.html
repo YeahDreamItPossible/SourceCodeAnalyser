@@ -37,7 +37,8 @@
       RouterView,
       RouterLink,
       createWebHistory,
-      createRouter
+      createRouter,
+      createWebHashHistory
     } = VueRouter
   </script>
 
@@ -57,7 +58,7 @@
 
   <script>
     const router = createRouter({
-      history: createWebHistory(),
+      history: createWebHashHistory('/sys/user/'),
       routes: [
         {
           name: 'Hello',
