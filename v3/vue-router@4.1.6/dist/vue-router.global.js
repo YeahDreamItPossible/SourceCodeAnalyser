@@ -51,9 +51,9 @@ var VueRouter = (function (exports, vue) {
     console.warn.apply(console, ["[Vue Router warn]: " + msg].concat(args));
   }
 
-  // 反斜杠正则
+  // 斜杠正则
   const TRAILING_SLASH_RE = /\/$/;
-  // 将字符串中反斜杠替换
+  // 将字符串中最后面的斜杠替换
   const removeTrailingSlash = (path) => path.replace(TRAILING_SLASH_RE, "");
   /**
    * Transforms a URI into a normalized history location
@@ -111,7 +111,7 @@ var VueRouter = (function (exports, vue) {
     return location.path + (query && "?") + query + (location.hash || "");
   }
  
-  // 将base 从pathname剥离出去 
+  // 将base 从location.pathname剥离出去 
   function stripBase(pathname, base) {
     if (!base || !pathname.toLowerCase().startsWith(base.toLowerCase()))
       return pathname;
@@ -235,14 +235,10 @@ var VueRouter = (function (exports, vue) {
    * Starting location for Histories
    */
   const START = "";
-  // Generic utils
-  /**
-   * Normalizes a base by removing any trailing slash and reading the base tag if
-   * present.
-   *
-   * @param base - base to normalize
-   */
+
+  // 正常化: 正常化createWebHistory中的base参数
   function normalizeBase(base) {
+    // 默认 '/'
     if (!base) {
       if (isBrowser) {
         // respect <base> tag
@@ -258,11 +254,11 @@ var VueRouter = (function (exports, vue) {
     // slash with hash because the file could be read from the disk like file://
     // and the leading slash would cause problems
     if (base[0] !== "/" && base[0] !== "#") base = "/" + base;
-    // remove the trailing slash so all other method can just do `base + fullPath`
-    // to build an href
+    // 将base中最后的'/'去掉
     return removeTrailingSlash(base);
   }
-  // remove any character before the hash
+
+  // 移除hash前面的任何字符串
   const BEFORE_HASH_RE = /^[^#]+#/;
   function createHref(base, location) {
     return base.replace(BEFORE_HASH_RE, "#") + location;
@@ -389,12 +385,14 @@ var VueRouter = (function (exports, vue) {
   // }
 
   let createBaseLocation = () => location.protocol + "//" + location.host;
+
   /**
    * Creates a normalized history location from a window.location object
    * @param location -
    */
   function createCurrentLocation(base, location) {
     const { pathname, search, hash } = location;
+
     // 允许base值 #, /#, #/, #!, #!/, /#!/, or even /folder#end
     const hashPos = base.indexOf("#");
     if (hashPos > -1) {
@@ -494,6 +492,7 @@ var VueRouter = (function (exports, vue) {
       destroy,
     };
   }
+
   /**
    * Creates a state object
    */
@@ -764,6 +763,7 @@ var VueRouter = (function (exports, vue) {
    * ```
    */
   // 创建: 创建hash模式路由对象
+  // 底层是 调用createWebHistory
   function createWebHashHistory(base) {
     // Make sure this implementation is fine in terms of encoding, specially for IE11
     // for `file://`, directly use the pathname and ignore the base
@@ -2022,6 +2022,7 @@ var VueRouter = (function (exports, vue) {
     }
     registerGuard(activeRecord, "updateGuards", updateGuard);
   }
+
   function guardToPromiseFn(guard, to, from, record, name) {
     // keep a reference to the enterCallbackArray to prevent pushing callbacks if a new navigation took place
     const enterCallbackArray =
@@ -2105,6 +2106,7 @@ var VueRouter = (function (exports, vue) {
       if (called === 1) next.apply(null, arguments);
     };
   }
+
   function extractComponentsGuards(matched, guardType, to, from) {
     const guards = [];
     for (const record of matched) {
@@ -3505,10 +3507,12 @@ var VueRouter = (function (exports, vue) {
       }
     }
 
+    // TODO:
     function push(to) {
       return pushWithRedirect(to);
     }
 
+    // 底层调用 push 方法
     function replace(to) {
       return push(assign(locationAsObject(to), { replace: true }));
     }
@@ -3681,7 +3685,7 @@ var VueRouter = (function (exports, vue) {
     }
 
     // TODO: refactor the whole before guards by internally using router.beforeEach
-    // 
+    // 运行前置路由守卫
     function navigate(to, from) {
       let guards;
       const [leavingRecords, updatingRecords, enteringRecords] =
@@ -3785,6 +3789,7 @@ var VueRouter = (function (exports, vue) {
       );
     }
 
+    // 运行后置路由守卫
     function triggerAfterEach(to, from, failure) {
       // navigation is confirmed, call afterGuards
       // TODO: wrap with error handlers
@@ -3796,6 +3801,8 @@ var VueRouter = (function (exports, vue) {
      * - Changes the url if necessary
      * - Calls the scrollBehavior
      */
+    // 跳转路由
+    // 处理页面滚动
     function finalizeNavigation(toLocation, from, isPush, replace, data) {
       // a more recent navigation took place
       const error = checkCanceledNavigation(toLocation, from);
@@ -3952,6 +3959,7 @@ var VueRouter = (function (exports, vue) {
           .catch(noop);
       });
     }
+
     // Initialization and Errors
     let readyHandlers = useCallbacks();
     let errorHandlers = useCallbacks();
@@ -3986,6 +3994,7 @@ var VueRouter = (function (exports, vue) {
         readyHandlers.add([resolve, reject]);
       });
     }
+
     function markAsReady(err) {
       if (!ready) {
         // still not ready if an error happened

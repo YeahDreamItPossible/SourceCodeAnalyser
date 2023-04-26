@@ -16,6 +16,7 @@
   </style>
 </head>
 <body>
+  <base href="./">
   <div class="app" id="app"></div>
 
   <script src="../../vue@3.2.37/dist/vue.global.js"></script>
@@ -85,8 +86,13 @@
   </script>
 
   <script>
+    const history = createWebHistory()
+    history.listen(() => {
+      console.log('???')
+    })
+
     const router = createRouter({
-      history: createWebHistory(),
+      history,
       routes: [
         {
           path: '/home/:user',
