@@ -916,6 +916,7 @@ var VueRouter = (function (exports, vue) {
    * @param extraOptions - optional options for the regexp
    * @returns a PathParser
    */
+  // 
   function tokensToParser(segments, extraOptions) {
     const options = assign({}, BASE_PATH_PARSER_OPTIONS, extraOptions);
     // the amount of scores is the same as the length of segments except for the root segment "/"
@@ -1137,6 +1138,7 @@ var VueRouter = (function (exports, vue) {
   // After some profiling, the cache seems to be unnecessary because tokenizePath
   // (the slowest part of adding a route) is very fast
   // const tokenCache = new Map<string, Token[][]>()
+  // RouteRecord中path字段 含有特殊字符 如 * () \
   function tokenizePath(path) {
     if (!path) return [[]];
     if (path === "/") return [[ROOT_TOKEN]];
@@ -1316,10 +1318,12 @@ var VueRouter = (function (exports, vue) {
       globalOptions
     );
 
+    // 根据 RouteRecord Name 获取RouteRecord
     function getRecordMatcher(name) {
       return matcherMap.get(name);
     }
     
+    // 添加路由记录
     function addRoute(record, parent, originalRecord) {
       // used later on to remove by name
       const isRootAdd = !originalRecord;
@@ -1430,6 +1434,7 @@ var VueRouter = (function (exports, vue) {
         : noop;
     }
 
+    // 根据 RouteRecord or RouteRecord Name 来移除RouteRecord
     function removeRoute(matcherRef) {
       if (isRouteName(matcherRef)) {
         const matcher = matcherMap.get(matcherRef);
@@ -1455,6 +1460,7 @@ var VueRouter = (function (exports, vue) {
       return matchers;
     }
 
+    // 插入 matcher
     function insertMatcher(matcher) {
       let i = 0;
       while (
@@ -1472,6 +1478,7 @@ var VueRouter = (function (exports, vue) {
         matcherMap.set(matcher.record.name, matcher);
     }
 
+    // 根据 RouteRecord 解析
     function resolve(location, currentLocation) {
       let matcher;
       let params = {};
@@ -1564,7 +1571,6 @@ var VueRouter = (function (exports, vue) {
       };
     }
 
-    // add initial routes
     routes.forEach((route) => addRoute(route));
     return { addRoute, resolve, removeRoute, getRoutes, getRecordMatcher };
   }
@@ -1577,12 +1583,6 @@ var VueRouter = (function (exports, vue) {
     return newParams;
   }
 
-  /**
-   * Normalizes a RouteRecordRaw. Creates a copy
-   *
-   * @param record
-   * @returns the normalized version
-   */
   // 正常化: 正常化 RouteRecord
   function normalizeRouteRecord(record) {
     return {
@@ -1605,12 +1605,7 @@ var VueRouter = (function (exports, vue) {
     };
   }
 
-  /**
-   * Normalize the optional `props` in a record to always be an object similar to
-   * components. Also accept a boolean for components.
-   * @param record
-   */
-  // 正常化: 正常化RouteRecord中props
+  // 正常化: 正常化RouteRecord中props属性
   function normalizeRecordProps(record) {
     const propsObject = {};
     // props does not exist on redirect records, but we can set false directly
@@ -1682,7 +1677,7 @@ var VueRouter = (function (exports, vue) {
  
   // 警告: 
   // 当父RouteRecord 有name属性 且 children中有RouteRecord中path和name不存在 则警告
-  // 理由: 当渲染当前path时 直接渲染子RouteRecord 但是matcher无法保存当前子RouteRecord
+  // 理由: 当渲染当前path时 会直接渲染子RouteRecord 但是matcher的matcherMap属性无法保存当前子RouteRecord
   function checkChildMissingNameWithEmptyPath(mainNormalizedRecord, parent) {
     if (
       parent &&
@@ -3302,15 +3297,21 @@ var VueRouter = (function (exports, vue) {
 
   // 创建: 创建路由对象
   function createRouter(options) {
+    // 创建路由对象匹配器
     const matcher = createRouterMatcher(options.routes, options);
+
     const parseQuery$1 = options.parseQuery || parseQuery;
     const stringifyQuery$1 = options.stringifyQuery || stringifyQuery;
+
+    // options.history 必须手动创建
     const routerHistory = options.history;
     if (!routerHistory)
       throw new Error(
         'Provide the "history" option when calling "createRouter()":' +
           " https://next.router.vuejs.org/api/#history."
       );
+
+    // 路由守卫
     const beforeGuards = useCallbacks();
     const beforeResolveGuards = useCallbacks();
     const afterGuards = useCallbacks();
@@ -3976,6 +3977,8 @@ var VueRouter = (function (exports, vue) {
       }
       return Promise.reject(error);
     }
+
+    // TODO: 
     function isReady() {
       if (ready && currentRoute.value !== START_LOCATION_NORMALIZED)
         return Promise.resolve();
@@ -4035,13 +4038,18 @@ var VueRouter = (function (exports, vue) {
       isReady,
       install(app) {
         const router = this;
+
+        // 注册全局组件
         app.component("RouterLink", RouterLink);
         app.component("RouterView", RouterView);
+
+        // vue绑定全局属性
         app.config.globalProperties.$router = router;
         Object.defineProperty(app.config.globalProperties, "$route", {
           enumerable: true,
           get: () => vue.unref(currentRoute),
         });
+
         // this initial navigation is only necessary on client, on server it doesn't
         // make sense because it will create an extra unnecessary navigation and could
         // lead to problems
@@ -4063,9 +4071,12 @@ var VueRouter = (function (exports, vue) {
           // @ts-expect-error: the key matches
           reactiveRoute[key] = vue.computed(() => currentRoute.value[key]);
         }
+
+        // 全局提供上下文
         app.provide(routerKey, router);
         app.provide(routeLocationKey, vue.reactive(reactiveRoute));
         app.provide(routerViewLocationKey, currentRoute);
+
         const unmountApp = app.unmount;
         installedApps.add(app);
         app.unmount = function () {
@@ -4082,6 +4093,7 @@ var VueRouter = (function (exports, vue) {
           }
           unmountApp();
         };
+        
         // TODO: this probably needs to be updated so it can be used by vue-termui
         if (isBrowser) {
           addDevtools(app, router, matcher);
