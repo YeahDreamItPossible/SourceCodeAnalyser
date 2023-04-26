@@ -1943,10 +1943,8 @@ var VueRouter = (function (exports, vue) {
    * @internal
    */
   const routerViewLocationKey = Symbol("router view location");
-
-  /**
-   * Create a list of callbacks that can be reset. Used to create before and after navigation guards list
-   */
+  
+  // 路由守卫底层实现
   function useCallbacks() {
     let handlers = [];
     function add(handler) {

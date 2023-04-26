@@ -31,7 +31,9 @@
     const {
       createRouter,
       createWebHistory,
-      RouterView
+      RouterView,
+      useRouter,
+      useRoute
     } = VueRouter
   </script>
 
@@ -41,6 +43,7 @@
 
       mounted () {
         console.log(this.$route)
+        window._route = this.$route
       },
 
       render () {
