@@ -19,7 +19,6 @@
  * generator				=>		 生成器
  */
 
-
 var VueRouter = (function (exports, vue) {
   "use strict";
 
@@ -368,6 +367,7 @@ var VueRouter = (function (exports, vue) {
     scrollPositions.delete(key);
     return scroll;
   }
+
   // TODO: RFC about how to save scroll position
   /**
    * ScrollBehavior instance used by the router to compute and restore the scroll
@@ -383,7 +383,6 @@ var VueRouter = (function (exports, vue) {
   //   compute: computeScroll,
   //   scroll: scrollToPosition,
   // }
-
   let createBaseLocation = () => location.protocol + "//" + location.host;
 
   /**
@@ -408,6 +407,7 @@ var VueRouter = (function (exports, vue) {
     return path + search + hash;
   }
 
+  // TODO: 监听
   function useHistoryListeners(base, historyState, currentLocation, replace) {
     let listeners = [];
     let teardowns = [];
@@ -450,6 +450,7 @@ var VueRouter = (function (exports, vue) {
       });
     };
     
+    // 停止监听
     function pauseListeners() {
       pauseState = currentLocation.value;
     }
@@ -493,9 +494,7 @@ var VueRouter = (function (exports, vue) {
     };
   }
 
-  /**
-   * Creates a state object
-   */
+  // 构建状态
   function buildState(
     back,
     current,
@@ -513,6 +512,7 @@ var VueRouter = (function (exports, vue) {
     };
   }
 
+  // TODO: Navigation
   function useHistoryStateNavigation(base) {
     const { history, location } = window;
     // private variables
@@ -538,6 +538,7 @@ var VueRouter = (function (exports, vue) {
         true
       );
     }
+
     function changeLocation(to, state, replace) {
       /**
        * if a base tag is provided, and we are on a normal domain, we have to
@@ -568,6 +569,7 @@ var VueRouter = (function (exports, vue) {
         location[replace ? "replace" : "assign"](url);
       }
     }
+
     function replace(to, data) {
       const state = assign(
         {},
@@ -585,6 +587,7 @@ var VueRouter = (function (exports, vue) {
       changeLocation(to, state, true);
       currentLocation.value = to;
     }
+
     function push(to, data) {
       // Add to current entry the information of where we are going
       // as well as saving the current position
@@ -617,6 +620,7 @@ var VueRouter = (function (exports, vue) {
       changeLocation(to, state, false);
       currentLocation.value = to;
     }
+
     return {
       location: currentLocation,
       state: historyState,
@@ -738,30 +742,6 @@ var VueRouter = (function (exports, vue) {
     return routerHistory;
   }
 
-  /**
-   * Creates a hash history. Useful for web applications with no host (e.g. `file://`) or when configuring a server to
-   * handle any URL is not possible.
-   *
-   * @param base - optional base to provide. Defaults to `location.pathname + location.search` If there is a `<base>` tag
-   * in the `head`, its value will be ignored in favor of this parameter **but note it affects all the history.pushState()
-   * calls**, meaning that if you use a `<base>` tag, it's `href` value **has to match this parameter** (ignoring anything
-   * after the `#`).
-   *
-   * @example
-   * ```js
-   * // at https://example.com/folder
-   * createWebHashHistory() // gives a url of `https://example.com/folder#`
-   * createWebHashHistory('/folder/') // gives a url of `https://example.com/folder/#`
-   * // if the `#` is provided in the base, it won't be added by `createWebHashHistory`
-   * createWebHashHistory('/folder/#/app/') // gives a url of `https://example.com/folder/#/app/`
-   * // you should avoid doing this because it changes the original url and breaks copying urls
-   * createWebHashHistory('/other-folder/') // gives a url of `https://example.com/other-folder/#`
-   *
-   * // at file:///usr/etc/folder/index.html
-   * // for locations with no `host`, the base is ignored
-   * createWebHashHistory('/iAmIgnored') // gives a url of `file:///usr/etc/folder/index.html#`
-   * ```
-   */
   // 创建: 创建hash模式路由对象
   // 底层是 调用createWebHistory
   function createWebHashHistory(base) {
@@ -1957,6 +1937,7 @@ var VueRouter = (function (exports, vue) {
     };
   }
 
+  // 注册路由守卫
   function registerGuard(record, name, guard) {
     const removeFromList = () => {
       record[name].delete(guard);
@@ -1968,6 +1949,7 @@ var VueRouter = (function (exports, vue) {
     });
     record[name].add(guard);
   }
+
   /**
    * Add a navigation guard that triggers whenever the component for the current
    * location is about to be left. Similar to {@link beforeRouteLeave} but can be
@@ -1975,6 +1957,7 @@ var VueRouter = (function (exports, vue) {
    *
    * @param leaveGuard - {@link NavigationGuard}
    */
+  // 全局路由守卫
   function onBeforeRouteLeave(leaveGuard) {
     if (!vue.getCurrentInstance()) {
       warn(
@@ -1995,6 +1978,7 @@ var VueRouter = (function (exports, vue) {
     }
     registerGuard(activeRecord, "leaveGuards", leaveGuard);
   }
+
   /**
    * Add a navigation guard that triggers whenever the current location is about
    * to be updated. Similar to {@link beforeRouteUpdate} but can be used in any
@@ -2002,6 +1986,7 @@ var VueRouter = (function (exports, vue) {
    *
    * @param updateGuard - {@link NavigationGuard}
    */
+  // 全局路由守卫
   function onBeforeRouteUpdate(updateGuard) {
     if (!vue.getCurrentInstance()) {
       warn(

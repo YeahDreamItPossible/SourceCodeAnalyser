@@ -91,6 +91,10 @@
       console.log('???')
     })
 
+    VueRouter.onBeforeRouteUpdate(() => {
+      console.log('===')
+    })
+
     const router = createRouter({
       history,
       routes: [
