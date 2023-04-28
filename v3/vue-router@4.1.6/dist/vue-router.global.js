@@ -31,6 +31,7 @@ var VueRouter = (function (exports, vue) {
   }
 
   const assign = Object.assign;
+  // 对 params 进行fn 处理
   function applyToParams(fn, params) {
     const newParams = {};
     for (const key in params) {
@@ -41,7 +42,6 @@ var VueRouter = (function (exports, vue) {
   }
 
   const noop = () => {};
-  
   const isArray = Array.isArray;
 
   function warn(msg) {
@@ -54,15 +54,8 @@ var VueRouter = (function (exports, vue) {
   const TRAILING_SLASH_RE = /\/$/;
   // 将字符串中最后面的斜杠替换
   const removeTrailingSlash = (path) => path.replace(TRAILING_SLASH_RE, "");
-  /**
-   * Transforms a URI into a normalized history location
-   *
-   * @param parseQuery
-   * @param location - URI to normalize
-   * @param currentLocation - current absolute location. Allows resolving relative
-   * paths. Must start with `/`. Defaults to `/`
-   * @returns a normalized history location
-   */
+  
+  // 将 URI 正常化成history location
   function parseURL(parseQuery, location, currentLocation = "/") {
     let path,
       query = {},
@@ -125,6 +118,7 @@ var VueRouter = (function (exports, vue) {
    * @param a - first {@link RouteLocation}
    * @param b - second {@link RouteLocation}
    */
+  // 断言: 
   function isSameRouteLocation(stringifyQuery, a, b) {
     const aLastIndex = a.matched.length - 1;
     const bLastIndex = b.matched.length - 1;
@@ -137,6 +131,7 @@ var VueRouter = (function (exports, vue) {
       a.hash === b.hash
     );
   }
+
   /**
    * Check if two `RouteRecords` are equal. Takes into account aliases: they are
    * considered equal to the `RouteRecord` they are aliasing.
@@ -144,12 +139,14 @@ var VueRouter = (function (exports, vue) {
    * @param a - first {@link RouteRecord}
    * @param b - second {@link RouteRecord}
    */
+  //
   function isSameRouteRecord(a, b) {
     // since the original record has an undefined value for aliasOf
     // but all aliases point to the original record, this will always compare
     // the original record
     return (a.aliasOf || a) === (b.aliasOf || b);
   }
+
   function isSameRouteLocationParams(a, b) {
     if (Object.keys(a).length !== Object.keys(b).length) return false;
     for (const key in a) {
@@ -157,6 +154,7 @@ var VueRouter = (function (exports, vue) {
     }
     return true;
   }
+
   function isSameRouteLocationParamsValue(a, b) {
     return isArray(a)
       ? isEquivalentArray(a, b)
@@ -164,6 +162,7 @@ var VueRouter = (function (exports, vue) {
       ? isEquivalentArray(b, a)
       : a === b;
   }
+  
   /**
    * Check if two arrays are the same or if an array with one single entry is the
    * same as another primitive value. Used to check query and parameters
@@ -176,12 +175,8 @@ var VueRouter = (function (exports, vue) {
       ? a.length === b.length && a.every((value, i) => value === b[i])
       : a.length === 1 && a[0] === b;
   }
-  /**
-   * Resolves a relative path that starts with `.`.
-   *
-   * @param to - path location we are resolving
-   * @param from - currentLocation.path, should start with `/`
-   */
+  
+  // 相对路径
   function resolveRelativePath(to, from) {
     if (to.startsWith("/")) return to;
     if (!from.startsWith("/")) {
@@ -1872,7 +1867,6 @@ var VueRouter = (function (exports, vue) {
     }
     return search;
   }
-  
   // 正常化: 正常化路由参数对象
   function normalizeQuery(query) {
     const normalizedQuery = {};
@@ -3353,7 +3347,7 @@ var VueRouter = (function (exports, vue) {
       return !!matcher.getRecordMatcher(name);
     }
 
-    // 
+    // 根据 URI or RouteRecord 来获取history location
     function resolve(rawLocation, currentLocation) {
       // const objectLocation = routerLocationAsObject(rawLocation)
       // we create a copy to modify it later
@@ -3477,6 +3471,7 @@ var VueRouter = (function (exports, vue) {
       );
     }
 
+    // 根据 URI 来返回 history location
     function locationAsObject(to) {
       return typeof to === "string"
         ? parseURL(parseQuery$1, to, currentRoute.value.path)
@@ -3502,6 +3497,7 @@ var VueRouter = (function (exports, vue) {
       return push(assign(locationAsObject(to), { replace: true }));
     }
 
+    // 根据 to.redirect 来获取 重定向的 history location
     function handleRedirectRecord(to) {
       const lastMatched = to.matched[to.matched.length - 1];
       if (lastMatched && lastMatched.redirect) {
@@ -3542,6 +3538,7 @@ var VueRouter = (function (exports, vue) {
       }
     }
 
+    // 带重定向的路由跳转
     function pushWithRedirect(to, redirectedFrom) {
       const targetLocation = (pendingLocation = resolve(to));
       const from = currentRoute.value;
