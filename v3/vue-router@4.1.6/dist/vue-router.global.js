@@ -162,7 +162,7 @@ var VueRouter = (function (exports, vue) {
       ? isEquivalentArray(b, a)
       : a === b;
   }
-  
+
   /**
    * Check if two arrays are the same or if an array with one single entry is the
    * same as another primitive value. Used to check query and parameters
@@ -3667,7 +3667,7 @@ var VueRouter = (function (exports, vue) {
     }
 
     // TODO: refactor the whole before guards by internally using router.beforeEach
-    // 运行前置路由守卫
+    // 在跳转路由前 运行前置路由守卫
     function navigate(to, from) {
       let guards;
       const [leavingRecords, updatingRecords, enteringRecords] =
