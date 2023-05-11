@@ -3,11 +3,13 @@
 /**
  * 注释中的名词解释
  * root store       =>   根状态应用(通过createPinia创建, 一个vue应用中只能有一个根状态应用)
- * substore         =>   子状态应用(通过defineStore创建,可以有多个,可以共享某个state、getter、action)
- * options substore =>   选项型子状态应用(通过defineStore创建, 参数是对象）
- * setup substore   =>   启动型子状态应用(通过defineStore创建, 参数是setup函数）
+ * substore         =>   子仓库应用(通过defineStore创建,可以有多个,可以共享某个state、getter、action)
+ * 
+ * options substore =>   选项型子仓库应用(通过defineStore创建, 参数是对象）
+ * setup substore   =>   安装型子仓库应用(通过defineStore创建, 参数是setup函数）
+ * 
  * root state       =>   根状态(根状态应用中的状态)
- * substate         =>   子状态(根状态应用中的状态)
+ * substate         =>   子仓库(根状态应用中的状态)
  */
 
 var Pinia = (function (exports, vueDemi) {
@@ -17,7 +19,6 @@ var Pinia = (function (exports, vueDemi) {
   let activePinia;
 
   // 手动设置 当前激活的root store
-  // 优点: 使用函数的方式而不是通过直接修改 便于追踪
   const setActivePinia = (pinia) => (activePinia = pinia);
 
   // 获取当前激活的root store
@@ -29,11 +30,15 @@ var Pinia = (function (exports, vueDemi) {
   // 标识: 便于全局提供 注入
   const piniaSymbol = Symbol("pinia");
 
+  /* 逻辑分层: devtools 开始 */
+
+  // 获取 Vue devtools
   function getDevtoolsGlobalHook() {
     return getTarget().__VUE_DEVTOOLS_GLOBAL_HOOK__;
   }
+
+  // 获取全局对象
   function getTarget() {
-    // @ts-ignore
     return typeof navigator !== "undefined" && typeof window !== "undefined"
       ? window
       : typeof global !== "undefined"
@@ -41,6 +46,7 @@ var Pinia = (function (exports, vueDemi) {
       : {};
   }
 
+  // 断言: 浏览器是否兼容Proxy
   const isProxyAvailable = typeof Proxy === "function";
 
   const HOOK_SETUP = "devtools-plugin:setup";
@@ -202,10 +208,9 @@ var Pinia = (function (exports, vueDemi) {
     }
   }
 
-  function isPlainObject(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    o
-  ) {
+  /* 逻辑分层: devtools 结束 */
+
+  function isPlainObject(o) {
     return (
       o &&
       typeof o === "object" &&
@@ -228,6 +233,7 @@ var Pinia = (function (exports, vueDemi) {
     // maybe reset? for $state = {} and $reset
   })(exports.MutationType || (exports.MutationType = {}));
 
+  // 断言: 是否运行于客户端
   const IS_CLIENT = typeof window !== "undefined";
   const USE_DEVTOOLS = IS_CLIENT;
 
@@ -1131,9 +1137,8 @@ var Pinia = (function (exports, vueDemi) {
       };
     }
   }
-  /**
-   * pinia.use(devtoolsPlugin)
-   */
+
+  // 调试工具
   function devtoolsPlugin({ app, store, options }) {
     // HMR module
     if (store.$id.startsWith("__hot:")) {
@@ -1168,7 +1173,7 @@ var Pinia = (function (exports, vueDemi) {
     );
   }
 
-  // 创建root store实例
+  // 创建: 创建root store实例
   function createPinia() {
     // 独立顶级作用域
     const scope = vueDemi.effectScope(true);
@@ -1194,7 +1199,7 @@ var Pinia = (function (exports, vueDemi) {
 
           // 根应用 绑定全局变量$pinia
           app.config.globalProperties.$pinia = pinia;
-
+          
           if (USE_DEVTOOLS) {
             registerPiniaDevtools(app, pinia);
           }
@@ -1229,6 +1234,7 @@ var Pinia = (function (exports, vueDemi) {
       state,
     });
     
+    // 调试工具(可跳过)
     if (USE_DEVTOOLS && typeof Proxy !== "undefined") {
       pinia.use(devtoolsPlugin);
     }
@@ -1420,8 +1426,8 @@ var Pinia = (function (exports, vueDemi) {
     return !!(vueDemi.isRef(o) && o.effect);
   }
 
-  // 创建 options substore实例
-  // createSetupStore的语法糖 包装了setup函数 并重写了substore的$reset函数
+  // 创建 选项式 子仓库实例(options substore)
+  // createSetupStore的语法糖 1. 包装了setup函数 2.重写了substore的$reset函数
   function createOptionsStore(id, options, pinia, hot) {
     const { state, actions, getters } = options;
     const initialState = pinia.state.value[id];
@@ -1481,7 +1487,7 @@ var Pinia = (function (exports, vueDemi) {
     return store;
   }
   
-  // 创建 setup substore实例
+  // 创建 安装式 子仓库实例(setup substore)
   function createSetupStore(
     $id,
     setup,
@@ -1527,12 +1533,10 @@ var Pinia = (function (exports, vueDemi) {
 
     // 标识: 当前subscribe正在执行中
     let isListening; // set to true at the end
-
     let isSyncListening; // set to true at the end
 
     // mutation订阅队列
     let subscriptions = vueDemi.markRaw([]);
-
     // action订阅队列
     let actionSubscriptions = vueDemi.markRaw([]);
 
@@ -1675,7 +1679,7 @@ var Pinia = (function (exports, vueDemi) {
 
     const partialStore = {
       _p: pinia,
-      // _s: scope,
+      _s: scope,
       $id,
       $onAction: addSubscription.bind(null, actionSubscriptions),
       $patch,
@@ -1722,8 +1726,6 @@ var Pinia = (function (exports, vueDemi) {
           _customProperties: vueDemi.markRaw(new Set()), // devtools custom properties
         },
         partialStore
-        // must be added later
-        // setupStore
       )
     );
 
@@ -1808,8 +1810,8 @@ var Pinia = (function (exports, vueDemi) {
         }
       }
     }
-    // add the state, getters, and action properties
-    /* istanbul ignore if */
+    
+    // 将 state getters actions 绑定到substore
     if (vueDemi.isVue2) {
       Object.keys(setupStore).forEach((key) => {
         vueDemi.set(store, key, setupStore[key]);
@@ -1913,6 +1915,8 @@ var Pinia = (function (exports, vueDemi) {
         store._hotUpdating = false;
       });
     }
+
+    // 开发调试(可跳过)
     if (USE_DEVTOOLS) {
       const nonEnumerable = {
         writable: true,
@@ -1928,6 +1932,7 @@ var Pinia = (function (exports, vueDemi) {
         );
       });
     }
+
     /* istanbul ignore if */
     if (vueDemi.isVue2) {
       // mark the store as ready before plugins
@@ -1963,6 +1968,8 @@ var Pinia = (function (exports, vueDemi) {
         );
       }
     });
+
+    // store.$state 不能是类的实例(class instance)
     if (
       store.$state &&
       typeof store.$state === "object" &&
@@ -1975,6 +1982,7 @@ var Pinia = (function (exports, vueDemi) {
           `Found in store "${store.$id}".`
       );
     }
+
     // only apply hydrate to option stores with an initial state in pinia
     if (initialState && isOptionsStore && options.hydrate) {
       options.hydrate(store.$state, initialState);
@@ -1984,13 +1992,14 @@ var Pinia = (function (exports, vueDemi) {
     return store;
   }
 
-  // 创建substore
-  // 入参: (id, options) || ({id, ...options}) || (id,fn, options)
+  // 定义子仓库 substore
+  // 入参: (id, options) || ({id, ...options}) || (id, fn, options)
   function defineStore(
     idOrOptions,
     setup,
     setupOptions
   ) {
+    // 绑定参数
     let id;
     let options;
     const isSetupStore = typeof setup === "function";
@@ -2023,18 +2032,15 @@ var Pinia = (function (exports, vueDemi) {
       // 缓存substore 防止重复构造
       if (!pinia._s.has(id)) {
         
-        // setup 类型不同调用不同的api
-        // 其实 option
-        // options类型 和 setup类型调用不同的api
-        // 但是实际上 options类型只是包装了一个setup函数 最终仍然调用setup的api
+        // 根据defineStore不同的参数类型 调用不同的api
         if (isSetupStore) {
           createSetupStore(id, setup, options, pinia);
         } else {
           createOptionsStore(id, options, pinia);
         }
-        /* istanbul ignore else */
+        
+        // 将pinia绑定到useStore函数中
         {
-          // @ts-expect-error: not the right inferred type
           useStore._pinia = pinia;
         }
       }
@@ -2046,7 +2052,6 @@ var Pinia = (function (exports, vueDemi) {
           ? createSetupStore(hotId, setup, options, pinia, true)
           : createOptionsStore(hotId, assign({}, options), pinia, true);
         hot._hotUpdate(newStore);
-        // cleanup the state properties and the store from the cache
         delete pinia.state.value[hotId];
         pinia._s.delete(hotId);
       }
@@ -2077,11 +2082,13 @@ var Pinia = (function (exports, vueDemi) {
    *
    * @param suffix - new suffix
    */
+  // 设置前缀
   function setMapStoreSuffix(
     suffix // could be 'Store' but that would be annoying for JS
   ) {
     mapStoreSuffix = suffix;
   }
+
   /**
    * Allows using stores without the composition API (`setup()`) by generating an
    * object to be spread in the `computed` field of a component. It accepts a list
@@ -2171,6 +2178,7 @@ var Pinia = (function (exports, vueDemi) {
           return reduced;
         }, {});
   }
+
   /**
    * Allows using state and getters from one store without using the composition
    * API (`setup()`) by generating an object to be spread in the `computed` field
@@ -2239,31 +2247,9 @@ var Pinia = (function (exports, vueDemi) {
     }
   }
 
-  /**
-   * Vue 2 Plugin that must be installed for pinia to work. Note **you don't need
-   * this plugin if you are using Nuxt.js**. Use the `buildModule` instead:
-   * https://pinia.vuejs.org/ssr/nuxt.html.
-   *
-   * @example
-   * ```js
-   * import Vue from 'vue'
-   * import { PiniaVuePlugin, createPinia } from 'pinia'
-   *
-   * Vue.use(PiniaVuePlugin)
-   * const pinia = createPinia()
-   *
-   * new Vue({
-   *   el: '#app',
-   *   // ...
-   *   pinia,
-   * })
-   * ```
-   *
-   * @param _Vue - `Vue` imported from 'vue'.
-   */
+  // 兼容Vue@2 或者 Vue@3选项式组件
   const PiniaVuePlugin = function (_Vue) {
-    // Equivalent of
-    // app.config.globalProperties.$pinia = pinia
+    // 等价于 app.config.globalProperties.$pinia = pinia
     _Vue.mixin({
       beforeCreate() {
         const options = this.$options;

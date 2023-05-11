@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link href="https://lib.baomitu.com/ant-design-vue/2.2.8/antd.css" rel="stylesheet">
+  <style>
+    .el-container {
+      padding: 8px;
+      max-width: 500px;
+    }
+    .todo {
+      margin-top: 8px;
+      display: flex;
+    }
+    .todo .el-button {
+      margin-left: 8px;
+    }
+    .todo-list {
+      margin-top: 24px;
+    }
+    .todo-item {
+      display: flex;
+    }
+    .todo-item .todo-item-text {
+      flex: 1;
+    }
+    .todo-item .icon-remove {
+      display: flex;
+      justify-content: center;
+      margin-left: 16px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      width: 24px;
+      height: 24px;
+      line-height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app"></div>
+
+  <script src="../../vue@3.2.37/dist/vue.global.js"></script>
+  <script src="https://lib.baomitu.com/ant-design-vue/2.2.8/antd.js"></script>
+  <script>
+    var VueDemi = VueDemi || Vue
+  </script>
+  <script src="../dist/pinia.iife.js"></script>
+  <script>
+    const {
+      createApp,
+      h,
+      defineComponent,
+      effectScope
+    } = Vue
+  </script>
+
+  <script>
+    const {
+      Button,
+      Input
+    } = antd
+  </script>
+
+  <script>
+    const store = Pinia.createPinia()
+  </script>
+
+  <script>
+    const Todo = defineComponent({
+      name: 'Todo',
+
+      render () {
+        return h('div', {
+          class: 'todo'
+        }, [
+          h(Input, {
+            allowClear: true,
+            showCount: true
+          }),
+          h(Button, {
+            class: 'el-button'
+          }, {
+            default: () => '新增'
+          }),
+          h(Button, {
+            class: 'el-button'
+          }, {
+            default: () => '重置'
+          })
+        ])
+      }
+    })
+
+    const TodoItem = defineComponent({
+      name: 'TodoItem',
+
+      render () {
+        return h('div', {
+          class: 'todo-item'
+        }, [
+          h('div', {
+            class: 'todo-item-text'
+          }, 'Hello'),
+          h('div', {
+            class: 'icon-remove'
+          }, 'x')
+        ])
+      }
+    })
+
+    const TodoList = defineComponent({
+      name: 'TodoList',
+
+      render () {
+        return h('div', {
+          class: 'todo-list'
+        }, [
+          h(TodoItem)
+        ])
+      }
+    })
+  </script>
+
+  <script>
+    const App = defineComponent({
+      name: 'App',
+
+      render () {
+        return h('div', {
+          class: 'el-container'
+        }, [
+          h(Todo),
+          h(TodoList)
+        ])
+      }
+    })
+  </script>
+
+  <script>
+    const app = createApp(App)
+    app.use(store)
+    app.mount('#app')
+  </script>
+</body>
+</html>
