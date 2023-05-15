@@ -13,10 +13,12 @@ const CALL_DELEGATE = function(...args) {
 	this.call = this._createCall("sync");
 	return this.call(...args);
 };
+
 const CALL_ASYNC_DELEGATE = function(...args) {
 	this.callAsync = this._createCall("async");
 	return this.callAsync(...args);
 };
+
 const PROMISE_DELEGATE = function(...args) {
 	this.promise = this._createCall("promise");
 	return this.promise(...args);
@@ -26,15 +28,15 @@ class Hook {
 	constructor(args = [], name = undefined) {
 		this._args = args;
 		this.name = name;
-		// NOTE:
+
 		// taps 优先队列
 		// taps 中的item {name, type, fn, stage, before}
 		// name 仅仅用于标识 可以用于调整 taps 优先列队项优先级
 		this.taps = [];
-		// NOTE:
 		// interceptors 队列
 		// 拦截器 的 item { register, call, error, result, done }
 		this.interceptors = [];
+
 		this._call = CALL_DELEGATE;
 		this.call = CALL_DELEGATE;
 		this._callAsync = CALL_ASYNC_DELEGATE;
@@ -51,13 +53,11 @@ class Hook {
 		this.tapPromise = this.tapPromise;
 	}
 
-	// NOTE:
 	// 基类抽象方法
 	compile(options) {
 		throw new Error("Abstract: should be overridden");
 	}
 
-	// NOTE:
 	// 根据 选项 编译成 内部call函数
 	// 在call的时候 生成内部call函数的好处
 	// 就是保证在该次调用时 选项是最终的 不会再次改变
@@ -71,9 +71,8 @@ class Hook {
 	}
 
 	_tap(type, options, fn) {
-		// NOTE:
 		// normalize options
-		// 保证最终的options 是一个包含 { name, type, fn, before, stage, context, ...} 的对象
+		// 保证最终的options 是一个包含 { name, type, fn, before, stage, context } 的对象
 		// 其中 context 废弃
 		if (typeof options === "string") {
 			options = {
@@ -93,25 +92,21 @@ class Hook {
 		this._insert(options);
 	}
 
-	// NOTE:
-	// 同步
+	// 注册同步函数
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
 
-	// NOTE:
-	// 异步
+	// 注册异步回调函数
 	tapAsync(options, fn) {
 		this._tap("async", options, fn);
 	}
 
-	// NOTE:
 	// promise
 	tapPromise(options, fn) {
 		this._tap("promise", options, fn);
 	}
 
-	// NOTE:
 	// 调用拦截器 处理options 并得到最终的options
 	_runRegisterInterceptors(options) {
 		for (const interceptor of this.interceptors) {
@@ -144,14 +139,12 @@ class Hook {
 		return this.taps.length > 0 || this.interceptors.length > 0;
 	}
 
-	// NOTE:
 	// 注册拦截器
 	intercept(interceptor) {
 		this._resetCompilation();
 		this.interceptors.push(Object.assign({}, interceptor));
 		if (interceptor.register) {
 			for (let i = 0; i < this.taps.length; i++) {
-				// NOTE:
 				// 每次注册拦截器时 都会对taps 中的item options 重新处理一次
 				this.taps[i] = interceptor.register(this.taps[i]);
 			}
@@ -164,7 +157,6 @@ class Hook {
 		this.promise = this._promise;
 	}
 
-	// NOTE:
 	// 注册事件到 taps 队列 中 并调整每一项优先级
 	_insert(item) {
 		this._resetCompilation();
@@ -179,7 +171,6 @@ class Hook {
 			stage = item.stage;
 		}
 		let i = this.taps.length;
-		// NOTE:
 		// 事件优先级调整
 		while (i > 0) {
 			i--;
