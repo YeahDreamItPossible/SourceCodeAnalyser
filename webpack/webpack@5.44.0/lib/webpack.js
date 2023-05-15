@@ -58,28 +58,25 @@ const createMultiCompiler = (childOptions, options) => {
  * @param {WebpackOptions} rawOptions options object
  * @returns {Compiler} a compiler
  */
+// 创建Compiler
 const createCompiler = rawOptions => {
-	// NOTE:
 	// normalizer(标准化) options
 	const options = getNormalizedWebpackOptions(rawOptions);
 
-	// NOTE:
 	// options 初始化默认值
 	applyWebpackOptionsBaseDefaults(options);
 
 	const compiler = new Compiler(options.context);
-	// NOTE:
+	
 	// 手动绑定 options
 	compiler.options = options;
 
-	// NOTE:
 	// 1. 生成日志插件 compiler.infrastructureLogger
 	// 2. 生成输入流 和 输出流 compiler.inputFileSystem compiler.outputFileSystem
 	new NodeEnvironmentPlugin({
 		infrastructureLogging: options.infrastructureLogging
 	}).apply(compiler);
 
-	// NOTE:
 	// 注册用户自定义插件
 	if (Array.isArray(options.plugins)) {
 		for (const plugin of options.plugins) {
@@ -91,7 +88,6 @@ const createCompiler = rawOptions => {
 		}
 	}
 
-	// NOTE:
 	// options 再次初始化默认值
 	applyWebpackOptionsDefaults(options);
 
@@ -99,9 +95,7 @@ const createCompiler = rawOptions => {
 	compiler.hooks.environment.call();
 	compiler.hooks.afterEnvironment.call();
 
-	// NOTE:
 	// options 根据不同的值 注册不同的内置插件
-	// 非常重要
 	new WebpackOptionsApply().process(options, compiler);
 
 	// NOTE: 空调用
@@ -131,7 +125,7 @@ const webpack = /** @type {WebpackFunctionSingle & WebpackFunctionMulti} */ (
 	 */
 	(options, callback) => {
 		const create = () => {
-			// NOTE: 校验参数字段
+			// 验证用户options是否合法
 			if (!webpackOptionsSchemaCheck(options)) {
 				getValidateSchema()(webpackOptionsSchema, options);
 			}

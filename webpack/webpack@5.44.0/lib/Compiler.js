@@ -201,14 +201,12 @@ class Compiler {
 		/** @type {Compiler} */
 		this.root = this;
 
-		// NOTE:
 		// /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
 		/** @type {string} */
 		this.outputPath = "";
 		/** @type {Watching} */
 		this.watching = undefined;
 
-		// NOTE:
 		// 文件流
 		/** @type {OutputFileSystem} */
 		this.outputFileSystem = null;
@@ -250,12 +248,11 @@ class Compiler {
 		/** @type {WebpackOptions} */
 		this.options = /** @type {WebpackOptions} */ ({});
 
-		// NOTE:
 		// 默认使用 Node.js 进程的当前工作目录 __dirname
-		// /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo
+		// 如 /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo
 		this.context = context;
 
-		// NOTE:
+		// TODO:
 		// 该类好像是将 loader 的家在路径变换成 绝对路径 ??
 		this.requestShortener = new RequestShortener(context, this.root);
 
@@ -263,6 +260,7 @@ class Compiler {
 
 		this.compilerPath = "";
 
+		// 标识: 标识compiler是否正在运行
 		/** @type {boolean} */
 		this.running = false;
 
@@ -518,13 +516,11 @@ class Compiler {
 		};
 
 		const run = () => {
-			// NOTE:
 			// NodeEnvironmentPlugin 插件
 			// 标识 compiler 开始
 			this.hooks.beforeRun.callAsync(this, err => {
 				if (err) return finalCallback(err);
 
-				// NOTE:
 				// 直接执行回调
 				this.hooks.run.callAsync(this, err => {
 					if (err) return finalCallback(err);
@@ -1071,11 +1067,9 @@ class Compiler {
 		compilation.name = this.name;
 		compilation.records = this.records;
 
-		// NOTE:
 		// thisCompilation 和 compilation
 		// 主要是给 compilation hooks 不同 hook 注册函数
 
-		// NOTE:
 		// 串行 使用插件
 		// ArrayPushCallbackChunkFormatPlugin
 		// JsonpChunkLoadingPlugin
@@ -1088,7 +1082,6 @@ class Compiler {
 		// ResolverCachePlugin
 		this.hooks.thisCompilation.call(compilation, params);
 
-		// NOTE:
 		// 串行使用插件(此处插件根据不同情况 使用较多 可以跳过)
 		// ChunkPrefetchPreloadPlugin
 		// ModuleInfoHeaderPlugin
@@ -1144,7 +1137,6 @@ class Compiler {
 		return compilation;
 	}
 
-	// NOTE:
 	// 创建 NormalModuleFactory 的实例
 	createNormalModuleFactory() {
 		this._cleanupLastNormalModuleFactory();
@@ -1157,17 +1149,14 @@ class Compiler {
 			layers: this.options.experiments.layers
 		});
 		this._lastNormalModuleFactory = normalModuleFactory;
-		// NOTE:
 		// 空调用
 		this.hooks.normalModuleFactory.call(normalModuleFactory);
 		return normalModuleFactory;
 	}
 
-	// NOTE:
 	// 创建 ContextModuleFactory 的实例
 	createContextModuleFactory() {
 		const contextModuleFactory = new ContextModuleFactory(this.resolverFactory);
-		// NOTE:
 		// 空调用
 		this.hooks.contextModuleFactory.call(contextModuleFactory);
 		return contextModuleFactory;
@@ -1187,12 +1176,10 @@ class Compiler {
 	 */
 	compile(callback) {
 		const params = this.newCompilationParams();
-		// NOTE:
 		// 直接执行回调
 		this.hooks.beforeCompile.callAsync(params, err => {
 			if (err) return callback(err);
 
-			// NOTE:
 			// ExternalsPlugin
 			// normalModuleFactory.hooks.factorize 注册钩子
 			// 主要时 从输出的bundle排除依赖(该依赖通过cdn 或者别的方式 以什么样的方式 引入)
@@ -1203,7 +1190,6 @@ class Compiler {
 			const logger = compilation.getLogger("webpack.Compiler");
 
 			logger.time("make hook");
-			// NOTE:
 			// EntryPlugin
 			// compilation.addEntry 
 			// 添加入口 开始编译
@@ -1212,7 +1198,6 @@ class Compiler {
 				if (err) return callback(err);
 
 				logger.time("finish make hook");
-				// NOTE:
 				// 直接执行回调
 				this.hooks.finishMake.callAsync(compilation, err => {
 					logger.timeEnd("finish make hook");
@@ -1231,7 +1216,6 @@ class Compiler {
 
 								logger.time("afterCompile hook");
 
-								// NOTE:
 								// 直接执行回调
 								this.hooks.afterCompile.callAsync(compilation, err => {
 									logger.timeEnd("afterCompile hook");

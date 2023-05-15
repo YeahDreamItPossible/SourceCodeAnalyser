@@ -276,8 +276,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}).apply(compiler);
 		}
 
-		// NOTE: EntryOptionPlugin 插件
-		// NOTE: 主要是 entry
+		// 主要是 entry
 		new EntryOptionPlugin().apply(compiler);
 		compiler.hooks.entryOption.call(options.context, options.entry);
 

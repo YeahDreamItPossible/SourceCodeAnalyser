@@ -28,6 +28,7 @@ const asyncResolver = ResolverFactory.createResolver({
 	extensions: [".js", ".json", ".node"],
 	fileSystem: nodeFileSystem
 });
+
 function resolve(context, path, request, resolveContext, callback) {
 	if (typeof context === "string") {
 		callback = resolveContext;
@@ -48,6 +49,7 @@ const syncResolver = ResolverFactory.createResolver({
 	useSyncFileSystemCalls: true,
 	fileSystem: nodeFileSystem
 });
+
 function resolveSync(context, path, request) {
 	if (typeof context === "string") {
 		request = path;

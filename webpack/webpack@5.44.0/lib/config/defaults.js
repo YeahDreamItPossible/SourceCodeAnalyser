@@ -115,6 +115,8 @@ const A = (obj, prop, factory) => {
  * @param {WebpackOptions} options options to be modified
  * @returns {void}
  */
+// 1. 设置options.context = cwd
+// 2. 设置options.infrastructureLogging
 const applyWebpackOptionsBaseDefaults = options => {
 	F(options, "context", () => process.cwd());
 	applyInfrastructureLoggingDefaults(options.infrastructureLogging);
@@ -322,6 +324,7 @@ const applyCacheDefaults = (cache, { name, mode, development }) => {
  * @param {boolean} options.production is production
  * @returns {void}
  */
+// 设置options.snapshot
 const applySnapshotDefaults = (snapshot, { production }) => {
 	A(snapshot, "managedPaths", () => {
 		if (process.versions.pnp === "3") {
@@ -557,6 +560,7 @@ const applyModuleDefaults = (
  * @param {ModuleOptions} options.module module option
  * @returns {void}
  */
+// 设置options.output
 const applyOutputDefaults = (
 	output,
 	{
@@ -956,6 +960,7 @@ const applyPerformanceDefaults = (performance, { production }) => {
  * @param {boolean} options.records using records
  * @returns {void}
  */
+// 设置options.optimization
 const applyOptimizationDefaults = (
 	optimization,
 	{ production, development, records }
@@ -1138,6 +1143,7 @@ const getResolveLoaderDefaults = ({ cache }) => {
  * @param {InfrastructureLogging} infrastructureLogging options
  * @returns {void}
  */
+// 设置options.infrastructureLogging
 const applyInfrastructureLoggingDefaults = infrastructureLogging => {
 	F(infrastructureLogging, "stream", () => process.stderr);
 	const tty =
