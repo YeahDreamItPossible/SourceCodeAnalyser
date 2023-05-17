@@ -391,6 +391,8 @@ class Resolver {
 		} else {
 			newStack = new Set([stackEntry]);
 		}
+
+		// 空调用
 		this.hooks.resolveStep.call(hook, request);
 
 		if (hook.isUsed()) {
@@ -404,6 +406,12 @@ class Resolver {
 				},
 				message
 			);
+
+			// ParsePlugin
+			// 主要调用resolver.parse
+
+			// DescriptionFilePlugin
+			// 
 			return hook.callAsync(request, innerContext, (err, result) => {
 				if (err) return callback(err);
 				if (result) return callback(null, result);
