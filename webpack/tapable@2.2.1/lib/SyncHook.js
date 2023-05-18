@@ -38,8 +38,8 @@ function SyncHook(args = [], name = undefined) {
 	hook.constructor = SyncHook;
 
 	// 此处实现 甚是精巧
-	// 子类方法 重写 父类方法
-	// 保证该类型的API 是 该子类的实例时 不可调用
+	// 子类方法 重写 父类方法(保证该类型的API 是 该子类的实例时 不可调用)
+	// SyncHook 不可通过tapAsync tapPromise注册事件
 	hook.tapAsync = TAP_ASYNC;
 	hook.tapPromise = TAP_PROMISE;
 

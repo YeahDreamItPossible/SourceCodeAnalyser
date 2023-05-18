@@ -26,7 +26,11 @@ const COMPILE = function(options) {
 function AsyncSeriesHook(args = [], name = undefined) {
 	const hook = new Hook(args, name);
 	hook.constructor = AsyncSeriesHook;
+
+	// 
 	hook.compile = COMPILE;
+
+	// AsyncSeriesHook 不可通过call调用
 	hook._call = undefined;
 	hook.call = undefined;
 	return hook;

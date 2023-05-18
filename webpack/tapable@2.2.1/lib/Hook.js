@@ -92,12 +92,12 @@ class Hook {
 		this._insert(options);
 	}
 
-	// 注册同步函数
+	// 注册 同步事件(fn函数的参数为Hook构造函数中传入的参数)
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
 
-	// 注册异步回调函数
+	// 注册 带有回掉函数的同步事件(fn中最后一个实参为回掉函数)
 	tapAsync(options, fn) {
 		this._tap("async", options, fn);
 	}
