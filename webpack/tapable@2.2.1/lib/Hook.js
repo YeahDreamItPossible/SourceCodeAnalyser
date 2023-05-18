@@ -29,7 +29,7 @@ class Hook {
 		this._args = args;
 		this.name = name;
 
-		// taps 优先队列
+		// taps 事件优先队列
 		// taps 中的item {name, type, fn, stage, before}
 		// name 仅仅用于标识 可以用于调整 taps 优先列队项优先级
 		this.taps = [];
@@ -53,6 +53,7 @@ class Hook {
 		this.tapPromise = this.tapPromise;
 	}
 
+	// 生成call函数体
 	// 基类抽象方法
 	compile(options) {
 		throw new Error("Abstract: should be overridden");
@@ -70,6 +71,7 @@ class Hook {
 		});
 	}
 
+	// 主要对注册事件选项正常化
 	_tap(type, options, fn) {
 		// normalize options
 		// 保证最终的options 是一个包含 { name, type, fn, before, stage, context } 的对象
@@ -92,17 +94,20 @@ class Hook {
 		this._insert(options);
 	}
 
-	// 注册 同步事件(fn函数的参数为Hook构造函数中传入的参数)
+	// 注册事件
+	// 注册同步事件(fn函数的参数为Hook构造函数中传入的参数)
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
 
-	// 注册 带有回掉函数的同步事件(fn中最后一个实参为回掉函数)
+	// 注册事件
+	// 注册带有回调函数的异步事件(fn中最后一个形参为回掉函数)
 	tapAsync(options, fn) {
 		this._tap("async", options, fn);
 	}
 
-	// promise
+	// 注册事件
+	// 注册返回值为Promise的异步事件(fn返回Promise)
 	tapPromise(options, fn) {
 		this._tap("promise", options, fn);
 	}
@@ -120,6 +125,7 @@ class Hook {
 		return options;
 	}
 
+	// 将options作为默认options 对hook进行包装
 	withOptions(options) {
 		const mergeOptions = opt =>
 			Object.assign({}, options, typeof opt === "string" ? { name: opt } : opt);
@@ -135,6 +141,7 @@ class Hook {
 		};
 	}
 
+	// 断言: 判断当前hook 是否被注册事件 or 拦截器
 	isUsed() {
 		return this.taps.length > 0 || this.interceptors.length > 0;
 	}

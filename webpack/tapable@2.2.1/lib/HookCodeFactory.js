@@ -7,10 +7,8 @@
 class HookCodeFactory {
 	constructor(config) {
 		this.config = config;
-		// NOTE:
 		// { type, fn, taps, args} 对象
 		this.options = undefined;
-		// NOTE:
 		// hook tap 时的形参
 		this._args = undefined;
 	}
@@ -83,18 +81,13 @@ class HookCodeFactory {
 		return fn;
 	}
 
-	// NOTE:
 	// _x 为 事件队列
 	setup(instance, options) {
 		instance._x = options.taps.map(t => t.fn);
 	}
 
-	// NOTE:
 	// 保存 hook call 所需要的数据
 	// 设置options 和 _args
-	/**
-	 * @param {{ type: "sync" | "promise" | "async", taps: Array<Tap>, interceptors: Array<Interceptor> }} options
-	 */
 	init(options) {
 		this.options = options;
 		this._args = options.args.slice();
@@ -187,14 +180,12 @@ class HookCodeFactory {
 		return code;
 	}
 
-	// NOTE:
 	// 是否需要上下文(上下文已废弃)
 	needContext() {
 		for (const tap of this.options.taps) if (tap.context) return true;
 		return false;
 	}
 
-	// NOTE:
 	//
 	callTap(tapIndex, { onError, onResult, onDone, rethrowIfPossible }) {
 		let code = "";
@@ -290,7 +281,6 @@ class HookCodeFactory {
 		return code;
 	}
 
-	// NOTE:
 	// 串行调用 taps列队
 	callTapsSeries({
 		onError,
@@ -460,7 +450,6 @@ class HookCodeFactory {
 		return code;
 	}
 
-	// NOTE:
 	// 参数序列化
 	args({ before, after } = {}) {
 		let allArgs = this._args;
