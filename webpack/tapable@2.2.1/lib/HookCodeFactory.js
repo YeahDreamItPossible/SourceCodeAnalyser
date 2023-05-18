@@ -164,7 +164,7 @@ class HookCodeFactory {
 		}
 	}
 
-	// NOTE:
+	// 生成头部
 	header() {
 		let code = "";
 		if (this.needContext()) {
@@ -451,6 +451,7 @@ class HookCodeFactory {
 	}
 
 	// 参数序列化
+	// 示例: ['name', 'age'] => 'name, age'
 	args({ before, after } = {}) {
 		let allArgs = this._args;
 		if (before) allArgs = [before].concat(allArgs);
