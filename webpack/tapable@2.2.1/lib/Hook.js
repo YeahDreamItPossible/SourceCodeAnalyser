@@ -147,6 +147,7 @@ class Hook {
 	}
 
 	// 注册拦截器
+	// interceptor: {context: {}, register: fn, call: fn, tap: fn, result: fn, error: fn, done: fn}
 	intercept(interceptor) {
 		this._resetCompilation();
 		this.interceptors.push(Object.assign({}, interceptor));

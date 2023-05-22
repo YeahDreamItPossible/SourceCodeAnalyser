@@ -13,6 +13,7 @@ class HookCodeFactory {
 		this._args = undefined;
 	}
 
+	// 调用方式决定生成代码内部事件调用逻辑
 	create(options) {
 		this.init(options);
 		let fn;
@@ -105,6 +106,7 @@ class HookCodeFactory {
 			const onResult = options.onResult;
 			const onDone = options.onDone;
 			let code = "";
+			// 1.1 生成intercept call逻辑
 			for (let i = 0; i < this.options.interceptors.length; i++) {
 				const interceptor = this.options.interceptors[i];
 				if (interceptor.call) {
@@ -114,12 +116,12 @@ class HookCodeFactory {
 				}
 			}
 			code += this.content(
-				// NOTE:
 				// 增强 结果结果 便于 拦截器处理
 				Object.assign(options, {
 					onError:
 						onError &&
 						(err => {
+							// 1.4 生成intercept error逻辑
 							let code = "";
 							for (let i = 0; i < this.options.interceptors.length; i++) {
 								const interceptor = this.options.interceptors[i];
@@ -133,6 +135,7 @@ class HookCodeFactory {
 					onResult:
 						onResult &&
 						(result => {
+							// 1.5 生成intercept result逻辑
 							let code = "";
 							for (let i = 0; i < this.options.interceptors.length; i++) {
 								const interceptor = this.options.interceptors[i];
@@ -146,6 +149,7 @@ class HookCodeFactory {
 					onDone:
 						onDone &&
 						(() => {
+							// 1.5 生成intercept done逻辑
 							let code = "";
 							for (let i = 0; i < this.options.interceptors.length; i++) {
 								const interceptor = this.options.interceptors[i];
@@ -164,7 +168,7 @@ class HookCodeFactory {
 		}
 	}
 
-	// 生成头部
+	// 生成头部(固定调用逻辑)
 	header() {
 		let code = "";
 		if (this.needContext()) {
@@ -181,15 +185,17 @@ class HookCodeFactory {
 	}
 
 	// 是否需要上下文(上下文已废弃)
+	// 是根据注册事件选项options是否包含context确定
 	needContext() {
 		for (const tap of this.options.taps) if (tap.context) return true;
 		return false;
 	}
 
-	//
+	// 生成事件调用逻辑核心
 	callTap(tapIndex, { onError, onResult, onDone, rethrowIfPossible }) {
 		let code = "";
 		let hasTapCached = false;
+		// 1.2 生成intercept tap逻辑
 		for (let i = 0; i < this.options.interceptors.length; i++) {
 			const interceptor = this.options.interceptors[i];
 			if (interceptor.tap) {
@@ -202,6 +208,7 @@ class HookCodeFactory {
 				}_tap${tapIndex});\n`;
 			}
 		}
+		// 1.3 生成taps 回调事件fn逻辑
 		code += `var _fn${tapIndex} = ${this.getTapFn(tapIndex)};\n`;
 		const tap = this.options.taps[tapIndex];
 		switch (tap.type) {
@@ -229,6 +236,7 @@ class HookCodeFactory {
 				if (onResult) {
 					code += onResult(`_result${tapIndex}`);
 				}
+				// 将上次生成的代码追加到当前代码后
 				if (onDone) {
 					code += onDone();
 				}
@@ -308,6 +316,7 @@ class HookCodeFactory {
 				code += `}\n`;
 				current = () => `${somethingReturns ? "return " : ""}_next${i}();\n`;
 			}
+			// done 缓存上一次生成的代码
 			const done = current;
 			const doneBreak = skipDone => {
 				if (skipDone) return "";
@@ -320,10 +329,12 @@ class HookCodeFactory {
 					(result => {
 						return onResult(i, result, done, doneBreak);
 					}),
+				// 便于读写上次生成的代码
 				onDone: !onResult && done,
 				rethrowIfPossible:
 					rethrowIfPossible && (firstAsync < 0 || i < firstAsync)
 			});
+			// 缓存当前生成的代码
 			current = () => content;
 		}
 		code += current();
@@ -463,15 +474,16 @@ class HookCodeFactory {
 		}
 	}
 
+	// 
 	getTapFn(idx) {
 		return `_x[${idx}]`;
 	}
 
+	// 
 	getTap(idx) {
 		return `_taps[${idx}]`;
 	}
 
-	// NOTE:
 	// 根据指针 获取 拦截器
 	getInterceptor(idx) {
 		return `_interceptors[${idx}]`;
