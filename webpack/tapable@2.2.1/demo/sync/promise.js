@@ -110,55 +110,55 @@ hook.promise('Lee', 20).then(res => {
 
 console.log(hook.call.toString())
 // 输出:
-// function anonymous(name, age) {
-//   "use strict";
-//   var _context = {};
-//   var _x = this._x;
-//   var _taps = this.taps;
-//   var _interceptors = this.interceptors;
-//   return new Promise((function (_resolve, _reject) {
-//     var _sync = true;
-//     function _error(_err) {
-//       if (_sync)
-//         _resolve(Promise.resolve().then((function () { throw _err; })));
-//       else
-//         _reject(_err);
-//     };
-//     _interceptors[0].call(_context, name, age);
-//     _interceptors[1].call(_context, name, age);
-//     var _tap0 = _taps[0];
-//     _interceptors[0].tap(_context, _tap0);
-//     _interceptors[1].tap(_context, _tap0);
-//     var _fn0 = _x[0];
-//     var _hasError0 = false;
-//     try {
-//       _fn0(_context, name, age);
-//     } catch (_err) {
-//       _hasError0 = true;
-//       _interceptors[0].error(_err);
-//       _interceptors[1].error(_err);
-//       _error(_err);
-//     }
-//     if (!_hasError0) {
-//       var _tap1 = _taps[1];
-//       _interceptors[0].tap(_context, _tap1);
-//       _interceptors[1].tap(_context, _tap1);
-//       var _fn1 = _x[1];
-//       var _hasError1 = false;
-//       try {
-//         _fn1(name, age);
-//       } catch (_err) {
-//         _hasError1 = true;
-//         _interceptors[0].error(_err);
-//         _interceptors[1].error(_err);
-//         _error(_err);
-//       }
-//       if (!_hasError1) {
-//         _interceptors[0].done();
-//         _interceptors[1].done();
-//         _resolve();
-//       }
-//     }
-//     _sync = false;
-//   }));
-// }
+function anonymous(name, age) {
+  "use strict";
+  var _context = {};
+  var _x = this._x;
+  var _taps = this.taps;
+  var _interceptors = this.interceptors;
+  return new Promise((function (_resolve, _reject) {
+    var _sync = true;
+    function _error(_err) {
+      if (_sync)
+        _resolve(Promise.resolve().then((function () { throw _err; })));
+      else
+        _reject(_err);
+    };
+    _interceptors[0].call(_context, name, age);
+    _interceptors[1].call(_context, name, age);
+    var _tap0 = _taps[0];
+    _interceptors[0].tap(_context, _tap0);
+    _interceptors[1].tap(_context, _tap0);
+    var _fn0 = _x[0];
+    var _hasError0 = false;
+    try {
+      _fn0(_context, name, age);
+    } catch (_err) {
+      _hasError0 = true;
+      _interceptors[0].error(_err);
+      _interceptors[1].error(_err);
+      _error(_err);
+    }
+    if (!_hasError0) {
+      var _tap1 = _taps[1];
+      _interceptors[0].tap(_context, _tap1);
+      _interceptors[1].tap(_context, _tap1);
+      var _fn1 = _x[1];
+      var _hasError1 = false;
+      try {
+        _fn1(name, age);
+      } catch (_err) {
+        _hasError1 = true;
+        _interceptors[0].error(_err);
+        _interceptors[1].error(_err);
+        _error(_err);
+      }
+      if (!_hasError1) {
+        _interceptors[0].done();
+        _interceptors[1].done();
+        _resolve();
+      }
+    }
+    _sync = false;
+  }));
+}
