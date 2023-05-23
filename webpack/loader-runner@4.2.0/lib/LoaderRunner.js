@@ -172,8 +172,7 @@ function convertArgs(args, raw) {
 		args[0] = Buffer.from(args[0], "utf-8");
 }
 
-// NOTE:
-// 迭代 loaders.ptich
+// 迭代 loaders.pitch
 function iteratePitchingLoaders(options, loaderContext, callback) {
 	// abort after last loader
 	// NOTE:
