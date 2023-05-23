@@ -13,7 +13,7 @@ class HookCodeFactory {
 		this._args = undefined;
 	}
 
-	// 调用方式决定生成代码内部事件调用逻辑
+	// 调用方式决定 生成代码方式
 	create(options) {
 		this.init(options);
 		let fn;
@@ -116,7 +116,7 @@ class HookCodeFactory {
 				}
 			}
 			code += this.content(
-				// 增强 结果结果 便于 拦截器处理
+				// 增强 参数 便于 拦截器处理
 				Object.assign(options, {
 					onError:
 						onError &&
@@ -341,6 +341,7 @@ class HookCodeFactory {
 		return code;
 	}
 
+	// 循环调用 taps列队
 	callTapsLooping({ onError, onDone, rethrowIfPossible }) {
 		if (this.options.taps.length === 0) return onDone();
 		const syncOnly = this.options.taps.every(t => t.type === "sync");
@@ -393,6 +394,7 @@ class HookCodeFactory {
 		return code;
 	}
 
+	// 并行调用 taps列队
 	callTapsParallel({
 		onError,
 		onResult,
