@@ -129,6 +129,7 @@ const webpack = /** @type {WebpackFunctionSingle & WebpackFunctionMulti} */ (
 			if (!webpackOptionsSchemaCheck(options)) {
 				getValidateSchema()(webpackOptionsSchema, options);
 			}
+			
 			/** @type {MultiCompiler|Compiler} */
 			let compiler;
 			let watch = false;
