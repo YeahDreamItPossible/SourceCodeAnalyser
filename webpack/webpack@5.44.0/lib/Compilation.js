@@ -1887,7 +1887,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	// NOTE:
 	// 添加入口
 	/**
 	 * @param {string} context context path for entry
@@ -1971,7 +1970,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		}
 
-		// NOTE:
 		// 空调用
 		this.hooks.addEntry.call(entry, options);
 

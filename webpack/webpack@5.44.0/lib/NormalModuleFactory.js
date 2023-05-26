@@ -717,7 +717,7 @@ class NormalModuleFactory extends ModuleFactory {
 			createData: {},
 			cacheable: true
 		};
-		// NOTE:
+
 		// 直接执行回调
 		this.hooks.beforeResolve.callAsync(resolveData, (err, result) => {
 			if (err) {
@@ -746,7 +746,6 @@ class NormalModuleFactory extends ModuleFactory {
 				);
 			}
 
-			// NOTE:
 			// 串行执行
 			// ExternalModuleFactoryPlugin
 			// NormalModuleFactory
