@@ -1257,7 +1257,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			currentProfile.markRestoringStart();
 		}
 
-		// NOTE:
 		// 主要是为了根据不同的缓存策略 缓存module
 		this._modulesCache.get(identifier, null, (err, cacheModule) => {
 			if (err) return callback(new ModuleRestoreError(module, err));

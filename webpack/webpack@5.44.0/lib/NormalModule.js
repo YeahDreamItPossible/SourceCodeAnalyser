@@ -645,7 +645,6 @@ class NormalModule extends Module {
 	 * @param {Object=} associatedObjectForCache object for caching
 	 * @returns {Source} the created source
 	 */
-	// NOTE:
 	// 该方法作用是 将loader 加载后的结果 封装成 Source 的实例
 	// 原因: 为了快速获取该结果的特性
 	createSource(context, content, sourceMap, associatedObjectForCache) {
@@ -753,7 +752,6 @@ class NormalModule extends Module {
 		const hooks = NormalModule.getCompilationHooks(compilation);
 
 		try {
-			// NOTE:
 			// 空调用
 			hooks.beforeLoaders.call(this.loaders, this, loaderContext);
 		} catch (err) {
