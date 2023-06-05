@@ -2306,7 +2306,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			ChunkGraph.setChunkGraphForModule(module, chunkGraph);
 		}
 
-		// NOTE:
 		// WarnCaseSensitiveModulesPlugin
 		// 还是收集 errors
 		// compilation 对象停止接收新的模块时触发
@@ -2314,7 +2313,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		this.logger.time("optimize dependencies");
 
-		// NOTE:
 		// SideEffectsFlagPlugin 插件
 		// 依赖优化开始时触发
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
@@ -2329,6 +2327,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		this.logger.time("create chunks");
 
+		// 分块开始
 		// 空调用
 		this.hooks.beforeChunks.call();
 
@@ -2336,7 +2335,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Map<Entrypoint, Module[]>} */
 		const chunkGraphInit = new Map();
 
-		// NOTE:
 		// 目前看到大概只是 chunk
 		for (const [name, { dependencies, includeDependencies, options }] of this
 			.entries) {
@@ -2406,7 +2404,6 @@ Remove the 'runtime' option from the entrypoint.`);
 				err.chunk = entry.getEntrypointChunk();
 				this.errors.push(err);
 			}
-			// NOTE:
 			// entry dependOn 和 runtime
 			// 分离依赖
 			if (dependOn) {
@@ -2466,12 +2463,13 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			}
 		}
 
-		// NOTE:
+		// TODO:
 		// 这一步好像很关键 有空好好研究研究
 		buildChunkGraph(this, chunkGraphInit);
 
 		// 空调用
 		this.hooks.afterChunks.call(this.chunks);
+		// 分块结束
 
 		this.logger.timeEnd("create chunks");
 
