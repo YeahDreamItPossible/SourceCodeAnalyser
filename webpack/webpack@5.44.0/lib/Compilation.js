@@ -2664,7 +2664,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 							if (shouldRecord) {
 								this.logger.time("record hash");
-								// NOTE: 空调用
+								// 空调用
 								this.hooks.recordHash.call(this.records);
 								this.logger.timeEnd("record hash");
 							}
@@ -2673,12 +2673,11 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 							this.clearAssets();
 
-							// NOTE:
 							// 空调用
 							// 在创建模块 asset 之前执行
 							this.hooks.beforeModuleAssets.call();
 
-							// NOTE:
+							// TODO:
 							// 值得好好看看
 							this.createModuleAssets();
 
@@ -2739,12 +2738,10 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 							this.logger.time("create chunk assets");
 
-							// NOTE:
 							// 空调用
 							// 调用以确定是否生成 chunk asset
 							if (this.hooks.shouldGenerateChunkAssets.call() !== false) {
 
-								// NOTE:
 								// 空调用
 								// 在创建 chunk asset 之前
 								this.hooks.beforeChunkAssets.call();
@@ -2930,7 +2927,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				try {
 					codeGenerated = true;
 					this.codeGeneratedModules.add(module);
-					// NOTE:
+					// TODOs:
 					// 重点看
 					// ast => result
 					result = module.codeGeneration({
@@ -3350,8 +3347,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// NOTE:
-	//
+	// TODO:
 	assignRuntimeIds() {
 		const { chunkGraph } = this;
 		const processEntrypoint = ep => {
