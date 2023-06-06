@@ -208,6 +208,7 @@ function iteratePitchingLoaders(options, loaderContext, callback) {
 				var hasArg = args.some(function(value) {
 					return value !== undefined;
 				});
+				// 当loader.pitch函数有返回值时 loader pitch 结束
 				if(hasArg) {
 					loaderContext.loaderIndex--;
 					iterateNormalLoaders(options, loaderContext, args, callback);
