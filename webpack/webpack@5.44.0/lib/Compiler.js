@@ -238,7 +238,6 @@ class Compiler {
 		/** @type {number} */
 		this.fsStartTime = undefined;
 
-		// NOTE:
 		// 路径解析 根据上下文 和 扩展名 将相对路径 通过同步 or 异步的方式解析成 绝对路径
 		/** @type {ResolverFactory} */
 		this.resolverFactory = new ResolverFactory();
@@ -376,7 +375,6 @@ class Compiler {
 	// TODO webpack 6: solve this in a better way
 	_cleanupLastCompilation() {
 	// e.g. move compilation specific info from Modules into ModuleGraph
-		// NOTE:
 		// 移除 module 和 chunk 的依赖关系
 		if (this._lastCompilation !== undefined) {
 			for (const module of this._lastCompilation.modules) {
@@ -399,7 +397,6 @@ class Compiler {
 		}
 	}
 
-	// NOTE:
 	// 开启监听模式 如果检测文件发生变化 会再次自动构建
 	/**
 	 * @param {WatchOptions} watchOptions the watcher's options
@@ -710,7 +707,7 @@ class Compiler {
 						 * @returns {void}
 						 */
 						const doWrite = content => {
-							// NOTE: 将打包后的文件从内存中写入到本地
+							// 将打包后的文件从内存中写入到本地
 							this.outputFileSystem.writeFile(targetPath, content, err => {
 								if (err) return callback(err);
 
@@ -880,7 +877,7 @@ class Compiler {
 			);
 		};
 
-		// NOTE: 直接执行回调
+		// 直接执行回调
 		this.hooks.emit.callAsync(compilation, err => {
 			if (err) return callback(err);
 			outputPath = compilation.getPath(this.outputPath, {});
@@ -950,7 +947,7 @@ class Compiler {
 				if (err) return callback(err);
 
 				try {
-					// NOTE:
+					// TODO:
 					// 这个地方得注意下
 					this.records = parseJson(content.toString("utf-8"));
 				} catch (e) {
@@ -1051,7 +1048,6 @@ class Compiler {
 		return !!this.parentCompilation;
 	}
 
-	// NOTE:
 	// 创建 Compilation 的实例
 	createCompilation() {
 		this._cleanupLastCompilation();
@@ -1191,7 +1187,7 @@ class Compiler {
 
 			logger.time("make hook");
 			// EntryPlugin
-			// compilation.addEntry 
+			// compilation.addEntry
 			// 添加入口 开始编译
 			this.hooks.make.callAsync(compilation, err => {
 				logger.timeEnd("make hook");
@@ -1236,7 +1232,7 @@ class Compiler {
 	 * @returns {void}
 	 */
 	close(callback) {
-		// NOTE: 直接执行回调
+		// 直接执行回调
 		this.hooks.shutdown.callAsync(err => {
 			if (err) return callback(err);
 			// Get rid of reference to last compilation to avoid leaking memory
