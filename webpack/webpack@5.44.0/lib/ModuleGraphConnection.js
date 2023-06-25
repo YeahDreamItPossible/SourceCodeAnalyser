@@ -68,17 +68,17 @@ class ModuleGraphConnection {
 		weak = false,
 		condition = undefined
 	) {
-		// NOTE: 引用当前module的module
+		// 引用当前module的module
 		this.originModule = originModule;
-
+		// 加工后的引用当前module的module
 		this.resolvedOriginModule = originModule;
 
-		// NOTE: 当前module的依赖
+		// 当前module的依赖
 		this.dependency = dependency;
 
+		// 加工后的当前module
 		this.resolvedModule = module;
-
-		// NOTE: 当前module
+		// 当前module
 		this.module = module;
 
 		this.weak = weak;

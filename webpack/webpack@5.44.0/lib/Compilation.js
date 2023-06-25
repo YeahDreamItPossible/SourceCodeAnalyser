@@ -904,7 +904,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 
 		// NOTE:
-		//
 		/** @type {AsyncQueue<Module, string, Module>} */
 		this.addModuleQueue = new AsyncQueue({
 			name: "addModule",
@@ -940,11 +939,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		 */
 		this.creatingModuleDuringBuild = new WeakMap();
 
-		// NOTE:
 		// 关于入口
 		/** @type {Map<string, EntryData>} */
 		this.entries = new Map();
-
 		/** @type {EntryData} */
 		this.globalEntry = {
 			dependencies: [],
@@ -960,30 +957,25 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Entrypoint[]} */
 		this.asyncEntrypoints = [];
 
-
 		// NOTE:
 		// 关于chunk
 		/** @type {Set<Chunk>} */
 		this.chunks = new Set();
-
 		arrayToSetDeprecation(this.chunks, "Compilation.chunks");
-
 		/** @type {ChunkGroup[]} */
 		this.chunkGroups = [];
-
 		/** @type {Map<string, ChunkGroup>} */
 		this.namedChunkGroups = new Map();
-
 		/** @type {Map<string, Chunk>} */
 		this.namedChunks = new Map();
 
+		// 缓存模块队列(保证模块先后顺序)
 		/** @type {Set<Module>} */
 		this.modules = new Set();
 		arrayToSetDeprecation(this.modules, "Compilation.modules");
-
+		// 缓存模块<模块路径, 模块>
 		/** @private @type {Map<string, Module>} */
 		this._modules = new Map();
-
 
 		this.records = null;
 		/** @type {string[]} */
@@ -995,20 +987,21 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Map<string, Map<string, Set<string>>>} */
 		this._assetsRelatedIn = new Map();
 
-		// NOTE:
 		// 收集错误和警告
 		/** @type {WebpackError[]} */
 		this.errors = [];
 		/** @type {WebpackError[]} */
 		this.warnings = [];
 
-
 		/** @type {Compilation[]} */
 		this.children = [];
 		/** @type {Map<string, LogEntry[]>} */
 		this.logging = new Map();
+
+		// TODO: 这个地方要好好注意下
 		/** @type {Map<DepConstructor, ModuleFactory>} */
 		this.dependencyFactories = new Map();
+
 		/** @type {DependencyTemplates} */
 		this.dependencyTemplates = new DependencyTemplates();
 		this.childrenCounters = {};

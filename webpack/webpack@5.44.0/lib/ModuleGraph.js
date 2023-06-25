@@ -57,17 +57,14 @@ const getConnectionsByOriginModule = set => {
 	return map;
 };
 
-// NOTE:
 // 当前module与它引用的modules、以及引用它的modules的关系
 class ModuleGraphModule {
 	constructor() {
-		// NOTE:
-		// 存放ModuleGraphConnection,
+		// 存放ModuleGraphConnection
 		// 表示一个有哪些modules引用了当前module
 		/** @type {SortableSet<ModuleGraphConnection>} */
 		this.incomingConnections = new SortableSet();
 
-		// NOTE:
 		// 存放ModuleGraphConnection,
 		// 表示一个当前module引用了哪些modules
 		/** @type {Set<ModuleGraphConnection> | undefined} */
@@ -98,16 +95,13 @@ class ModuleGraphModule {
 
 class ModuleGraph {
 	constructor() {
-		// NOTE:
 		// 记录入口dependency与module连接关系的信息
 		/** @type {Map<Dependency, ModuleGraphConnection>} */
 		this._dependencyMap = new Map();
-
-		// NOTE:
 		// 记录当前module被谁引用以及引用了谁
 		/** @type {Map<Module, ModuleGraphModule>} */
 		this._moduleMap = new Map();
-
+		// TODO: 好像没啥卵用(全局搜索未发现使用)
 		/** @type {Map<Module, Set<ModuleGraphConnection>>} */
 		this._originMap = new Map();
 
