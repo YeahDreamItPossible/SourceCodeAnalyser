@@ -1023,12 +1023,17 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.emittedAssets = new Set();
 		/** @type {Set<string>} */
 		this.comparedForEmitAssets = new Set();
+
+		// 文件依赖
 		/** @type {LazySet<string>} */
 		this.fileDependencies = new LazySet();
+		// 上下文依赖
 		/** @type {LazySet<string>} */
 		this.contextDependencies = new LazySet();
+		// 缺失的依赖
 		/** @type {LazySet<string>} */
 		this.missingDependencies = new LazySet();
+		// 打包依赖
 		/** @type {LazySet<string>} */
 		this.buildDependencies = new LazySet();
 		// TODO webpack 6 remove
