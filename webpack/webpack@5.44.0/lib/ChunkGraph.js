@@ -174,16 +174,19 @@ const isAvailableChunk = (a, b) => {
 	return true;
 };
 
-// NOTE:
 // 用来记录当前module属于哪些chunk的
 class ChunkGraphModule {
 	constructor() {
+		// chunks
 		/** @type {SortableSet<Chunk>} */
 		this.chunks = new SortableSet();
+		// 入口chunks
 		/** @type {Set<Chunk> | undefined} */
 		this.entryInChunks = undefined;
+		// 运行时chunks
 		/** @type {Set<Chunk> | undefined} */
 		this.runtimeInChunks = undefined;
+
 		/** @type {RuntimeSpecMap<ModuleHashInfo>} */
 		this.hashes = undefined;
 		/** @type {string | number} */
@@ -197,18 +200,21 @@ class ChunkGraphModule {
 	}
 }
 
-// NOTE:
 // 用来记录当前chunk中有哪些modules的
 class ChunkGraphChunk {
 	constructor() {
+		// modules
 		/** @type {SortableSet<Module>} */
 		this.modules = new SortableSet();
+		// 入口modules
 		/** @type {Map<Module, Entrypoint>} */
 		this.entryModules = new Map();
+		// 运行时modules
 		/** @type {SortableSet<RuntimeModule>} */
 		this.runtimeModules = new SortableSet();
 		/** @type {Set<RuntimeModule> | undefined} */
 		this.fullHashModules = undefined;
+
 		/** @type {Set<string> | undefined} */
 		this.runtimeRequirements = undefined;
 		/** @type {Set<string>} */
@@ -221,12 +227,9 @@ class ChunkGraph {
 	 * @param {ModuleGraph} moduleGraph the module graph
 	 */
 	constructor(moduleGraph) {
-		// NOTE:
-		// chunk => 记录当前module属于哪些chunk
+		// module => 记录当前module属于哪些chunk
 		/** @private @type {WeakMap<Module, ChunkGraphModule>} */
 		this._modules = new WeakMap();
-
-		// NOTE:
 		// chunk => 记录当前chunk有哪些modules
 		/** @private @type {WeakMap<Chunk, ChunkGraphChunk>} */
 		this._chunks = new WeakMap();

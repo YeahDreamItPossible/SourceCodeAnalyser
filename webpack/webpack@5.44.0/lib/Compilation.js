@@ -950,14 +950,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				name: undefined
 			}
 		};
-
 		/** @type {Map<string, Entrypoint>} */
 		this.entrypoints = new Map();
 
 		/** @type {Entrypoint[]} */
 		this.asyncEntrypoints = [];
 
-		// NOTE:
 		// 关于chunk
 		/** @type {Set<Chunk>} */
 		this.chunks = new Set();
@@ -2300,6 +2298,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		const chunkGraph = new ChunkGraph(this.moduleGraph);
 		this.chunkGraph = chunkGraph;
 
+		// module 与 chunkGroup映射
 		for (const module of this.modules) {
 			ChunkGraph.setChunkGraphForModule(module, chunkGraph);
 		}
@@ -2488,7 +2487,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		// 在模块优化完成之后调用
 		this.hooks.afterOptimizeModules.call(this.modules);
 
-		// NOTE: 串行调用插件
+		// 串行调用插件
 		// EnsureChunkConditionsPlugin
 		// RemoveEmptyChunksPlugin
 		// MergeDuplicateChunksPlugin

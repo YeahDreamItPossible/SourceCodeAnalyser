@@ -80,6 +80,8 @@ class ChunkGroup {
 		/** @type {number} */
 		this.groupDebugId = debugId++;
 		this.options = options;
+
+		//
 		/** @type {SortableSet<ChunkGroup>} */
 		this._children = new SortableSet(undefined, sortById);
 		/** @type {SortableSet<ChunkGroup>} */

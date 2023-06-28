@@ -77,6 +77,7 @@ class Chunk {
 		this.idNameHints = new SortableSet();
 		/** @type {boolean} */
 		this.preventIntegration = false;
+		// 输出文件模板
 		/** @type {(string | function(PathData, AssetInfo=): string)?} */
 		this.filenameTemplate = undefined;
 		/** @private @type {SortableSet<ChunkGroup>} */
