@@ -61,7 +61,7 @@
  * 高阶函数
  */
 
-
+// vnode勾子
 /**
  * vnode hook(vnode.props)
  * onVnodeBeforeMount
@@ -74,6 +74,7 @@
  * vnode transition hook(vnode.transition)
  */
 
+// Transition组件勾子
 // onBeforeEnter: TransitionHookValidator,
 // onEnter: TransitionHookValidator,
 // onAfterEnter: TransitionHookValidator,

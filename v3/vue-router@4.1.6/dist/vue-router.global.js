@@ -19,6 +19,13 @@
  * generator				=>		 生成器
  */
 
+/**
+ * 总结
+ * createWebHistory history路由模式
+ * createWebHashHistory 哈希路由模式
+ * 两种模式底层都是 history 
+ */
+
 var VueRouter = (function (exports, vue) {
   "use strict";
 
@@ -508,6 +515,7 @@ var VueRouter = (function (exports, vue) {
   }
 
   // TODO: Navigation
+  // 路由跳转最终调用的api
   function useHistoryStateNavigation(base) {
     const { history, location } = window;
     // private variables
@@ -781,7 +789,7 @@ var VueRouter = (function (exports, vue) {
    * })
    * ```
    */
-  // 
+  // 最初正常化的路由信息
   const START_LOCATION_NORMALIZED = {
     path: "/",
     name: undefined,
@@ -2561,6 +2569,8 @@ var VueRouter = (function (exports, vue) {
             matchedRoute.instances[currentName] = null;
           }
         };
+
+        // 无插槽时 渲染匹配的路由视图
         const component = vue.h(
           ViewComponent,
           assign({}, routeProps, attrs, {
@@ -3315,6 +3325,7 @@ var VueRouter = (function (exports, vue) {
       applyToParams.bind(null, decode);
 
     // 添加路由记录
+    // 如果有parent时 只能是路由命名(Route Name)
     function addRoute(parentOrRoute, route) {
       let parent;
       let record;
@@ -3783,8 +3794,7 @@ var VueRouter = (function (exports, vue) {
      * - Changes the url if necessary
      * - Calls the scrollBehavior
      */
-    // 跳转路由
-    // 处理页面滚动
+    // 跳转路由 并处理页面滚动
     function finalizeNavigation(toLocation, from, isPush, replace, data) {
       // a more recent navigation took place
       const error = checkCanceledNavigation(toLocation, from);
