@@ -10666,6 +10666,8 @@ var Vue = (function (exports) {
 	// base Transition component, with DOM-specific logic.
 	const Transition = (props, { slots }) => h(BaseTransition, resolveTransitionProps(props), slots);
 	Transition.displayName = 'Transition';
+
+	// Transition 默认属性字段
 	const DOMTransitionPropsValidators = {
 		name: String,
 		type: String,
