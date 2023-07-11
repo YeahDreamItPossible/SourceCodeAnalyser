@@ -250,8 +250,6 @@ class Compiler {
 		// 默认使用 Node.js 进程的当前工作目录 __dirname
 		// 如 /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo
 		this.context = context;
-
-		// TODO:
 		// 该类好像是将 loader 的家在路径变换成 绝对路径 ??
 		this.requestShortener = new RequestShortener(context, this.root);
 
@@ -259,7 +257,8 @@ class Compiler {
 
 		this.compilerPath = "";
 
-		// 标识: 标识compiler是否正在运行
+		// 标识:
+		// 标识compiler是否正在运行
 		/** @type {boolean} */
 		this.running = false;
 
@@ -373,6 +372,7 @@ class Compiler {
 	}
 
 	// TODO webpack 6: solve this in a better way
+	// 主要是清除 ModuleGraph存储的module图 和 ChunkGraph存储的chunk图
 	_cleanupLastCompilation() {
 	// e.g. move compilation specific info from Modules into ModuleGraph
 		// 移除 module 和 chunk 的依赖关系
@@ -390,6 +390,7 @@ class Compiler {
 	}
 
 	// TODO webpack 6: solve this in a better way
+	// 主要是清除 NormalModuleFactory实例 内部的缓存
 	_cleanupLastNormalModuleFactory() {
 		if (this._lastNormalModuleFactory !== undefined) {
 			this._lastNormalModuleFactory.cleanupForCache();
@@ -1145,6 +1146,7 @@ class Compiler {
 			layers: this.options.experiments.layers
 		});
 		this._lastNormalModuleFactory = normalModuleFactory;
+
 		// 空调用
 		this.hooks.normalModuleFactory.call(normalModuleFactory);
 		return normalModuleFactory;

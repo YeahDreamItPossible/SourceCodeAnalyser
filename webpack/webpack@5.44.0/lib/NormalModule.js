@@ -243,6 +243,7 @@ class NormalModule extends Module {
 	}) {
 		super(type, getContext(resource), layer);
 
+		// 模块路径
 		// Info from Factory
 		/** @type {string} */
 		this.request = request;
@@ -250,6 +251,7 @@ class NormalModule extends Module {
 		this.userRequest = userRequest;
 		/** @type {string} */
 		this.rawRequest = rawRequest;
+
 		/** @type {boolean} */
 		this.binary = /^(asset|webassembly)\b/.test(type);
 		/** @type {Parser} */
@@ -273,10 +275,13 @@ class NormalModule extends Module {
 		// Info from Build
 		/** @type {WebpackError=} */
 		this.error = null;
+		// 模块源文件
 		/** @private @type {Source=} */
 		this._source = null;
+		// 源文件尺寸
 		/** @private @type {Map<string, number> | undefined} **/
 		this._sourceSizes = undefined;
+		// 源文件类型
 		/** @private @type {Set<string>} */
 		this._sourceTypes = undefined;
 

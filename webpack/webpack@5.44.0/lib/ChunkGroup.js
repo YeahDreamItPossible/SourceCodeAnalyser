@@ -90,17 +90,22 @@ class ChunkGroup {
 		this._asyncEntrypoints = new SortableSet(undefined, sortById);
 		this._blocks = new SortableSet();
 
+		// 分离chunk后的所有chunk
 		/** @type {Chunk[]} */
 		this.chunks = [];
 
+		//
 		/** @type {OriginRecord[]} */
 		this.origins = [];
+
+		// TODO: number 好像是索引
 		/** Indices in top-down order */
 		/** @private @type {Map<Module, number>} */
 		this._modulePreOrderIndices = new Map();
 		/** Indices in bottom-up order */
 		/** @private @type {Map<Module, number>} */
 		this._modulePostOrderIndices = new Map();
+
 		/** @type {number} */
 		this.index = undefined;
 	}
@@ -143,6 +148,7 @@ class ChunkGroup {
 		this.options.name = value;
 	}
 
+	// 所有chunk debugId拼接
 	/* istanbul ignore next */
 	/**
 	 * get a uniqueId for ChunkGroup, made up of its member Chunk debugId's
@@ -152,6 +158,7 @@ class ChunkGroup {
 		return Array.from(this.chunks, x => x.debugId).join("+");
 	}
 
+	// 所有chunk id拼接
 	/**
 	 * get a unique id for ChunkGroup, made up of its member Chunk id's
 	 * @returns {string} a unique concatenation of chunk ids

@@ -203,7 +203,7 @@ class ChunkGraphModule {
 // 用来记录当前chunk中有哪些modules的
 class ChunkGraphChunk {
 	constructor() {
-		// modules
+		// 当前chunk所包含的模块
 		/** @type {SortableSet<Module>} */
 		this.modules = new SortableSet();
 		// 入口modules
@@ -212,6 +212,7 @@ class ChunkGraphChunk {
 		// 运行时modules
 		/** @type {SortableSet<RuntimeModule>} */
 		this.runtimeModules = new SortableSet();
+		// TODO: 目前未看到有什么作用
 		/** @type {Set<RuntimeModule> | undefined} */
 		this.fullHashModules = undefined;
 

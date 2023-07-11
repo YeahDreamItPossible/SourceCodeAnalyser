@@ -71,25 +71,38 @@ class Chunk {
 		this.ids = null;
 		/** @type {number} */
 		this.debugId = debugId++;
+
+		// 标识: chunk名
 		/** @type {string} */
 		this.name = name;
+
 		/** @type {SortableSet<string>} */
 		this.idNameHints = new SortableSet();
 		/** @type {boolean} */
 		this.preventIntegration = false;
+
 		// 输出文件模板
 		/** @type {(string | function(PathData, AssetInfo=): string)?} */
 		this.filenameTemplate = undefined;
+
 		/** @private @type {SortableSet<ChunkGroup>} */
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
+
+		// 标识:
 		/** @type {RuntimeSpec} */
 		this.runtime = undefined;
+
+		// 输出文件 如: app.67f6cda2.js
 		/** @type {Set<string>} */
 		this.files = new ChunkFilesSet();
+
 		/** @type {Set<string>} */
 		this.auxiliaryFiles = new Set();
+
+		// 标识: 标识当前chunk是否已被输出(不确定)
 		/** @type {boolean} */
 		this.rendered = false;
+
 		/** @type {string=} */
 		this.hash = undefined;
 		/** @type {Record<string, string>} */
@@ -102,6 +115,7 @@ class Chunk {
 		this.extraAsync = false;
 	}
 
+	// 入口模块
 	// TODO remove in webpack 6
 	// BACKWARD-COMPAT START
 	get entryModule() {
@@ -174,6 +188,8 @@ class Chunk {
 		).getNumberOfChunkModules(this);
 	}
 
+	// TODO：
+	// 目前看来应该是存储当前chunk所包含的modules
 	get modulesIterable() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -502,6 +518,7 @@ class Chunk {
 		return this._groups.size;
 	}
 
+	// TODO:
 	/**
 	 * @returns {Iterable<ChunkGroup>} the chunkGroups that the said chunk is referenced in
 	 */

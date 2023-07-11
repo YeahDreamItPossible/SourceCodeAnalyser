@@ -49,7 +49,6 @@ const intersectConnectionStates = (a, b) => {
 	return a;
 };
 
-// NOTE:
 // 两个module之间的依赖关系
 class ModuleGraphConnection {
 	/**

@@ -32,10 +32,14 @@ class Entrypoint extends ChunkGroup {
 			name: entryOptions.name
 		});
 		this.options = entryOptions;
+
+		// 运行时chunk
 		/** @type {Chunk=} */
 		this._runtimeChunk = undefined;
+		// 入口chunk
 		/** @type {Chunk=} */
 		this._entrypointChunk = undefined;
+
 		/** @type {boolean} */
 		this._initial = initial;
 	}

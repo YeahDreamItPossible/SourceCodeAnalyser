@@ -101,7 +101,8 @@ class ModuleGraph {
 		// 记录当前module被谁引用以及引用了谁
 		/** @type {Map<Module, ModuleGraphModule>} */
 		this._moduleMap = new Map();
-		// TODO: 好像没啥卵用(全局搜索未发现使用)
+		// TODO:
+		// 好像没啥卵用(全局搜索未发现使用)
 		/** @type {Map<Module, Set<ModuleGraphConnection>>} */
 		this._originMap = new Map();
 

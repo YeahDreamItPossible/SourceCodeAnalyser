@@ -841,10 +841,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				return getNormalModuleLoader();
 			}
 		});
+
 		/** @type {string=} */
 		this.name = undefined;
 		this.startTime = undefined;
 		this.endTime = undefined;
+
 		/** @type {Compiler} */
 		this.compiler = compiler;
 		this.resolverFactory = compiler.resolverFactory;
@@ -888,8 +890,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		};
 		defineRemovedModuleTemplates(this.moduleTemplates);
 
+		// 模块图
 		this.moduleGraph = new ModuleGraph();
 
+		// chunk图
 		/** @type {ChunkGraph} */
 		this.chunkGraph = undefined;
 
@@ -911,7 +915,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			getKey: module => module.identifier(),
 			processor: this._addModule.bind(this)
 		});
-
 		/** @type {AsyncQueue<FactorizeModuleOptions, string, Module>} */
 		this.factorizeQueue = new AsyncQueue({
 			name: "factorize",
@@ -940,6 +943,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.creatingModuleDuringBuild = new WeakMap();
 
 		// 关于入口
+		// 入口文件映射<入口名, EntryData>
 		/** @type {Map<string, EntryData>} */
 		this.entries = new Map();
 		/** @type {EntryData} */
@@ -950,9 +954,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				name: undefined
 			}
 		};
+		// 入口点<入口名, Entrypoint>
 		/** @type {Map<string, Entrypoint>} */
 		this.entrypoints = new Map();
-
 		/** @type {Entrypoint[]} */
 		this.asyncEntrypoints = [];
 
@@ -960,10 +964,13 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Set<Chunk>} */
 		this.chunks = new Set();
 		arrayToSetDeprecation(this.chunks, "Compilation.chunks");
+		// chunk group
 		/** @type {ChunkGroup[]} */
 		this.chunkGroups = [];
+		// <chunk name, chunk group>
 		/** @type {Map<string, ChunkGroup>} */
 		this.namedChunkGroups = new Map();
+		// chunk映射<chunk名, chunk>
 		/** @type {Map<string, Chunk>} */
 		this.namedChunks = new Map();
 
@@ -2311,6 +2318,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.logger.time("optimize dependencies");
 
 		// SideEffectsFlagPlugin 插件
+		// 仍然是收集错误
 		// 依赖优化开始时触发
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
