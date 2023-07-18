@@ -3,9 +3,9 @@ const hooks =
 environment                   // 空调用
 afterEnvironment              // 空调用
 entryOption
-afterPlugins
-afterResolvers
-initialize
+afterPlugins                  // 模块联邦 暂时不详 需要好好研究研究
+afterResolvers                // 空调用
+initialize                    // 空调用
 beforeRun                     // 标识 compiler 开始 主要是调用 NodeEnvironmentPlugin 插件
 run                           // 直接执行回调
 normalModuleFactory           // 当创建 NormalModuleFactory 实例后
@@ -15,7 +15,7 @@ compile                       // 主要时 从输出的bundle排除依赖(该依
 thisCompilation               // 主要是给 compilation hooks 不同 hook 注册函数
 compilation                   // 主要是给 compilation hooks 不同 hook 注册函数
 make                          // 添加入口 开始编译 主要是调用 compilation.addEntry
-      addEntry
+      addEntry                // 空调用 标记
       buildModule
       normalModuleLoader
       succeedModule
