@@ -19,199 +19,46 @@ make                          // 添加入口 开始编译 主要是调用 compi
       buildModule
       normalModuleLoader
       succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
+      ...(循环 buildModule normalModuleLoader succeedModule)
       buildModule
       normalModuleLoader
       succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      succeedModule
-      buildModule
-      normalModuleLoader
-      succeedModule
-      succeedEntry
       log
 finishMake
       log
       finishModules
       log
+      seal                    // 主要是收集errors 和 warnings
+      optimizeDependencies    // 仍然是收集errors 和 warnings
       log
+      afterOptimizeDependencies   // 空调用
       log
+      beforeChunks            // 空调用
       log
+      afterChunks             // 空调用 (在beforeChunks 和 afterChunks 完成 chunks)
       log
+      optimize                // 空调用
+      optimizeModules         // 空调用
+      afterOptimizeModules    // 空调用
+      optimizeChunks          // 优化chunks
+                              // 串行调用插件 
+                              // EnsureChunkConditionsPlugin 
+                              // RemoveEmptyChunksPlugin 
+                              // MergeDuplicateChunksPlugin
+                              // SplitChunksPlugin
+                              // RemoveEmptyChunksPlugin
       log
-      log
-      log
-      seal
-      optimizeDependencies
-      log
-      afterOptimizeDependencies
-      log
-      beforeChunks
-      log
-      log
-      log
-      log
-      log
-      log
-      log
-      log
-      log
-      afterChunks
-      log
-      optimize
-      optimizeModules
-      afterOptimizeModules
-      optimizeChunks
-      log
-      log
-      log
-      log
-      afterOptimizeChunks
-      optimizeTree
-      afterOptimizeTree
-      optimizeChunkModules
-      afterOptimizeChunkModules
-      shouldRecord
-      reviveModules
-      beforeModuleIds
-      moduleIds
-      optimizeModuleIds
-      afterOptimizeModuleIds
+      afterOptimizeChunks     // 空调用
+      optimizeTree            // 直接执行回调
+      afterOptimizeTree       // 空调用
+      optimizeChunkModules    // 直接执行回调
+      afterOptimizeChunkModules   // 空调用
+      shouldRecord            // 空调用
+      reviveModules           // 空调用
+      beforeModuleIds         // 空调用
+      moduleIds               // 调用来每个模块分配一个 id(NamedModuleIdsPlugin)
+      optimizeModuleIds       // 空调用
+      afterOptimizeModuleIds  // 空调用
       reviveChunks
       beforeChunkIds
       chunkIds
@@ -231,55 +78,7 @@ finishMake
       log
       beforeRuntimeRequirements
       additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalModuleRuntimeRequirements
-      additionalChunkRuntimeRequirements
+      ...
       additionalTreeRuntimeRequirements
       runtimeModule
       afterRuntimeRequirements
