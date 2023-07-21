@@ -20,10 +20,6 @@ make                          // 添加入口 开始编译 主要是调用 compi
       normalModuleLoader
       succeedModule
       ...(循环 buildModule normalModuleLoader succeedModule)
-      buildModule
-      normalModuleLoader
-      succeedModule
-      log
 finishMake
       log
       finishModules
@@ -115,17 +111,7 @@ finishMake
       needAdditionalSeal
       afterSeal
       log
-      log
-      log
-      log
-      log
-      log
-      log
-      log
-      log
-      log
-      log
-      log
+      ...
       log
 afterCompile    // 直接执行回调
       log
