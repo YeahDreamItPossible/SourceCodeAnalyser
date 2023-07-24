@@ -123,3 +123,18 @@ afterEmit       // 直接执行回调
       log
       needAdditionalPass
 `
+
+
+const compilation = `
+	addEntry
+		addInclude
+			_addEntryItem
+				addModuleTree
+					handleModuleCreation
+						factorizeModule
+							_factorizeModule
+								addModule
+									_addModule
+										buildModule
+											_buildModule
+`
