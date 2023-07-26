@@ -1,5 +1,4 @@
-const hooks =
-`
+const hooks = `
 environment                   // 空调用
 afterEnvironment              // 空调用
 entryOption
@@ -122,19 +121,27 @@ assetEmitted    // 输出每个文件后
 afterEmit       // 直接执行回调
       log
       needAdditionalPass
-`
-
+`;
 
 const compilation = `
 	addEntry
-		addInclude
-			_addEntryItem
-				addModuleTree
+		_addEntryItem
+			addModuleTree
+				handleModuleCreation
+					factorizeModule
+						_factorizeModule
+							addModule
+								_addModule
+									buildModule
+										_buildModule
+											processModuleDependencies
+												_processModuleDependencies
 					handleModuleCreation
 						factorizeModule
 							_factorizeModule
-								addModule
-									_addModule
-										buildModule
-											_buildModule
-`
+								...(递归解析)
+	
+	finish(缓存模块 并收集errors 和 warnings)
+
+	seal
+`;

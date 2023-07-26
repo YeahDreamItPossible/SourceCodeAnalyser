@@ -188,6 +188,8 @@ class ModuleGraph {
 		// 当前依赖 => 模块连接
 		this._dependencyMap.set(dependency, connection);
 
+		// NOTE:
+		// 当前模块 => ModuleGraphModule
 		const connections = this._getModuleGraphModule(module).incomingConnections;
 		connections.add(connection);
 		const mgm = this._getModuleGraphModule(originModule);
