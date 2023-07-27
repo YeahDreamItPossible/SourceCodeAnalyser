@@ -85,6 +85,7 @@ class Chunk {
 		/** @type {(string | function(PathData, AssetInfo=): string)?} */
 		this.filenameTemplate = undefined;
 
+		// Entrypoint
 		/** @private @type {SortableSet<ChunkGroup>} */
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
 

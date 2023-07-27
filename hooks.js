@@ -144,4 +144,18 @@ const compilation = `
 	finish(缓存模块 并收集errors 和 warnings)
 
 	seal
+
+		codeGeneration
+			_runCodeGenerationJobs
+				_codeGenerationModule
+				是为了获得 codeGenerationResults
+			
+				createHash
+				_runCodeGenerationJobs
+					clearAssets
+					createModuleAssets
+					createChunkAssets
+						getRenderManifest
+						getPathWithInfo
+						emitAsset
 `;

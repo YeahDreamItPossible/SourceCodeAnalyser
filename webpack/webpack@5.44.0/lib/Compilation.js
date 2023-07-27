@@ -3981,6 +3981,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 */
 	// 该方法非常重要 是 ast => result 的关键
 	getRenderManifest(options) {
+		// 插件
 		// JavascriptModulesPlugin  获得render函数
 		// AssetModulesPlugin
 		return this.hooks.renderManifest.call([], options);
@@ -4115,6 +4116,7 @@ This prevents using hashes of each other and should be avoided.`);
 								} else {
 									chunk.files.add(file);
 								}
+								// 空调用
 								this.hooks.chunkAsset.call(chunk, file);
 								alreadyWrittenFiles.set(file, {
 									hash: usedHash,

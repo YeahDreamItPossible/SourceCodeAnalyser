@@ -882,6 +882,7 @@ class Compiler {
 		this.hooks.emit.callAsync(compilation, err => {
 			if (err) return callback(err);
 			outputPath = compilation.getPath(this.outputPath, {});
+			// 创建目录 并写入文件
 			mkdirp(this.outputFileSystem, outputPath, emitFiles);
 		});
 	}
