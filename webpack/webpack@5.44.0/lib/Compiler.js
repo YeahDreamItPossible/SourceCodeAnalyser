@@ -581,6 +581,7 @@ class Compiler {
 	 * @param {Callback<void>} callback signals when the assets are emitted
 	 * @returns {void}
 	 */
+	// 创建目录 并写入文件
 	emitAssets(compilation, callback) {
 		let outputPath;
 
@@ -846,10 +847,12 @@ class Compiler {
 								}
 							});
 						} else {
+							// 解析缺失的文件
 							processMissingFile();
 						}
 					};
 
+					// 递归调用 构建目录层次
 					if (targetFile.match(/\/|\\/)) {
 						const fs = this.outputFileSystem;
 						const dir = dirname(fs, join(fs, outputPath, targetFile));
@@ -1060,6 +1063,7 @@ class Compiler {
 	 * @param {CompilationParams} params the compilation parameters
 	 * @returns {Compilation} the created compilation
 	 */
+	// 创建 Compilation 的实例 并注册插件compilation.hooks
 	newCompilation(params) {
 		const compilation = this.createCompilation();
 		compilation.name = this.name;
