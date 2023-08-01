@@ -600,6 +600,7 @@ class Compiler {
 				({ name: file, source, info }, callback) => {
 					let targetFile = file;
 					let immutable = info.immutable;
+					// NOTE: 输出目录上带有参数
 					const queryStringIdx = targetFile.indexOf("?");
 					if (queryStringIdx >= 0) {
 						targetFile = targetFile.substr(0, queryStringIdx);

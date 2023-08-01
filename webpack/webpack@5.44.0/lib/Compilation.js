@@ -877,6 +877,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {boolean} */
 		this.profile = (options && options.profile) || false;
 
+		// 模板
 		this.mainTemplate = new MainTemplate(this.outputOptions, this);
 		this.chunkTemplate = new ChunkTemplate(this.outputOptions, this);
 		this.runtimeTemplate = new RuntimeTemplate(
@@ -897,6 +898,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {ChunkGraph} */
 		this.chunkGraph = undefined;
 
+		// 代码生成的结果
 		/** @type {CodeGenerationResults} */
 		this.codeGenerationResults = undefined;
 
@@ -906,7 +908,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			parallelism: options.parallelism || 100,
 			processor: this._processModuleDependencies.bind(this)
 		});
-
 		// NOTE:
 		/** @type {AsyncQueue<Module, string, Module>} */
 		this.addModuleQueue = new AsyncQueue({
