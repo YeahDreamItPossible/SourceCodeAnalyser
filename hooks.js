@@ -159,3 +159,11 @@ const compilation = `
 						getPathWithInfo
 						emitAsset
 `;
+
+
+// Relation
+
+// Dependency 位置信息
+
+Module => DependenciesBlock => Dependency
+       => AsyncDependenciesBlock =>  DependenciesBlock => Dependency

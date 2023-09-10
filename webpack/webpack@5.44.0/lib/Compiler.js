@@ -437,7 +437,7 @@ class Compiler {
 				this.hooks.failed.call(err);
 			}
 			if (callback !== undefined) callback(err, stats);
-			// NOTE: 空调用
+			// 空调用
 			this.hooks.afterDone.call(stats);
 		};
 
@@ -448,7 +448,7 @@ class Compiler {
 		const onCompiled = (err, compilation) => {
 			if (err) return finalCallback(err);
 
-			// NOTE: 空调用
+			// 空调用
 			if (this.hooks.shouldEmit.call(compilation) === false) {
 				compilation.startTime = startTime;
 				compilation.endTime = Date.now();
@@ -496,7 +496,7 @@ class Compiler {
 						compilation.endTime = Date.now();
 						logger.time("done hook");
 						const stats = new Stats(compilation);
-						// NOTE: 直接执行回调
+						// 直接执行回调
 						this.hooks.done.callAsync(stats, err => {
 							logger.timeEnd("done hook");
 							if (err) return finalCallback(err);
@@ -1200,8 +1200,8 @@ class Compiler {
 			this.hooks.make.callAsync(compilation, err => {
 				logger.timeEnd("make hook");
 				if (err) return callback(err);
-
 				logger.time("finish make hook");
+
 				// 直接执行回调
 				this.hooks.finishMake.callAsync(compilation, err => {
 					logger.timeEnd("finish make hook");

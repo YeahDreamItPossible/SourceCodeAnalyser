@@ -128,8 +128,10 @@ class Module extends DependenciesBlock {
 	constructor(type, context = null, layer = null) {
 		super();
 
+		// 模块类型
 		/** @type {string} */
 		this.type = type;
+		// 上下文模块路径
 		/** @type {string | null} */
 		this.context = context;
 		/** @type {string | null} */
@@ -153,13 +155,18 @@ class Module extends DependenciesBlock {
 		/** @type {boolean} */
 		this.useSimpleSourceMap = false;
 
+
 		// Info from Build
+		// 警告
 		/** @type {WebpackError[] | undefined} */
 		this._warnings = undefined;
+		// 错误
 		/** @type {WebpackError[] | undefined} */
 		this._errors = undefined;
+		// 打包元信息
 		/** @type {BuildMeta} */
 		this.buildMeta = undefined;
+		// 打包信息
 		/** @type {Record<string, any>} */
 		this.buildInfo = undefined;
 		/** @type {Dependency[] | undefined} */

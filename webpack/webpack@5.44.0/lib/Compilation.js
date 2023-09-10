@@ -1346,11 +1346,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					return callback();
 				}
 
-				// NOTE: 空调用
+				// 空调用
 				this.hooks.buildModule.call(module);
 				this.builtModules.add(module);
 
-				// NOTE: 解析模块 已经拿到 source 文件
+				// 解析模块 获取 source 文件
 				module.build(
 					this.options,
 					this,
@@ -1375,7 +1375,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 								this.hooks.failedModule.call(module, err);
 								return callback(new ModuleStoreError(module, err));
 							}
-							// NOTE: 空调用
+							// 空调用
 							this.hooks.succeedModule.call(module);
 							return callback();
 						});
@@ -1594,6 +1594,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		const currentProfile = this.profile ? new ModuleProfile() : undefined;
 
+		// 构建module 并解析loader
 		this.factorizeModule(
 			{
 				currentProfile,
@@ -1621,6 +1622,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					moduleGraph.setProfile(newModule, currentProfile);
 				}
 
+				// 根据不同的缓存策略 缓存module
 				this.addModule(newModule, (err, module) => {
 					if (err) {
 						if (!err.module) {
@@ -1691,6 +1693,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					}
 
 					// NOTE: 加载文件 并 Parser
+					// 1. 通过不同的loader 拿到源码
+					// 2. 将源码 创建RawSource的实例
+					// 3. parse
 					this.buildModule(module, err => {
 						if (creatingModuleDuringBuildSet !== undefined) {
 							creatingModuleDuringBuildSet.delete(module);
@@ -1715,7 +1720,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 							return callback();
 						}
 
-						// NOTE:
 						// 解析module中的dependenies 和 blocks
 						this.processModuleDependencies(module, err => {
 							if (err) {
@@ -2637,19 +2641,16 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						// 感觉很重要 需要详细看看
 						this.processRuntimeRequirements();
 
-						// NOTE:
 						// 空调用
 						this.hooks.afterRuntimeRequirements.call();
 
 						this.logger.timeEnd("runtime requirements");
 						this.logger.time("hashing");
 
-						// NOTE:
 						// 空调用
 						// 在 compilation 添加哈希（hash）之前
 						this.hooks.beforeHash.call();
 
-						// NOTE:
 						// 开始hash
 						const codeGenerationJobs = this.createHash();
 						// hash结束
@@ -2683,8 +2684,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 							// 在创建模块 asset 之前执行
 							this.hooks.beforeModuleAssets.call();
 
-							// TODO:
-							// 值得好好看看
+							// TODO: 值得好好看看
 							this.createModuleAssets();
 
 							this.logger.timeEnd("module assets");
@@ -2700,7 +2700,6 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 										);
 									}
 
-									// NOTE:
 									// 空调用
 									this.hooks.afterProcessAssets.call(this.assets);
 
@@ -2716,11 +2715,10 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 									this.summarizeDependencies();
 									if (shouldRecord) {
-										// NOTE: 空调用
+										// 空调用
 										this.hooks.record.call(this, this.records);
 									}
 
-									// NOTE:
 									// 空调用
 									// 调用来决定 compilation 是否需要解除 seal 以引入其他文件
 									if (this.hooks.needAdditionalSeal.call()) {
@@ -2728,7 +2726,6 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 										return this.seal(callback);
 									}
 
-									// NOTE:
 									// 直接执行回调
 									return this.hooks.afterSeal.callAsync(err => {
 										if (err) {
@@ -3354,6 +3351,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 	}
 
 	// TODO:
+	// 给 Entrypoint 和 AsyncEntryponit中的Runtime Chunk 分配 chunk.id
 	assignRuntimeIds() {
 		const { chunkGraph } = this;
 		const processEntrypoint = ep => {
@@ -3369,6 +3367,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
+	// ChunkGroups 排序
+	// errors warnings排序
 	sortItemsWithChunkIds() {
 		for (const chunkGroup of this.chunkGroups) {
 			chunkGroup.sortItems();
@@ -3945,6 +3945,7 @@ This prevents using hashes of each other and should be avoided.`);
 		};
 	}
 
+	// 清除上次运行时生成的assets
 	clearAssets() {
 		for (const chunk of this.chunks) {
 			chunk.files.clear();
@@ -3970,6 +3971,7 @@ This prevents using hashes of each other and should be avoided.`);
 						module.buildInfo.assets[assetName],
 						assetsInfo ? assetsInfo.get(assetName) : undefined
 					);
+					// 空调用
 					this.hooks.moduleAsset.call(module, fileName);
 				}
 			}
@@ -4206,6 +4208,7 @@ This prevents using hashes of each other and should be avoided.`);
 		return { path: newPath, info: assetInfo };
 	}
 
+	// 通过options.ignoreWarnings 筛选过滤后的warnings
 	getWarnings() {
 		return this.hooks.processWarnings.call(this.warnings);
 	}

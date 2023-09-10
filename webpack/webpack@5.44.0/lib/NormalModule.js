@@ -243,12 +243,14 @@ class NormalModule extends Module {
 	}) {
 		super(type, getContext(resource), layer);
 
-		// 模块路径
 		// Info from Factory
+		// 模块路径(绝对路径)
 		/** @type {string} */
 		this.request = request;
+		//
 		/** @type {string} */
 		this.userRequest = userRequest;
+		//
 		/** @type {string} */
 		this.rawRequest = rawRequest;
 
@@ -260,11 +262,13 @@ class NormalModule extends Module {
 		/** @type {Generator} */
 		this.generator = generator;
 		this.generatorOptions = generatorOptions;
+		// 路径
 		/** @type {string} */
 		this.resource = resource;
 		this.resourceResolveData = resourceResolveData;
 		/** @type {string | undefined} */
 		this.matchResource = matchResource;
+		// loader
 		/** @type {LoaderItem[]} */
 		this.loaders = loaders;
 		if (resolveOptions !== undefined) {
@@ -691,7 +695,6 @@ class NormalModule extends Module {
 	 * @param {function(WebpackError=): void} callback callback function
 	 * @returns {void}
 	 */
-	// NOTE:
 	// 该方法作用是 运行loaders 并将结果 封装成类的实例
 	doBuild(options, compilation, resolver, fs, callback) {
 		const loaderContext = this.createLoaderContext(
@@ -736,7 +739,6 @@ class NormalModule extends Module {
 				return callback(error);
 			}
 
-			// NOTE：
 			// 将 单纯的content 创建成 一个 Source 实例
 			this._source = this.createSource(
 				options.context,
@@ -919,6 +921,7 @@ class NormalModule extends Module {
 
 		const startTime = compilation.compiler.fsStartTime || Date.now();
 
+		// doBuild 通过fs获取到源代码 并将源代码 创建RawSource 实例
 		return this.doBuild(options, compilation, resolver, fs, err => {
 			// if we have an error mark module as failed and exit
 			if (err) {

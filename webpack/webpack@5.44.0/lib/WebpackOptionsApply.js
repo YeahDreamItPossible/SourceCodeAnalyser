@@ -594,6 +594,7 @@ class WebpackOptionsApply extends OptionsApply {
 		}
 		new ResolverCachePlugin().apply(compiler);
 
+		// options.ignoreWarnings 用户筛选warnings的条件数组
 		if (options.ignoreWarnings && options.ignoreWarnings.length > 0) {
 			const IgnoreWarningsPlugin = require("./IgnoreWarningsPlugin");
 			new IgnoreWarningsPlugin(options.ignoreWarnings).apply(compiler);

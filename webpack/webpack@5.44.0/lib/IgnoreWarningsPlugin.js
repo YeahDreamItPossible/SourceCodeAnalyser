@@ -21,6 +21,7 @@ class IgnoreWarningsPlugin {
 	 * @returns {void}
 	 */
 	apply(compiler) {
+		// 筛选warnings 并返回warnings
 		compiler.hooks.compilation.tap("IgnoreWarningsPlugin", compilation => {
 			compilation.hooks.processWarnings.tap(
 				"IgnoreWarningsPlugin",

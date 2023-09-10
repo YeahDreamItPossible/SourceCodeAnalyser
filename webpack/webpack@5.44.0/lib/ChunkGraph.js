@@ -250,6 +250,7 @@ class ChunkGraph {
 		this._cacheChunkGraphModuleValue1 = undefined;
 		this._cacheChunkGraphModuleKey2 = undefined;
 		this._cacheChunkGraphModuleValue2 = undefined;
+
 		this._cacheChunkGraphChunkKey1 = undefined;
 		this._cacheChunkGraphChunkValue1 = undefined;
 		this._cacheChunkGraphChunkKey2 = undefined;
@@ -333,6 +334,7 @@ class ChunkGraph {
 	 * @param {Module} module the module
 	 * @returns {void}
 	 */
+	// 绑定 Module 与 Chunk 关系
 	connectChunkAndModule(chunk, module) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -345,6 +347,7 @@ class ChunkGraph {
 	 * @param {Module} module the module
 	 * @returns {void}
 	 */
+	// 解除 Module 与 Chunk 关系
 	disconnectChunkAndModule(chunk, module) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -469,6 +472,7 @@ class ChunkGraph {
 	 * @param {Chunk} chunk the checked chunk
 	 * @returns {boolean} true, if the chunk contains the module
 	 */
+	// 根据Chunk 找到 ChunkGraphChunk 然后判断ChunkGraphChunk是否含有Module
 	isModuleInChunk(module, chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules.has(module);
@@ -479,6 +483,7 @@ class ChunkGraph {
 	 * @param {ChunkGroup} chunkGroup the checked chunk group
 	 * @returns {boolean} true, if the chunk contains the module
 	 */
+	// 判断 ChunkGroup 中是否含有 Module
 	isModuleInChunkGroup(module, chunkGroup) {
 		for (const chunk of chunkGroup.chunks) {
 			if (this.isModuleInChunk(module, chunk)) return true;
@@ -1048,6 +1053,7 @@ class ChunkGraph {
 	 * @param {Chunk} chunk the chunk
 	 * @returns {Iterable<Module>} iterable of modules (do not modify)
 	 */
+	// 根据 Chunk 来获取入口模块 EntryModule
 	getChunkEntryModulesIterable(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.entryModules.keys();
@@ -1188,6 +1194,7 @@ class ChunkGraph {
 	 * @param {Module} module the module
 	 * @returns {string | number} the id of the module
 	 */
+	// 获取模块ID
 	getModuleId(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.id;
@@ -1566,6 +1573,7 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 	}
 
 	// TODO remove in webpack 6
+	// 根据Module实例来获取ChunkGraph
 	/**
 	 * @param {Module} module the module
 	 * @param {string} deprecateMessage message for the deprecation message
@@ -1573,6 +1581,8 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 	 * @returns {ChunkGraph} the chunk graph
 	 */
 	static getChunkGraphForModule(module, deprecateMessage, deprecationCode) {
+		// NOTE:
+		// 这里用fn来包括 主要是API遗弃
 		const fn = deprecateGetChunkGraphForModuleMap.get(deprecateMessage);
 		if (fn) return fn(module);
 		const newFn = util.deprecate(
@@ -1622,7 +1632,10 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 	 * @param {string} deprecationCode code for the deprecation
 	 * @returns {ChunkGraph} the chunk graph
 	 */
+	// 根据Chunk实例来获取ChunkGraph
 	static getChunkGraphForChunk(chunk, deprecateMessage, deprecationCode) {
+		// NOTE:
+		// 这里用fn来包括 主要是API遗弃
 		const fn = deprecateGetChunkGraphForChunkMap.get(deprecateMessage);
 		if (fn) return fn(chunk);
 		const newFn = util.deprecate(

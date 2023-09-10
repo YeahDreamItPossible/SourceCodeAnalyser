@@ -96,7 +96,7 @@ class Chunk {
 		// 输出文件 如: app.67f6cda2.js
 		/** @type {Set<string>} */
 		this.files = new ChunkFilesSet();
-
+		// 保存的输出文件名 如: app.67f6cda2.js
 		/** @type {Set<string>} */
 		this.auxiliaryFiles = new Set();
 

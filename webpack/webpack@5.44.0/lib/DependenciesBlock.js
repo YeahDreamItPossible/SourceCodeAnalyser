@@ -18,8 +18,10 @@ const makeSerializable = require("./util/makeSerializable");
 
 class DependenciesBlock {
 	constructor() {
+		// 依赖
 		/** @type {Dependency[]} */
 		this.dependencies = [];
+		// 分组块
 		/** @type {AsyncDependenciesBlock[]} */
 		this.blocks = [];
 	}

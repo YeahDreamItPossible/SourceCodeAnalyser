@@ -95,12 +95,21 @@ class Dependency {
 		// TODO check if this can be moved into ModuleDependency
 		/** @type {boolean} */
 		this.optional = false;
+
+		// 位置信息
+		// SL(start line) 起始行
 		this._locSL = 0;
+		// SC(start column) 起始列
 		this._locSC = 0;
+		// EL(end line) 结束行
 		this._locEL = 0;
+		// EC(end column) 结束列
 		this._locEC = 0;
+		// 索引(Index)
 		this._locI = undefined;
+		// 名(Name)
 		this._locN = undefined;
+		// 位置信息对象(Location)
 		this._loc = undefined;
 	}
 

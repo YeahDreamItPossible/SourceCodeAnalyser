@@ -81,24 +81,28 @@ class ChunkGroup {
 		this.groupDebugId = debugId++;
 		this.options = options;
 
-		//
+		// 存放子ChunkGroup
 		/** @type {SortableSet<ChunkGroup>} */
 		this._children = new SortableSet(undefined, sortById);
+		// 存放父ChunkGroup
 		/** @type {SortableSet<ChunkGroup>} */
 		this._parents = new SortableSet(undefined, sortById);
+		// 存放异步Entrypoint
 		/** @type {SortableSet<ChunkGroup>} */
 		this._asyncEntrypoints = new SortableSet(undefined, sortById);
+
+		//
 		this._blocks = new SortableSet();
 
-		// 分离chunk后的所有chunk
+		// 分离chunk后的所有Chunk
 		/** @type {Chunk[]} */
 		this.chunks = [];
 
-		//
+		// 存放模块
 		/** @type {OriginRecord[]} */
 		this.origins = [];
 
-		// TODO: number 好像是索引
+		// TODO: 模块对应的索引
 		/** Indices in top-down order */
 		/** @private @type {Map<Module, number>} */
 		this._modulePreOrderIndices = new Map();
