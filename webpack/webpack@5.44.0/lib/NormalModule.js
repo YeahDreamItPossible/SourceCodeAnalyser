@@ -765,6 +765,8 @@ class NormalModule extends Module {
 			processResult(err);
 			return;
 		}
+
+		// 运行loaders 来获取 loaders 处理后的内容
 		runLoaders(
 			{
 				resource: this.resource,
@@ -796,7 +798,6 @@ class NormalModule extends Module {
 					loaderContext.fs =
 						undefined;
 
-				// NOTE:
 				// 标记: 运行loader 返回的结果
 				if (!result) {
 					return processResult(

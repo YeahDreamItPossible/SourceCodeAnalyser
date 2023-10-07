@@ -1594,7 +1594,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		const currentProfile = this.profile ? new ModuleProfile() : undefined;
 
-		// 构建module 并解析loader
+		// 1.构建module 并解析loader
 		this.factorizeModule(
 			{
 				currentProfile,
@@ -1622,7 +1622,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					moduleGraph.setProfile(newModule, currentProfile);
 				}
 
-				// 根据不同的缓存策略 缓存module
+				// 2.根据不同的缓存策略 缓存module
 				this.addModule(newModule, (err, module) => {
 					if (err) {
 						if (!err.module) {
@@ -1692,7 +1692,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						}
 					}
 
-					// NOTE: 加载文件 并 Parser
+					// 3.加载文件 并 Parser
 					// 1. 通过不同的loader 拿到源码
 					// 2. 将源码 创建RawSource的实例
 					// 3. parse
@@ -1720,7 +1720,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 							return callback();
 						}
 
-						// 解析module中的dependenies 和 blocks
+						// 4.解析module中的dependenies 和 blocks
 						this.processModuleDependencies(module, err => {
 							if (err) {
 								return callback(err);
@@ -2655,14 +2655,12 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						const codeGenerationJobs = this.createHash();
 						// hash结束
 
-						// NOTE:
 						// 空调用
 						// 在 compilation 添加哈希（hash）之后
 						this.hooks.afterHash.call();
 
 						this.logger.timeEnd("hashing");
 
-						// NOTE:
 						// 该处的 codeGenerationJobs 目前好像是空数组 直接回调?
 						this._runCodeGenerationJobs(codeGenerationJobs, err => {
 							if (err) {
@@ -2930,7 +2928,6 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				try {
 					codeGenerated = true;
 					this.codeGeneratedModules.add(module);
-					// TODOs:
 					// 重点看
 					// ast => result
 					result = module.codeGeneration({
@@ -3350,7 +3347,6 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// TODO:
 	// 给 Entrypoint 和 AsyncEntryponit中的Runtime Chunk 分配 chunk.id
 	assignRuntimeIds() {
 		const { chunkGraph } = this;

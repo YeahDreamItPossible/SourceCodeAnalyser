@@ -16,6 +16,7 @@ module.exports = function loadLoader(loader, callback) {
 		}
 	} else {
 		try {
+			// 通过路径加载资源
 			var module = require(loader.path);
 		} catch(e) {
 			// it is possible for node to choke on a require if the FD descriptor
@@ -32,6 +33,7 @@ module.exports = function loadLoader(loader, callback) {
 			}
 			return callback(e);
 		}
+		// 解析资源内容
 		return handleResult(loader, module, callback);
 	}
 };
