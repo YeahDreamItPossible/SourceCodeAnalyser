@@ -1031,6 +1031,7 @@ class NormalModule extends Module {
 
 			let result;
 			try {
+				// 此阶段获取子模块
 				result = this.parser.parse(this._ast || this._source.source(), {
 					current: this,
 					module: this,

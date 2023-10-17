@@ -1646,6 +1646,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						module,
 						originModule !== undefined ? originModule : null
 					);
+					
 					if (module !== newModule) {
 						if (currentProfile !== undefined) {
 							const otherProfile = moduleGraph.getProfile(module);

@@ -1205,6 +1205,7 @@ class ChunkGraph {
 	 * @param {string | number} id the id of the module
 	 * @returns {void}
 	 */
+	// 设置模块ID
 	setModuleId(module, id) {
 		const cgm = this._getChunkGraphModule(module);
 		cgm.id = id;
