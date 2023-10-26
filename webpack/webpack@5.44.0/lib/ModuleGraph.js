@@ -78,6 +78,8 @@ class ModuleGraphModule {
 		this.optimizationBailout = [];
 		/** @type {ExportsInfo} */
 		this.exports = new ExportsInfo();
+
+		// 
 		/** @type {number} */
 		this.preOrderIndex = null;
 		/** @type {number} */

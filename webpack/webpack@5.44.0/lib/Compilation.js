@@ -2317,7 +2317,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		}
 
 		// WarnCaseSensitiveModulesPlugin
-		// 还是收集 errors
+		// (主要是收集errors, 将module的identifier toLocaleLowerCase后对应的module唯一)
 		// compilation 对象停止接收新的模块时触发
 		this.hooks.seal.call();
 
@@ -2368,6 +2368,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 				const module = this.moduleGraph.getModule(dep);
 				if (module) {
+					// NOTE: 非常重要
+					// 绑定module 与 chunk 的关联关系
+					// module => ChunkGraphModule
+					// chunk => ChunkGraphChunk
 					chunkGraph.connectChunkAndEntryModule(chunk, module, entrypoint);
 					this.assignDepth(module);
 					const modulesList = chunkGraphInit.get(entrypoint);
