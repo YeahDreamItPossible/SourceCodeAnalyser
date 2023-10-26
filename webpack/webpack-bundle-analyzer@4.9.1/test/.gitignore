@@ -1,0 +1,6 @@
+output
+
+# Sandbox config
+/webpack.config.js
+# Output of sandbox config
+/dist

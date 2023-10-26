@@ -1,0 +1,12 @@
+{
+  "extends": "../.eslintrc.json",
+  "env": {
+    "jest": true,
+    "browser": true
+  },
+  "globals": {
+    "makeWebpackConfig": true,
+    "webpackCompile": true,
+    "forEachWebpackVersion": true
+  }
+}
