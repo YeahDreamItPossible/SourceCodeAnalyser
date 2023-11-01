@@ -63,12 +63,12 @@
         {
           name: 'Hello',
           component: Hello,
-          path: '/one'
+          path: '/hello'
         },
         {
           name: 'World',
           component: World,
-          path: '/two'
+          path: '/world'
         }
       ]
     })
@@ -92,21 +92,24 @@
             class: 'el-button',
             onClick () {
               let route = name.value === 'Hello' ? {
+                name: 'Hello'
+              } : {
+                name: 'World'
+              }
+              router.push(route)
+            }
+          }, 'Hello'),
+          h('button', {
+            class: 'el-button',
+            onClick () {
+              let route = name.value === 'Hello' ? {
                 name: 'World'
               } : {
                 name: 'Hello'
               }
               router.push(route)
             }
-          }, 'toggle'),
-          h(RouterLink, {
-            custom: true,
-            to: {
-              name: 'World'
-            }
-          }, h('button', {
-            class: 'el-button'
-          }, 'Hello World'))
+          }, 'World')
         )
       }
     })
@@ -117,6 +120,7 @@
   <script>
     const app = createApp(App)
     app.component('Hello', Hello)
+    app.component('World', World)
     app.use(router)
     app.mount('#app')
   </script>

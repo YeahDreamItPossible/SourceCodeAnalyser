@@ -1,9 +1,3 @@
-/*!
- * vue-router v4.1.6
- * (c) 2023 Eduardo San Martin Morote
- * @license MIT
- */
-
 /**
  * 注释中的名词解释
  * route       					=>   路由记录
@@ -72,7 +66,8 @@ var VueRouter = (function (exports, vue) {
     // TODO: move to new URL()
     const hashPos = location.indexOf("#");
     let searchPos = location.indexOf("?");
-    // the hash appears before the search, so it's not part of the search string
+
+    // 当hash存在 且hash出现在search前面时 此时认为search失效
     if (hashPos < searchPos && hashPos >= 0) {
       searchPos = -1;
     }
@@ -86,12 +81,10 @@ var VueRouter = (function (exports, vue) {
     }
     if (hashPos > -1) {
       path = path || location.slice(0, hashPos);
-      // keep the # character
       hash = location.slice(hashPos, location.length);
     }
-    // no search and no query
+    // path 绝对路径
     path = resolveRelativePath(path != null ? path : location, currentLocation);
-    // empty path means a relative query or hash `?foo=f`, `#thing`
     return {
       fullPath: path + (searchString && "?") + searchString + hash,
       path,
@@ -238,22 +231,21 @@ var VueRouter = (function (exports, vue) {
   const START = "";
 
   // 正常化: 正常化createWebHistory中的base参数
+  // base必须以/开头 且结尾不能以/结尾
   function normalizeBase(base) {
     // 默认 '/'
     if (!base) {
       if (isBrowser) {
         // respect <base> tag
+        // 根据 base 标签来获取base
         const baseEl = document.querySelector("base");
         base = (baseEl && baseEl.getAttribute("href")) || "/";
-        // strip full URL origin
         base = base.replace(/^\w+:\/\/[^\/]+/, "");
       } else {
         base = "/";
       }
     }
-    // ensure leading slash when it was removed by the regex above avoid leading
-    // slash with hash because the file could be read from the disk like file://
-    // and the leading slash would cause problems
+    // 如果不是hash模式 则base必须以/开头
     if (base[0] !== "/" && base[0] !== "#") base = "/" + base;
     // 将base中最后的'/'去掉
     return removeTrailingSlash(base);
@@ -409,7 +401,7 @@ var VueRouter = (function (exports, vue) {
     return path + search + hash;
   }
 
-  // TODO: 监听
+  // 监听
   function useHistoryListeners(base, historyState, currentLocation, replace) {
     let listeners = [];
     let teardowns = [];
@@ -487,7 +479,9 @@ var VueRouter = (function (exports, vue) {
     }
 
     // set up the listeners and prepare teardown callbacks
+    // 路由跳转
     window.addEventListener("popstate", popStateHandler);
+    // 当浏览器窗口关闭或者刷新时
     window.addEventListener("beforeunload", beforeUnloadListener);
     return {
       pauseListeners,
@@ -514,7 +508,6 @@ var VueRouter = (function (exports, vue) {
     };
   }
 
-  // TODO: Navigation
   // 路由跳转最终调用的api
   function useHistoryStateNavigation(base) {
     const { history, location } = window;
@@ -523,7 +516,7 @@ var VueRouter = (function (exports, vue) {
       value: createCurrentLocation(base, location),
     };
     const historyState = { value: history.state };
-    // build current history entry as this is a fresh navigation
+    // 第一次打开页面时 手动初始化改变页面路由地址到 base路径
     if (!historyState.value) {
       changeLocation(
         currentLocation.value,
@@ -559,9 +552,12 @@ var VueRouter = (function (exports, vue) {
               ? base
               : base.slice(hashIndex)) + to
           : createBaseLocation() + base + to;
+
+      // 尝试以history路由的方式跳转
+      // 如果history路由跳转的方式报错 则以location路由的方式跳转
       try {
-        // BROWSER QUIRK
-        // NOTE: Safari throws a SecurityError when calling this function 100 times in 30 seconds
+        // 浏览器怪癖
+        // 注意：Safari在30秒内调用此函数100次时抛出SecurityError
         history[replace ? "replaceState" : "pushState"](state, "", url);
         historyState.value = state;
       } catch (err) {
@@ -746,14 +742,13 @@ var VueRouter = (function (exports, vue) {
   }
 
   // 创建: 创建hash模式路由对象
-  // 底层是 调用createWebHistory
+  // 主要对base进行补#处理后
+  // 底层是仍然调用createWebHistory
   function createWebHashHistory(base) {
-    // Make sure this implementation is fine in terms of encoding, specially for IE11
-    // for `file://`, directly use the pathname and ignore the base
-    // location.pathname contains an initial `/` even at the root: `https://example.com`
     base = location.host ? base || location.pathname + location.search : "";
-    // allow the user to provide a `#` in the middle: `/base/#/app`
+    // 手动补# 且允许#出现在base的中间
     if (!base.includes("#")) base += "#";
+    // hash模式时 base 必须以#/或者#结尾?
     if (!base.endsWith("#/") && !base.endsWith("#")) {
       warn(
         `A hash base must end with a "#":\n"${base}" should be "${base.replace(
@@ -1297,6 +1292,7 @@ var VueRouter = (function (exports, vue) {
 
     // 合并: 将用户options 和 默认选项合并
     globalOptions = mergeOptions(
+      // 
       { strict: false, end: true, sensitive: false },
       globalOptions
     );
@@ -3291,10 +3287,11 @@ var VueRouter = (function (exports, vue) {
     // 创建路由对象匹配器
     const matcher = createRouterMatcher(options.routes, options);
 
+    // 自定义
     const parseQuery$1 = options.parseQuery || parseQuery;
     const stringifyQuery$1 = options.stringifyQuery || stringifyQuery;
 
-    // options.history 必须手动创建
+    // options.history 必须手动创建 否则报错
     const routerHistory = options.history;
     if (!routerHistory)
       throw new Error(
@@ -3498,7 +3495,7 @@ var VueRouter = (function (exports, vue) {
       }
     }
 
-    // TODO:
+    // 
     function push(to) {
       return pushWithRedirect(to);
     }
@@ -3508,7 +3505,7 @@ var VueRouter = (function (exports, vue) {
       return push(assign(locationAsObject(to), { replace: true }));
     }
 
-    // 根据 to.redirect 来获取 重定向的 history location
+    // 根据 to.redirect字段 来获取 重定向的 history location
     function handleRedirectRecord(to) {
       const lastMatched = to.matched[to.matched.length - 1];
       if (lastMatched && lastMatched.redirect) {
@@ -3557,6 +3554,8 @@ var VueRouter = (function (exports, vue) {
       const force = to.force;
       // to could be a string where `replace` is a function
       const replace = to.replace === true;
+
+      // 根据 to.redirct 字段来重定向路由
       const shouldRedirect = handleRedirectRecord(targetLocation);
       if (shouldRedirect)
         return pushWithRedirect(
@@ -3789,12 +3788,8 @@ var VueRouter = (function (exports, vue) {
       for (const guard of afterGuards.list()) guard(to, from, failure);
     }
 
-    /**
-     * - Cleans up any navigation guards
-     * - Changes the url if necessary
-     * - Calls the scrollBehavior
-     */
-    // 跳转路由 并处理页面滚动
+    // 最终路由跳转的方式
+    // 1. 清除导航卫士 2. 跳转路由 3. 并处理页面滚动
     function finalizeNavigation(toLocation, from, isPush, replace, data) {
       // a more recent navigation took place
       const error = checkCanceledNavigation(toLocation, from);
