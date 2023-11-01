@@ -212,6 +212,7 @@ class ChunkGraphChunk {
 		// 运行时modules
 		/** @type {SortableSet<RuntimeModule>} */
 		this.runtimeModules = new SortableSet();
+		
 		// TODO: 目前未看到有什么作用
 		/** @type {Set<RuntimeModule> | undefined} */
 		this.fullHashModules = undefined;
@@ -1205,6 +1206,7 @@ class ChunkGraph {
 	 * @param {string | number} id the id of the module
 	 * @returns {void}
 	 */
+	// 设置模块ID
 	setModuleId(module, id) {
 		const cgm = this._getChunkGraphModule(module);
 		cgm.id = id;

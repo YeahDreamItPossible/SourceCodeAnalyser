@@ -133,7 +133,7 @@ function runSyncOrAsync(fn, context, args, callback) {
 			// 调用 loader.normal || loader.pitch
 			return fn.apply(context, args);
 		}());
-		// NOTE:
+
 		// 该处非常巧妙 loader 可同步 or 调用调用
 		// 当loader.normal 调用callback or async 会动态修改 当前loader 处理类型为 isSync = false
 		if(isSync) {
@@ -173,7 +173,7 @@ function convertArgs(args, raw) {
 // 迭代 loaders.pitch
 function iteratePitchingLoaders(options, loaderContext, callback) {
 	// abort after last loader
-	// pitch 阶段结束 开始 调用loaders
+	// pitch 阶段结束 开始 迭代loader.normal
 	if(loaderContext.loaderIndex >= loaderContext.loaders.length)
 		return processResource(options, loaderContext, callback);
 
@@ -186,7 +186,9 @@ function iteratePitchingLoaders(options, loaderContext, callback) {
 	}
 
 	// load loader module
-	// 加载 loader 模块 即 loader.normal = /* 处理数据的函数 */
+	// 加载 loader 模块 
+	// 即 loader.normal = /* 处理数据的函数 */
+	// 即 loader.pitch = /* pitch函数 */
 	loadLoader(currentLoaderObject, function(err) {
 		if(err) {
 			loaderContext.cacheable(false);
@@ -208,11 +210,13 @@ function iteratePitchingLoaders(options, loaderContext, callback) {
 				var hasArg = args.some(function(value) {
 					return value !== undefined;
 				});
-				// 当loader.pitch函数有返回值时 loader pitch 结束
+
 				if(hasArg) {
+					// 当loader.pitch函数有返回值时 loader pitch 结束(开始迭代loader.normal)
 					loaderContext.loaderIndex--;
 					iterateNormalLoaders(options, loaderContext, args, callback);
 				} else {
+					// 继续下一个loader.pitch
 					iteratePitchingLoaders(options, loaderContext, callback);
 				}
 			}
@@ -236,8 +240,7 @@ function processResource(options, loaderContext, callback) {
 	}
 }
 
-// NOTE:
-// 迭代 loaders
+// 迭代 loader.normal
 function iterateNormalLoaders(options, loaderContext, args, callback) {
 	if(loaderContext.loaderIndex < 0)
 		return callback(null, args);
@@ -266,6 +269,7 @@ function iterateNormalLoaders(options, loaderContext, args, callback) {
 	});
 }
 
+// 根据资源路径来获取context
 exports.getContext = function getContext(resource) {
 	var path = parsePathQueryFragment(resource).path;
 	return dirname(path);
@@ -289,12 +293,15 @@ exports.runLoaders = function runLoaders(options, callback) {
 	var contextDirectory = resourcePath ? dirname(resourcePath) : null;
 
 	// execution state
+	// 设置是否可缓存标志的状态
+	// 默认情况下，loader 的处理结果会被标记为可缓存
 	var requestCacheable = true;
 	var fileDependencies = [];
 	var contextDependencies = [];
 	var missingDependencies = [];
 
 	// prepare loader objects
+	// loader 标准化
 	loaders = loaders.map(createLoaderObject);
 
 	// 扩展 loaderContext
@@ -306,6 +313,7 @@ exports.runLoaders = function runLoaders(options, callback) {
 	loaderContext.resourceFragment = resourceFragment;
 	loaderContext.async = null;
 	loaderContext.callback = null;
+	// 调用这个方法然后传入 false，可以关闭 loader 处理结果的缓存能力
 	loaderContext.cacheable = function cacheable(flag) {
 		if(flag === false) {
 			requestCacheable = false;

@@ -57,6 +57,7 @@ const getConnectionsByOriginModule = set => {
 	return map;
 };
 
+// 当前模块的引用关系
 // 当前module与它引用的modules、以及引用它的modules的关系
 class ModuleGraphModule {
 	constructor() {
@@ -65,7 +66,7 @@ class ModuleGraphModule {
 		/** @type {SortableSet<ModuleGraphConnection>} */
 		this.incomingConnections = new SortableSet();
 
-		// 存放ModuleGraphConnection,
+		// 存放ModuleGraphConnection
 		// 表示一个当前module引用了哪些modules
 		/** @type {Set<ModuleGraphConnection> | undefined} */
 		this.outgoingConnections = undefined;
@@ -77,6 +78,8 @@ class ModuleGraphModule {
 		this.optimizationBailout = [];
 		/** @type {ExportsInfo} */
 		this.exports = new ExportsInfo();
+
+		// 
 		/** @type {number} */
 		this.preOrderIndex = null;
 		/** @type {number} */
@@ -84,7 +87,6 @@ class ModuleGraphModule {
 		/** @type {number} */
 		this.depth = null;
 
-		// NOTE:
 		/** @type {ModuleProfile} */
 		this.profile = undefined;
 
@@ -101,7 +103,6 @@ class ModuleGraph {
 		// 记录当前module被谁引用以及引用了谁
 		/** @type {Map<Module, ModuleGraphModule>} */
 		this._moduleMap = new Map();
-		// TODO:
 		// 好像没啥卵用(全局搜索未发现使用)
 		/** @type {Map<Module, Set<ModuleGraphConnection>>} */
 		this._originMap = new Map();
@@ -175,6 +176,7 @@ class ModuleGraph {
 	 * @param {Module} module the referenced module
 	 * @returns {void}
 	 */
+	// NOTE: 
 	setResolvedModule(originModule, dependency, module) {
 		const connection = new ModuleGraphConnection(
 			originModule,
