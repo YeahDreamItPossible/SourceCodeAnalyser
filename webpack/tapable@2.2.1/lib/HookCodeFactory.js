@@ -4,6 +4,19 @@
 */
 "use strict";
 
+/**
+ * 函数生成的逻辑
+ * 1. 生成args
+ * 2. 生成特定的header
+ * 3. 生成内容
+ * 		3.1 生成intercept call逻辑
+ * 		3.2 生成intercept tap逻辑
+ * 		3.3 生成taps 回调事件fn逻辑
+ * 		3.4 生成intercept error逻辑
+ * 		3.5 生成intercept result逻辑
+ * 		3.6 生成intercept done逻辑
+ */
+
 class HookCodeFactory {
 	constructor(config) {
 		this.config = config;
@@ -149,7 +162,7 @@ class HookCodeFactory {
 					onDone:
 						onDone &&
 						(() => {
-							// 1.5 生成intercept done逻辑
+							// 1.6 生成intercept done逻辑
 							let code = "";
 							for (let i = 0; i < this.options.interceptors.length; i++) {
 								const interceptor = this.options.interceptors[i];
@@ -465,6 +478,7 @@ class HookCodeFactory {
 
 	// 参数序列化
 	// 示例: ['name', 'age'] => 'name, age'
+	// 这里主要是考虑到函数返回值的情况
 	args({ before, after } = {}) {
 		let allArgs = this._args;
 		if (before) allArgs = [before].concat(allArgs);

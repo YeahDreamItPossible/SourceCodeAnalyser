@@ -3,7 +3,6 @@
 	Author Tobias Koppers @sokra
 */
 "use strict";
-
 const util = require("util");
 
 const deprecateContext = util.deprecate(() => {},
@@ -24,6 +23,24 @@ const PROMISE_DELEGATE = function(...args) {
 	return this.promise(...args);
 };
 
+// TapOption
+// {
+// 	name: String,
+// 	stage: Number,
+// 	context: undefined, // 废弃
+// 	before: String || Array<String>
+// }
+
+// InterceptOption
+// {
+// 	call: Function,
+// 	tap: Function,
+// 	register: Function,
+// 	error: Function,
+// 	done: Function,
+// 	result: Function,
+// }
+
 class Hook {
 	constructor(args = [], name = undefined) {
 		this._args = args;
@@ -43,6 +60,8 @@ class Hook {
 		this.callAsync = CALL_ASYNC_DELEGATE;
 		this._promise = PROMISE_DELEGATE;
 		this.promise = PROMISE_DELEGATE;
+
+		// 
 		this._x = undefined;
 
 		// NOTE:
@@ -96,6 +115,7 @@ class Hook {
 
 	// 注册事件
 	// 注册同步事件(fn函数的参数为Hook构造函数中传入的参数)
+	// options: { name: String, stage: Number, before: String || Array<String>, context: 废弃 }
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
@@ -147,7 +167,7 @@ class Hook {
 	}
 
 	// 注册拦截器
-	// interceptor: {context: {}, register: fn, call: fn, tap: fn, result: fn, error: fn, done: fn}
+	// interceptor: {context: {}, register: fn, call: fn, tap: fn, result: fn, error: fn, done: fn, before: String}
 	intercept(interceptor) {
 		this._resetCompilation();
 		this.interceptors.push(Object.assign({}, interceptor));

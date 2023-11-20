@@ -14,6 +14,7 @@ hook.tap('after', (name, age) => {
 })
 
 let uid = 0
+debugger
 hook.intercept({
 	context: {},
 
@@ -30,6 +31,18 @@ hook.intercept({
 	tap (context, options) {
 		context.uid = uid
 		console.log('intercept tap first: ', context, options)
+	},
+
+	error (err) {
+    console.log('intercept tap first: ', err)
+	},
+
+	result (result) {
+    console.log('intercept tap first: ', result)
+	},
+
+	done () {
+    console.log('intercept tap first: ', 'done')
 	}
 })
 
@@ -49,11 +62,22 @@ hook.intercept({
 	tap (context, options) {
 		context.uid = ++uid
 		console.log('intercept tap second: ', context, options)
+	},
+
+  error (err) {
+    console.log('intercept tap second: ', err)
+	},
+
+	result (result) {
+    console.log('intercept tap second: ', result)
+	},
+
+	done () {
+    console.log('intercept tap second: ', 'done')
 	}
 })
 
-
-hook.call('Lee', 20)
+// hook.call('Lee', 20)
 // 输出:
 // intercept register first
 // intercept register first
@@ -79,29 +103,29 @@ hook.call('Lee', 20)
 // intercept tap first:  { uid: 5 } { type: 'sync', fn: [Function (anonymous)], name: 'after', uid: 4 }
 // intercept tap second:  { uid: 6 } { type: 'sync', fn: [Function (anonymous)], name: 'after', uid: 4 }
 // after:  Lee 20
-// intercept done first: 
-// intercept done second:
+// intercept tap first:  done
+// intercept tap second:  done
 
-console.log(hook.call.toString())
+// console.log(hook.call.toString())
 // 输出:
 function anonymous(name, age) {
-	"use strict";
-	var _context = {};
-	var _x = this._x;
-	var _taps = this.taps;
-	var _interceptors = this.interceptors;
-	_interceptors[0].call(_context, name, age);
-	_interceptors[1].call(_context, name, age);
-	var _tap0 = _taps[0];
-	_interceptors[0].tap(_context, _tap0);
-	_interceptors[1].tap(_context, _tap0);
-	var _fn0 = _x[0];
-	_fn0(_context, name, age);
-	var _tap1 = _taps[1];
-	_interceptors[0].tap(_context, _tap1);
-	_interceptors[1].tap(_context, _tap1);
-	var _fn1 = _x[1];
-	_fn1(name, age);
-	_interceptors[0].done();
-	_interceptors[1].done();
+  "use strict";
+  var _context = {};
+  var _x = this._x;
+  var _taps = this.taps;
+  var _interceptors = this.interceptors;
+  _interceptors[0].call(_context, name, age);
+  _interceptors[1].call(_context, name, age);
+  var _tap0 = _taps[0];
+  _interceptors[0].tap(_context, _tap0);
+  _interceptors[1].tap(_context, _tap0);
+  var _fn0 = _x[0];
+  _fn0(_context, name, age);
+  var _tap1 = _taps[1];
+  _interceptors[0].tap(_context, _tap1);
+  _interceptors[1].tap(_context, _tap1);
+  var _fn1 = _x[1];
+  _fn1(name, age);
+  _interceptors[0].done();
+  _interceptors[1].done();
 }
