@@ -33,12 +33,22 @@ const PROMISE_DELEGATE = function(...args) {
 
 // InterceptOption
 // {
-// 	call: Function,
-// 	tap: Function,
-// 	register: Function,
-// 	error: Function,
-// 	done: Function,
-// 	result: Function,
+//		context: Object,
+// 		call: Function,
+// 		tap: Function,
+// 		register: Function,
+// 		error: Function,
+// 		done: Function,
+// 		result: Function,
+// }
+
+// TapItem
+// {
+// 		name
+// 		type
+// 		fn
+// 		stage
+//  	before
 // }
 
 class Hook {
@@ -51,7 +61,7 @@ class Hook {
 		// name 仅仅用于标识 可以用于调整 taps 优先列队项优先级
 		this.taps = [];
 		// interceptors 队列
-		// 拦截器 的 item { register, call, error, result, done }
+		// 拦截器 的 item { context, register, call, error, result, done }
 		this.interceptors = [];
 
 		this._call = CALL_DELEGATE;
@@ -115,7 +125,7 @@ class Hook {
 
 	// 注册事件
 	// 注册同步事件(fn函数的参数为Hook构造函数中传入的参数)
-	// options: { name: String, stage: Number, before: String || Array<String>, context: 废弃 }
+	// options: { name: String, stage: Number, before: String || Array<String> }
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
@@ -167,7 +177,7 @@ class Hook {
 	}
 
 	// 注册拦截器
-	// interceptor: {context: {}, register: fn, call: fn, tap: fn, result: fn, error: fn, done: fn, before: String}
+	// interceptor: {context: Object, register: fn, call: fn, tap: fn, result: fn, error: fn, done: fn}
 	intercept(interceptor) {
 		this._resetCompilation();
 		this.interceptors.push(Object.assign({}, interceptor));
