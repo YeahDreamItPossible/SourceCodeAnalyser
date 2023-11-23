@@ -3,8 +3,7 @@ const tapable = require('tapable')
 const hook = new tapable.SyncBailHook(['name', 'age'], 'MySyncBailHook')
 
 hook.tap({
-	name: 'before',
-	context: true
+	name: 'before'
 }, (name, age) => {
 	console.log('before: ', name, age)
 })
@@ -18,42 +17,33 @@ hook.tap('after', (name, age) => {
 	console.log('after: ', name, age)
 })
 
-let uid = 0
 hook.intercept({
-	context: {},
-
 	register (options) {
 		console.log('intercept register first')
-		options.uid = ++uid
 		return options
 	},
 
-	call (context, options) {
-		console.log('intercept call first: ', context, options)
+	call (options) {
+		console.log('intercept call first: ', options)
 	},
 
-	tap (context, options) {
-		context.uid = uid
-		console.log('intercept tap first: ', context, options)
+	tap (options) {
+		console.log('intercept tap first: ', options)
 	}
 })
 
 hook.intercept({
-	context: {},
-
 	register (options) {
 		console.log('intercept register second')
-		options.uid = ++uid
 		return options
 	},
 
-	call (context, options) {
-		console.log('intercept call second: ', context, options)
+	call (options) {
+		console.log('intercept call second: ', options)
 	},
 
-	tap (context, options) {
-		context.uid = ++uid
-		console.log('intercept tap second: ', context, options)
+	tap (options) {
+		console.log('intercept tap second: ', options)
 	}
 })
 
@@ -64,8 +54,6 @@ hook.callAsync('Lee', 20, (err) => {
 	}
 	console.log('over')
 })
-
-console.log(hook.callAsync.toString())
 // 输出
 // intercept register first
 // intercept register first
@@ -73,25 +61,13 @@ console.log(hook.callAsync.toString())
 // intercept register second
 // intercept register second
 // intercept register second
-// intercept call first:  {} Lee
-// intercept call second:  {} Lee
-// intercept tap first:  { uid: 6 } {
-//   type: 'sync',
-//   fn: [Function (anonymous)],
-//   name: 'before',
-//   context: true,
-//   uid: 4
-// }
-// intercept tap second:  { uid: 7 } {
-//   type: 'sync',
-//   fn: [Function (anonymous)],
-//   name: 'before',
-//   context: true,
-//   uid: 4
-// }
-// before:  { uid: 7 } Lee
-// intercept tap first:  { uid: 7 } { type: 'sync', fn: [Function (anonymous)], name: 'doing', uid: 5 }
-// intercept tap second:  { uid: 8 } { type: 'sync', fn: [Function (anonymous)], name: 'doing', uid: 5 }
+// intercept call first:  Lee
+// intercept call second:  Lee
+// intercept tap first:  { type: 'sync', fn: [Function (anonymous)], name: 'before' }
+// intercept tap second:  { type: 'sync', fn: [Function (anonymous)], name: 'before' }
+// before:  Lee 20
+// intercept tap first:  { type: 'sync', fn: [Function (anonymous)], name: 'doing' }
+// intercept tap second:  { type: 'sync', fn: [Function (anonymous)], name: 'doing' }
 // doing:  Lee 20
 // over
 
@@ -99,19 +75,19 @@ console.log(hook.callAsync.toString())
 // 输出
 function anonymous(name, age, _callback) {
   "use strict";
-  var _context = {};
+  var _context;
   var _x = this._x;
   var _taps = this.taps;
   var _interceptors = this.interceptors;
-  _interceptors[0].call(_context, name, age);
-  _interceptors[1].call(_context, name, age);
+  _interceptors[0].call(name, age);
+  _interceptors[1].call(name, age);
   var _tap0 = _taps[0];
-  _interceptors[0].tap(_context, _tap0);
-  _interceptors[1].tap(_context, _tap0);
+  _interceptors[0].tap(_tap0);
+  _interceptors[1].tap(_tap0);
   var _fn0 = _x[0];
   var _hasError0 = false;
   try {
-    var _result0 = _fn0(_context, name, age);
+    var _result0 = _fn0(name, age);
   } catch (_err) {
     _hasError0 = true;
     _callback(_err);
@@ -122,8 +98,8 @@ function anonymous(name, age, _callback) {
       ;
     } else {
       var _tap1 = _taps[1];
-      _interceptors[0].tap(_context, _tap1);
-      _interceptors[1].tap(_context, _tap1);
+      _interceptors[0].tap(_tap1);
+      _interceptors[1].tap(_tap1);
       var _fn1 = _x[1];
       var _hasError1 = false;
       try {
@@ -138,8 +114,8 @@ function anonymous(name, age, _callback) {
           ;
         } else {
           var _tap2 = _taps[2];
-          _interceptors[0].tap(_context, _tap2);
-          _interceptors[1].tap(_context, _tap2);
+          _interceptors[0].tap(_tap2);
+          _interceptors[1].tap(_tap2);
           var _fn2 = _x[2];
           var _hasError2 = false;
           try {
@@ -160,5 +136,4 @@ function anonymous(name, age, _callback) {
       }
     }
   }
-
 }

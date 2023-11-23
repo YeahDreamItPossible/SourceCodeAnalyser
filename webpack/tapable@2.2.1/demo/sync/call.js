@@ -4,33 +4,30 @@ const hook = new tapable.SyncHook(['name', 'age'], 'MySyncHook')
 
 hook.tap({
 	name: 'before',
-	context: true
+	state: 10
 }, (name, age) => {
 	console.log('before: ', name, age)
 })
 
-hook.tap('after', (name, age) => {
+hook.tap({
+	name: 'after',
+	stage: 20
+}, (name, age) => {
 	console.log('after: ', name, age)
 })
 
-let uid = 0
-debugger
 hook.intercept({
-	context: {},
-
 	register (options) {
 		console.log('intercept register first')
-		options.uid = ++uid
 		return options
 	},
 
-	call (context, options) {
-		console.log('intercept call first: ', context, options)
+	call (options) {
+		console.log('intercept call first: ', options)
 	},
 
-	tap (context, options) {
-		context.uid = uid
-		console.log('intercept tap first: ', context, options)
+	tap (options) {
+		console.log('intercept tap first: ', options)
 	},
 
 	error (err) {
@@ -47,21 +44,17 @@ hook.intercept({
 })
 
 hook.intercept({
-	context: {},
-
 	register (options) {
 		console.log('intercept register second')
-		options.uid = ++uid
 		return options
 	},
 
-	call (context, options) {
-		console.log('intercept call second: ', context, options)
+	call (options) {
+		console.log('intercept call second: ', options)
 	},
 
-	tap (context, options) {
-		context.uid = ++uid
-		console.log('intercept tap second: ', context, options)
+	tap (options) {
+		console.log('intercept tap second: ', options)
 	},
 
   error (err) {
@@ -77,55 +70,39 @@ hook.intercept({
 	}
 })
 
-// hook.call('Lee', 20)
+hook.call('Lee', 20)
 // 输出:
 // intercept register first
 // intercept register first
 // intercept register second
 // intercept register second
-// intercept call first:  {} Lee
-// intercept call second:  {} Lee
-// intercept tap first:  { uid: 4 } {
-//   type: 'sync',
-//   fn: [Function (anonymous)],
-//   name: 'before',
-//   context: true,
-//   uid: 3
-// }
-// intercept tap second:  { uid: 5 } {
-//   type: 'sync',
-//   fn: [Function (anonymous)],
-//   name: 'before',
-//   context: true,
-//   uid: 3
-// }
-// before:  { uid: 5 } Lee
-// intercept tap first:  { uid: 5 } { type: 'sync', fn: [Function (anonymous)], name: 'after', uid: 4 }
-// intercept tap second:  { uid: 6 } { type: 'sync', fn: [Function (anonymous)], name: 'after', uid: 4 }
+// intercept call first:  Lee
+// intercept call second:  Lee
+// intercept tap first:  { type: 'sync', fn: [Function (anonymous)], name: 'before', state: 10 }
+// intercept tap second:  { type: 'sync', fn: [Function (anonymous)], name: 'before', state: 10 }
+// before:  Lee 20
+// intercept tap first:  { type: 'sync', fn: [Function (anonymous)], name: 'after', stage: 20 }
+// intercept tap second:  { type: 'sync', fn: [Function (anonymous)], name: 'after', stage: 20 }
 // after:  Lee 20
-// intercept tap first:  done
-// intercept tap second:  done
 
-// console.log(hook.call.toString())
+console.log(hook.call.toString())
 // 输出:
 function anonymous(name, age) {
-  "use strict";
-  var _context = {};
-  var _x = this._x;
-  var _taps = this.taps;
-  var _interceptors = this.interceptors;
-  _interceptors[0].call(_context, name, age);
-  _interceptors[1].call(_context, name, age);
-  var _tap0 = _taps[0];
-  _interceptors[0].tap(_context, _tap0);
-  _interceptors[1].tap(_context, _tap0);
-  var _fn0 = _x[0];
-  _fn0(_context, name, age);
-  var _tap1 = _taps[1];
-  _interceptors[0].tap(_context, _tap1);
-  _interceptors[1].tap(_context, _tap1);
-  var _fn1 = _x[1];
-  _fn1(name, age);
-  _interceptors[0].done();
-  _interceptors[1].done();
+	"use strict";
+	var _context;
+	var _x = this._x;
+	var _taps = this.taps;
+	var _interceptors = this.interceptors;
+	_interceptors[0].call(name, age);
+	_interceptors[1].call(name, age);
+	var _tap0 = _taps[0];
+	_interceptors[0].tap(_tap0);
+	_interceptors[1].tap(_tap0);
+	var _fn0 = _x[0];
+	_fn0(name, age);
+	var _tap1 = _taps[1];
+	_interceptors[0].tap(_tap1);
+	_interceptors[1].tap(_tap1);
+	var _fn1 = _x[1];
+	_fn1(name, age);
 }

@@ -1,14 +1,14 @@
 const tapable = require('tapable')
 
-const hook = new tapable.SyncHook(['name', 'age'], 'MySyncHook')
+const hook = new tapable.AsyncSeriesHook(['name', 'age'], 'MySyncHook')
 
-hook.tap({
-	name: 'before'
-}, (name, age) => {
+hook.tap('before', (name, age) => {
 	console.log('before: ', name, age)
 })
 
-hook.tap('after', (name, age) => {
+hook.tap({
+	name: 'after',
+}, (name, age) => {
 	console.log('after: ', name, age)
 })
 
@@ -66,12 +66,11 @@ hook.intercept({
   }
 })
 
-hook.callAsync('Lee', 20, (err, res) => {
-	if (err) {
-		console.log('cb error: ', err)
-		return
-	}
-	console.log('cb result: ', res)
+// 这里的回调函数 除了error参数 是没有result参数的
+hook.promise('Lee', 20).then((res => {
+  console.log('over: ', res)
+})).catch(err => {
+  console.log('over error: ', err)
 })
 // 输出
 // intercept register first
@@ -86,43 +85,55 @@ hook.callAsync('Lee', 20, (err, res) => {
 // intercept tap first:  { type: 'sync', fn: [Function (anonymous)], name: 'after' }
 // intercept tap second:  { type: 'sync', fn: [Function (anonymous)], name: 'after' }
 // after:  Lee 20
-// cb result:  undefined
+// over:  undefined
 
-console.log(hook.callAsync.toString())
+console.log(hook.promise.toString())
 // 输出
-function anonymous(name, age, _callback) {
-  'use strict'
-  var _context
-  var _x = this._x
-  var _taps = this.taps
-  var _interceptors = this.interceptors
-  _interceptors[0].call(name, age)
-  _interceptors[1].call(name, age)
-  var _tap0 = _taps[0]
-  _interceptors[0].tap(_tap0)
-  _interceptors[1].tap(_tap0)
-  var _fn0 = _x[0]
-  var _hasError0 = false
-  try {
-    _fn0(name, age)
-  } catch (_err) {
-    _hasError0 = true
-    _callback(_err)
-  }
-  if (!_hasError0) {
-    var _tap1 = _taps[1]
-    _interceptors[0].tap(_tap1)
-    _interceptors[1].tap(_tap1)
-    var _fn1 = _x[1]
-    var _hasError1 = false
+function anonymous(name, age) {
+  "use strict";
+  return new Promise((_resolve, _reject) => {
+    var _sync = true;
+    function _error(_err) {
+      if (_sync)
+        _resolve(Promise.resolve().then(() => { throw _err; }));
+      else
+        _reject(_err);
+    };
+    var _context;
+    var _x = this._x;
+    var _taps = this.taps;
+    var _interceptors = this.interceptors;
+    _interceptors[0].call(name, age);
+    _interceptors[1].call(name, age);
+    var _tap0 = _taps[0];
+    _interceptors[0].tap(_tap0);
+    _interceptors[1].tap(_tap0);
+    var _fn0 = _x[0];
+    var _hasError0 = false;
     try {
-      _fn1(name, age)
+      _fn0(name, age);
     } catch (_err) {
-      _hasError1 = true
-      _callback(_err)
+      _hasError0 = true;
+      _error(_err);
     }
-    if (!_hasError1) {
-      _callback()
+    if (!_hasError0) {
+      var _tap1 = _taps[1];
+      _interceptors[0].tap(_tap1);
+      _interceptors[1].tap(_tap1);
+      var _fn1 = _x[1];
+      var _hasError1 = false;
+      try {
+        _fn1(name, age);
+      } catch (_err) {
+        _hasError1 = true;
+        _error(_err);
+      }
+      if (!_hasError1) {
+        _resolve();
+      }
     }
-  }
+    _sync = false;
+  });
 }
+
+
