@@ -1088,7 +1088,6 @@ class Compiler {
 		// 串行使用插件(此处插件根据不同情况 使用较多 可以跳过)
 		// ChunkPrefetchPreloadPlugin
 		// ModuleInfoHeaderPlugin
-
 		// EvalDevToolModulePlugin
 		// JavascriptModulesPlugin
 		// JsonModulesPlugin
