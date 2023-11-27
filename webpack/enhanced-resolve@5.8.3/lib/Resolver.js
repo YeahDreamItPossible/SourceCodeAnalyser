@@ -144,15 +144,19 @@ class Resolver {
 		this.fileSystem = fileSystem;
 		this.options = options;
 		this.hooks = {
+			// 每执行一个插件都会调用
 			/** @type {SyncHook<[ResolveStepHook, ResolveRequest], void>} */
 			resolveStep: new SyncHook(["hook", "request"], "resolveStep"),
+			// 没有找到具体文件或目录
 			/** @type {SyncHook<[ResolveRequest, Error]>} */
 			noResolve: new SyncHook(["request", "error"], "noResolve"),
+			// 开始解析
 			/** @type {ResolveStepHook} */
 			resolve: new AsyncSeriesBailHook(
 				["request", "resolveContext"],
 				"resolve"
 			),
+			// 解析完成
 			/** @type {AsyncSeriesHook<[ResolveRequest, ResolveContext]>} */
 			result: new AsyncSeriesHook(["result", "resolveContext"], "result")
 		};
@@ -411,7 +415,7 @@ class Resolver {
 			// 主要调用resolver.parse
 
 			// DescriptionFilePlugin
-			// 
+			//
 			return hook.callAsync(request, innerContext, (err, result) => {
 				if (err) return callback(err);
 				if (result) return callback(null, result);
