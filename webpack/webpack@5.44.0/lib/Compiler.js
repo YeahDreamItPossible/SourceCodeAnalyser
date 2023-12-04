@@ -242,6 +242,7 @@ class Compiler {
 		/** @type {ResolverFactory} */
 		this.resolverFactory = new ResolverFactory();
 
+		// 日志
 		this.infrastructureLogger = undefined;
 
 		/** @type {WebpackOptions} */
