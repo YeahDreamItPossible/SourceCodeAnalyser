@@ -1343,6 +1343,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					if (currentProfile !== undefined) {
 						currentProfile.markBuildingEnd();
 					}
+					// 空调用
 					this.hooks.stillValidModule.call(module);
 					return callback();
 				}

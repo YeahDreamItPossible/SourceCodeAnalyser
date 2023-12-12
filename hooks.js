@@ -15,7 +15,7 @@ thisCompilation               // 主要是给 compilation hooks 不同 hook 注�
 compilation                   // 主要是给 compilation hooks 不同 hook 注册函数
 make                          // 添加入口 开始编译 主要是调用 compilation.addEntry
 		addEntry                // 空调用 标记
-		buildModule
+		buildModule							// 空调用
 		normalModuleLoader
 		succeedModule
 		...(循环 buildModule normalModuleLoader succeedModule)
