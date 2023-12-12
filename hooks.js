@@ -124,10 +124,10 @@ afterEmit       // 直接执行回调
 `;
 
 const compilation = `
-	addEntry
-		_addEntryItem
-			addModuleTree
-				handleModuleCreation
+	addEntry(添加多个入口 如多页面应用)(入参: context entry options callback)
+		_addEntryItem(依次添加单个入口)
+			addModuleTree(根据 dep 找到对应 factory)
+				handleModuleCreation(构建模块 该函数可递归调用)
 					factorizeModule
 						_factorizeModule
 							addModule
@@ -159,6 +159,28 @@ const compilation = `
 						getPathWithInfo
 						emitAsset
 `;
+
+const normalModuleFactoryHooks = `
+beforeResolve(直接执行回调)
+	factorize
+		resolve(获取loaders)
+			afterResolve(直接执行回调)
+				createModule(直接执行回调, 创建 NormalModule)
+					module(SideEffectsFlagPlugin)
+					resolveForScheme
+					createParser
+					parser
+					createGenerator
+					generator
+`
+
+/*
+* 创建ModuleTree
+*		factorize module (根据 resource path 构建module, 并缓存 resovler parser generator)
+*			add module (缓存module)
+*				build module
+*					process moduleDependencies
+*/
 
 
 // Relation

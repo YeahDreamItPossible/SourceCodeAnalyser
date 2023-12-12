@@ -1051,6 +1051,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			)
 		};
 
+		// 缓存
 		this._modulesCache = this.getCache("Compilation/modules");
 		this._assetsCache = this.getCache("Compilation/assets");
 		this._codeGenerationCache = this.getCache("Compilation/codeGeneration");
@@ -1633,6 +1634,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						return callback(err);
 					}
 
+					// 构建module与dependency 和 module与module 关系
 					for (let i = 0; i < dependencies.length; i++) {
 						const dependency = dependencies[i];
 						moduleGraph.setResolvedModule(
@@ -1646,7 +1648,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						module,
 						originModule !== undefined ? originModule : null
 					);
-					
+
 					if (module !== newModule) {
 						if (currentProfile !== undefined) {
 							const otherProfile = moduleGraph.getProfile(module);
@@ -1658,6 +1660,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						}
 					}
 
+					// TODO:
 					// Check for cycles when build is trigger inside another build
 					let creatingModuleDuringBuildSet = undefined;
 					if (!recursive && this.buildQueue.isProcessing(originModule)) {

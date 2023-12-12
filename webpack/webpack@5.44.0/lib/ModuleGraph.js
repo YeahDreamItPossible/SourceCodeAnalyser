@@ -79,7 +79,7 @@ class ModuleGraphModule {
 		/** @type {ExportsInfo} */
 		this.exports = new ExportsInfo();
 
-		// 
+		//
 		/** @type {number} */
 		this.preOrderIndex = null;
 		/** @type {number} */
@@ -176,7 +176,7 @@ class ModuleGraph {
 	 * @param {Module} module the referenced module
 	 * @returns {void}
 	 */
-	// NOTE: 
+	// 构建module与dependency 和 module与module 关系
 	setResolvedModule(originModule, dependency, module) {
 		const connection = new ModuleGraphConnection(
 			originModule,

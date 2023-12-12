@@ -217,6 +217,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
+		// 内置资源处理
 		new JavascriptModulesPlugin().apply(compiler);
 		new JsonModulesPlugin().apply(compiler);
 		new AssetModulesPlugin().apply(compiler);

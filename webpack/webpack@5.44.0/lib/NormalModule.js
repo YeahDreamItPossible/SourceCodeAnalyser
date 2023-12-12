@@ -244,31 +244,35 @@ class NormalModule extends Module {
 		super(type, getContext(resource), layer);
 
 		// Info from Factory
-		// 模块路径(绝对路径)
+		// 该路径包括了loaders路径和资源路径
 		/** @type {string} */
 		this.request = request;
 		//
 		/** @type {string} */
 		this.userRequest = userRequest;
-		//
+		// 模块路径(绝对路径)
 		/** @type {string} */
 		this.rawRequest = rawRequest;
 
 		/** @type {boolean} */
 		this.binary = /^(asset|webassembly)\b/.test(type);
+
 		/** @type {Parser} */
 		this.parser = parser;
 		this.parserOptions = parserOptions;
+
 		/** @type {Generator} */
 		this.generator = generator;
 		this.generatorOptions = generatorOptions;
+
 		// 路径
 		/** @type {string} */
 		this.resource = resource;
 		this.resourceResolveData = resourceResolveData;
 		/** @type {string | undefined} */
 		this.matchResource = matchResource;
-		// loader
+
+		// loaders
 		/** @type {LoaderItem[]} */
 		this.loaders = loaders;
 		if (resolveOptions !== undefined) {

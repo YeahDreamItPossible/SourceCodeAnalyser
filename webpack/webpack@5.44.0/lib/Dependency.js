@@ -180,6 +180,7 @@ class Dependency {
 	/**
 	 * @returns {string | null} an identifier to merge equal requests
 	 */
+	// 获取资源标识符
 	getResourceIdentifier() {
 		return null;
 	}
@@ -190,6 +191,7 @@ class Dependency {
 	 * @param {ModuleGraph} moduleGraph module graph
 	 * @returns {never} throws error
 	 */
+	// 获取关联的模块和输出
 	getReference(moduleGraph) {
 		throw new Error(
 			"Dependency.getReference was removed in favor of Dependency.getReferencedExports, ModuleGraph.getModule and ModuleGraph.getConnection().active"

@@ -899,6 +899,7 @@ class Compiler {
 	emitRecords(callback) {
 		if (!this.recordsOutputPath) return callback();
 
+		// 写入文件
 		const writeFile = () => {
 			this.outputFileSystem.writeFile(
 				this.recordsOutputPath,
@@ -923,6 +924,7 @@ class Compiler {
 			);
 		};
 
+		// 获取文件目录
 		const recordsOutputPathDirectory = dirname(
 			this.outputFileSystem,
 			this.recordsOutputPath
@@ -930,6 +932,7 @@ class Compiler {
 		if (!recordsOutputPathDirectory) {
 			return writeFile();
 		}
+		// 创建文件目录
 		mkdirp(this.outputFileSystem, recordsOutputPathDirectory, err => {
 			if (err) return callback(err);
 			writeFile();
@@ -1071,9 +1074,13 @@ class Compiler {
 		compilation.name = this.name;
 		compilation.records = this.records;
 
+		// TODO: 有空研究下 thisCompilation 和 compilation hook之间的区别
 		// thisCompilation 和 compilation
 		// 主要是给 compilation hooks 不同 hook 注册函数
 
+		// 根据官方说明
+		// 1. 当初始化compilation后 在发送compilation events前
+		// 2. 此hooks 不会被复制到 child compilers中
 		// 串行 使用插件
 		// ArrayPushCallbackChunkFormatPlugin
 		// JsonpChunkLoadingPlugin
@@ -1086,7 +1093,7 @@ class Compiler {
 		// ResolverCachePlugin
 		this.hooks.thisCompilation.call(compilation, params);
 
-		// 串行使用插件(此处插件根据不同情况 使用较多 可以跳过)
+		// 串行使用插件
 		// ChunkPrefetchPreloadPlugin
 		// ModuleInfoHeaderPlugin
 		// EvalDevToolModulePlugin

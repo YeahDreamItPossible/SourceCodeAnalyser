@@ -238,6 +238,8 @@ class NormalModuleFactory extends ModuleFactory {
 			)
 		});
 		this.resolverFactory = resolverFactory;
+
+		// module rules
 		this.ruleSet = ruleSetCompiler.compile([
 			{
 				rules: options.defaultRules
@@ -255,8 +257,10 @@ class NormalModuleFactory extends ModuleFactory {
 		this.fs = fs;
 		this._globalParserOptions = options.parser;
 		this._globalGeneratorOptions = options.generator;
+		// Map<Type, WeakMap<ParserOptions, Parser>
 		/** @type {Map<string, WeakMap<Object, TODO>>} */
 		this.parserCache = new Map();
+		// Map<Type, WeakMap<GeneratorOptions, Generator>
 		/** @type {Map<string, WeakMap<Object, Generator>>} */
 		this.generatorCache = new Map();
 		/** @type {Set<Module>} */
@@ -355,9 +359,13 @@ class NormalModuleFactory extends ModuleFactory {
 				let matchResourceData = undefined;
 				/** @type {string} */
 				let requestWithoutMatchResource = request;
+				// TODO: 这种暂时没遇到
+				// 以 [任意字母,除了!]{1}!=! 开头
+				// MATCH_RESOURCE_REGEX = /^([^!]+)!=!/
 				const matchResourceMatch = MATCH_RESOURCE_REGEX.exec(request);
 				if (matchResourceMatch) {
 					let matchResource = matchResourceMatch[1];
+					// 如果是相对路径 则转化为绝对路径
 					if (matchResource.charCodeAt(0) === 46) {
 						// 46 === ".", 47 === "/"
 						const secondChar = matchResource.charCodeAt(1);
@@ -378,6 +386,7 @@ class NormalModuleFactory extends ModuleFactory {
 					);
 				}
 
+				// 前置 后置 普通loader 和行内loader
 				const firstChar = requestWithoutMatchResource.charCodeAt(0);
 				const secondChar = requestWithoutMatchResource.charCodeAt(1);
 				const noPreAutoLoaders = firstChar === 45 && secondChar === 33; // startsWith "-!"
@@ -389,6 +398,8 @@ class NormalModuleFactory extends ModuleFactory {
 					)
 					.split(/!+/);
 				const unresolvedResource = rawElements.pop();
+				// 获取所有的loaders
+				// 解析每个loader的options
 				const elements = rawElements.map(identToLoaderRequest);
 
 				const resolveContext = {
@@ -444,6 +455,7 @@ class NormalModuleFactory extends ModuleFactory {
 						stringifyLoadersAndResource(loaders, resourceData.resource);
 
 					const resourceDataForRules = matchResourceData || resourceData;
+					// 通过匹配来获取 loaders
 					const result = this.ruleSet.exec({
 						resource: resourceDataForRules.path,
 						realResource: resourceData.path,
@@ -459,6 +471,7 @@ class NormalModuleFactory extends ModuleFactory {
 						compiler: contextInfo.compiler,
 						issuerLayer: contextInfo.issuerLayer || ""
 					});
+					// loaders分类
 					const settings = {};
 					const useLoadersPost = [];
 					const useLoaders = [];
@@ -556,6 +569,8 @@ class NormalModuleFactory extends ModuleFactory {
 						}
 						callback();
 					});
+
+					// 后置loaders
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -567,6 +582,7 @@ class NormalModuleFactory extends ModuleFactory {
 							continueCallback(err);
 						}
 					);
+					// 正常loaders
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -578,6 +594,7 @@ class NormalModuleFactory extends ModuleFactory {
 							continueCallback(err);
 						}
 					);
+					// 前置loaders
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -591,6 +608,8 @@ class NormalModuleFactory extends ModuleFactory {
 					);
 				});
 
+				// TODO:
+				// 赋值loaders
 				this.resolveRequestArray(
 					contextInfo,
 					context,
