@@ -160,6 +160,15 @@ const compilation = `
 						emitAsset
 `;
 
+const getCompilationHooks = `
+addEntry
+buildModule
+normalModuleLoader
+  failedModule
+succeedModule
+...(循环 buildModule normalModuleLoader succeedModule)
+`
+
 const normalModuleFactoryHooks = `
 beforeResolve(直接执行回调)
 	factorize

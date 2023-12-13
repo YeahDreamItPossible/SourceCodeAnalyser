@@ -192,6 +192,7 @@ const ruleSetCompiler = new RuleSetCompiler([
 	new UseEffectRulePlugin()
 ]);
 
+// 主要作用是 1. create module 2. get (resolver, parser, generator)
 class NormalModuleFactory extends ModuleFactory {
 	/**
 	 * @param {Object} param params

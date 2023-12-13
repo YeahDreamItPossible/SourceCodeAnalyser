@@ -71,6 +71,7 @@ class ModuleGraphModule {
 		/** @type {Set<ModuleGraphConnection> | undefined} */
 		this.outgoingConnections = undefined;
 
+		// ParentModule
 		/** @type {Module | null} */
 		this.issuer = undefined;
 
@@ -149,6 +150,7 @@ class ModuleGraph {
 	 * @param {Module} module parent module
 	 * @returns {void}
 	 */
+	// 设置dependency的父module 和 父dependenciesBlock
 	setParents(dependency, block, module) {
 		dependency._parentDependenciesBlock = block;
 		dependency._parentModule = module;

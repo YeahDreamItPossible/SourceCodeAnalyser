@@ -3296,6 +3296,10 @@ class JavascriptParser extends Parser {
 		this.semicolons = semicolons;
 		this.statementPath = [];
 		this.prevStatement = undefined;
+
+		// HarmonyDetectionParserPlugin
+		// UseStrictPlugin
+		// DefinePlugin
 		if (this.hooks.program.call(ast, comments) === undefined) {
 			this.detectMode(ast.body);
 			this.preWalkStatements(ast.body);
@@ -3304,6 +3308,9 @@ class JavascriptParser extends Parser {
 			this.prevStatement = undefined;
 			this.walkStatements(ast.body);
 		}
+
+		// JavascriptParser
+		// JavascriptMetaInfoPlugin
 		this.hooks.finish.call(ast, comments);
 		this.scope = oldScope;
 		/** @type {ParserState} */
