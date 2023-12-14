@@ -2255,9 +2255,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			this.logger.time("report dependency errors and warnings");
 			this.moduleGraph.freeze();
 			// NOTE:
-			// 收集 errors 和 warning
+			// 收集module及module中的dependencies中的 errors 和 warning
 			for (const module of modules) {
+				// 递归收集module中的dependencies中的warnings 和 errors
 				this.reportDependencyErrorsAndWarnings(module, [module]);
+				// 收集module中的warnings 和 errors
 				const errors = module.getErrors();
 				if (errors !== undefined) {
 					for (const error of errors) {
@@ -2365,6 +2367,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			this.namedChunkGroups.set(name, entrypoint);
 			this.entrypoints.set(name, entrypoint);
 			this.chunkGroups.push(entrypoint);
+
+			// chunkGroup.chunks.push(chunk)
+			// chunk._groups.push(entrypoint)
 			connectChunkGroupAndChunk(entrypoint, chunk);
 
 			for (const dep of [...this.globalEntry.dependencies, ...dependencies]) {
@@ -2781,6 +2786,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 	 * @param {DependenciesBlock[]} blocks blocks to report from
 	 * @returns {void}
 	 */
+	// 递归收集module中的dependencies中的warnings 和 errors
 	reportDependencyErrorsAndWarnings(module, blocks) {
 		for (let indexBlock = 0; indexBlock < blocks.length; indexBlock++) {
 			const block = blocks[indexBlock];

@@ -34,3 +34,6 @@ function createCOmpiler(options) {
   // hooks调用
   // compiler.hooks.initialize.call();
 }
+
+
+ModuleGraph

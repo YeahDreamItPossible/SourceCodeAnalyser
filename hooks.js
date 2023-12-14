@@ -20,18 +20,12 @@ make                          // 添加入口 开始编译 主要是调用 compi
 		succeedModule
 		...(循环 buildModule normalModuleLoader succeedModule)
 finishMake
-		log
 		finishModules
-		log
 		seal                    // 主要是收集errors 和 warnings
 		optimizeDependencies    // 仍然是收集errors 和 warnings
-		log
 		afterOptimizeDependencies   // 空调用
-		log
 		beforeChunks            // 空调用
-		log
 		afterChunks             // 空调用 (在beforeChunks 和 afterChunks 完成 chunks)
-		log
 		optimize                // 空调用
 		optimizeModules         // 空调用
 		afterOptimizeModules    // 空调用
@@ -42,7 +36,6 @@ finishMake
 														// MergeDuplicateChunksPlugin
 														// SplitChunksPlugin
 														// RemoveEmptyChunksPlugin
-		log
 		afterOptimizeChunks     // 空调用
 		optimizeTree            // 直接执行回调
 		afterOptimizeTree       // 空调用
@@ -62,64 +55,41 @@ finishMake
 		recordModules
 		recordChunks
 		optimizeCodeGeneration
-		log
 		beforeModuleHash
-		log
 		afterModuleHash
-		log
 		beforeCodeGeneration
-		log
 		afterCodeGeneration
-		log
 		beforeRuntimeRequirements
 		additionalModuleRuntimeRequirements
 		...
 		additionalTreeRuntimeRequirements
 		runtimeModule
 		afterRuntimeRequirements
-		log
 		beforeHash
-		log
-		log
 		chunkHash
 		contentHash
-		log
-		log
 		fullHash
-		log
-		log
 		afterHash
-		log
-		log
 		recordHash
-		log
 		beforeModuleAssets
-		log
 		shouldGenerateChunkAssets
 		beforeChunkAssets
 		renderManifest
 		assetPath
 		chunkAsset
-		log
 		optimizeAssets
 		processAssets
 		afterOptimizeAssets
 		afterProcessAssets
-		log
 		record
 		needAdditionalSeal
 		afterSeal
-		log
-		...
-		log
 afterCompile    // 直接执行回调
-		log
 shouldEmit      // 空调用
 emit            // 直接执行回调 此回调函数中 创建目标目录 并输出结果
 		assetPath
 assetEmitted    // 输出每个文件后
 afterEmit       // 直接执行回调
-		log
 		needAdditionalPass
 `;
 
@@ -167,6 +137,15 @@ normalModuleLoader
   failedModule
 succeedModule
 ...(循环 buildModule normalModuleLoader succeedModule)
+
+finishModules(ResolverCachePlugin InferAsyncModulesPlugin FlagDependencyExportsPlugin)
+seal(WarnCaseSensitiveModulesPlugin 对模块路径小写后 判断是否有重复)
+
+// 优化开始
+optimizeDependencies(SideEffectsFlagPlugin)
+afterOptimizeDependencies(空调用)
+
+beforeChunks(空调用)
 `
 
 const normalModuleFactoryHooks = `
@@ -183,7 +162,7 @@ beforeResolve(直接执行回调)
 					generator
 `
 
-/*
+/**
 * 创建ModuleTree
 *		factorize module (根据 resource path 构建module, 并缓存 resovler parser generator)
 *			add module (缓存module)
@@ -191,6 +170,50 @@ beforeResolve(直接执行回调)
 *					process moduleDependencies
 */
 
+
+/**
+ * ModuleGraph
+ * 主要描述了依赖和模块以及模块之间的图谱关系
+ * _moduleMap Map<Module, ModuleGraphModule>
+ * _dependencyMap Map<Dependency, ModuleGraphConnection>
+ * 	
+ * ModuleGraphModule 
+ * 	主要描述了模块与模块之间的关系 
+ * 	1. 引用当前模块的父模块集合 
+ * 	2. 当前模块引用的字模块集合
+ * 	
+ * ModuleGraphConnection 
+ * 	描述了模块与依赖之间的关系 
+ * 	以依赖为主 
+ * 	引用当前依赖的模块 
+ * 	引用当前依赖的模块的父模块
+ */
+
+/**
+ * Chunk
+ * _groups Set<ChunkGroup>
+ */
+
+/**
+ * ChunkGroup
+ * chunks Array<Chunk>
+ */
+
+/**
+ * Entrypoint extends ChunkGroup
+ * _runtimeChunk Chunk
+ * _entrypointChunk Chunk
+ */
+
+/**
+ * ChunkGraph
+ * _modules WeakMap<Module, ChunkGraphModule>
+ * _chunks  WeakMap<Chunk, ChunkGraphChunk>
+ * _blockChunkGroups WeakMap<AsyncDependenciesBlock, ChunkGroup>
+ * 
+ * ChunkGraphModule
+ * ChunkGraphChunk
+ */
 
 // Relation
 

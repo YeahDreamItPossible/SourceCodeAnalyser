@@ -40,6 +40,7 @@ class Entrypoint extends ChunkGroup {
 		/** @type {Chunk=} */
 		this._entrypointChunk = undefined;
 
+		// 标识
 		/** @type {boolean} */
 		this._initial = initial;
 	}

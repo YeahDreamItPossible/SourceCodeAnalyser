@@ -81,7 +81,7 @@ class Chunk {
 		/** @type {boolean} */
 		this.preventIntegration = false;
 
-		// 输出文件模板
+		// 输出文件模板 output.filename
 		/** @type {(string | function(PathData, AssetInfo=): string)?} */
 		this.filenameTemplate = undefined;
 

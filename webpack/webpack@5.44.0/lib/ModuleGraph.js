@@ -91,6 +91,7 @@ class ModuleGraphModule {
 		/** @type {ModuleProfile} */
 		this.profile = undefined;
 
+		// 标识当前模块是异步模块
 		/** @type {boolean} */
 		this.async = false;
 	}

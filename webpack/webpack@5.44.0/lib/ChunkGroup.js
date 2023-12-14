@@ -98,7 +98,7 @@ class ChunkGroup {
 		/** @type {Chunk[]} */
 		this.chunks = [];
 
-		// 存放模块
+		// 存放模块和依赖
 		/** @type {OriginRecord[]} */
 		this.origins = [];
 
