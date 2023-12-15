@@ -2411,6 +2411,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				modulesList.push(module);
 			}
 		}
+
+		// 加工 entry.[].dependOn 和 entry.[].runtime
 		const runtimeChunks = new Set();
 		outer: for (const [
 			name,
@@ -2488,7 +2490,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 
 		// TODO:
-		// 这一步好像很关键 有空好好研究研究
+		// 为什么要再次手动构建chunkGraph 好好研究研究
 		buildChunkGraph(this, chunkGraphInit);
 
 		// 空调用

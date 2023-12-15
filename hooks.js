@@ -16,8 +16,8 @@ compilation                   // 主要是给 compilation hooks 不同 hook 注�
 make                          // 添加入口 开始编译 主要是调用 compilation.addEntry
 		addEntry                // 空调用 标记
 		buildModule							// 空调用
-		normalModuleLoader
-		succeedModule
+		normalModuleLoader			// 废弃
+		succeedModule						// 空调用
 		...(循环 buildModule normalModuleLoader succeedModule)
 finishMake
 		finishModules
@@ -130,12 +130,12 @@ const compilation = `
 						emitAsset
 `;
 
-const getCompilationHooks = `
-addEntry
-buildModule
-normalModuleLoader
+const compilationHooks = `
+addEntry(空调用)
+buildModule(空调用)
+normalModuleLoader(废弃)
   failedModule
-succeedModule
+succeedModule(空调用)
 ...(循环 buildModule normalModuleLoader succeedModule)
 
 finishModules(ResolverCachePlugin InferAsyncModulesPlugin FlagDependencyExportsPlugin)
@@ -146,6 +146,24 @@ optimizeDependencies(SideEffectsFlagPlugin)
 afterOptimizeDependencies(空调用)
 
 beforeChunks(空调用)
+afterChunks(空调用 在beforeChunks 和 afterChunks 完成 chunks)
+
+optimize(空调用)
+optimizeModules(空调用)
+afterOptimizeModules(空调用)
+
+optimizeChunks()
+afterOptimizeChunks(空调用)
+
+optimizeTree(直接执行回调)
+afterOptimizeTree(空调用)
+
+optimizeChunkModules(直接执行回调)
+afterOptimizeChunkModules(空调用)
+
+optimizeChunkModules
+afterOptimizeChunkModules
+
 `
 
 const normalModuleFactoryHooks = `
@@ -170,6 +188,51 @@ beforeResolve(直接执行回调)
 *					process moduleDependencies
 */
 
+/**
+ * Dependency
+ * 依赖
+ * _parentModule Module
+ * _parentDependenciesBlock DependenciesBlock
+ * loc 位置信息
+ */
+
+/**
+ * DependenciesBlock
+ * 依赖分块
+ * dependencies Array<Dependency>
+ * blocks Array<AsyncDependenciesBlock>
+ */
+
+/**
+ * AsyncDependenciesBlock extend DependenciesBlock
+ * 
+ * request
+ */
+
+/**
+ * Module extend DependenciesBlock
+ * 模块
+ * type 类型
+ * context 上下文
+ * 
+ * _resolveOptions resolver options
+ * _warnings 警告
+ * _errors 错误
+ * 
+ * buildMeta BuildMeta
+ * buildInfo
+ * 
+ * ...资源请求路径(如: request rawQuest resource)
+ * ...
+ */
+
+/**
+ * Asset
+ */
+
+/**
+ * 
+ */
 
 /**
  * ModuleGraph
@@ -181,38 +244,55 @@ beforeResolve(直接执行回调)
  * 	主要描述了模块与模块之间的关系 
  * 	1. 引用当前模块的父模块集合 
  * 	2. 当前模块引用的字模块集合
+ * income
  * 	
  * ModuleGraphConnection 
  * 	描述了模块与依赖之间的关系 
  * 	以依赖为主 
  * 	引用当前依赖的模块 
  * 	引用当前依赖的模块的父模块
+ * module 当前module
+ * resolvedModule 加工后的当前module
+ * originModule 引用当前module的module
+ * dependency 当前module的依赖
+ * resolvedOriginModule 加工后的引用当前module的module
  */
 
 /**
  * Chunk
  * _groups Set<ChunkGroup>
+ * filenameTemplate output.filename
  */
 
 /**
  * ChunkGroup
  * chunks Array<Chunk>
+ * origins Array<OriginRecord>
  */
 
 /**
- * Entrypoint extends ChunkGroup
+ * Entrypoint extend ChunkGroup
  * _runtimeChunk Chunk
  * _entrypointChunk Chunk
  */
 
 /**
+ * ChunkGraphModule
+ * 主要描述了当前module属于哪些chunk的
+ * chunks Set<Chunk>
+ * entryInChunks Set<Chunk>
+ * runtimeInChunks Set<Chunk>
+ * 
+ * ChunkGraphChunk
+ * 主要描述了当前chunk中有哪些modules的
+ * modules Set<Module>
+ * entryModules Map<Module, Entrypoint>
+ * runtimeModules Set<RuntimeModule>
+ * 
  * ChunkGraph
  * _modules WeakMap<Module, ChunkGraphModule>
  * _chunks  WeakMap<Chunk, ChunkGraphChunk>
  * _blockChunkGroups WeakMap<AsyncDependenciesBlock, ChunkGroup>
- * 
- * ChunkGraphModule
- * ChunkGraphChunk
  */
 
 // Relation

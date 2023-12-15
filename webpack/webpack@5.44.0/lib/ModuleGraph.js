@@ -85,6 +85,8 @@ class ModuleGraphModule {
 		this.preOrderIndex = null;
 		/** @type {number} */
 		this.postOrderIndex = null;
+
+		// 深度
 		/** @type {number} */
 		this.depth = null;
 
