@@ -1148,6 +1148,7 @@ module.exports = class SplitChunksPlugin {
 					// Walk through all modules
 					for (const module of compilation.modules) {
 						// Get cache group
+						// 根据module模块来获取匹配的cacheGroups
 						let cacheGroups = this.options.getCacheGroups(module, context);
 						if (!Array.isArray(cacheGroups) || cacheGroups.length === 0) {
 							continue;
