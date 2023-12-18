@@ -132,14 +132,14 @@ const compilation = `
 
 const compilationHooks = `
 addEntry(空调用)
-buildModule(空调用)
+buildModule(空调用)(在module.needBuiild回调中调用 测试module仅仅只是构建)
 normalModuleLoader(废弃)
   failedModule
-succeedModule(空调用)
+succeedModule(空调用)(在module.build回调中调用 此时已经拿到_source)
 ...(循环 buildModule normalModuleLoader succeedModule)
 
-finishModules(ResolverCachePlugin InferAsyncModulesPlugin FlagDependencyExportsPlugin)
-seal(WarnCaseSensitiveModulesPlugin 对模块路径小写后 判断是否有重复)
+finishModules(ResolverCachePlugin InferAsyncModulesPlugin FlagDependencyExportsPlugin)(compiler.finish中执行)
+seal(WarnCaseSensitiveModulesPlugin 对模块路径小写后 判断是否有重复)(compiler.seal)
 
 // 优化开始
 optimizeDependencies(SideEffectsFlagPlugin)
@@ -268,6 +268,9 @@ beforeResolve(直接执行回调)
  * ChunkGroup
  * chunks Array<Chunk>
  * origins Array<OriginRecord>
+ * _children Set<ChunkGroup> 存放子ChunkGroup
+ * _parents Set<ChunkGroup> 存放父ChunkGroup
+ * _asyncEntrypoints Set<ChunkGroup> 存放异步Entrypoint
  */
 
 /**

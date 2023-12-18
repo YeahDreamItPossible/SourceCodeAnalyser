@@ -769,6 +769,7 @@ module.exports = class SplitChunksPlugin {
 					logger.time("prepare");
 					const chunkGraph = compilation.chunkGraph;
 					const moduleGraph = compilation.moduleGraph;
+
 					// Give each selected chunk an index (to create strings from chunks)
 					/** @type {Map<Chunk, bigint>} */
 					const chunkIndexMap = new Map();
@@ -779,6 +780,7 @@ module.exports = class SplitChunksPlugin {
 						chunkIndexMap.set(chunk, index);
 						index = index << ONE;
 					}
+
 					/**
 					 * @param {Iterable<Chunk>} chunks list of chunks
 					 * @returns {bigint | Chunk} key of the chunks
@@ -797,6 +799,7 @@ module.exports = class SplitChunksPlugin {
 						}
 						return key;
 					};
+
 					const keyToString = key => {
 						if (typeof key === "bigint") return key.toString(16);
 						return chunkIndexMap.get(key).toString(16);
@@ -1141,6 +1144,7 @@ module.exports = class SplitChunksPlugin {
 
 					logger.time("modules");
 
+					// TODO:
 					// Walk through all modules
 					for (const module of compilation.modules) {
 						// Get cache group
@@ -1235,6 +1239,8 @@ module.exports = class SplitChunksPlugin {
 						return info.modules.size === 0;
 					};
 
+					// TODO:
+					// 筛选
 					// Filter items were size < minSize
 					for (const [key, info] of chunksInfoMap) {
 						if (removeMinSizeViolatingModules(info)) {
@@ -1254,6 +1260,7 @@ module.exports = class SplitChunksPlugin {
 					/** @type {Map<Chunk, MaxSizeQueueItem>} */
 					const maxSizeQueueMap = new Map();
 
+					// TODO:
 					while (chunksInfoMap.size > 0) {
 						// Find best matching entry
 						let bestEntryKey;
@@ -1544,6 +1551,7 @@ module.exports = class SplitChunksPlugin {
 
 					const { outputOptions } = compilation;
 
+					// TODO:
 					// Make sure that maxSize is fulfilled
 					for (const chunk of Array.from(compilation.chunks)) {
 						const chunkConfig = maxSizeQueueMap.get(chunk);
