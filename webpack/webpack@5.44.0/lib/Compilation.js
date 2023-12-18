@@ -2517,11 +2517,14 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		this.hooks.afterOptimizeModules.call(this.modules);
 
 		// 串行调用插件
-		// EnsureChunkConditionsPlugin
-		// RemoveEmptyChunksPlugin
-		// MergeDuplicateChunksPlugin
-		// SplitChunksPlugin
-		// RemoveEmptyChunksPlugin
+		// 1. EnsureChunkConditionsPlugin
+		// 针对于ExternalModule FallbackModule模块
+		// 2. RemoveEmptyChunksPlugin
+		// 移除空的chunk
+		// 此chunk没有modules && 此chunk不是runtime chunk && 此chunk没有entry modules
+		// 3. MergeDuplicateChunksPlugin
+		// 4. SplitChunksPlugin
+		// 5. RemoveEmptyChunksPlugin
 		// 在 chunk 优化阶段开始时调用
 		while (this.hooks.optimizeChunks.call(this.chunks, this.chunkGroups)) {
 			/* empty */

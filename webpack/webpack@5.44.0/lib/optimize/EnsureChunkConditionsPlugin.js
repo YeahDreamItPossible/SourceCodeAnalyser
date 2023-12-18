@@ -31,6 +31,8 @@ class EnsureChunkConditionsPlugin {
 					const chunkGroups = new Set();
 					for (const module of compilation.modules) {
 						for (const chunk of chunkGraph.getModuleChunksIterable(module)) {
+							// 针对于ExternalModule FallbackModule模块
+							// 如果该模块所属于的chunk 不包含entry modules
 							if (!module.chunkCondition(chunk, compilation)) {
 								sourceChunks.add(chunk);
 								for (const group of chunk.groupsIterable) {

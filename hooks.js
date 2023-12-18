@@ -161,6 +161,15 @@ afterOptimizeTree(空调用)
 optimizeChunkModules(直接执行回调)
 afterOptimizeChunkModules(空调用)
 
+// 串行调用插件
+// 1. EnsureChunkConditionsPlugin
+// 针对于ExternalModule FallbackModule模块
+// 2. RemoveEmptyChunksPlugin
+// 移除空的chunk
+// 此chunk没有modules && 此chunk不是runtime chunk && 此chunk没有entry modules
+// 3. MergeDuplicateChunksPlugin
+// 4. SplitChunksPlugin
+// 5. RemoveEmptyChunksPlugin
 optimizeChunkModules
 afterOptimizeChunkModules
 
