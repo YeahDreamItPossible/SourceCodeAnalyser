@@ -187,8 +187,11 @@ class ChunkGraphModule {
 		/** @type {Set<Chunk> | undefined} */
 		this.runtimeInChunks = undefined;
 
+		// Map<RuntimeChunk, ModuleHashInfo>
 		/** @type {RuntimeSpecMap<ModuleHashInfo>} */
 		this.hashes = undefined;
+
+		// TODO:
 		/** @type {string | number} */
 		this.id = null;
 		/** @type {RuntimeSpecMap<Set<string>> | undefined} */
@@ -212,7 +215,7 @@ class ChunkGraphChunk {
 		// 运行时modules
 		/** @type {SortableSet<RuntimeModule>} */
 		this.runtimeModules = new SortableSet();
-		
+
 		// TODO: 目前未看到有什么作用
 		/** @type {Set<RuntimeModule> | undefined} */
 		this.fullHashModules = undefined;

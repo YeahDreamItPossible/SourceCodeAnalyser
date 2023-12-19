@@ -244,13 +244,13 @@ class NormalModule extends Module {
 		super(type, getContext(resource), layer);
 
 		// Info from Factory
-		// 该路径包括了loaders路径和资源路径
+		// 绝对路径: 该路径包括了loaders路径和资源路径
 		/** @type {string} */
 		this.request = request;
-		//
+		// 绝对路径?
 		/** @type {string} */
 		this.userRequest = userRequest;
-		// 模块路径(绝对路径)
+		// 相对路径: 模块路径
 		/** @type {string} */
 		this.rawRequest = rawRequest;
 
@@ -265,10 +265,11 @@ class NormalModule extends Module {
 		this.generator = generator;
 		this.generatorOptions = generatorOptions;
 
-		// 路径
+		// 绝对路径: 资源路径
 		/** @type {string} */
 		this.resource = resource;
 		this.resourceResolveData = resourceResolveData;
+		//
 		/** @type {string | undefined} */
 		this.matchResource = matchResource;
 
@@ -324,6 +325,7 @@ class NormalModule extends Module {
 	 * @param {LibIdentOptions} options options
 	 * @returns {string | null} an identifier for library inclusion
 	 */
+	//
 	libIdent(options) {
 		return contextify(
 			options.context,
@@ -335,6 +337,7 @@ class NormalModule extends Module {
 	/**
 	 * @returns {string | null} absolute path which should be used for condition matching (usually the resource path)
 	 */
+	// 获取绝对路径 但不包含路径参数
 	nameForCondition() {
 		const resource = this.matchResource || this.resource;
 		const idx = resource.indexOf("?");

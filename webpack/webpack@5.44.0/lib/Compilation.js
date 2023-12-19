@@ -1019,6 +1019,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.needAdditionalPass = false;
 		/** @type {WeakSet<Module>} */
 		this.builtModules = new WeakSet();
+		// 生成代码的modules
 		/** @type {WeakSet<Module>} */
 		this.codeGeneratedModules = new WeakSet();
 		/** @type {WeakSet<Module>} */
@@ -2568,7 +2569,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					const shouldRecord = this.hooks.shouldRecord.call() !== false;
 
 					// RecordIdsPlugin
-					// 从 record 中恢复模块信息
+					// 根据compilation.records.modules设置ChunkGraphModule.id
 					this.hooks.reviveModules.call(this.modules, this.records);
 
 					// 空调用
@@ -2576,7 +2577,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					this.hooks.beforeModuleIds.call(this.modules);
 
 					// NamedModuleIdsPlugin
-					// 调用来每个模块分配一个 id
+					// 根据compilation.modules设置compilation.records.modules
+					// 同时设置 ChunkGraphModule.id
 					this.hooks.moduleIds.call(this.modules);
 
 					// 空调用
@@ -2588,7 +2590,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					this.hooks.afterOptimizeModuleIds.call(this.modules);
 
 					// RecordIdsPlugin
-					// 从 record 中恢复 chunk 信息
+					// 根据compilation.records.chunks设置chunk.id chunk.ids
 					this.hooks.reviveChunks.call(this.chunks, this.records);
 
 					// 空调用
@@ -2607,16 +2609,19 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					// chunk id 优化结束之后触发
 					this.hooks.afterOptimizeChunkIds.call(this.chunks);
 
+					// 给 Entrypoint 和 AsyncEntryponit中的Runtime Chunk 分配 chunk.id
 					this.assignRuntimeIds();
 
+					// ChunkGroups.origins 排序
+					// errors warnings排序
 					this.sortItemsWithChunkIds();
 
 					if (shouldRecord) {
 						// RecordIdsPlugin
-						// 将模块信息存储到 record 中
+						// 将compilation.modules信息存储到compilation.records.modules
 						this.hooks.recordModules.call(this.modules, this.records);
 						// RecordIdsPlugin
-						// 将 chunk 存储到 record 中
+						// 将compilation.chunks信息存储到compilation.records.chunks
 						this.hooks.recordChunks.call(this.chunks, this.records);
 					}
 
@@ -2657,7 +2662,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						// 空调用
 						this.hooks.beforeRuntimeRequirements.call();
 
-						// 感觉很重要 需要详细看看
+						// TODO:
 						this.processRuntimeRequirements();
 
 						// 空调用
@@ -2670,9 +2675,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						// 在 compilation 添加哈希（hash）之前
 						this.hooks.beforeHash.call();
 
-						// 开始hash
+						// hash
 						const codeGenerationJobs = this.createHash();
-						// hash结束
 
 						// 空调用
 						// 在 compilation 添加哈希（hash）之后
@@ -3383,7 +3387,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// ChunkGroups 排序
+	// ChunkGroups.origins 排序
 	// errors warnings排序
 	sortItemsWithChunkIds() {
 		for (const chunkGroup of this.chunkGroups) {

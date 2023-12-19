@@ -173,6 +173,65 @@ afterOptimizeChunkModules(空调用)
 optimizeChunkModules
 afterOptimizeChunkModules
 
+optimizeTree(this.chunks, this.modules)(直接执行回调)
+afterOptimizeTree(this.chunks, this.modules)(直接执行回调)
+
+optimizeChunkModules(this.chunks, this.modules)(直接执行回调)
+afterOptimizeChunkModules(this.chunks, this.modules)(直接执行回调)
+
+shouldRecord(空调用)
+
+// RecordIdsPlugin
+// 从 record 中恢复模块信息
+
+// 根据compilation.records.modules设置ChunkGraphModule.id
+reviveModules(this.modules, this.records)
+
+beforeModuleIds(this.modules)
+// NamedModuleIdsPlugin
+// TODO: 感觉主要作用是设置 ChunkGraphModule.id = module.xx
+moduleIds(this.modules)
+
+optimizeModuleIds(this.modules)(空调用)
+afterOptimizeModuleIds(this.modules)(空调用)
+
+// RecordIdsPlugin
+// 根据compilation.records.chunks设置chunk.id chunk.ids
+reviveChunks(this.chunks, this.records)
+
+beforeChunkIds(this.chunks)(空调用)
+// NamedChunkIdsPlugin
+chunkIds(this.chunks)
+
+optimizeChunkIds(this.chunks)(空调用)
+afterOptimizeChunkIds(this.chunks)(空调用)
+
+// 根据compilation.modules设置compilation.records.modules
+recordModules(this.modules, this.records)
+// 将compilation.chunks信息存储到compilation.records.chunks
+recordChunks(this.chunks, this.records)
+
+optimizeCodeGeneration()(空调用)
+
+beforeModuleHash()(空调用)
+afterModuleHash()(空调用)
+
+beforeCodeGeneration()(空调用)
+afterCodeGeneration()(空调用)
+
+beforeRuntimeRequirements()(空调用)
+afterRuntimeRequirements()(空调用)
+
+beforeHash()(空调用)
+
+// TODO:
+chunkHash
+contentHash
+fullHash
+
+afterHash()(空调用)
+
+recordHash(this.records)(空调用)
 `
 
 const normalModuleFactoryHooks = `

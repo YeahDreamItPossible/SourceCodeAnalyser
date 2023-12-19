@@ -76,6 +76,7 @@ const shortenLongString = (string, delimiter) => {
  * @param {Object=} associatedObjectForCache an object to which the cache will be attached
  * @returns {string} short module name
  */
+// 获取module short name
 const getShortModuleName = (module, context, associatedObjectForCache) => {
 	const libIdent = module.libIdent({ context, associatedObjectForCache });
 	if (libIdent) return avoidNumber(libIdent);

@@ -136,6 +136,7 @@ class Module extends DependenciesBlock {
 		this.context = context;
 		/** @type {string | null} */
 		this.layer = layer;
+		// 标识: 标识当前module是否需要Id
 		/** @type {boolean} */
 		this.needId = true;
 

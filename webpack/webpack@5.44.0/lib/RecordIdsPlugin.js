@@ -58,6 +58,7 @@ class RecordIdsPlugin {
 		 * @param {Module} module the module
 		 * @returns {string} the (portable) identifier
 		 */
+		// compilation.records.modules 路径是相对路径还是绝对路径
 		const getModuleIdentifier = module => {
 			if (portableIds) {
 				return makePathsRelative(module.identifier());

@@ -65,6 +65,7 @@ class Chunk {
 	 * @param {string=} name of chunk being created, is optional (for subclasses)
 	 */
 	constructor(name) {
+		//
 		/** @type {number | string | null} */
 		this.id = null;
 		/** @type {(number|string)[] | null} */
