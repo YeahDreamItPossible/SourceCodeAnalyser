@@ -2684,7 +2684,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 						this.logger.timeEnd("hashing");
 
-						// 该处的 codeGenerationJobs 目前好像是空数组 直接回调?
+						// 
 						this._runCodeGenerationJobs(codeGenerationJobs, err => {
 							if (err) {
 								return finalCallback(err);
@@ -2699,6 +2699,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 							this.logger.time("module assets");
 
+							// 清除上次运行时生成的assets
 							this.clearAssets();
 
 							// 空调用

@@ -232,6 +232,26 @@ fullHash
 afterHash()(空调用)
 
 recordHash(this.records)(空调用)
+
+beforeModuleAssets()(空调用)
+
+shouldGenerateChunkAssets()(空调用)
+beforeChunkAssets()(空调用)
+
+// JavascriptModulesPlugin  获得render函数
+// AssetModulesPlugin
+renderManifest([], options)
+
+assetPath
+chunkAsset(chunk, file)(空调用)
+
+optimizeAssets
+processAssets
+afterOptimizeAssets
+afterProcessAssets
+record
+needAdditionalSeal
+afterSeal
 `
 
 const normalModuleFactoryHooks = `
