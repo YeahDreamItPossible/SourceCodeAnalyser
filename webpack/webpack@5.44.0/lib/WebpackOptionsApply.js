@@ -73,6 +73,7 @@ class WebpackOptionsApply extends OptionsApply {
 		compiler.recordsOutputPath = options.recordsOutputPath || null;
 		compiler.name = options.name;
 
+		// 排除以 cdn方式 引入的依赖
 		if (options.externals) {
 			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ExternalsPlugin = require("./ExternalsPlugin");
@@ -81,6 +82,7 @@ class WebpackOptionsApply extends OptionsApply {
 			);
 		}
 
+		// externals presets
 		if (options.externalsPresets.node) {
 			const NodeTargetPlugin = require("./node/NodeTargetPlugin");
 			new NodeTargetPlugin().apply(compiler);
@@ -125,6 +127,7 @@ class WebpackOptionsApply extends OptionsApply {
 			new ExternalsPlugin("module", /^(https?:\/\/|std:)/).apply(compiler);
 		}
 
+		//
 		new ChunkPrefetchPreloadPlugin().apply(compiler);
 
 		if (typeof options.output.chunkFormat === "string") {
