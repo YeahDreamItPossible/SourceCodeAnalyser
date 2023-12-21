@@ -130,6 +130,30 @@ const compilation = `
 						emitAsset
 `;
 
+const compilerHooks = `
+environment                   // 空调用
+afterEnvironment              // 空调用
+entryOption
+afterPlugins                  // 初始化内部插件后调用
+afterResolvers                // 空调用
+initialize                    // 空调用
+beforeRun                     // 标识 compiler 开始 主要是调用 NodeEnvironmentPlugin 插件
+run                           // 直接执行回调
+normalModuleFactory           // 当创建 NormalModuleFactory 实例后
+contextModuleFactory          // 当创建 ContextModuleFactory 实例后
+beforeCompile                 // 直接执行回调
+compile                       // 主要时 从输出的bundle排除依赖(该依赖通过cdn 或者别的方式 以什么样的方式 引入)
+thisCompilation               // 主要是给 compilation hooks 不同 hook 注册函数
+compilation                   // 主要是给 compilation hooks 不同 hook 注册函数
+make                          // 添加入口 开始编译 主要是调用 compilation.addEntry
+afterCompile    // 直接执行回调
+shouldEmit      // 空调用
+emit            // 直接执行回调 此回调函数中 创建目标目录 并输出结果
+assetEmitted    // 输出每个文件后
+afterEmit       // 直接执行回调
+finishMake
+`
+
 const compilationHooks = `
 addEntry(空调用)
 buildModule(空调用)(在module.needBuiild回调中调用 测试module仅仅只是构建)
@@ -246,12 +270,18 @@ assetPath
 chunkAsset(chunk, file)(空调用)
 
 optimizeAssets
-processAssets
+
+processAssets(this.assets)(直接执行回调)
 afterOptimizeAssets
-afterProcessAssets
-record
-needAdditionalSeal
-afterSeal
+afterProcessAssets(this.assets)(空调用)
+
+record(this.records)(空调用)
+needAdditionalSeal()(空调用)
+afterSeal()(直接执行回调)
+
+
+// 如果返回true 可用于生成 stats 默认空调用
+needAdditionalPass()
 `
 
 const normalModuleFactoryHooks = `
@@ -391,3 +421,7 @@ beforeResolve(直接执行回调)
 // Dependency 位置信息
 
 Module => DependenciesBlock => Dependency => AsyncDependenciesBlock => DependenciesBlock => Dependency
+
+
+// 文件的输出是在compiler 发生的
+// compilation 仅仅是生成 asserts 信息 并不输出结果

@@ -1004,7 +1004,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Map<string, LogEntry[]>} */
 		this.logging = new Map();
 
-		// TODO: 这个地方要好好注意下
+		// DependencyConstructor => ModuleFactory
 		/** @type {Map<DepConstructor, ModuleFactory>} */
 		this.dependencyFactories = new Map();
 
@@ -1019,7 +1019,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.needAdditionalPass = false;
 		/** @type {WeakSet<Module>} */
 		this.builtModules = new WeakSet();
+
 		// 生成代码的modules
+		// 存储已经生成
 		/** @type {WeakSet<Module>} */
 		this.codeGeneratedModules = new WeakSet();
 		/** @type {WeakSet<Module>} */
@@ -2648,6 +2650,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					// 空调用
 					this.hooks.beforeCodeGeneration.call();
 
+					// 第一次代码生成主要是生成modules的code
 					this.codeGeneration(err => {
 						if (err) {
 							return finalCallback(err);
@@ -2684,7 +2687,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 						this.logger.timeEnd("hashing");
 
-						// 
+						// 第二次代码生成主要是生成webpack内部runtime code
 						this._runCodeGenerationJobs(codeGenerationJobs, err => {
 							if (err) {
 								return finalCallback(err);
@@ -2772,7 +2775,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 								this.hooks.beforeChunkAssets.call();
 
 								// TODO:
-								// 需要仔细研究研究
+								//
 								this.createChunkAssets(err => {
 									this.logger.timeEnd("create chunk assets");
 									if (err) {
@@ -4017,6 +4020,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 */
 	// NOTE:
 	// 该方法非常重要 好好研究研究
+	// render chunk
 	createChunkAssets(callback) {
 		const outputOptions = this.outputOptions;
 		const cachedSourceMap = new WeakMap();
@@ -4029,6 +4033,7 @@ This prevents using hashes of each other and should be avoided.`);
 				/** @type {RenderManifestEntry[]} */
 				let manifest;
 				try {
+					// 获取render chunk
 					manifest = this.getRenderManifest({
 						chunk,
 						hash: this.hash,
@@ -4119,6 +4124,7 @@ This prevents using hashes of each other and should be avoided.`);
 										source = alreadyWritten.source;
 									}
 								} else if (!source) {
+									// NOTE:
 									// render the asset
 									source = fileManifest.render();
 

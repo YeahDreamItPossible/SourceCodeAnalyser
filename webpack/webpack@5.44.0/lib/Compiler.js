@@ -202,8 +202,10 @@ class Compiler {
 		this.root = this;
 
 		// /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
+		// 输出路径(绝对路径)
 		/** @type {string} */
 		this.outputPath = "";
+		// 标识:
 		/** @type {Watching} */
 		this.watching = undefined;
 
@@ -217,6 +219,7 @@ class Compiler {
 		/** @type {WatchFileSystem} */
 		this.watchFileSystem = null;
 
+		//
 		/** @type {string|null} */
 		this.recordsInputPath = null;
 		/** @type {string|null} */
@@ -254,12 +257,12 @@ class Compiler {
 		// 该类好像是将 loader 的家在路径变换成 绝对路径 ??
 		this.requestShortener = new RequestShortener(context, this.root);
 
+		// 缓存
 		this.cache = new Cache();
 
 		this.compilerPath = "";
 
-		// 标识:
-		// 标识compiler是否正在运行
+		// 标识: 标识compiler是否正在运行
 		/** @type {boolean} */
 		this.running = false;
 
@@ -375,7 +378,7 @@ class Compiler {
 	// TODO webpack 6: solve this in a better way
 	// 主要是清除 ModuleGraph存储的module图 和 ChunkGraph存储的chunk图
 	_cleanupLastCompilation() {
-	// e.g. move compilation specific info from Modules into ModuleGraph
+		// e.g. move compilation specific info from Modules into ModuleGraph
 		// 移除 module 和 chunk 的依赖关系
 		if (this._lastCompilation !== undefined) {
 			for (const module of this._lastCompilation.modules) {
@@ -957,8 +960,6 @@ class Compiler {
 				if (err) return callback(err);
 
 				try {
-					// TODO:
-					// 这个地方得注意下
 					this.records = parseJson(content.toString("utf-8"));
 				} catch (e) {
 					e.message = "Cannot parse records: " + e.message;
