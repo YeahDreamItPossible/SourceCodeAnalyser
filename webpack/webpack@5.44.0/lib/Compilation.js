@@ -1760,7 +1760,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.factorizeQueue.add(options, callback);
 	}
 
-	// NOTE:
 	// 根绝 context上下文 构建模块
 	/**
 	 * @param {FactorizeModuleOptions} options options object

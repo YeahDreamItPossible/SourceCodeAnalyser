@@ -1,10 +1,16 @@
 const compilationHooks = `
-addEntry(空调用)
+// api: compilation._addEntryItem
+// 空调用
+addEntry(entry, options)
+
 buildModule(空调用)(在module.needBuiild回调中调用 测试module仅仅只是构建)
 normalModuleLoader(废弃)
   failedModule
 succeedModule(空调用)(在module.build回调中调用 此时已经拿到_source)
 ...(循环 buildModule normalModuleLoader succeedModule)
+
+// api: compilation._addEntryItem
+succeedEntry(entry, options, module)
 
 finishModules(ResolverCachePlugin InferAsyncModulesPlugin FlagDependencyExportsPlugin)(compiler.finish中执行)
 seal(WarnCaseSensitiveModulesPlugin 对模块路径小写后 判断是否有重复)(compiler.seal)
