@@ -1017,6 +1017,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.usedModuleIds = null;
 		/** @type {boolean} */
 		this.needAdditionalPass = false;
+		//
 		/** @type {WeakSet<Module>} */
 		this.builtModules = new WeakSet();
 
@@ -1251,6 +1252,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * it could be the passed one (if new), or an already existing in the compilation
 	 * @returns {void}
 	 */
+	// 缓存module
+	// compilation.modules
+	// compilation._modules
+	// ModuleGraph.setModuleGraphForModule(module, this.moduleGraph)
 	_addModule(module, callback) {
 		const identifier = module.identifier();
 		const alreadyAddedModule = this._modules.get(identifier);
@@ -1355,7 +1360,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				this.hooks.buildModule.call(module);
 				this.builtModules.add(module);
 
-				// 解析模块 获取 source 文件
+				// 解析模块 获取source文件和dependencies
 				module.build(
 					this.options,
 					this,
@@ -1664,6 +1669,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						}
 					}
 
+					// 循环依赖
 					// TODO:
 					// Check for cycles when build is trigger inside another build
 					let creatingModuleDuringBuildSet = undefined;
@@ -1766,6 +1772,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @param {ModuleCallback} callback callback
 	 * @returns {void}
 	 */
+	// 创建NormalModule
+	// NormalModuleFactory.create() => NormalModule
 	_factorizeModule(
 		{
 			currentProfile,
@@ -2060,7 +2068,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 	}
 
-	// NOTE:
 	// 暂时未发现特殊作用 仅仅收集 errors 和 warnings
 	finish(callback) {
 		this.factorizeQueue.clear();

@@ -81,6 +81,7 @@ module.exports = class ResolverFactory {
 				() => new SyncHook(["resolver", "resolveOptions", "userResolveOptions"])
 			)
 		});
+		// Map<Type, Object<direct: WeakMap<ResolveOptions, Resolver>, stringified: Map<ResolveOptionsString, Resolver>>>
 		/** @type {Map<string, ResolverCache>} */
 		this.cache = new Map();
 	}

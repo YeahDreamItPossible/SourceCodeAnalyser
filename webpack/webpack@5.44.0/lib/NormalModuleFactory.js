@@ -192,7 +192,9 @@ const ruleSetCompiler = new RuleSetCompiler([
 	new UseEffectRulePlugin()
 ]);
 
-// 主要作用是 1. create module 2. get (resolver, parser, generator)
+// 主要作用是
+// 1. get (resolver, loaders, parser, generator)
+// 2. create module
 class NormalModuleFactory extends ModuleFactory {
 	/**
 	 * @param {Object} param params
@@ -387,6 +389,7 @@ class NormalModuleFactory extends ModuleFactory {
 					);
 				}
 
+				// 此时应该是以相对路径解析loaders
 				// 前置 后置 普通loader 和行内loader
 				const firstChar = requestWithoutMatchResource.charCodeAt(0);
 				const secondChar = requestWithoutMatchResource.charCodeAt(1);
@@ -399,8 +402,8 @@ class NormalModuleFactory extends ModuleFactory {
 					)
 					.split(/!+/);
 				const unresolvedResource = rawElements.pop();
-				// 获取所有的loaders
-				// 解析每个loader的options
+				// 获取所有的loaders [{loader: String, options: Object}]
+				// 此时每个loader的loader是相对路径
 				const elements = rawElements.map(identToLoaderRequest);
 
 				const resolveContext = {
@@ -456,7 +459,7 @@ class NormalModuleFactory extends ModuleFactory {
 						stringifyLoadersAndResource(loaders, resourceData.resource);
 
 					const resourceDataForRules = matchResourceData || resourceData;
-					// 通过匹配来获取 loaders
+					// 通过匹配规则来获取自定义使用的loaders
 					const result = this.ruleSet.exec({
 						resource: resourceDataForRules.path,
 						realResource: resourceData.path,
@@ -508,6 +511,7 @@ class NormalModuleFactory extends ModuleFactory {
 						if (err) {
 							return callback(err);
 						}
+						// 筛选loaders
 						const allLoaders = postLoaders;
 						if (matchResourceData === undefined) {
 							for (const loader of loaders) allLoaders.push(loader);
@@ -609,8 +613,8 @@ class NormalModuleFactory extends ModuleFactory {
 					);
 				});
 
-				// TODO:
 				// 赋值loaders
+				// 讲每个loader的loader转化成绝对路径
 				this.resolveRequestArray(
 					contextInfo,
 					context,
@@ -673,6 +677,7 @@ class NormalModuleFactory extends ModuleFactory {
 							if (err) return continueCallback(err);
 							if (resolvedResource !== false) {
 								resourceData = {
+									// 绝对路径
 									resource: resolvedResource,
 									data: resolvedResourceResolveData,
 									...cacheParseResource(resolvedResource)

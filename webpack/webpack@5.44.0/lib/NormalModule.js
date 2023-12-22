@@ -1198,6 +1198,7 @@ class NormalModule extends Module {
 	 * @param {function(WebpackError=, boolean=): void} callback callback function, returns true, if the module needs a rebuild
 	 * @returns {void}
 	 */
+	// 模块是否需要打包
 	needBuild({ fileSystemInfo, valueCacheVersions }, callback) {
 		// build if enforced
 		if (this._forceBuild) return callback(null, true);

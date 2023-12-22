@@ -100,11 +100,14 @@ class ContextModule extends Module {}
  * 3. parsers
  * 4. generators
 */
-// parsers: 
-// javascript/auto =>
-// javascript/esm  =>
-// javascript/dynamic => JavascriptParser
-// 
+// parsers: (javascript/JavascriptModulesPlugin)
+// javascript/auto => new JavascriptParser("auto")
+// javascript/esm  => new JavascriptParser("module")
+// javascript/dynamic => new JavascriptParser("script")
+// generators: (javascript/JavascriptModulesPlugin)
+// javascript/auto => new JavascriptGenerator()
+// javascript/esm  => new JavascriptGenerator()
+// javascript/dynamic => new JavascriptGenerator()
 class NormalModuleFactory extends ModuleFactory {}
 // 
 class ContextModuleFactory extends ModuleFactory {}

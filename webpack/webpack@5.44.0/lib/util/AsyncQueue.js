@@ -111,7 +111,6 @@ class AsyncQueue {
 	 */
 	add(item, callback) {
 		if (this._stopped) return callback(new WebpackError("Queue was stopped"));
-		// NOTE:
 		// 直接执行回调
 		this.hooks.beforeAdd.callAsync(item, err => {
 			if (err) {
@@ -153,7 +152,6 @@ class AsyncQueue {
 					root._willEnsureProcessing = true;
 					setImmediate(root._ensureProcessing);
 				}
-				// NOTE:
 				// 空调用
 				this.hooks.added.call(item);
 			}
@@ -297,6 +295,7 @@ class AsyncQueue {
 	 * @returns {void}
 	 */
 	_startProcessing(entry) {
+		// 直接执行回调
 		this.hooks.beforeStart.callAsync(entry.item, err => {
 			if (err) {
 				this._handleResult(
@@ -326,7 +325,7 @@ class AsyncQueue {
 	 * @returns {void}
 	 */
 	_handleResult(entry, err, result) {
-		// NOTE: 直接执行回调
+		// 直接执行回调
 		this.hooks.result.callAsync(entry.item, err, result, hookError => {
 			const error = hookError
 				? makeWebpackError(hookError, `AsyncQueue(${this._name}).hooks.result`)
