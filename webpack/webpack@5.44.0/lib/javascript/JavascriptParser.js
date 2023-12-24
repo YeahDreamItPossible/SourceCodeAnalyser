@@ -1398,6 +1398,7 @@ class JavascriptParser extends Parser {
 	}
 
 	// Pre walking iterates the scope for variable declarations
+	// 遍历语句(ast body)
 	preWalkStatements(statements) {
 		for (let index = 0, len = statements.length; index < len; index++) {
 			const statement = statements[index];
@@ -1421,6 +1422,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	//
 	preWalkStatement(statement) {
 		this.statementPath.push(statement);
 		if (this.hooks.preStatement.call(statement)) {
@@ -3043,6 +3045,7 @@ class JavascriptParser extends Parser {
 		this.scope = oldScope;
 	}
 
+	// 检查当前JS文件是否是严格模式(use strict)或者use asm
 	detectMode(statements) {
 		const isLiteral =
 			statements.length >= 1 &&
@@ -3301,11 +3304,15 @@ class JavascriptParser extends Parser {
 		// UseStrictPlugin
 		// DefinePlugin
 		if (this.hooks.program.call(ast, comments) === undefined) {
+			// 检查当前JS文件是否是严格模式(use strict)或者use asm
 			this.detectMode(ast.body);
+			//
 			this.preWalkStatements(ast.body);
 			this.prevStatement = undefined;
+			//
 			this.blockPreWalkStatements(ast.body);
 			this.prevStatement = undefined;
+			//
 			this.walkStatements(ast.body);
 		}
 

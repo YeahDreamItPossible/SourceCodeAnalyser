@@ -793,6 +793,7 @@ class NormalModule extends Module {
 							});
 					} else {
 						loaderContext.addDependency(resource);
+						// 此时
 						fs.readFile(resource, callback);
 					}
 				}
@@ -956,6 +957,7 @@ class NormalModule extends Module {
 						keepOriginalOrder(this.dependencies)
 					)
 				);
+				// this.buildInfo.hash
 				this._initBuildHash(compilation);
 				this._lastSuccessfulBuildMeta = this.buildMeta;
 				return handleBuildDone();

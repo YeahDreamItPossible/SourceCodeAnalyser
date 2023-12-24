@@ -20,14 +20,6 @@ class ModuleDependency extends Dependency {
 		this.range = undefined;
   }
 }
-
-class EntryDependency extends ModuleDependency {
-  constructor() {
-    this.type = 'entry'
-    this.category = 'esm'
-  }
-}
-
 class WorkerDependency extends Dependency {}
 class HarmonyImportSideEffectDependency extends Dependency {}
 class HarmonyImportSpecifierDependency extends Dependency {}
@@ -55,3 +47,10 @@ class ImportEagerDependency extends Dependency {}
 class ImportWeakDependency extends Dependency {}
 class ImportContextDependency extends Dependency {}
 class URLDependency extends Dependency {}
+
+class EntryDependency extends ModuleDependency {
+  constructor() {
+    this.type = 'entry'
+    this.category = 'esm'
+  }
+}
