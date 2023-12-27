@@ -19,7 +19,9 @@ class ModuleDependency extends Dependency {
 	 */
 	constructor(request) {
 		super();
+		// 绝对路径
 		this.request = request;
+		//
 		this.userRequest = request;
 		this.range = undefined;
 	}

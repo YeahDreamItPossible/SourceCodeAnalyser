@@ -20,6 +20,7 @@ class Module extends DependenciesBlock {
 		this.needId = /* Boolean */ true;
 
 		this.resolveOptions = /* Object.create(null) */ null
+		// TODO:
 		/** @type {object | undefined} */
 		this.factoryMeta = undefined;
 		this.useSourceMap = /* Boolean */ false
@@ -34,6 +35,7 @@ class Module extends DependenciesBlock {
 		this.buildMeta = /* BuildMeta */ undefined
 		// 打包信息
 		this.buildInfo = /* Record<string, any> */ undefined
+		// TODO:
 		/** @type {Dependency[] | undefined} */
 		this.presentationalDependencies = undefined;
   }

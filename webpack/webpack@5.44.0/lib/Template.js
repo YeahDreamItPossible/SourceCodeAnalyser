@@ -213,6 +213,7 @@ class Template {
 	 * @param {string | string[]} s string to convert to identity
 	 * @returns {string} converted identity
 	 */
+	// 缩紧
 	static indent(s) {
 		if (Array.isArray(s)) {
 			return s.map(Template.indent).join("\n");

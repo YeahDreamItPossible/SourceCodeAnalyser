@@ -1,36 +1,37 @@
-"WorkerDependencyTemplate",
-"CreateScriptUrlDependencyTemplate",
-"RuntimeRequirementsDependencyTemplate",
-"ConstDependencyTemplate",
-"HarmonyExportDependencyTemplate",
-"HarmonyImportSideEffectDependencyTemplate",
-"HarmonyImportSpecifierDependencyTemplate",
-"HarmonyExportSpecifierDependencyTemplate",
-"HarmonyExportImportedSpecifierDependencyTemplate",
-"HarmonyAcceptDependencyTemplate",
-"HarmonyAcceptImportDependencyTemplate",
-"AMDRequireDependencyTemplate",
-"ModuleDependencyTemplateAsRequireId",
-"AMDRequireArrayDependencyTemplate",
-"ContextDependencyTemplateAsRequireCall",
-"AMDDefineDependencyTemplate",
-"UnsupportedDependencyTemplate",
-"LocalModuleDependencyTemplate",
-"ModuleDependencyTemplateAsId",
-"CommonJsFullRequireDependencyTemplate",
-"ContextDependencyTemplateAsId",
-"RequireResolveHeaderDependencyTemplate",
-"RequireHeaderDependencyTemplate",
-"CommonJsExportsDependencyTemplate",
-"CommonJsExportRequireDependencyTemplate",
-"CommonJsSelfReferenceDependencyTemplate",
-"ModuleDecoratorDependencyTemplate",
-"ExportsInfoDependencyTemplate",
-"WebpackIsIncludedDependencyTemplate",
-"CachedConstDependencyTemplate",
-"RequireIncludeDependencyTemplate",
-"NullDependencyTemplate",
-"RequireEnsureDependencyTemplate",
-"ImportDependencyTemplate",
-"ImportEagerDependencyTemplate",
-"URLDependencyTemplate",
+class Tempalte {}
+class WorkerDependencyTemplate {}
+class CreateScriptUrlDependencyTemplate {}
+class RuntimeRequirementsDependencyTemplate {}
+class ConstDependencyTemplate {}
+class HarmonyExportDependencyTemplate {}
+class HarmonyImportSideEffectDependencyTemplate {}
+class HarmonyImportSpecifierDependencyTemplate {}
+class HarmonyExportSpecifierDependencyTemplate {}
+class HarmonyExportImportedSpecifierDependencyTemplate {}
+class HarmonyAcceptDependencyTemplate {}
+class HarmonyAcceptImportDependencyTemplate {}
+class AMDRequireDependencyTemplate {}
+class ModuleDependencyTemplateAsRequireId {}
+class AMDRequireArrayDependencyTemplate {}
+class ContextDependencyTemplateAsRequireCall {}
+class AMDDefineDependencyTemplate {}
+class UnsupportedDependencyTemplate {}
+class LocalModuleDependencyTemplate {}
+class ModuleDependencyTemplateAsId {}
+class CommonJsFullRequireDependencyTemplate {}
+class ContextDependencyTemplateAsId {}
+class RequireResolveHeaderDependencyTemplate {}
+class RequireHeaderDependencyTemplate {}
+class CommonJsExportsDependencyTemplate {}
+class CommonJsExportRequireDependencyTemplate {}
+class CommonJsSelfReferenceDependencyTemplate {}
+class ModuleDecoratorDependencyTemplate {}
+class ExportsInfoDependencyTemplate {}
+class WebpackIsIncludedDependencyTemplate {}
+class CachedConstDependencyTemplate {}
+class RequireIncludeDependencyTemplate {}
+class NullDependencyTemplate {}
+class RequireEnsureDependencyTemplate {}
+class ImportDependencyTemplate {}
+class ImportEagerDependencyTemplate {}
+class URLDependencyTemplate {}

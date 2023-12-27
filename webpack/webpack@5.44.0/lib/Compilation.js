@@ -2685,6 +2685,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						this.hooks.beforeHash.call();
 
 						// hash
+						// 获取runtime modules的代码生成任务
 						const codeGenerationJobs = this.createHash();
 
 						// 空调用
@@ -2693,7 +2694,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 						this.logger.timeEnd("hashing");
 
-						// 第二次代码生成主要是生成webpack内部runtime code
+						// 第二次代码生成主要是生成webpack内部runtime module的code
 						this._runCodeGenerationJobs(codeGenerationJobs, err => {
 							if (err) {
 								return finalCallback(err);
@@ -2780,8 +2781,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 								// 在创建 chunk asset 之前
 								this.hooks.beforeChunkAssets.call();
 
-								// TODO:
-								//
+								// 生成chunk的code
 								this.createChunkAssets(err => {
 									this.logger.timeEnd("create chunk assets");
 									if (err) {
@@ -2963,7 +2963,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					codeGenerated = true;
 					this.codeGeneratedModules.add(module);
 					// 重点看
-					// ast => result
+					// ast => result ?!
 					result = module.codeGeneration({
 						chunkGraph,
 						moduleGraph,
@@ -3983,6 +3983,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
+	// TODO: 为什么会根据module.buildInfo.assets信息生成compilation.assets
 	createModuleAssets() {
 		const { chunkGraph } = this;
 		for (const module of this.modules) {
@@ -4012,7 +4013,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {RenderManifestOptions} options options object
 	 * @returns {RenderManifestEntry[]} manifest entries
 	 */
-	// 该方法非常重要 是 ast => result 的关键
+	// 获取render chunks的方法
 	getRenderManifest(options) {
 		// 插件
 		// JavascriptModulesPlugin  获得render函数
@@ -4024,9 +4025,8 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {Callback} callback signals when the call finishes
 	 * @returns {void}
 	 */
-	// NOTE:
-	// 该方法非常重要 好好研究研究
 	// render chunk
+	// 根据chunks来生成compilation.assets
 	createChunkAssets(callback) {
 		const outputOptions = this.outputOptions;
 		const cachedSourceMap = new WeakMap();
@@ -4218,6 +4218,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @returns {string} interpolated path
 	 */
 	getAssetPath(filename, data) {
+		// TemplatedPathPlugin
 		return this.hooks.assetPath.call(
 			typeof filename === "function" ? filename(data) : filename,
 			data,
