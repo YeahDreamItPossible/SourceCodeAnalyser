@@ -67,4 +67,7 @@ afterEmit(compilation)
 
 // 空调用
 needAdditionalPass()
+
+// 
+done(stats)
 `
