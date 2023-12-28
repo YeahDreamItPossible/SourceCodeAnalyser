@@ -37,20 +37,66 @@ class AwaitDependenciesInitFragment extends InitFragment {}
 class InferAsyncModulesPlugin extends WebpackPlugin {}
 
 // /lib/cache
-// 
+// 添加打包依赖
+// compilation.buildDependencies
 class AddBuildDependenciesPlugin extends WebpackPlugin {}
-//
+// 添加路径
+// compiler.managedPaths
+// compiler.immutablePaths
 class AddManagedPathsPlugin extends WebpackPlugin {}
-//
+// 缓存 webpack.options.cache.type = 'filesyste'
 class IdleFileCachePlugin extends WebpackPlugin {}
-// 
+// 缓存 webpack.options.cache.type = 'memory'
 class MemoryCachePlugin extends WebpackPlugin {}
-//
+// 缓存 webpack.options.cache.type = 'memory'
 class MemeoryWithGcCachePlugin extends WebpackPlugin {}
 // 
 class PackFileCacheStrategy {}
-// 
+// NOTE: 感觉没啥用
 class ResolverCachePlugin extends WebpackPlugin {}
+
+// /lib/config
+// webpack.options
+// 1. 应用默认选项
+// 2. normalize选项
+
+// /lib/container
+// 该目录的类主要用于模块联邦
+// 
+class ContainerEntryDependency extends Dependency {}
+//
+class ContainerEntryModule extends Module {}
+//
+class ContainerEntryModuleFactory extends ModuleFactory {}
+//
+class ContainerExposeDependency extends ModuleDependency {}
+//
+class ContainerPlugin extends WebpackPlugin {}
+// 
+class ContainerReferencePlugin extends WebpackPlugin {}
+//
+class FallbackDependency extends Dependency {}
+//
+class FallbackItemDependency extends Dependency {}
+//
+class FallbackModule extends Module {}
+//
+class FallbackModuleFactory extends ModuleFactory {}
+//
+class ModuleFederationPlugin extends WebpackPlugin {}
+// 
+class RemoteModule extends Module {}
+//
+class RemoteRuntimeModule extends RuntimeModule {}
+//
+class RemoteToExternalDependency extends ModuleDependency {}
+
+// /lib/debug
+//
+class ProfilePlugin extends WebpackPlugin {}
+
+// /lib/dependencies
+// 依赖
 
 class OptionsApply {
   process(options, compiler) {}
