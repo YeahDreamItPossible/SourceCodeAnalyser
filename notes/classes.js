@@ -98,6 +98,31 @@ class ProfilePlugin extends WebpackPlugin {}
 // /lib/dependencies
 // 依赖
 
+// 
+class RuntimeModule extends Module {
+  generate() {}
+}
+// /lib/runtime
+// 抽象类
+class HelperRuntimeModule extends RuntimeModule {}
+// 
+class AsyncModuleRuntimeModule extends RuntimeModule {}
+//
+// __webpack_require__.cn = 
+class ChunkNameRuntimeModule extends RuntimeModule {}
+// __webpack_require__.n = fn
+class CompatGetDefaultExportRuntimeModule extends RuntimeModule {}
+//
+class CompatRuntimeModule extends RuntimeModule {}
+// __webpack_require__.t
+class CreateFakeNamespaceObjectRuntimeModule extends RuntimeModule {}
+//
+class CreateScriptUrlRuntimeModule extends RuntimeModule {}
+// __webpack_require__.d = fn
+class DefinePropertyGettersRuntime extends RuntimeModule {}
+// __webpack_require__.e = fn
+class EnsureChunkRuntimeModule extends RuntimeModule {}
+
 class OptionsApply {
   process(options, compiler) {}
 }
