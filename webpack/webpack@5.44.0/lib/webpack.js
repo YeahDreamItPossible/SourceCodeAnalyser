@@ -91,14 +91,14 @@ const createCompiler = rawOptions => {
 	// options 再次初始化默认值
 	applyWebpackOptionsDefaults(options);
 
-	// NOTE: 空调用
+	// 空调用
 	compiler.hooks.environment.call();
 	compiler.hooks.afterEnvironment.call();
 
 	// options 根据不同的值 注册不同的内置插件
 	new WebpackOptionsApply().process(options, compiler);
 
-	// NOTE: 空调用
+	// 空调用
 	compiler.hooks.initialize.call();
 	return compiler;
 };
