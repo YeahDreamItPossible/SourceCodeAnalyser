@@ -98,6 +98,28 @@ class ProfilePlugin extends WebpackPlugin {}
 // /lib/dependencies
 // 依赖
 
+// /lib/electron
+
+// /lib/errors
+
+// /lib/esm
+
+// /lib/hmr
+
+// /lib/ids/
+
+// /lib/javascript
+
+// /lib/json
+
+// /lib/library
+
+// /lib/logging
+
+// /lib/node
+
+// /lib/optimize
+
 // 
 class RuntimeModule extends Module {
   generate() {}
