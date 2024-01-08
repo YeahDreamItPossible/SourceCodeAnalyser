@@ -71,6 +71,7 @@ class ModuleGraphModule {
 		/** @type {Set<ModuleGraphConnection> | undefined} */
 		this.outgoingConnections = undefined;
 
+		// 父模块
 		// ParentModule
 		/** @type {Module | null} */
 		this.issuer = undefined;
@@ -90,6 +91,7 @@ class ModuleGraphModule {
 		/** @type {number} */
 		this.depth = null;
 
+		// 简介信息
 		/** @type {ModuleProfile} */
 		this.profile = undefined;
 
@@ -107,7 +109,7 @@ class ModuleGraph {
 		// 记录当前module被谁引用以及引用了谁
 		/** @type {Map<Module, ModuleGraphModule>} */
 		this._moduleMap = new Map();
-		// 好像没啥卵用(全局搜索未发现使用)
+		// 好像没啥卵用(全局搜索未发现使用)?!
 		/** @type {Map<Module, Set<ModuleGraphConnection>>} */
 		this._originMap = new Map();
 
