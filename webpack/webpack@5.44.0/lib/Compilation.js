@@ -3666,7 +3666,7 @@ This prevents using hashes of each other and should be avoided.`);
 					chunkHash.update(outputOptions.hashSalt);
 				}
 				chunk.updateHash(chunkHash, chunkGraph);
-				// 
+				//
 				this.hooks.chunkHash.call(chunk, chunkHash, {
 					chunkGraph,
 					moduleGraph: this.moduleGraph,
