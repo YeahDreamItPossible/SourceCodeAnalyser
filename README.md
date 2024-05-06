@@ -4,7 +4,7 @@
 
 - axios
 
-  - [axios@1.2.1](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/axios%401.2.1/dist/axios.js)
+  - [axios@1.2.1](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/axios%401.2.1/axios.js)
 
 - redux
 
