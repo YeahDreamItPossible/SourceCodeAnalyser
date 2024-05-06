@@ -8936,7 +8936,7 @@ var Vue = (function (exports) {
     return [awaitable, () => setCurrentInstance(ctx)];
   }
 
-  // Actual implementation
+  // Vue.h 实现
   function h(type, propsOrChildren, children) {
     const l = arguments.length;
     if (l === 2) {
