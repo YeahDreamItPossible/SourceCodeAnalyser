@@ -1,10 +1,7 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 const util = require("util");
 
+// 警告: context字段废弃
 const deprecateContext = util.deprecate(() => {},
 "Hook.context is deprecated and will be removed");
 
@@ -23,16 +20,33 @@ const PROMISE_DELEGATE = function(...args) {
 	return this.promise(...args);
 };
 
-// TapOption
-// {
-// 	name: String,
-// 	stage: Number,
-// 	context: undefined, // 废弃
-// 	before: String || Array<String>
+/**
+ * hook功能
+ * 1. 注册事件(tap tapAsync tapPromise)
+ * 2. 注册拦截器(interceptor)
+ * 3. 调用事件(call callAsync callPromise)
+ */
+
+/**
+ * 名词解释:
+ * tap => 注册
+ * call => 调用
+ * interceptor => 拦截器
+ * TapOption => 注册事件选项
+ * InterceptOption => 拦截器选项
+ * TapItem => 注册事件项(由TapOption 和 InterceptorOption 决定)
+ */
+
+// 注册事件选项
+// TapOption: {
+// 		name: String, // 可以用于调整 taps 优先列队项优先级
+// 		stage: Number, // 优先级
+// 		context: undefined, // 废弃
+// 		before: String || Array<String> // 调整
 // }
 
-// InterceptOption
-// {
+// 拦截器选项
+// InterceptOption: {
 //		context: Object,
 // 		call: Function,
 // 		tap: Function,
@@ -42,8 +56,8 @@ const PROMISE_DELEGATE = function(...args) {
 // 		result: Function,
 // }
 
-// TapItem
-// {
+// 注册事件项
+// TapItem: {
 // 		name
 // 		type
 // 		fn
@@ -51,19 +65,22 @@ const PROMISE_DELEGATE = function(...args) {
 //  	before
 // }
 
+// 基类
 class Hook {
 	constructor(args = [], name = undefined) {
+		// 注册事件的形参
 		this._args = args;
+		// 标识: 区分当前hook
 		this.name = name;
 
-		// taps 事件优先队列
-		// taps 中的item {name, type, fn, stage, before}
-		// name 仅仅用于标识 可以用于调整 taps 优先列队项优先级
+		// 注册事件项
+		// 优先队列 Array<TapItem>
 		this.taps = [];
-		// interceptors 队列
-		// 拦截器 的 item { context, register, call, error, result, done }
+		// 拦截器选项
+		// 队列 Array<InterceptorItem>
 		this.interceptors = [];
 
+		// 绑定函数体
 		this._call = CALL_DELEGATE;
 		this.call = CALL_DELEGATE;
 		this._callAsync = CALL_ASYNC_DELEGATE;
@@ -74,23 +91,21 @@ class Hook {
 		// 
 		this._x = undefined;
 
-		// NOTE:
-		// 绑定
+		// 绑定this
 		this.compile = this.compile;
 		this.tap = this.tap;
 		this.tapAsync = this.tapAsync;
 		this.tapPromise = this.tapPromise;
 	}
 
+	// 抽象方法
 	// 生成call函数体
-	// 基类抽象方法
 	compile(options) {
 		throw new Error("Abstract: should be overridden");
 	}
 
-	// 根据 选项 编译成 内部call函数
-	// 在call的时候 生成内部call函数的好处
-	// 就是保证在该次调用时 选项是最终的 不会再次改变
+	// 根据调用类型(call type)生成内部call函数
+	// 只有在call的时候 生成内部call函数的好处: 保证在该次调用时 选项是最终的不会再次改变
 	_createCall(type) {
 		return this.compile({
 			taps: this.taps,
@@ -100,9 +115,10 @@ class Hook {
 		});
 	}
 
+	// 注册事件内部实现
 	// 主要对注册事件选项正常化
 	_tap(type, options, fn) {
-		// normalize options
+		// 正常化options(normalize options)
 		// 保证最终的options 是一个包含 { name, type, fn, before, stage, context } 的对象
 		// 其中 context 废弃
 		if (typeof options === "string") {
@@ -115,6 +131,7 @@ class Hook {
 		if (typeof options.name !== "string" || options.name === "") {
 			throw new Error("Missing name for tap");
 		}
+		// options.context 废弃
 		if (typeof options.context !== "undefined") {
 			deprecateContext();
 		}
@@ -123,26 +140,35 @@ class Hook {
 		this._insert(options);
 	}
 
-	// 注册事件
-	// 注册同步事件(fn函数的参数为Hook构造函数中传入的参数)
+	/**
+	 * 注册事件的方式有三种
+	 * 1. 注册同步事件
+	 * 2. 注册带有回调函数的异步事件
+	 * 3. 注册返回值为Promise的异步事件
+	 */
+
+	// 1. 注册同步事件
+	// 同步事件fn的参数为this.args(即: Hook构造函数中传入的参数)
 	// options: { name: String, stage: Number, before: String || Array<String> }
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
 
-	// 注册事件
-	// 注册带有回调函数的异步事件(fn中最后一个形参为回掉函数)
+	// 2. 注册带有回调函数的异步事件
+	// 异步事件fn中最后一个形参为回调函数
 	tapAsync(options, fn) {
 		this._tap("async", options, fn);
 	}
 
-	// 注册事件
-	// 注册返回值为Promise的异步事件(fn返回Promise)
+	// 3. 注册返回值为Promise的异步事件
+	// 异步事件fn返回值为Promise
 	tapPromise(options, fn) {
 		this._tap("promise", options, fn);
 	}
 
-	// 调用拦截器 处理options 并得到最终的options
+	// 调用拦截器 
+	// 主要是调用拦截器选项中register属性 对注册事件选项进行加工处理 并得到最终的options
+	// 即: 调用interceptor.register(tap.option)
 	_runRegisterInterceptors(options) {
 		for (const interceptor of this.interceptors) {
 			if (interceptor.register) {
@@ -155,7 +181,7 @@ class Hook {
 		return options;
 	}
 
-	// 将options作为默认options 对hook进行包装
+	// 包装hook: 将options作为TapOption的默认options
 	withOptions(options) {
 		const mergeOptions = opt =>
 			Object.assign({}, options, typeof opt === "string" ? { name: opt } : opt);
@@ -171,13 +197,13 @@ class Hook {
 		};
 	}
 
-	// 断言: 判断当前hook 是否被注册事件 or 拦截器
+	// 断言: 判断当前hook是否被使用(判断该hook中是否有注册事件或者拦截器)
 	isUsed() {
 		return this.taps.length > 0 || this.interceptors.length > 0;
 	}
 
 	// 注册拦截器
-	// interceptor: {context: Object, register: fn, call: fn, tap: fn, result: fn, error: fn, done: fn}
+	// InterceptorOption: {context: Object, register: fn, call: fn, tap: fn, result: fn, error: fn, done: fn}
 	intercept(interceptor) {
 		this._resetCompilation();
 		this.interceptors.push(Object.assign({}, interceptor));
@@ -189,6 +215,7 @@ class Hook {
 		}
 	}
 
+	// 重置编译器
 	_resetCompilation() {
 		this.call = this._call;
 		this.callAsync = this._callAsync;
@@ -234,6 +261,7 @@ class Hook {
 	}
 }
 
+// 原型
 Object.setPrototypeOf(Hook.prototype, null);
 
 module.exports = Hook;

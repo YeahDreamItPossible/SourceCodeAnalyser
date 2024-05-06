@@ -100,6 +100,7 @@
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
+  // 绑定
   function bind(fn, thisArg) {
     return function wrap() {
       return fn.apply(thisArg, arguments);
@@ -2800,6 +2801,7 @@
    *
    * @returns {Axios} A new instance of Axios
    */
+  // 创建实例
   function createInstance(defaultConfig) {
     var context = new Axios$1(defaultConfig);
     var instance = bind(Axios$1.prototype.request, context);
@@ -2841,6 +2843,7 @@
   axios.Cancel = axios.CanceledError;
 
   // Expose all/spread
+  // 扩展:
   axios.all = function all(promises) {
     return Promise.all(promises);
   };
@@ -2857,6 +2860,6 @@
   };
   axios["default"] = axios;
 
+  // 导出命名空间axios 
   return axios;
-
 }));

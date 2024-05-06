@@ -1,5 +1,3 @@
-// 逐行阅读源码
-
 /**
  * 名词介绍
  * state tree         =>      当前状态树
@@ -36,18 +34,19 @@
   };
   var ActionTypes$1 = ActionTypes;
 
-  // 类型断言: 判断当前值是否是Object
+  // 断言: 判断当前值是否是Object
   function isPlainObject(obj) {
     if (typeof obj !== 'object' || obj === null) return false;
     var proto = obj;
+    // 原型链
     while (Object.getPrototypeOf(proto) !== null) {
       proto = Object.getPrototypeOf(proto);
     }
     return Object.getPrototypeOf(obj) === proto;
   }
 
-  // 获取数据类型
-  // (kindO(https://github.com/jonschlinkert/kind-of)简易实现)
+  // 返回自定义数据类型
+  // (kindOf(https://github.com/jonschlinkert/kind-of)简易实现)
   function miniKindOf(val) {
     if (val === void 0) return 'undefined';
     if (val === null) return 'null';
@@ -80,23 +79,23 @@
     return type.slice(8, -1).toLowerCase().replace(/\s/g, '');
   }
 
-  // 获取构造函数名
+  // 返回构造函数名
   function ctorName(val) {
     return typeof val.constructor === 'function' ? val.constructor.name : null;
   }
 
-  // 类型断言: 判断当前值是否是Error Instance
+  // 断言: 判断当前值是否是Error Instance
   function isError(val) {
     return val instanceof Error || typeof val.message === 'string' && val.constructor && typeof val.constructor.stackTraceLimit === 'number';
   }
 
-  // 类型断言: 判断当前值是否是Date Instance
+  // 断言: 判断当前值是否是Date Instance
   function isDate(val) {
     if (val instanceof Date) return true;
     return typeof val.toDateString === 'function' && typeof val.getDate === 'function' && typeof val.setDate === 'function';
   }
 
-  // 获取数据类型
+  // 返回自定义数据类型
   function kindOf(val) {
     var typeOfVal = typeof val;
     {
@@ -107,8 +106,11 @@
 
   // 创建store
   function createStore(reducer, preloadedState, enhancer) {
+    // store
     var _ref2;
-    // 正常化参数,并做版本兼容
+
+    // 正常化参数
+    // 版本兼容提示
     if (typeof preloadedState === 'function' && typeof enhancer === 'function' || typeof enhancer === 'function' && typeof arguments[3] === 'function') {
       throw new Error('It looks like you are passing several store enhancers to ' + 'createStore(). This is not supported. Instead, compose them ' + 'together to a single function. See https://redux.js.org/tutorials/fundamentals/part-4-store#creating-a-store-with-enhancers for an example.');
     }
@@ -132,19 +134,16 @@
 
     // 应用reducer
     var currentReducer = reducer;
-
-    // state tree
+    // 状态树(state tree)
     var currentState = preloadedState;
-
+    // 监听器队列
     var currentListeners = [];
-
-    // 应用监听队列
+    // 监听器队列
     var nextListeners = currentListeners;
-
-    // 状态标识: 标识当前处于dispatch阶段
+    // 标识: 标识当前处于dispatch阶段
     var isDispatching = false;
 
-    // 浅复制监听队列
+    // 浅复制
     function ensureCanMutateNextListeners() {
       if (nextListeners === currentListeners) {
         nextListeners = currentListeners.slice();
@@ -153,27 +152,30 @@
 
     // 获取当前状态树
     function getState() {
-      // 处于 dispatch 阶段时 因为state tree此时经过reducer可能发生变更
+      // 处于 dispatch 阶段时不允许获取state tree
+      // 因为state tree此时经过reducer可能会发生变更
+      // 即: 不允许在reducer中调用getState函数
       if (isDispatching) {
         throw new Error('You may not call store.getState() while the reducer is executing. ' + 'The reducer has already received the state as an argument. ' + 'Pass it down from the top reducer instead of reading it from the store.');
       }
       return currentState;
     }
 
-    // 监听状态变更
+    // 注册监听器 并返回函数(移除当前监听器)
     function subscribe(listener) {
-      // 监听者必须是函数
+      // 保证监听器必须是函数
       if (typeof listener !== 'function') {
         throw new Error("Expected the listener to be a function. Instead, received: '" + kindOf(listener) + "'");
       }
       if (isDispatching) {
         throw new Error('You may not call store.subscribe() while the reducer is executing. ' + 'If you would like to be notified after the store has been updated, subscribe from a ' + 'component and invoke store.getState() in the callback to access the latest state. ' + 'See https://redux.js.org/api/store#subscribelistener for more details.');
       }
+      // 标识: 标识是否注册监听器
       var isSubscribed = true;
       ensureCanMutateNextListeners();
       nextListeners.push(listener);
 
-      // 返回值: 移除监听者,移除监听队列中的当前监听者
+      // 返回值: 将当前监听器从监听器队列中移除
       return function unsubscribe() {
         if (!isSubscribed) {
           return;
@@ -189,21 +191,29 @@
       };
     }
 
-    // 中间件核心: 就是包装dispatch方法
+    /**
+     * 神来之笔
+     * 之前我觉得dispatch函数应该返回store便于链式编程
+     * 这里返回用户自定义的action 是实现中间件的核心
+     * 中间件核心: 就是包装dispatch方法
+     */
     function dispatch(action) {
-      // action 必须是对象
+      // 保证 action 必须是对象
       if (!isPlainObject(action)) {
         throw new Error("Actions must be plain objects. Instead, the actual type was: '" + kindOf(action) + "'. You may need to add middleware to your store setup to handle dispatching other values, such as 'redux-thunk' to handle dispatching functions. See https://redux.js.org/tutorials/fundamentals/part-4-store#middleware and https://redux.js.org/tutorials/fundamentals/part-6-async-logic#using-the-redux-thunk-middleware for examples.");
       }
-      // action.type 必须存在,一般是常量
-      // TODO: 主要是 reducer 混合后的
+      // 保证 action.type 必须存在,且该字段是常量
       if (typeof action.type === 'undefined') {
         throw new Error('Actions may not have an undefined "type" property. You may have misspelled an action type string constant.');
       }
 
+      // 如果正在dispatch阶段时 不允许嵌套dispatch
+      // 即: 不允许在reducer中调用dispatch函数
       if (isDispatching) {
         throw new Error('Reducers may not dispatch actions.');
       }
+
+      // 调用reducer
       try {
         isDispatching = true;
         currentState = currentReducer(currentState, action);
@@ -211,16 +221,13 @@
         isDispatching = false;
       }
 
-      // 在状态变更后 监听
+      // 在状态变更后 调用监听器队列
       var listeners = currentListeners = nextListeners;
       for (var i = 0; i < listeners.length; i++) {
         var listener = listeners[i];
         listener();
       }
 
-      // TODO: 返回用户自定义的action 是实现中间件的
-      // 之前我觉得这个地方应该返回 store 便于链式编程
-      // 但是看了中间件之后 觉得返回action 简直是神来之笔
       return action;
     }
 
@@ -243,6 +250,7 @@
       var outerSubscribe = subscribe;
       return _ref = {
         subscribe: function subscribe(observer) {
+          // 保证observer必须是对象
           if (typeof observer !== 'object' || observer === null) {
             throw new Error("Expected the observer to be an object. Instead, received: '" + kindOf(observer) + "'");
           }
@@ -262,7 +270,7 @@
       }, _ref;
     }
 
-    // 初始化 获取初始状态
+    // 初始化 用来获取初始状态
     dispatch({
       type: ActionTypes$1.INIT
     });
@@ -345,7 +353,7 @@
   // 1. 筛选符合特定类型<Function>的reducer
   // 2. 保证每个reducer的初始状态不能为undefined,否则抛出Error
   function combineReducers(reducers) {
-    // reducers类型: Map<String, Function>
+    // reducers: Object<String, Function>
     var reducerKeys = Object.keys(reducers);
 
     // 筛选后的reducers
@@ -354,6 +362,7 @@
     // 筛选(保证reducer<Function>类型)
     for (var i = 0; i < reducerKeys.length; i++) {
       var key = reducerKeys[i];
+      // 如果reducer是undefined 则警告
       {
         if (typeof reducers[key] === 'undefined') {
           warning("No reducer provided for key \"" + key + "\"");
@@ -594,7 +603,7 @@
     };
   }
 
-  // 通过dummy fn(伪函数)来测试生产环境 代码是否被压缩混淆
+  // 通过伪函数(dummy fn)来当前运行环境 代码是否被压缩混淆
   function isCrushed() { }
   if (typeof isCrushed.name === 'string' && isCrushed.name !== 'isCrushed') {
     warning('You are currently using minified code outside of NODE_ENV === "production". ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or setting mode to production in webpack (https://webpack.js.org/concepts/mode/) ' + 'to ensure you have the correct code for your production build.');
