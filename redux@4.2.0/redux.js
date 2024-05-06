@@ -125,6 +125,7 @@
       }
 
       // 使用中间件
+      // 函数柯里化(先传入createStore 再传入reducer和state)
       return enhancer(createStore)(reducer, preloadedState);
     }
     // reducer必须是函数
@@ -286,7 +287,7 @@
   // 前缀legacy是为了以后版本升级
   var legacy_createStore = createStore;
 
-  // 输出错误
+  // 输出错误信息并抛出错误
   function warning(message) {
     if (typeof console !== 'undefined' && typeof console.error === 'function') {
       console.error(message);
@@ -296,20 +297,20 @@
     } catch (e) { }
   }
 
-  // 收集错误
-  // 1. 无效的混合后的reducers错误
+  // 返回错误信息
+  // 1. 无效的reducers错误
   // 2. 无效的state错误(非对象)
   // 3. 混合后的reducers的key 与 state tree 中key 可能存在不一致
   function getUnexpectedStateShapeWarningMessage(inputState, reducers, action, unexpectedKeyCache) {
     var reducerKeys = Object.keys(reducers);
     var argumentName = action && action.type === ActionTypes$1.INIT ? 'preloadedState argument passed to createStore' : 'previous state received by the reducer';
 
-    // 无效的reducers错误
+    // 错误信息: 无效的reducers
     if (reducerKeys.length === 0) {
       return 'Store does not have a valid reducer. Make sure the argument passed ' + 'to combineReducers is an object whose values are reducers.';
     }
 
-    // 无效的state错误()
+    // 错误信息: 无效的state
     if (!isPlainObject(inputState)) {
       return "The " + argumentName + " has unexpected type of \"" + kindOf(inputState) + "\". Expected argument to be an object with the following " + ("keys: \"" + reducerKeys.join('", "') + "\"");
     }
@@ -318,16 +319,19 @@
     var unexpectedKeys = Object.keys(inputState).filter(function (key) {
       return !reducers.hasOwnProperty(key) && !unexpectedKeyCache[key];
     });
+    // 将不一致的key缓存
     unexpectedKeys.forEach(function (key) {
       unexpectedKeyCache[key] = true;
     });
     if (action && action.type === ActionTypes$1.REPLACE) return;
+
+    // 错误信息: 混合后的reducers的key 与 state tree 中key 可能存在不一致
     if (unexpectedKeys.length > 0) {
       return "Unexpected " + (unexpectedKeys.length > 1 ? 'keys' : 'key') + " " + ("\"" + unexpectedKeys.join('", "') + "\" found in " + argumentName + ". ") + "Expected to find one of the known reducer keys instead: " + ("\"" + reducerKeys.join('", "') + "\". Unexpected keys will be ignored.");
     }
   }
 
-  // 断言: 保证reducer函数的初始状态不能为undefined,否则抛出Error
+  // 断言: 保证reducer函数返回值不能为undefined,否则抛出Error
   function assertReducerShape(reducers) {
     Object.keys(reducers).forEach(function (key) {
       var reducer = reducers[key];
@@ -335,11 +339,12 @@
         type: ActionTypes$1.INIT
       });
 
-      // 保证reducer中的初始状态值不能为undefined
+      // 保证reducer函数返回值不能为undefined
       if (typeof initialState === 'undefined') {
         throw new Error("The slice reducer for key \"" + key + "\" returned undefined during initialization. " + "If the state passed to the reducer is undefined, you must " + "explicitly return the initial state. The initial state may " + "not be undefined. If you don't want to set a value for this reducer, " + "you can use null instead of undefined.");
       }
 
+      // 保证reducer函数返回值不能为undefined
       // 感觉没啥意义
       if (typeof reducer(undefined, {
         type: ActionTypes$1.PROBE_UNKNOWN_ACTION()
@@ -351,7 +356,8 @@
 
   // 混合reducer
   // 1. 筛选符合特定类型<Function>的reducer
-  // 2. 保证每个reducer的初始状态不能为undefined,否则抛出Error
+  // 2. 保证每个reducer的返回值不能为undefined,否则抛出Error
+  // 3. 保证state中key与reducers中key一致
   function combineReducers(reducers) {
     // reducers: Object<String, Function>
     var reducerKeys = Object.keys(reducers);
@@ -381,7 +387,7 @@
       unexpectedKeyCache = {};
     }
 
-    // 收集Error(某个reducer的初始状态为undefined)
+    // 收集某个reducer返回值为undefined的Error
     var shapeAssertionError;
     try {
       assertReducerShape(finalReducers);
@@ -395,48 +401,52 @@
         state = {};
       }
 
-      // 抛出某个reducer的初始状态为undefined的错误
+      // 抛出某个reducer返回值为undefined的Error
       if (shapeAssertionError) {
         throw shapeAssertionError;
       }
 
-      // 再次输入错误
+      // 再次抛出state reducers字段类型错误
       {
+        // 1. 无效的reducers错误
+        // 2. 无效的state错误(非对象)
+        // 3. 混合后的reducers的key 与 state tree 中key 可能存在不一致
         var warningMessage = getUnexpectedStateShapeWarningMessage(state, finalReducers, action, unexpectedKeyCache);
         if (warningMessage) {
           warning(warningMessage);
         }
       }
 
+      // 标识: 状态树是否变更
       var hasChanged = false;
       var nextState = {};
       for (var _i = 0; _i < finalReducerKeys.length; _i++) {
         var _key = finalReducerKeys[_i];
         var reducer = finalReducers[_key];
 
-        // 某个reducer初始状态
+        // 某个reducer之前的状态
         var previousStateForKey = state[_key];
 
-        // 某个reducer后的状态
+        // 某个reducer之后的状态
         var nextStateForKey = reducer(previousStateForKey, action);
 
-        // 保证每个reducer后的状态不能是undefined
+        // 再次保证每个reducer后的状态不能是undefined
         if (typeof nextStateForKey === 'undefined') {
           var actionType = action && action.type;
           throw new Error("When called with an action of type " + (actionType ? "\"" + String(actionType) + "\"" : '(unknown type)') + ", the slice reducer for key \"" + _key + "\" returned undefined. " + "To ignore an action, you must explicitly return the previous state. " + "If you want this reducer to hold no value, you can return null instead of undefined.");
         }
 
-        // 局部变更state tree中某个节点状态
+        // 局部变更状态树中某个节点状态
         nextState[_key] = nextStateForKey;
 
-        // 标识: state tree是否发生变更(通过判断state tree 和 current node state )
+        // 标识: 状态树是否发生变更(通过判断state tree 和 current node state )
         hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
       }
 
-      // 标识: state tree是否发生变更
+      // 标识: 状态树是否发生变更
       hasChanged = hasChanged || finalReducerKeys.length !== Object.keys(state).length;
 
-      // 缓存: 如果state tree某个节点update 则替换掉整个state tree 否则则返回当前 state tree
+      // 缓存: 如果状态树某个节点变更 则替换掉当前节点的状态 否则则返回之前当前状态树
       return hasChanged ? nextState : state;
     };
   }
@@ -466,16 +476,18 @@
     return boundActionCreators;
   }
 
-  // 返回当前对象所拥有的key
-  // enumerableOnly<Boolean>: 是否返回可遍历的symbol类型的key
+  // 返回当前对象所拥有symbol类型的key 且key是enumerable
   function ownKeys(object, enumerableOnly) {
     var keys = Object.keys(object);
     if (Object.getOwnPropertySymbols) {
       var symbols = Object.getOwnPropertySymbols(object);
       // 返回可遍历的symbol类型的key
-      enumerableOnly && (symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      })), keys.push.apply(keys, symbols);
+      if (enumerableOnly) {
+        symbols = symbols.filter(function (sym) {
+          return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+        })
+        keys.push.apply(keys, symbols)
+      }
     }
     return keys;
   }
@@ -483,7 +495,7 @@
   // 对象扩展
   function _objectSpread2(target) {
     for (var i = 1; i < arguments.length; i++) {
-      var source = null != arguments[i] ? arguments[i] : {};
+      var source = arguments[i] != null ? arguments[i] : {};
       i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
         _defineProperty(target, key, source[key]);
       }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
@@ -493,7 +505,7 @@
     return target;
   }
 
-  // 对某个对象扩展key 并赋值
+  // 对某个对象扩展新增属性并赋值
   function _defineProperty(obj, key, value) {
     key = _toPropertyKey(key);
     if (key in obj) {
@@ -509,7 +521,7 @@
     return obj;
   }
 
-  //
+  // 返回该数据的原始值
   function _toPrimitive(input, hint) {
     if (typeof input !== "object" || input === null) return input;
     var prim = input[Symbol.toPrimitive];
@@ -527,7 +539,7 @@
     return typeof key === "symbol" ? key : String(key);
   }
 
-  // 函数组合(中间件的基础)
+  // 函数组合(洋葱模型)
   function compose() {
     for (var _len = arguments.length, funcs = new Array(_len), _key = 0; _key < _len; _key++) {
       funcs[_key] = arguments[_key];
@@ -547,24 +559,8 @@
     });
   }
 
-  /**
-   * Creates a store enhancer that applies middleware to the dispatch method
-   * of the Redux store. This is handy for a variety of tasks, such as expressing
-   * asynchronous actions in a concise manner, or logging every action payload.
-   *
-   * See `redux-thunk` package as an example of the Redux middleware.
-   *
-   * Because middleware is potentially asynchronous, this should be the first
-   * store enhancer in the composition chain.
-   *
-   * Note that each middleware will be given the `dispatch` and `getState` functions
-   * as named arguments.
-   *
-   * @param {...Function} middlewares The middleware chain to be applied.
-   * @returns {Function} A store enhancer applying the middleware.
-   */
   // 使用中间件
-  // Middleware 只是包装了 store 的 dispatch 方法
+  // middleware 只是包装了 store 的 dispatch 方法
   function applyMiddleware() {
     // 1. 先把用户入参解析成插件数组
     for (var _len = arguments.length, middlewares = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -572,8 +568,8 @@
     }
 
     // 2. 函数柯里化
-    // 2.1 (createStore) => _createStore
-    // 2.2 (reducer, state) => store
+    // 2.1 将createStore作为参数传入
+    // 2.2 将(reducer, state)作为参数传入
     // 包装store的dispatch方法是在步骤2.2生成store后
     return function (createStore) {
       return function () {
@@ -588,11 +584,14 @@
             return _dispatch.apply(void 0, arguments);
           }
         };
+        // 
         var chain = middlewares.map(function (middleware) {
           return middleware(middlewareAPI);
         });
 
         // 绑定用户包装后的dispatch函数
+        // 传入dispatch函数
+        // 返回dispatch(用户包装后的dispatch函数)
         _dispatch = compose.apply(void 0, chain)(store.dispatch);
 
         // 扩展store中dispatch
@@ -603,7 +602,7 @@
     };
   }
 
-  // 通过伪函数(dummy fn)来当前运行环境 代码是否被压缩混淆
+  // 通过伪函数(dummy fn)来判断当前运行环境代码是否被压缩混淆
   function isCrushed() { }
   if (typeof isCrushed.name === 'string' && isCrushed.name !== 'isCrushed') {
     warning('You are currently using minified code outside of NODE_ENV === "production". ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or setting mode to production in webpack (https://webpack.js.org/concepts/mode/) ' + 'to ensure you have the correct code for your production build.');
@@ -618,5 +617,4 @@
   exports.legacy_createStore = legacy_createStore;
 
   Object.defineProperty(exports, '__esModule', { value: true });
-
 }));

@@ -8,7 +8,7 @@
 
 - redux
 
-  - [redux@4.2.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/redux%404.2.0/dist/redux.js)
+  - [redux@4.2.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/redux%404.2.0/redux.js)
 
   - [redux-thunk@2.3.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/redux-thunk%402.3.0/dist/index.js)
 
