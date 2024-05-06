@@ -1951,8 +1951,7 @@ function flushJobs(seen) {
 	// inside try-catch. This can leave all warning code unshaked. Although
 	// they would get eventually shaken by a minifier like terser, some minifiers
 	// would fail to do that (e.g. https://github.com/evanw/esbuild/issues/1610)
-	const check = (job) => checkRecursiveUpdates(seen, job)
-		;
+	const check = (job) => checkRecursiveUpdates(seen, job);
 	try {
 		for (flushIndex = 0; flushIndex < queue.length; flushIndex++) {
 			const job = queue[flushIndex];

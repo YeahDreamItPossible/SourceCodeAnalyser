@@ -64,10 +64,11 @@ const createCompiler = rawOptions => {
 	const options = getNormalizedWebpackOptions(rawOptions);
 
 	// options 初始化默认值
+	// 主要是日志相关
 	applyWebpackOptionsBaseDefaults(options);
 
 	const compiler = new Compiler(options.context);
-	
+
 	// 手动绑定 options
 	compiler.options = options;
 
@@ -129,7 +130,7 @@ const webpack = /** @type {WebpackFunctionSingle & WebpackFunctionMulti} */ (
 			if (!webpackOptionsSchemaCheck(options)) {
 				getValidateSchema()(webpackOptionsSchema, options);
 			}
-			
+
 			/** @type {MultiCompiler|Compiler} */
 			let compiler;
 			let watch = false;
