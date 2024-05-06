@@ -13,24 +13,25 @@
 })(this, (function () {
   'use strict';
 
+  // typeof 兼容写法
   function _typeof(obj) {
     "@babel/helpers - typeof";
 
-    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+    return _typeof = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function (obj) {
       return typeof obj;
     } : function (obj) {
       return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
     }, _typeof(obj);
   }
 
-  // 在创建实例时 检查this 是否是当前构造函数的实例
+  // 在创建实例时 检查this是否是当前构造函数的实例
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  // 对某个对象进行扩展(属性描述符)
+  // 对某个对象属性进行扩展(属性描述符)
   function _defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
@@ -41,7 +42,8 @@
     }
   }
 
-  // 对构造函数进行扩展(属性、方法、静态属性、静态方法)
+  // 对Constructor 属性扩展(静态属性、静态方法)
+  // 对Constructor.prototype属性扩展(实例属性、实例方法)
   function _createClass(Constructor, protoProps, staticProps) {
     // 扩展属性和方法
     if (protoProps) _defineProperties(Constructor.prototype, protoProps);
@@ -56,9 +58,13 @@
   function _slicedToArray(arr, i) {
     return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
   }
+
+  // 如果是数组 则返回该数组 否则返回undefined
   function _arrayWithHoles(arr) {
     if (Array.isArray(arr)) return arr;
   }
+  // 截取数组
+  // Array.prototype.substring
   function _iterableToArrayLimit(arr, i) {
     var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
     if (_i == null) return;
@@ -91,11 +97,13 @@
     if (n === "Map" || n === "Set") return Array.from(o);
     if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
   }
+  // 
   function _arrayLikeToArray(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
     for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
     return arr2;
   }
+  // 
   function _nonIterableRest() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
@@ -107,73 +115,43 @@
     };
   }
 
-  // utils is a library of generic helper functions non-specific to axios
-
   var toString = Object.prototype.toString;
   var getPrototypeOf = Object.getPrototypeOf;
+  // 返回当前值的数据类型
+  // 通过Object.prototype.toString.call(thing).slice(8, -1).toLowerCase()的方式
   var kindOf = function (cache) {
     return function (thing) {
       var str = toString.call(thing);
       return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
     };
   }(Object.create(null));
+  // 高阶函数:
+  // 判断当前值与预期是否一致(通过toString的方式)
   var kindOfTest = function kindOfTest(type) {
     type = type.toLowerCase();
     return function (thing) {
       return kindOf(thing) === type;
     };
   };
+  // 高阶函数:
+  // 判断当前值与预期是否一致(通过typeof的方式)
   var typeOfTest = function typeOfTest(type) {
     return function (thing) {
       return _typeof(thing) === type;
     };
   };
 
-  /**
-   * Determine if a value is an Array
-   *
-   * @param {Object} val The value to test
-   *
-   * @returns {boolean} True if value is an Array, otherwise false
-   */
+  // 断言: 是否是数组
   var isArray = Array.isArray;
-
-  /**
-   * Determine if a value is undefined
-   *
-   * @param {*} val The value to test
-   *
-   * @returns {boolean} True if the value is undefined, otherwise false
-   */
+  // 断言: 当前值是否undefined
   var isUndefined = typeOfTest('undefined');
-
-  /**
-   * Determine if a value is a Buffer
-   *
-   * @param {*} val The value to test
-   *
-   * @returns {boolean} True if value is a Buffer, otherwise false
-   */
+  // 断言: 当前值是否是Buffer
   function isBuffer(val) {
     return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor) && isFunction(val.constructor.isBuffer) && val.constructor.isBuffer(val);
   }
-
-  /**
-   * Determine if a value is an ArrayBuffer
-   *
-   * @param {*} val The value to test
-   *
-   * @returns {boolean} True if value is an ArrayBuffer, otherwise false
-   */
+  // 断言: 当前值是否是ArrayBuffer
   var isArrayBuffer = kindOfTest('ArrayBuffer');
-
-  /**
-   * Determine if a value is a view on an ArrayBuffer
-   *
-   * @param {*} val The value to test
-   *
-   * @returns {boolean} True if value is a view on an ArrayBuffer, otherwise false
-   */
+  // 返回值为
   function isArrayBufferView(val) {
     var result;
     if (typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView) {
@@ -1125,7 +1103,6 @@
       // 拦截队列(先进先出)
       this.handlers = [];
     }
-
     
     // 对InterceptorManager.prototype扩展
     _createClass(InterceptorManager, [
@@ -1355,6 +1332,8 @@
     }
     return (encoder || JSON.stringify)(rawValue);
   }
+
+  // axios实例默认配置
   var defaults = {
     transitional: transitionalDefaults,
     adapter: ['xhr', 'http'],
@@ -2475,17 +2454,12 @@
 
   var validators = validator.validators;
 
-  /**
-   * Create a new instance of Axios
-   *
-   * @param {Object} instanceConfig The default config for the instance
-   *
-   * @return {Axios} A new instance of Axios
-   */
   // Axios类
   var Axios = function () {
     function Axios(instanceConfig) {
+      // 判断this是否是当前构造函数的实例
       _classCallCheck(this, Axios);
+      // 默认配置
       this.defaults = instanceConfig;
       // 拦截器
       this.interceptors = {
@@ -2494,15 +2468,7 @@
       };
     }
 
-    /**
-     * Dispatch a request
-     *
-     * @param {String|Object} configOrUrl The config specific for this request (merged with this.defaults)
-     * @param {?Object} config
-     *
-     * @returns {Promise} The Promise to be fulfilled
-     */
-    //  对Axios.prototype扩展
+    // 对Axios.prototype扩展
     _createClass(Axios, [
       {
         key: "request",
@@ -2609,7 +2575,9 @@
       }
     ]);
     return Axios;
-  }(); // Provide aliases for supported request methods
+  }(); 
+
+  // 对Axios.prototype扩展[delete, get, head, options]属性
   utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
     /*eslint func-names:0*/
     Axios.prototype[method] = function (url, config) {
@@ -2620,6 +2588,8 @@
       }));
     };
   });
+
+  // 对Axios.prototype扩展[post, put, patch]属性
   utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
     /*eslint func-names:0*/
 
@@ -2794,13 +2764,6 @@
     return utils.isObject(payload) && payload.isAxiosError === true;
   }
 
-  /**
-   * Create an instance of Axios
-   *
-   * @param {Object} defaultConfig The default config for the instance
-   *
-   * @returns {Axios} A new instance of Axios
-   */
   // 创建实例
   function createInstance(defaultConfig) {
     var context = new Axios$1(defaultConfig);

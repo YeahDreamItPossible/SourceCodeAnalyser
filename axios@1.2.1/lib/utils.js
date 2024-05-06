@@ -2,8 +2,6 @@
 
 import bind from './helpers/bind.js';
 
-// utils is a library of generic helper functions non-specific to axios
-
 const {toString} = Object.prototype;
 const {getPrototypeOf} = Object;
 
@@ -215,21 +213,7 @@ const isURLSearchParams = kindOfTest('URLSearchParams');
 const trim = (str) => str.trim ?
   str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
 
-/**
- * Iterate over an Array or an Object invoking a function for each item.
- *
- * If `obj` is an Array callback will be called passing
- * the value, index, and complete array for each item.
- *
- * If 'obj' is an Object callback will be called passing
- * the value, key, and complete object for each property.
- *
- * @param {Object|Array} obj The object to iterate
- * @param {Function} fn The callback to invoke for each item
- *
- * @param {Boolean} [allOwnKeys = false]
- * @returns {any}
- */
+// 迭代 Object || Array
 function forEach(obj, fn, {allOwnKeys = false} = {}) {
   // Don't bother if no value provided
   if (obj === null || typeof obj === 'undefined') {
@@ -321,16 +305,7 @@ function merge(/* obj1, obj2, obj3, ... */) {
   return result;
 }
 
-/**
- * Extends object a by mutably adding to it the properties of object b.
- *
- * @param {Object} a The object to be extended
- * @param {Object} b The object to copy properties from
- * @param {Object} thisArg The object to bind function to
- *
- * @param {Boolean} [allOwnKeys]
- * @returns {Object} The resulting value of object a
- */
+// 扩展(将b的属性扩展到a上)
 const extend = (a, b, thisArg, {allOwnKeys}= {}) => {
   forEach(b, (val, key) => {
     if (thisArg && isFunction(val)) {

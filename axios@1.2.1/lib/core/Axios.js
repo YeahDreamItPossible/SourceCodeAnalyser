@@ -11,13 +11,7 @@ import AxiosHeaders from './AxiosHeaders.js';
 
 const validators = validator.validators;
 
-/**
- * Create a new instance of Axios
- *
- * @param {Object} instanceConfig The default config for the instance
- *
- * @return {Axios} A new instance of Axios
- */
+// Axios类
 class Axios {
   constructor(instanceConfig) {
     // 默认配置
@@ -29,18 +23,8 @@ class Axios {
     };
   }
 
-  /**
-   * Dispatch a request
-   *
-   * @param {String|Object} configOrUrl The config specific for this request (merged with this.defaults)
-   * @param {?Object} config
-   *
-   * @returns {Promise} The Promise to be fulfilled
-   */
+  // 核心
   request(configOrUrl, config) {
-    /*eslint no-param-reassign:0*/
-
-    // Allow for axios('example/url'[, config]) a la fetch API
     // 正常化参数
     if (typeof configOrUrl === 'string') {
       config = config || {};
@@ -89,7 +73,6 @@ class Axios {
 
     config.headers = AxiosHeaders.concat(contextHeaders, headers);
 
-    // filter out skipped interceptors
     // 请求拦截器 实质上为 栈
     // 先注册的拦截器 后调用
     const requestInterceptorChain = [];
@@ -166,6 +149,7 @@ class Axios {
     return promise;
   }
 
+  // 返回
   getUri(config) {
     config = mergeConfig(this.defaults, config);
     const fullPath = buildFullPath(config.baseURL, config.url);
@@ -173,10 +157,11 @@ class Axios {
   }
 }
 
-// 扩展: 扩展get head options delete 请求方法(内部还是调用request方法)
+// 扩展: 扩展get head options delete 请求方法
+// 内部还是调用request方法
 utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
-  /*eslint func-names:0*/
   Axios.prototype[method] = function(url, config) {
+    // 默认method 和 data
     return this.request(mergeConfig(config || {}, {
       method,
       url,
@@ -185,7 +170,8 @@ utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData
   };
 });
 
-// 扩展: 扩展post put patch postForm putForm patchForm 请求方法(内部还是调用request方法,主要参数传递不同)
+// 扩展: 扩展post put patch postForm putForm patchForm 请求方法
+// 内部还是调用request方法,主要参数传递不同
 utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
   function generateHTTPMethod(isForm) {
     return function httpMethod(url, data, config) {

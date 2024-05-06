@@ -7,14 +7,6 @@ class InterceptorManager {
     this.handlers = [];
   }
 
-  /**
-   * Add a new interceptor to the stack
-   *
-   * @param {Function} fulfilled The function to handle `then` for a `Promise`
-   * @param {Function} rejected The function to handle `reject` for a `Promise`
-   *
-   * @return {Number} An ID used to remove interceptor later
-   */
   use(fulfilled, rejected, options) {
     this.handlers.push({
       fulfilled,

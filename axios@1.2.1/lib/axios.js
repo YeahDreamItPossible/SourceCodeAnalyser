@@ -16,24 +16,22 @@ import spread from './helpers/spread.js';
 import isAxiosError from './helpers/isAxiosError.js';
 import AxiosHeaders from "./core/AxiosHeaders.js";
 
-/**
- * Create an instance of Axios
- *
- * @param {Object} defaultConfig The default config for the instance
- *
- * @returns {Axios} A new instance of Axios
- */
+// 创建实例
 function createInstance(defaultConfig) {
+  // 创建Axios的实例
   const context = new Axios(defaultConfig);
+  // instance是个函数
+  // 1. 内部将Axios.prototype.request绑定到context
+  // 2. 并接受新的参数
   const instance = bind(Axios.prototype.request, context);
 
-  // Copy axios.prototype to instance
+  // 将Axios.prototype属性扩展到instance
   utils.extend(instance, Axios.prototype, context, {allOwnKeys: true});
 
-  // Copy context to instance
+  // 将Axios实例属性扩展到instance
   utils.extend(instance, context, null, {allOwnKeys: true});
 
-  // Factory for creating new instances
+  // 工厂函数
   instance.create = function create(instanceConfig) {
     return createInstance(mergeConfig(defaultConfig, instanceConfig));
   };
@@ -41,30 +39,29 @@ function createInstance(defaultConfig) {
   return instance;
 }
 
-// 创建: 创建默认配置的实例(便于使用者不做任何配置,快速开发)
+// 创建默认配置的实例(便于使用者不做任何配置,快速开发)
 const axios = createInstance(defaults);
 
-// Expose Axios class to allow class inheritance
+// 绑定Axios
 axios.Axios = Axios;
 
 // Expose Cancel & CancelToken
 axios.CanceledError = CanceledError;
 
-// NOTE: 取消接口请求
+// 取消接口请求
 axios.CancelToken = CancelToken;
 
-// NOTE: 标记当前请求错误类型
+// 标记当前请求错误类型
 axios.isCancel = isCancel;
 
-// NOTE: 标记当前库版本
+// 标记当前库版本
 // 缺点: 是自定义变量来控制 个人觉得最好通过package 版本来控制更合理些
 axios.VERSION = VERSION;
 
-// NOTE: 
+// 
 axios.toFormData = toFormData;
 
-// NOTE: 自定义Error错误
-// Expose AxiosError class
+// 自定义Error错误
 axios.AxiosError = AxiosError;
 
 // alias for CanceledError for backward compatibility
@@ -79,7 +76,7 @@ axios.all = function all(promises) {
 axios.spread = spread;
 
 // Expose isAxiosError
-// NOTE: 标记当前Error类型是自定义AxiosError
+// 标记当前Error类型是自定义AxiosError
 axios.isAxiosError = isAxiosError;
 
 // Expose mergeConfig
@@ -87,12 +84,11 @@ axios.mergeConfig = mergeConfig;
 
 axios.AxiosHeaders = AxiosHeaders;
 
-// NOTE:
 // 将 FormData(或者 HTMLFormElement DOM) 转换成 Javascript Object
 axios.formToJSON = thing => formDataToJSON(utils.isHTMLForm(thing) ? new FormData(thing) : thing);
 
-// NOTE：值得注意
+// 循环引用
 axios.default = axios;
 
-// this module should only have a default export
+// 导出命名空间 axios
 export default axios
