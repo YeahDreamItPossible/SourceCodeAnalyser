@@ -14,13 +14,15 @@
 
 - vue3
 
-  - [vue@3.2.37](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/v3/vue%403.2.37/dist/vue.global.js)
+  - [vue@3.2.37](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/vue%403.2.37/vue.global.js)
 
-  - [vue-router@]()
+  - [vue-router@4.1.6](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/vue-router%404.1.6/vue-router.global.js)
 
-  - [pinia@2.0.32](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/v3/pinia/dist/pinia.iife.js)
+  - [pinia@2.0.32](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/pinia%402.0.32/pinia.iife.js)
 
-  - [vuex@4.0.2]()
+  <!-- - [vuex@4.0.2]() -->
+
+- tapable
 
 - localforage
 

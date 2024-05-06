@@ -109,8 +109,7 @@
     // store
     var _ref2;
 
-    // 正常化参数
-    // 版本兼容提示
+    // 正常化参数 并版本兼容提示
     if (typeof preloadedState === 'function' && typeof enhancer === 'function' || typeof enhancer === 'function' && typeof arguments[3] === 'function') {
       throw new Error('It looks like you are passing several store enhancers to ' + 'createStore(). This is not supported. Instead, compose them ' + 'together to a single function. See https://redux.js.org/tutorials/fundamentals/part-4-store#creating-a-store-with-enhancers for an example.');
     }
@@ -297,10 +296,12 @@
     } catch (e) { }
   }
 
-  // 返回错误信息
-  // 1. 无效的reducers错误
-  // 2. 无效的state错误(非对象)
-  // 3. 混合后的reducers的key 与 state tree 中key 可能存在不一致
+  /**
+   * 返回错误信息
+   * 1. 无效的reducers错误
+   * 2. 无效的state错误(非对象)
+   * 3. 混合后的reducers的key 与 state tree 中key 可能存在不一致
+   */
   function getUnexpectedStateShapeWarningMessage(inputState, reducers, action, unexpectedKeyCache) {
     var reducerKeys = Object.keys(reducers);
     var argumentName = action && action.type === ActionTypes$1.INIT ? 'preloadedState argument passed to createStore' : 'previous state received by the reducer';
@@ -354,10 +355,12 @@
     });
   }
 
-  // 混合reducer
-  // 1. 筛选符合特定类型<Function>的reducer
-  // 2. 保证每个reducer的返回值不能为undefined,否则抛出Error
-  // 3. 保证state中key与reducers中key一致
+  /**
+   * 混合reducer
+   * 1. 筛选符合特定类型<Function>的reducer
+   * 2. 保证每个reducer的返回值不能为undefined,否则抛出Error
+   * 3. 保证state中key与reducers中key一致
+   */
   function combineReducers(reducers) {
     // reducers: Object<String, Function>
     var reducerKeys = Object.keys(reducers);
@@ -572,8 +575,8 @@
     // 2.2 将(reducer, state)作为参数传入
     // 包装store的dispatch方法是在步骤2.2生成store后
     return function (createStore) {
-      return function () {
-        var store = createStore.apply(void 0, arguments);
+      return function (reducer, state) {
+        var store = createStore.apply(void 0, [reducer, state]);
         // _dispatch作用: 保证在获得chain时返回的必须是一个函数
         var _dispatch = function dispatch() {
           throw new Error('Dispatching while constructing your middleware is not allowed. ' + 'Other middleware would not be applied to this dispatch.');
@@ -584,12 +587,13 @@
             return _dispatch.apply(void 0, arguments);
           }
         };
-        // 
+
+        // 依次调用各个中间件 并返回中间件链
         var chain = middlewares.map(function (middleware) {
           return middleware(middlewareAPI);
         });
 
-        // 绑定用户包装后的dispatch函数
+        // 重新绑定 包装后的dispatch函数
         // 传入dispatch函数
         // 返回dispatch(用户包装后的dispatch函数)
         _dispatch = compose.apply(void 0, chain)(store.dispatch);
