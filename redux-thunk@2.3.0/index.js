@@ -1,5 +1,5 @@
 function createThunkMiddleware(extraArgument) {
-  return function ({ dispatch, getState }) {
+  return function thunk({ dispatch, getState }) {
     return function (_dispatch) {
       // 对_dispatch函数进行包装
       return function (action) {

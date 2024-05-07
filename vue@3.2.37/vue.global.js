@@ -112,11 +112,18 @@
 // 512
 // COMPONENT_KEPT_ALIVE.shapeFlag = 1 << 9
 
-// ref
-// RefImpl(ref shallowRef)
-// ObjectRefImpl(toRef)
-// ComputedRefImpl(computed)
-// CustomRefImpl()
+/**
+ * 在V3中
+ * ref shallowRef => RefImpl
+ * toRef => ObjectRefImpl
+ * computed => ComputedRefImpl
+ * customRef => CustomRefImpl
+ * RefImpl CustomRefImpl ObjectRefImpl ComputedRefImpl区别:
+ * 1. CustomRefImpl CustomRefImpl都具有get时track(追踪依赖) set时trigger(派发更新)的特征
+ * 2. CustomRefImpl是RefImpl的包装 将track和trigger暴漏给用户 需要用户手动触发
+ * 3. ObjectRefImpl追踪依赖和派发更新的特征是通过直接源响应式对象的属性实现的
+ * 4. ComputedRefImpl本身是惰性的 只有追踪依赖 没有直接派发更新特征
+ */
 
 var Vue = (function (exports) {
 	'use strict';
@@ -489,6 +496,7 @@ var Vue = (function (exports) {
 	const toHandlerKey = cacheStringFunction((str) => str ? `on${capitalize(str)}` : ``);
 
 	// compare whether a value has changed, accounting for NaN.
+	// 断言: 判断两个值是否是相同值
 	const hasChanged = (value, oldValue) => !Object.is(value, oldValue);
 	const invokeArrayFns = (fns, arg) => {
 		for (let i = 0; i < fns.length; i++) {
@@ -528,7 +536,7 @@ var Vue = (function (exports) {
 		console.warn(`[Vue warn] ${msg}`, ...args);
 	}
 
-	/* 逻辑分层: 独立作用域开始 */
+	/* 逻辑分层: 副作用作用域开始 */
 
 	// 当前激活的作用域
 	let activeEffectScope;
@@ -536,7 +544,7 @@ var Vue = (function (exports) {
 	// 创建 副作用作用域
 	// 1. 保存当前副作用域下的副作用
 	// 2. 保存当前副作用域下的清除队列
-	// 3. 保存当前副作用域下的潜逃层级副作用域
+	// 3. 保存当前副作用域下的嵌套层级副作用域
 	class EffectScope {
 		constructor(detached = false) {
 			// 标识: 标记当前作用域是激活的
@@ -650,7 +658,7 @@ var Vue = (function (exports) {
 		}
 	}
 
-	/* 逻辑分层: 作用域结束 */
+	/* 逻辑分层: 副作用作用域结束 */
 
 	/*	逻辑分层: 副作用开始 */
 
@@ -860,8 +868,8 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 无论是reactive 还是ref 最终都会调用该函数
 	// 追踪副作用
+	// 无论是reactive 还是ref 最终都会调用该函数
 	// (effect.deps 与 响应式数据的deps相互绑定 多对多关系)
 	function trackEffects(dep, debuggerEventExtraInfo) {
 		let shouldTrack = false;
@@ -997,6 +1005,7 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: 副作用结束 */
 
+	/* 逻辑分层: proxy handler 开始 */
 	const isNonTrackableKeys = /*#__PURE__*/ makeMap(`__proto__,__v_isRef,__isVue`);
 	const builtInSymbols = new Set(
 		/*#__PURE__*/
@@ -1429,18 +1438,6 @@ var Vue = (function (exports) {
 	}
 
 	const [mutableInstrumentations, readonlyInstrumentations, shallowInstrumentations, shallowReadonlyInstrumentations] = /* #__PURE__*/ createInstrumentations();
-	
-	/* 逻辑分层: 响应式开始 */
-
-	/**
-	 * 响应式包 关键词说明
-	 * __v_skip							=>		标识当前值不可被reactive
-	 * __v_isReactive				=>		标识当前值是否是响应式对象
-	 * __v_isReadonly				=>		标识当前值是否是只读的
-	 * __v_isShallow				=>		标识当前值是否是浅层作用
-	 * __v_raw							=>		标识当前值是否已经被reactive,如果是,则返回原始值
-	 * __v_isRef						=>		标识当前值是ref值
-	 */
 
 	function createInstrumentationGetter(isReadonly, shallow) {
 		const instrumentations = shallow
@@ -1466,22 +1463,22 @@ var Vue = (function (exports) {
 		};
 	}
 
-	// reactive proxy getter函数
+	// 创建reactive类型返回的proxy的getter函数
 	const mutableCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(false, false)
 	};
 
-	// shallow reactive proxy getter函数
+	// 创建shallow reactive类型返回的proxy getter函数
 	const shallowCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(false, true)
 	};
 
-	// readonly reactive proxy getter函数
+	// 创建readonly reactive类型返回的proxy getter函数
 	const readonlyCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(true, false)
 	};
 
-	// readonly shallow reactive proxy getter函数
+	// 创建readonly shallow reactive类型返回的proxy getter函数
 	const shallowReadonlyCollectionHandlers = {
 		get: /*#__PURE__*/ createInstrumentationGetter(true, true)
 	};
@@ -1498,14 +1495,27 @@ var Vue = (function (exports) {
 		}
 	}
 
+	/* 逻辑分层: proxy handler 结束 */
+
+	/* 逻辑分层: 响应式开始 */
+	/**
+	 * 总结: 响应式包 关键词说明
+	 * __v_skip							=>		标识当前值不可被reactive
+	 * __v_isReactive				=>		标识当前值是否是响应式对象
+	 * __v_isReadonly				=>		标识当前值是否是只读的
+	 * __v_isShallow				=>		标识当前值是否是浅层作用
+	 * __v_raw							=>		标识当前值是否已经被reactive,如果是,则返回原始值
+	 * __v_isRef						=>		标识当前值是ref值
+	 */
+
 	// 缓存的响应式值 WeakMap<target, proxy>
-	// 缓存 深层所用响应式值
+	// 缓存 深层所用响应式值 WeakMap<target, Reactive>
 	const reactiveMap = new WeakMap();
-	// 缓存 浅层作用响应式值
+	// 缓存 浅层作用响应式值 WeakMap<target, ShallowReactive>
 	const shallowReactiveMap = new WeakMap();
-	// 缓存 只读深层作用响应式值
+	// 缓存 只读深层作用响应式值 WeakMap<target, ReadonlyReactive>
 	const readonlyMap = new WeakMap();
-	// 缓存 只读浅层作用响应式值
+	// 缓存 只读浅层作用响应式值 WeakMap<target, ShallowReadonlyReactive>
 	const shallowReadonlyMap = new WeakMap();
 
 	// TODO: 
@@ -1524,7 +1534,7 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 获取当前值的对象类型(TargetType)
+	// 返回当前值的对象类型(TargetType)
 	function getTargetType(value) {
 		return value["__v_skip" /* SKIP */] || !Object.isExtensible(value)
 			? 0 /* INVALID */
@@ -1563,15 +1573,14 @@ var Vue = (function (exports) {
 			}
 			return target;
 		}
-		// target is already a Proxy, return it.
-		// exception: calling readonly() on a reactive object
+		
 		// 当前值 已经是响应式值
 		if (target["__v_raw" /* RAW */] &&
 			!(isReadonly && target["__v_isReactive" /* IS_REACTIVE */])) {
 			return target;
 		}
 
-		// 缓存Map中如果存在 则直接返回该值的响应式值
+		// 缓存中如果存在该值的响应式值 则直接返回
 		const existingProxy = proxyMap.get(target);
 		if (existingProxy) {
 			return existingProxy;
@@ -1663,26 +1672,33 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 断言: 当前值 是否是浅复制
+	// 断言: 当前值是RefImpl的实例
 	// 原理: 只读值 属性 __v_isRef 为true
 	function isRef(r) {
 		return !!(r && r.__v_isRef === true);
 	}
 
-	// 创建 深层ref对象
-	// 内部值会被深层递归地转为响应式
+	/**
+	 * 问题: ref api是如何实现数据响应式的?
+	 * ref api 内部通过创建 RefImpl类 的实例
+	 * 当获取ref时 通过get函数 收集依赖
+	 * 当更新ref时 通过set函数 派发更新
+	 */
+	// 创建深层ref对象
+	// 注意: 内部值会被深层递归地转为响应式
 	function ref(value) {
 		// 默认深层ref对象
 		return createRef(value, false);
 	}
 
-	// 创建 浅层ref对象
+	// 创建浅层ref对象
 	function shallowRef(value) {
 		return createRef(value, true);
 	}
 
-	// 创建 RefImpl 的实例
+	// 返回RefImpl的实例
 	function createRef(rawValue, shallow) {
+		// 该值已经是RefImpl的实例
 		if (isRef(rawValue)) {
 			return rawValue;
 		}
@@ -1692,13 +1708,13 @@ var Vue = (function (exports) {
 	// RefImpl类
 	class RefImpl {
 		constructor(value, __v_isShallow) {
-			// 标识: 标记当前value是深层作用 还是浅层作用
+			// 标识: 标记当前value是深层作用还是浅层作用
 			this.__v_isShallow = __v_isShallow;
 
 			// 依赖
 			this.dep = undefined;
 
-			// 标记: 标记当前对象是ref对象
+			// 标识: 标记当前对象是ref对象
 			this.__v_isRef = true;
 
 			// 存储当前原始值
@@ -1733,7 +1749,7 @@ var Vue = (function (exports) {
 	}
 
 	// 返回ref的原始值
-	// 注意: 只是返回ref的原始值 该原始值可能是reactive
+	// 注意: 只是返回ref的原始值 该原始值可能是reactive对象
 	function unref(ref) {
 		return isRef(ref) ? ref.value : ref;
 	}
@@ -1782,9 +1798,16 @@ var Vue = (function (exports) {
 		return new CustomRefImpl(factory);
 	}
 
+	/**
+	 * 问题: toRefs api时如何保证源响应式对象和转换后的对象在变更属性保证同步?
+	 * toRefs 将源响应式对象中每个key对应值转换成ObjectRefImpl类的实例
+	 * ObjectRefImpl类中属性_object指向源响应式对象(源响应式对象和_object指向同一个地址)
+	 * 当每个get或者set时 操作的都是_object对象的属性(也就是源响应式对象的属性)
+	 */
 	// 将一个响应式对象转换为一个普通对象
 	// 这个普通对象的每个属性都是指向源对象相应属性的 ref
 	function toRefs(object) {
+		// 保证该对象必须是响应式对象
 		if (!isProxy(object)) {
 			console.warn(`toRefs() expects a reactive object but received a plain one.`);
 		}
@@ -1880,7 +1903,7 @@ var Vue = (function (exports) {
 	/* 逻辑分层: 响应式结束 */
 
 	// 栈结构简易实现
-	// 栈: vnode
+	// 栈: Arry<vnode>
 	const stack = [];
 	// 入栈
 	function pushWarningContext(vnode) {
@@ -16620,6 +16643,7 @@ var Vue = (function (exports) {
 	}
 	registerRuntimeCompiler(compileToFunction);
 
+	// 导出
 	exports.BaseTransition = BaseTransition;
 	exports.Comment = Comment;
 	exports.EffectScope = EffectScope;
@@ -16767,6 +16791,6 @@ var Vue = (function (exports) {
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 
+	// 返回命名空间
 	return exports;
-
 }({}));

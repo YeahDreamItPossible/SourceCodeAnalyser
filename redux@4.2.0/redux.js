@@ -17,7 +17,7 @@
     return typeof Symbol === 'function' && Symbol.observable || '@@observable';
   })();
 
-  // 获取随机字串
+  // 返回随机字符串
   var randomString = function randomString() {
     // Number.prototype.toString(36) 转换成36进制
     return Math.random().toString(36).substring(7).split('').join('.');
@@ -26,8 +26,11 @@
   // 常量: action type 用于内部逻辑
   // 测试用户reducer是否合理
   var ActionTypes = {
+    // 用于测试 reducer第一次调用返回值
     INIT: "@@redux/INIT" + randomString(),
+    // 用于测试 替换reducer
     REPLACE: "@@redux/REPLACE" + randomString(),
+    // 用于测试 reducer第N次返回值不能为undefined
     PROBE_UNKNOWN_ACTION: function PROBE_UNKNOWN_ACTION() {
       return "@@redux/PROBE_UNKNOWN_ACTION" + randomString();
     }
@@ -332,7 +335,7 @@
     }
   }
 
-  // 断言: 保证reducer函数返回值不能为undefined,否则抛出Error
+  // 断言: 保证reducer函数在任何情况下返回值都不能为undefined,否则抛出Error
   function assertReducerShape(reducers) {
     Object.keys(reducers).forEach(function (key) {
       var reducer = reducers[key];
@@ -340,13 +343,12 @@
         type: ActionTypes$1.INIT
       });
 
-      // 保证reducer函数返回值不能为undefined
+      // 保证reducer函数第一次初始化后返回值不能为undefined
       if (typeof initialState === 'undefined') {
         throw new Error("The slice reducer for key \"" + key + "\" returned undefined during initialization. " + "If the state passed to the reducer is undefined, you must " + "explicitly return the initial state. The initial state may " + "not be undefined. If you don't want to set a value for this reducer, " + "you can use null instead of undefined.");
       }
 
-      // 保证reducer函数返回值不能为undefined
-      // 感觉没啥意义
+      // 保证reducer函数第N次运行后返回值不能为undefined
       if (typeof reducer(undefined, {
         type: ActionTypes$1.PROBE_UNKNOWN_ACTION()
       }) === 'undefined') {
@@ -357,18 +359,18 @@
 
   /**
    * 混合reducer
-   * 1. 筛选符合特定类型<Function>的reducer
+   * 1. 保证每个reducer必须是Function
    * 2. 保证每个reducer的返回值不能为undefined,否则抛出Error
    * 3. 保证state中key与reducers中key一致
    */
+  // reducers: Object<String, Function>
   function combineReducers(reducers) {
-    // reducers: Object<String, Function>
     var reducerKeys = Object.keys(reducers);
 
     // 筛选后的reducers
     var finalReducers = {};
 
-    // 筛选(保证reducer<Function>类型)
+    // 筛选(保证每个reducer必须是Function)
     for (var i = 0; i < reducerKeys.length; i++) {
       var key = reducerKeys[i];
       // 如果reducer是undefined 则警告
@@ -439,7 +441,10 @@
           throw new Error("When called with an action of type " + (actionType ? "\"" + String(actionType) + "\"" : '(unknown type)') + ", the slice reducer for key \"" + _key + "\" returned undefined. " + "To ignore an action, you must explicitly return the previous state. " + "If you want this reducer to hold no value, you can return null instead of undefined.");
         }
 
-        // 局部变更状态树中某个节点状态
+        /**
+         * 状态树变更不是整棵树被替换
+         * 而是某个节点的状态动态更新(局部更新状态树中的某个节点状态)
+         */
         nextState[_key] = nextStateForKey;
 
         // 标识: 状态树是否发生变更(通过判断state tree 和 current node state )
@@ -543,6 +548,7 @@
   }
 
   // 函数组合(洋葱模型)
+  // 返回组合后的函数
   function compose() {
     for (var _len = arguments.length, funcs = new Array(_len), _key = 0; _key < _len; _key++) {
       funcs[_key] = arguments[_key];
@@ -565,12 +571,12 @@
   // 使用中间件
   // middleware 只是包装了 store 的 dispatch 方法
   function applyMiddleware() {
-    // 1. 先把用户入参解析成插件数组
+    // 1. 注册中间件middlewares
     for (var _len = arguments.length, middlewares = new Array(_len), _key = 0; _key < _len; _key++) {
       middlewares[_key] = arguments[_key];
     }
 
-    // 2. 函数柯里化
+    // 2. 通过 函数柯里化 的方式来创建store
     // 2.1 将createStore作为参数传入
     // 2.2 将(reducer, state)作为参数传入
     // 包装store的dispatch方法是在步骤2.2生成store后
@@ -588,7 +594,7 @@
           }
         };
 
-        // 依次调用各个中间件 并返回中间件链
+        // 3. 依次调用各个中间件 并返回中间件链
         var chain = middlewares.map(function (middleware) {
           return middleware(middlewareAPI);
         });

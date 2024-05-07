@@ -12,6 +12,8 @@
 
   - [redux-thunk@2.3.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/redux-thunk%402.3.0/index.js)
 
+  - [redux-promise@0.6.0]()
+
 - vue3
 
   - [vue@3.2.37](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/vue%403.2.37/vue.global.js)
