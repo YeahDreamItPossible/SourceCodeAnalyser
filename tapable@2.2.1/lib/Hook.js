@@ -37,33 +37,39 @@ const PROMISE_DELEGATE = function(...args) {
  * TapItem => 注册事件项(由TapOption 和 InterceptorOption 决定)
  */
 
-// 注册事件选项
-// TapOption: {
-// 		name: String, // 可以用于调整 taps 优先列队项优先级
-// 		stage: Number, // 优先级
-// 		context: undefined, // 废弃
-// 		before: String || Array<String> // 调整
-// }
+/**
+ * 注册事件选项 TapOption: 
+ * {
+ * 		name: String, // 可以用于调整 taps 优先列队项优先级
+ * 		stage: Number, // 优先级
+ * 		context: undefined, // 废弃
+ * 		before: String || Array<String> // 调整
+ * }
+ */
 
-// 拦截器选项
-// InterceptOption: {
-//		context: Object,
-// 		call: Function,
-// 		tap: Function,
-// 		register: Function,
-// 		error: Function,
-// 		done: Function,
-// 		result: Function,
-// }
+/**
+ * 拦截器选项 InterceptOption:
+ * {
+ * 		context: Object,
+ * 		call: Function,
+ * 		tap: Function,
+ * 		register: Function,
+ * 		error: Function,
+ * 		done: Function,
+ * 		result: Function,
+ * }
+ */
 
-// 注册事件项
-// TapItem: {
-// 		name
-// 		type
-// 		fn
-// 		stage
-//  	before
-// }
+/**
+ * 注册事件项 TapItem:
+ * {
+ * 		name: String,
+ * 		type: String,
+ * 		fn: Function,
+ * 		stage: Number, // 优先级
+ * 		before: String || Array<String> // 调整
+ * }
+ */
 
 // 基类
 class Hook {
@@ -88,7 +94,7 @@ class Hook {
 		this._promise = PROMISE_DELEGATE;
 		this.promise = PROMISE_DELEGATE;
 
-		// 
+		// 事件队列(call)
 		this._x = undefined;
 
 		// 绑定this

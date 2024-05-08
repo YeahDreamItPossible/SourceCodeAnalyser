@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 /**
@@ -107,12 +103,14 @@ class HookCodeFactory {
 		this._args = options.args.slice();
 	}
 
+	// 重置
 	deinit() {
 		this.options = undefined;
 		this._args = undefined;
 	}
 
-	// NOTE:
+	// 生成带有拦截器逻辑的内容代码
+	// 调用子类的content方法
 	contentWithInterceptors(options) {
 		if (this.options.interceptors.length > 0) {
 			const onError = options.onError;
@@ -490,12 +488,12 @@ class HookCodeFactory {
 		}
 	}
 
-	// 
+	// 返回
 	getTapFn(idx) {
 		return `_x[${idx}]`;
 	}
 
-	// 
+	// 返回
 	getTap(idx) {
 		return `_taps[${idx}]`;
 	}
