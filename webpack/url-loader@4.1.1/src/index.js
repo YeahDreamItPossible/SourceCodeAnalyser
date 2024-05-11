@@ -74,6 +74,9 @@ function getEncodedData(generator, mimetype, encoding, content, resourcePath) {
   )}`;
 }
 
+/**
+ * 将文件发送到输出目录
+ */
 export default function loader(content) {
   // Loader Options
   const options = getOptions(this) || {};

@@ -6,6 +6,9 @@ import { validate } from 'schema-utils';
 import schema from './options.json';
 import { normalizePath } from './utils';
 
+/**
+ * 将文件作为 data URI 内联到 bundle 中
+ */
 export default function loader(content) {
   const options = getOptions(this);
 
