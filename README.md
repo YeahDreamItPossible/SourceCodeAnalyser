@@ -26,6 +26,12 @@
 
 - tapable
 
+- raw-loader[]
+
+- file-loader[]
+
+- url-loader[]
+
 - localforage
 
   - [localforage@1.10.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/localforage%401.10.0/dist/localforage.js)
