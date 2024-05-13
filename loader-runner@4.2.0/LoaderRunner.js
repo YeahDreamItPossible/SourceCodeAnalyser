@@ -275,6 +275,7 @@ exports.getContext = function getContext(resource) {
 	return dirname(path);
 };
 
+// 运行所有的loaders
 exports.runLoaders = function runLoaders(options, callback) {
 	// read options
 	var resource = options.resource || "";
