@@ -464,6 +464,7 @@ class NormalModule extends Module {
 	 * @param {InputFileSystem} fs file system from reading
 	 * @returns {NormalModuleLoaderContext} loader context
 	 */
+	// 创建loader运行时上下文
 	createLoaderContext(resolver, options, compilation, fs) {
 		const { requestShortener } = compilation.runtimeTemplate;
 		const getCurrentLoaderName = () => {

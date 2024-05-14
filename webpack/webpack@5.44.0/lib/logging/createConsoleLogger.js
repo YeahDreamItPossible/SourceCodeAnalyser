@@ -67,6 +67,7 @@ const filterToFunction = item => {
 /**
  * @enum {number}
  */
+// 日志级别
 const LogLevel = {
 	none: 6,
 	false: 6,

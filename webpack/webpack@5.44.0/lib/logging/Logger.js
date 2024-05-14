@@ -5,6 +5,7 @@
 
 "use strict";
 
+// 日志级别
 const LogType = Object.freeze({
 	error: /** @type {"error"} */ ("error"), // message, c style arguments
 	warn: /** @type {"warn"} */ ("warn"), // message, c style arguments
@@ -31,6 +32,7 @@ exports.LogType = LogType;
 
 /** @typedef {typeof LogType[keyof typeof LogType]} LogTypeEnum */
 
+// 标识符
 const LOG_SYMBOL = Symbol("webpack logger raw log method");
 const TIMERS_SYMBOL = Symbol("webpack logger times");
 const TIMERS_AGGREGATES_SYMBOL = Symbol("webpack logger aggregated times");

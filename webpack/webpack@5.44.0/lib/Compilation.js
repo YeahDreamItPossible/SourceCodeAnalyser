@@ -1122,6 +1122,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @param {string | (function(): string)} name name of the logger, or function called once to get the logger name
 	 * @returns {Logger} a logger with that name
 	 */
+	// 返回logger
 	getLogger(name) {
 		if (!name) {
 			throw new TypeError("Compilation.getLogger(name) called without a name");

@@ -10,6 +10,10 @@ const ExternalModuleFactoryPlugin = require("./ExternalModuleFactoryPlugin");
 /** @typedef {import("../declarations/WebpackOptions").Externals} Externals */
 /** @typedef {import("./Compiler")} Compiler */
 
+/**
+ * 从输出的bundle中排除依赖(以cdn的方式引入的依赖)
+ * 根据Webpack.Config.externals和Webpack.Config.externalsType字段配置
+ */
 class ExternalsPlugin {
 	/**
 	 * @param {string | undefined} type default external type

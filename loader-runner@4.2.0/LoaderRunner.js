@@ -43,7 +43,7 @@ function dirname(path) {
 	return path.substr(0, idx);
 }
 
-// loader 数据类型 统一化
+// loader数据类型标准化
 function createLoaderObject(loader) {
 	var obj = {
 		path: null,
@@ -51,9 +51,9 @@ function createLoaderObject(loader) {
 		fragment: null,
 		options: null,
 		ident: null,
-		normal: null,
-		pitch: null,
-		raw: null,
+		normal: null, // loader函数
+		pitch: null, // pitch函数
+		raw: null,  // raw
 		data: null,
 		pitchExecuted: false,
 		normalExecuted: false
@@ -101,16 +101,34 @@ function createLoaderObject(loader) {
 	return obj;
 }
 
+// 以同步或者异步的方式运行fn
+//
+/**
+ * 以同步或者异步的方式运行fn(loader.pitch || loader.normal)
+ * 并将fn的运行结果作为参数传递到callback 
+ */
 function runSyncOrAsync(fn, context, args, callback) {
+	// 标识: fn运行过程是同步运行
 	var isSync = true;
+	// 标识: fn是否已经被运行
 	var isDone = false;
+	// 标识: fn运行是否有报错
 	var isError = false; // internal error
 	var reportedError = false;
+
+	/**
+	 * 在loader运行时 
+	 * 重载loaderContext.async和loaderContext.callback
+	 * 是为了获取当前loader运行的方式(同步or异步)
+	 * 即: 当运行loader时 如果调用loaderContext.async或者loaderContext.callback时
+	 * 会动态标记当前loader 处理类型为 isSync = false
+	 */
 	context.async = function async() {
 		if(isDone) {
 			if(reportedError) return; // ignore
 			throw new Error("async(): The callback was already called.");
 		}
+		// 标识当前loader运行的方式是异步的
 		isSync = false;
 		return innerCallback;
 	};
@@ -119,7 +137,9 @@ function runSyncOrAsync(fn, context, args, callback) {
 			if(reportedError) return; // ignore
 			throw new Error("callback(): The callback was already called.");
 		}
+		// 标识当前fn已经被运行
 		isDone = true;
+		// 标识当前loader运行的方式是异步的
 		isSync = false;
 		try {
 			callback.apply(null, arguments);
@@ -134,8 +154,7 @@ function runSyncOrAsync(fn, context, args, callback) {
 			return fn.apply(context, args);
 		}());
 
-		// 该处非常巧妙 loader 可同步 or 调用调用
-		// 当loader.normal 调用callback or async 会动态修改 当前loader 处理类型为 isSync = false
+		// 以同步的方式调用loader
 		if(isSync) {
 			isDone = true;
 			if(result === undefined)
@@ -160,9 +179,9 @@ function runSyncOrAsync(fn, context, args, callback) {
 		reportedError = true;
 		callback(e);
 	}
-
 }
 
+// 转换loader.normal返回值
 function convertArgs(args, raw) {
 	if(!raw && Buffer.isBuffer(args[0]))
 		args[0] = utf8BufferToString(args[0]);
@@ -170,49 +189,58 @@ function convertArgs(args, raw) {
 		args[0] = Buffer.from(args[0], "utf-8");
 }
 
-// 迭代 loaders.pitch
+/**
+ * 按照从左到右的方式迭代 loaders.pitch
+ * 如果某个loader.pitch有返回值 则停止迭代 然后从右到左开始迭代loader.normal
+ * loader.pitch主要是通过读取loaderContext.remainingRequest和loaderContext.previousRequest来修改loaderContext.data
+ */
 function iteratePitchingLoaders(options, loaderContext, callback) {
-	// abort after last loader
-	// pitch 阶段结束 开始 迭代loader.normal
+	// 所有的loaders都被运行
+	// pitch阶段结束时 开始 迭代loader.normal
 	if(loaderContext.loaderIndex >= loaderContext.loaders.length)
 		return processResource(options, loaderContext, callback);
 
 	var currentLoaderObject = loaderContext.loaders[loaderContext.loaderIndex];
 
-	// iterate
+	// 如果当前loader.pitch已经被运行 则继续下一个
 	if(currentLoaderObject.pitchExecuted) {
 		loaderContext.loaderIndex++;
 		return iteratePitchingLoaders(options, loaderContext, callback);
 	}
 
-	// load loader module
-	// 加载 loader 模块 
-	// 即 loader.normal = /* 处理数据的函数 */
-	// 即 loader.pitch = /* pitch函数 */
+	/**
+	 * 1. 通过以cjs或者esm的方式来加载loader模块
+	 * 2. 并将loader模块加载后的结果 来绑定loader.normal loader.pitch loader.raw
+	 * 3. 运行loader.pitch
+	 */
 	loadLoader(currentLoaderObject, function(err) {
 		if(err) {
 			loaderContext.cacheable(false);
 			return callback(err);
 		}
 		var fn = currentLoaderObject.pitch;
+
+		// 标识: 标识当前loader.pitch已经被运行
 		currentLoaderObject.pitchExecuted = true;
+		// loader.pitch不存在
 		if(!fn) return iteratePitchingLoaders(options, loaderContext, callback);
 
 		runSyncOrAsync(
 			fn,
-			loaderContext, [loaderContext.remainingRequest, loaderContext.previousRequest, currentLoaderObject.data = {}],
+			loaderContext, 
+			[loaderContext.remainingRequest, loaderContext.previousRequest, currentLoaderObject.data = {}],
 			function(err) {
 				if(err) return callback(err);
 				var args = Array.prototype.slice.call(arguments, 1);
-				// Determine whether to continue the pitching process based on
-				// argument values (as opposed to argument presence) in order
-				// to support synchronous and asynchronous usages.
+				
+				// 筛选
 				var hasArg = args.some(function(value) {
 					return value !== undefined;
 				});
 
 				if(hasArg) {
-					// 当loader.pitch函数有返回值时 loader pitch 结束(开始迭代loader.normal)
+					// 当loader.pitch函数有返回值时 
+					// loader pitch 结束(开始迭代loader.normal)
 					loaderContext.loaderIndex--;
 					iterateNormalLoaders(options, loaderContext, args, callback);
 				} else {
@@ -225,13 +253,15 @@ function iteratePitchingLoaders(options, loaderContext, callback) {
 }
 
 function processResource(options, loaderContext, callback) {
-	// set loader index to last loader
+	// 重设loaderContext.loaderIndex 指向最后一个loader 
 	loaderContext.loaderIndex = loaderContext.loaders.length - 1;
 
 	var resourcePath = loaderContext.resourcePath;
 	if(resourcePath) {
+		// 根据资源路径加载对应的资源
 		options.processResource(loaderContext, resourcePath, function(err, buffer) {
 			if(err) return callback(err);
+			// 该buffer是根据资源路径加载后的资源
 			options.resourceBuffer = buffer;
 			iterateNormalLoaders(options, loaderContext, [buffer], callback);
 		});
@@ -254,17 +284,22 @@ function iterateNormalLoaders(options, loaderContext, args, callback) {
 	}
 
 	var fn = currentLoaderObject.normal;
+	// 标识: 标识当前loader.normal已经被运行
 	currentLoaderObject.normalExecuted = true;
+	// loader.normal不存在
 	if(!fn) {
 		return iterateNormalLoaders(options, loaderContext, args, callback);
 	}
 
+	// loader.normal返回值默认是Buffer
+	// loader.raw = true时 会强制将该返回值转换成String
 	convertArgs(args, currentLoaderObject.raw);
 
 	runSyncOrAsync(fn, loaderContext, args, function(err) {
 		if(err) return callback(err);
 
 		var args = Array.prototype.slice.call(arguments, 1);
+		// 默认将上一个loader.noraml传递个下一个loader.normal
 		iterateNormalLoaders(options, loaderContext, args, callback);
 	});
 }
@@ -275,6 +310,26 @@ exports.getContext = function getContext(resource) {
 	return dirname(path);
 };
 
+/**
+ * loader.normal 指向loader函数
+ * loader.pitch
+ * loader.raw 表示是需要将loader.normal返回值Buffer转换成String
+ */
+
+/**
+ * loader整个运行周期分为加载阶段和运行阶段
+ * 1. 在loader加载阶段时
+ * 1.1 或者通过cjs的方式来加载loader
+ * 2.1 或者通过esm的方式来加载loader
+ * 将loader加载的返回值 绑定loader.normal loader.pitch loader.raw
+ * 2. 在loader运行阶段分为pitch阶段和normal阶段
+ * 2.1 在pitch阶段时
+ * 2.1.1 按照从左到右的顺序依次运行loader.pitch
+ * 2.1.2 如果某个loader.pitch有返回值 则停止迭代loader.pitch 开始normal阶段
+ * 2.2 在normal阶段
+ * 2.2.1 按照从右到左的顺序依次执行loader.normal
+ * 2.2.2 每次运行loader.normal时 会将上一个loader.normal的返回值作为下一个loader.normal的参数
+ */
 // 运行所有的loaders
 exports.runLoaders = function runLoaders(options, callback) {
 	// read options
@@ -293,16 +348,17 @@ exports.runLoaders = function runLoaders(options, callback) {
 	var resourceFragment = splittedResource ? splittedResource.fragment : undefined;
 	var contextDirectory = resourcePath ? dirname(resourcePath) : null;
 
-	// execution state
-	// 设置是否可缓存标志的状态
-	// 默认情况下，loader 的处理结果会被标记为可缓存
+	/**
+	 * execution state
+	 * 设置是否可缓存标志的状态
+	 * 默认情况下，loader 的处理结果会被标记为可缓存
+	 */
 	var requestCacheable = true;
 	var fileDependencies = [];
 	var contextDependencies = [];
 	var missingDependencies = [];
 
-	// prepare loader objects
-	// loader 标准化
+	// loader数据类型标准化
 	loaders = loaders.map(createLoaderObject);
 
 	// 扩展 loaderContext
@@ -314,6 +370,7 @@ exports.runLoaders = function runLoaders(options, callback) {
 	loaderContext.resourceFragment = resourceFragment;
 	loaderContext.async = null;
 	loaderContext.callback = null;
+	// 默认情况下，loader 的处理结果会被标记为可缓存
 	// 调用这个方法然后传入 false，可以关闭 loader 处理结果的缓存能力
 	loaderContext.cacheable = function cacheable(flag) {
 		if(flag === false) {
@@ -344,6 +401,11 @@ exports.runLoaders = function runLoaders(options, callback) {
 		missingDependencies.length = 0;
 		requestCacheable = true;
 	};
+	/**
+	 * 资源路径
+	 * request 中的资源部分，包括 query 参数
+	 * 如: /abc/resource.js?rrr
+	 */
 	Object.defineProperty(loaderContext, "resource", {
 		enumerable: true,
 		get: function() {
@@ -358,6 +420,10 @@ exports.runLoaders = function runLoaders(options, callback) {
 			loaderContext.resourceFragment = splittedResource ? splittedResource.fragment : undefined;
 		}
 	});
+	/**
+	 * 被解析后的资源路径(包括loader路径和资源路径)
+	 * 如: '/abc/loader1.js?xyz!/abc/node_modules/loader2/index.js!/abc/resource.js?rrr'
+	 */
 	Object.defineProperty(loaderContext, "request", {
 		enumerable: true,
 		get: function() {
@@ -366,6 +432,10 @@ exports.runLoaders = function runLoaders(options, callback) {
 			}).concat(loaderContext.resource || "").join("!");
 		}
 	});
+	/**
+	 * 被解析后的资源路径(包括loader路径和资源路径)
+	 * 但是该资源路径不包括已经被解析的loader路径
+	 */
 	Object.defineProperty(loaderContext, "remainingRequest", {
 		enumerable: true,
 		get: function() {
@@ -406,7 +476,7 @@ exports.runLoaders = function runLoaders(options, callback) {
 		}
 	});
 
-	// finish loader context
+	// 阻止loaderContext功能扩展
 	if(Object.preventExtensions) {
 		Object.preventExtensions(loaderContext);
 	}
@@ -424,7 +494,6 @@ exports.runLoaders = function runLoaders(options, callback) {
 				missingDependencies: missingDependencies
 			});
 		}
-		// NOTE:
 		// 当 loader 处理后的结果
 		callback(null, {
 			result: result,

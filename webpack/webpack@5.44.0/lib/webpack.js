@@ -60,7 +60,7 @@ const createMultiCompiler = (childOptions, options) => {
  */
 // 创建Compiler
 const createCompiler = rawOptions => {
-	// normalizer(标准化) options
+	// normalize(标准化) options
 	const options = getNormalizedWebpackOptions(rawOptions);
 
 	// options 初始化默认值

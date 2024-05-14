@@ -194,10 +194,12 @@ class Compiler {
 
 		this.webpack = webpack;
 
+		// 标识: 当前compiler name
 		/** @type {string=} */
 		this.name = undefined;
 		/** @type {Compilation=} */
 		this.parentCompilation = undefined;
+		// 当前实例
 		/** @type {Compiler} */
 		this.root = this;
 
@@ -210,6 +212,7 @@ class Compiler {
 		this.watching = undefined;
 
 		// 文件流
+		// 输出流
 		/** @type {OutputFileSystem} */
 		this.outputFileSystem = null;
 		/** @type {IntermediateFileSystem} */
@@ -219,7 +222,7 @@ class Compiler {
 		/** @type {WatchFileSystem} */
 		this.watchFileSystem = null;
 
-		//
+		// 记录
 		/** @type {string|null} */
 		this.recordsInputPath = null;
 		/** @type {string|null} */
@@ -251,6 +254,7 @@ class Compiler {
 		/** @type {WebpackOptions} */
 		this.options = /** @type {WebpackOptions} */ ({});
 
+		// 上下文
 		// 默认使用 Node.js 进程的当前工作目录 __dirname
 		// 如 /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo
 		this.context = context;
@@ -265,10 +269,10 @@ class Compiler {
 		// 标识: 标识compiler是否正在运行
 		/** @type {boolean} */
 		this.running = false;
-
+		// 标识: 当前compiler是否空闲
 		/** @type {boolean} */
 		this.idle = false;
-
+		// 标识: 是否开启watch模式
 		/** @type {boolean} */
 		this.watchMode = false;
 
@@ -518,7 +522,7 @@ class Compiler {
 		};
 
 		const run = () => {
-			// NodeEnvironmentPlugin 插件
+			// NodeEnvironmentPlugin 插件(绑定compiler文件系统api)
 			// 标识 compiler 开始
 			this.hooks.beforeRun.callAsync(this, err => {
 				if (err) return finalCallback(err);
@@ -946,6 +950,7 @@ class Compiler {
 	 * @param {Callback<void>} callback signals when the call finishes
 	 * @returns {void}
 	 */
+	// 读取缓存的记录
 	readRecords(callback) {
 		if (!this.recordsInputPath) {
 			this.records = {};
@@ -1174,6 +1179,7 @@ class Compiler {
 		return contextModuleFactory;
 	}
 
+	// 返回创建Compilation实例的params
 	newCompilationParams() {
 		const params = {
 			normalModuleFactory: this.createNormalModuleFactory(),

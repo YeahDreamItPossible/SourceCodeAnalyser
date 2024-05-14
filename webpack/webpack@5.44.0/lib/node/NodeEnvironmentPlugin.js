@@ -13,7 +13,9 @@ const nodeConsole = require("./nodeConsole");
 
 /** @typedef {import("../../declarations/WebpackOptions").InfrastructureLogging} InfrastructureLogging */
 /** @typedef {import("../Compiler")} Compiler */
-
+/**
+ * 绑定compiler文件系统api
+ */
 class NodeEnvironmentPlugin {
 	/**
 	 * @param {Object} options options
@@ -49,6 +51,7 @@ class NodeEnvironmentPlugin {
 			compiler.inputFileSystem
 		);
 		compiler.hooks.beforeRun.tap("NodeEnvironmentPlugin", compiler => {
+			// 标识编译开始
 			if (compiler.inputFileSystem === inputFileSystem) {
 				compiler.fsStartTime = Date.now();
 				inputFileSystem.purge();
