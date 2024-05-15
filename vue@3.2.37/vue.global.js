@@ -125,6 +125,16 @@
  * 4. ComputedRefImpl本身是惰性的 只有追踪依赖 没有直接派发更新特征
  */
 
+/**
+ * 概念:
+ * 作用域
+ * 副作用域
+ * 依赖
+ * 作用域存储着副作用域
+ * 副作用域存储着依赖
+ * 依赖中绑定副作用域
+ */
+
 var Vue = (function (exports) {
 	'use strict';
 
@@ -608,7 +618,7 @@ var Vue = (function (exports) {
 				for (i = 0, l = this.cleanups.length; i < l; i++) {
 					this.cleanups[i]();
 				}
-				// 3. 停止当前作用域下的子作用域集合 
+				// 3. 停止当前作用域下的所有子作用域
 				if (this.scopes) {
 					for (i = 0, l = this.scopes.length; i < l; i++) {
 						this.scopes[i].stop(true);
@@ -634,8 +644,7 @@ var Vue = (function (exports) {
 		return new EffectScope(detached);
 	}
 
-	// 当创建副作用时 
-	// 手动将当前副作用绑定到当前激活作用域中
+	// 当创建副作用时 手动将当前副作用绑定到当前激活作用域中
 	function recordEffectScope(effect, scope = activeEffectScope) {
 		if (scope && scope.active) {
 			scope.effects.push(effect);
@@ -720,10 +729,11 @@ var Vue = (function (exports) {
 	// 当前激活的副作用
 	let activeEffect;
 
+	// 标识:
 	const ITERATE_KEY = Symbol('iterate');
 	const MAP_KEY_ITERATE_KEY = Symbol('Map key iterate');
 	
-	// 响应式副作用
+	// 副作用类
 	class ReactiveEffect {
 		constructor(fn, scheduler = null, scope) {
 			// 回调函数
@@ -801,7 +811,11 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 清除副作用
+	/**
+	 * 清除副作用
+	 * 主要是找到当前副作用下的所有依赖
+	 * 清除每个依赖中缓存的当前副作用
+	 */
 	function cleanupEffect(effect) {
 		const { deps } = effect;
 		if (deps.length) {
@@ -4375,9 +4389,6 @@ var Vue = (function (exports) {
 	// KeepAlive 类
 	const KeepAliveImpl = {
 		name: `KeepAlive`,
-		// Marker for special handling inside the renderer. We are not using a ===
-		// check directly on KeepAlive in the renderer, because importing it directly
-		// would prevent it from being tree-shaken.
 		__isKeepAlive: true,
 		props: {
 			include: [String, RegExp, Array],
@@ -4439,6 +4450,8 @@ var Vue = (function (exports) {
 					devtoolsComponentAdded(instance);
 				}
 			};
+
+			// 卸载
 			function unmount(vnode) {
 				// reset the shapeFlag so it can be properly unmounted
 				resetShapeFlag(vnode);
@@ -4452,6 +4465,8 @@ var Vue = (function (exports) {
 					}
 				});
 			}
+
+			// 删除最先
 			function pruneCacheEntry(key) {
 				const cached = cache.get(key);
 				if (!current || cached.type !== current.type) {
@@ -4473,15 +4488,19 @@ var Vue = (function (exports) {
 				// prune post-render after `current` has been updated
 				{ flush: 'post', deep: true });
 			// cache sub tree after render
+
 			let pendingCacheKey = null;
+			// 当组件挂载或者更新后 更新缓存的vnode
 			const cacheSubtree = () => {
 				// fix #1621, the pendingCacheKey could be 0
+				// 缓存当前vnode
 				if (pendingCacheKey != null) {
 					cache.set(pendingCacheKey, getInnerChild(instance.subTree));
 				}
 			};
 			onMounted(cacheSubtree);
 			onUpdated(cacheSubtree);
+
 			onBeforeUnmount(() => {
 				cache.forEach(cached => {
 					const { subTree, suspense } = instance;
@@ -4498,6 +4517,7 @@ var Vue = (function (exports) {
 				});
 			});
 			return () => {
+				// 缓存的key
 				pendingCacheKey = null;
 				if (!slots.default) {
 					return null;
@@ -4505,6 +4525,7 @@ var Vue = (function (exports) {
 				const children = slots.default();
 				const rawVNode = children[0];
 				if (children.length > 1) {
+					// KeepAlive只能有单个子节点
 					{
 						warn$1(`KeepAlive should contain exactly one component child.`);
 					}
@@ -4519,17 +4540,18 @@ var Vue = (function (exports) {
 				}
 				let vnode = getInnerChild(rawVNode);
 				const comp = vnode.type;
-				// for async components, name check should be based in its loaded
-				// inner component if available
+				// 查找组件名
 				const name = getComponentName(isAsyncWrapper(vnode)
 					? vnode.type.__asyncResolved || {}
 					: comp);
 				const { include, exclude, max } = props;
+				// 排除匹配的组件
 				if ((include && (!name || !matches(include, name))) ||
 					(exclude && name && matches(exclude, name))) {
 					current = vnode;
 					return rawVNode;
 				}
+				// 获取缓存的key
 				const key = vnode.key == null ? comp : vnode.key;
 				const cachedVNode = cache.get(key);
 				// clone vnode if it's reused because we are going to mutate it
@@ -4574,8 +4596,6 @@ var Vue = (function (exports) {
 		}
 	};
 
-	// export the public type for h/tsx inference
-	// also to avoid inline import() in generated d.ts files
 	const KeepAlive = KeepAliveImpl;
 
 	function matches(pattern, name) {
@@ -8312,6 +8332,7 @@ var Vue = (function (exports) {
 			container._vnode = vnode;
 		};
 
+		// TODO:
 		const internals = {
 			p: patch,
 			um: unmount,
@@ -8433,6 +8454,15 @@ var Vue = (function (exports) {
 	// 断言: 目标容器是否是SVG
 	const isTargetSVG = (target) => typeof SVGElement !== 'undefined' && target instanceof SVGElement;
 
+	/**
+	 * 报错
+	 * 1. 
+	 * 2. 当根据props.to属性找不到对应的DOM节点时
+	 * 3. 当to属性不存在 且要将插槽内容移动到目标容器中时 报错
+	 * @param {*} props 
+	 * @param {*} select 
+	 * @returns 
+	 */
 	// 根据to属性来获取目标容器DOM
 	const resolveTarget = (props, select) => {
 		const targetSelector = props && props.to;
@@ -8444,6 +8474,7 @@ var Vue = (function (exports) {
 			}
 			else {
 				const target = select(targetSelector);
+				// 当根据props.to属性找不到对应的DOM节点时
 				if (!target) {
 					warn$1(`Failed to locate Teleport target with selector "${targetSelector}". ` +
 						`Note the target element must exist before the component is mounted - ` +
@@ -8454,6 +8485,8 @@ var Vue = (function (exports) {
 			}
 		}
 		else {
+			// 当to属性不存在 且要将插槽内容移动到目标容器中时 报错
+			// 即: props.to 不存在 props.disabled = true
 			if (!targetSelector && !isTeleportDisabled(props)) {
 				warn$1(`Invalid Teleport target: ${targetSelector}`);
 			}
@@ -8462,6 +8495,7 @@ var Vue = (function (exports) {
 	};
 	
 	// Teleport 类
+	// 将插槽内容移动到指定元素中
 	const TeleportImpl = {
 		__isTeleport: true,
 		process(n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized, internals) {
@@ -8476,10 +8510,8 @@ var Vue = (function (exports) {
 			}
 			if (n1 == null) {
 				// 挂载
-				const placeholder = (n2.el = createComment('teleport start')
-				);
-				const mainAnchor = (n2.anchor = createComment('teleport end')
-				);
+				const placeholder = (n2.el = createComment('teleport start'));
+				const mainAnchor = (n2.anchor = createComment('teleport end'));
 
 				// 先在原始位置 插入 两个注释节点
 				insert(placeholder, container, anchor);
@@ -8487,6 +8519,7 @@ var Vue = (function (exports) {
 
 				// 获取目标容器
 				const target = (n2.target = resolveTarget(n2.props, querySelector));
+				// 创建空文本节点
 				const targetAnchor = (n2.targetAnchor = createText(''));
 				if (target) {
 					insert(targetAnchor, target);
@@ -8503,6 +8536,8 @@ var Vue = (function (exports) {
 						mountChildren(children, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized);
 					}
 				};
+				
+				// 根据disable属性 将插槽内容挂载到对应的目标容器中
 				if (disabled) {
 					// 如果禁用元素 则挂载元素到原始位置
 					mount(container, mainAnchor);
