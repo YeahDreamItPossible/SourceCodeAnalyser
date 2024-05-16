@@ -1178,7 +1178,6 @@ var Pinia = (function (exports, vueDemi) {
   function createPinia() {
     // 独立作用域
     const scope = vueDemi.effectScope(true);
-
     // root state
     const state = scope.run(() => vueDemi.ref({}));
 
@@ -1237,24 +1236,13 @@ var Pinia = (function (exports, vueDemi) {
     return pinia;
   }
 
-  /**
-   * Checks if a function is a `StoreDefinition`.
-   *
-   * @param fn - object to test
-   * @returns true if `fn` is a StoreDefinition
-   */
+  // 断言: 当前函数是否是useStore
+  // 通过判断useStore.$id
   const isUseStore = (fn) => {
     return typeof fn === "function" && typeof fn.$id === "string";
   };
-  /**
-   * Mutates in place `newState` with `oldState` to _hot update_ it. It will
-   * remove any key not existing in `newState` and recursively merge plain
-   * objects.
-   *
-   * @param newState - new state object to be patched
-   * @param oldState - old state that should be used to patch newState
-   * @returns - newState
-   */
+
+  // 将对象b合并到对象a
   function patchObject(newState, oldState) {
     // no need to go through symbols because they cannot be serialized anyway
     for (const key in oldState) {
@@ -1539,7 +1527,6 @@ var Pinia = (function (exports, vueDemi) {
     }
 
     // 标识: 当前subscribe正在执行中
-    // 标识: 
     let isListening; // set to true at the end
     // 标识: 
     let isSyncListening; // set to true at the end
@@ -2100,6 +2087,7 @@ var Pinia = (function (exports, vueDemi) {
         {
           useStore._pinia = pinia;
         }
+
       }
 
       const store = pinia._s.get(id);
