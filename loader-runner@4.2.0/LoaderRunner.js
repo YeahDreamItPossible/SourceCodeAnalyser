@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 var fs = require("fs");
 var readFile = fs.readFile.bind(fs);
 var loadLoader = require("./loadLoader");
@@ -101,8 +97,6 @@ function createLoaderObject(loader) {
 	return obj;
 }
 
-// 以同步或者异步的方式运行fn
-//
 /**
  * 以同步或者异步的方式运行fn(loader.pitch || loader.normal)
  * 并将fn的运行结果作为参数传递到callback 
@@ -317,7 +311,7 @@ exports.getContext = function getContext(resource) {
  */
 
 /**
- * loader整个运行周期分为加载阶段和运行阶段
+ * 单个loader整个运行周期分为加载阶段和运行阶段
  * 1. 在loader加载阶段时
  * 1.1 或者通过cjs的方式来加载loader
  * 2.1 或者通过esm的方式来加载loader
@@ -358,6 +352,7 @@ exports.runLoaders = function runLoaders(options, callback) {
 	var contextDependencies = [];
 	var missingDependencies = [];
 
+	// loaders: [{ loader: String, options: Object, ident: String }]
 	// loader数据类型标准化
 	loaders = loaders.map(createLoaderObject);
 

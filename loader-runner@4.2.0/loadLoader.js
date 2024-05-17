@@ -1,9 +1,7 @@
 var LoaderLoadingError = require("./LoaderLoadingError");
 var url;
 
-/**
- * 通过cjs或者esm的方式加载loader
- */
+// 通过cjs或者esm的方式加载loader
 module.exports = function loadLoader(loader, callback) {
 	if(loader.type === "module") {
 		// 1. 以esm的方式加载loader
@@ -44,6 +42,7 @@ module.exports = function loadLoader(loader, callback) {
 
 /**
  * 将加载loader的结果绑定loader上
+ * 绑定 loader.normal loader.pitch loader.raw
  */
 function handleResult(loader, module, callback) {
 	// 该module是以es6或者cjs加载返回的结果
