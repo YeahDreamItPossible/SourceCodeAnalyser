@@ -975,12 +975,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Map<string, Chunk>} */
 		this.namedChunks = new Map();
 
-		// 缓存模块队列(保证模块先后顺序)
-		/** @type {Set<Module>} */
+		// 缓存的模块 Set<Module>
 		this.modules = new Set();
 		arrayToSetDeprecation(this.modules, "Compilation.modules");
-		// 缓存模块<模块路径, 模块>
-		/** @private @type {Map<string, Module>} */
+		// 缓存模块 Map<string, Module>
 		this._modules = new Map();
 
 		this.records = null;
@@ -994,9 +992,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this._assetsRelatedIn = new Map();
 
 		// 收集错误和警告
-		/** @type {WebpackError[]} */
+		// WebpackError[]
 		this.errors = [];
-		/** @type {WebpackError[]} */
+		// WebpackError[]
 		this.warnings = [];
 
 		/** @type {Compilation[]} */
@@ -1004,10 +1002,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Map<string, LogEntry[]>} */
 		this.logging = new Map();
 
-		// DependencyConstructor => ModuleFactory
-		/** @type {Map<DepConstructor, ModuleFactory>} */
+		// Map<DependencyConstructor, ModuleFactory>
 		this.dependencyFactories = new Map();
-
 		/** @type {DependencyTemplates} */
 		this.dependencyTemplates = new DependencyTemplates();
 		this.childrenCounters = {};
@@ -1237,22 +1233,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	/**
-	 * @param {Module} module module to be added that was created
-	 * @param {ModuleCallback} callback returns the module in the compilation,
-	 * it could be the passed one (if new), or an already existing in the compilation
-	 * @returns {void}
-	 */
+	// 添加模块
 	addModule(module, callback) {
 		this.addModuleQueue.add(module, callback);
 	}
 
-	/**
-	 * @param {Module} module module to be added that was created
-	 * @param {ModuleCallback} callback returns the module in the compilation,
-	 * it could be the passed one (if new), or an already existing in the compilation
-	 * @returns {void}
-	 */
 	// 缓存module
 	// compilation.modules
 	// compilation._modules
@@ -1271,7 +1256,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			currentProfile.markRestoringStart();
 		}
 
-		// 主要是为了根据不同的缓存策略 缓存module
+		// 根据Webpack.Config.Cache.type来缓存module
 		this._modulesCache.get(identifier, null, (err, cacheModule) => {
 			if (err) return callback(new ModuleRestoreError(module, err));
 
@@ -1314,24 +1299,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		return this._modules.get(identifier);
 	}
 
-	/**
-	 * Schedules a build of the module object
-	 *
-	 * @param {Module} module module to be built
-	 * @param {ModuleCallback} callback the callback
-	 * @returns {void}
-	 */
+	// 构建模块
 	buildModule(module, callback) {
 		this.buildQueue.add(module, callback);
 	}
 
-	/**
-	 * Builds the module object
-	 *
-	 * @param {Module} module module to be built
-	 * @param {ModuleCallback} callback the callback
-	 * @returns {void}
-	 */
+	// 
 	_buildModule(module, callback) {
 		const currentProfile = this.profile
 			? this.moduleGraph.getProfile(module)
@@ -1574,20 +1547,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	}
 
 	/**
-	 * @typedef {Object} HandleModuleCreationOptions
-	 * @property {ModuleFactory} factory
-	 * @property {Dependency[]} dependencies
-	 * @property {Module | null} originModule
-	 * @property {Partial<ModuleFactoryCreateDataContextInfo>=} contextInfo
-	 * @property {string=} context
-	 * @property {boolean=} recursive recurse into dependencies of the created module
-	 * @property {boolean=} connectOrigin connect the resolved module with the origin module
-	 */
-
-	/**
-	 * @param {HandleModuleCreationOptions} options options object
-	 * @param {ModuleCallback} callback callback
-	 * @returns {void}
+	 * 处理整个模块的创建过程
+	 * 1. 利用 NormalModuleFactory 创建 NormalModule
+	 * 2. 缓存 NormalModule 并构建 NormalModule的引用关系(ModuleGraph)
+	 * 3. 调用 NormalModule.build 来加工 NormalModule
+	 * 4. 解析 NormalModule 中的 dependenies 和 blocks
 	 */
 	handleModuleCreation(
 		{
@@ -1605,7 +1569,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		const currentProfile = this.profile ? new ModuleProfile() : undefined;
 
-		// 1.构建module 并解析loader
+		// 1. NormalModuleFactory获取创建NormalModule需要的参数(loaders...) 并创建NormalModule
 		this.factorizeModule(
 			{
 				currentProfile,
@@ -1633,7 +1597,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					moduleGraph.setProfile(newModule, currentProfile);
 				}
 
-				// 2.根据不同的缓存策略 缓存module
+				// 2. 根据不同的缓存策略 缓存Module
 				this.addModule(newModule, (err, module) => {
 					if (err) {
 						if (!err.module) {
@@ -1644,7 +1608,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						return callback(err);
 					}
 
-					// 构建module与dependency 和 module与module 关系
+					/**
+					 * 构建模块间的引用关系
+					 * 1. 构建 Module 与 Dependency 的引用关系
+					 * 2. 构建 Module 与 Module 的引用关系
+					 */
 					for (let i = 0; i < dependencies.length; i++) {
 						const dependency = dependencies[i];
 						moduleGraph.setResolvedModule(
@@ -1707,10 +1675,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						}
 					}
 
-					// 3.加载文件 并 Parser
-					// 1. 通过不同的loader 拿到源码
-					// 2. 将源码 创建RawSource的实例
-					// 3. parse
+					/**
+					 * 解析 NormalModule
+					 * 1. 运行所有的loaders 返回结果source
+					 * 2. 将 source 构建成 WebpackSource类的实例
+					 * 3. this.parser.parse(this._source.source)
+					 */
 					this.buildModule(module, err => {
 						if (creatingModuleDuringBuildSet !== undefined) {
 							creatingModuleDuringBuildSet.delete(module);
@@ -1735,7 +1705,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 							return callback();
 						}
 
-						// 4.解析module中的dependenies 和 blocks
+						// 4. 解析Module中的 dependenies 和 blocks
 						this.processModuleDependencies(module, err => {
 							if (err) {
 								return callback(err);
@@ -1757,22 +1727,17 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @property {Partial<ModuleFactoryCreateDataContextInfo>=} contextInfo
 	 * @property {string=} context
 	 */
-
 	/**
 	 * @param {FactorizeModuleOptions} options options object
 	 * @param {ModuleCallback} callback callback
 	 * @returns {void}
 	 */
+	// 构建模块
 	factorizeModule(options, callback) {
 		this.factorizeQueue.add(options, callback);
 	}
 
 	// 根绝 context上下文 构建模块
-	/**
-	 * @param {FactorizeModuleOptions} options options object
-	 * @param {ModuleCallback} callback callback
-	 * @returns {void}
-	 */
 	// 创建NormalModule
 	// NormalModuleFactory.create() => NormalModule
 	_factorizeModule(
@@ -1850,24 +1815,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	/**
-	 * @param {string} context context string path
-	 * @param {Dependency} dependency dependency used to create Module chain
-	 * @param {ModuleCallback} callback callback for when module chain is complete
-	 * @returns {void} will throw if dependency instance is not a valid Dependency
-	 */
+	// 
 	addModuleChain(context, dependency, callback) {
 		return this.addModuleTree({ context, dependency }, callback);
 	}
 
-	/**
-	 * @param {Object} options options
-	 * @param {string} options.context context string path
-	 * @param {Dependency} options.dependency dependency used to create Module chain
-	 * @param {Partial<ModuleFactoryCreateDataContextInfo>=} options.contextInfo additional context info for the root module
-	 * @param {ModuleCallback} callback callback for when module chain is complete
-	 * @returns {void} will throw if dependency instance is not a valid Dependency
-	 */
+	// 添加模块树
 	addModuleTree({ context, dependency, contextInfo }, callback) {
 		if (
 			typeof dependency !== "object" ||
@@ -2069,8 +2022,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 	}
 
-	// 暂时未发现特殊作用 仅仅收集 errors 和 warnings
+	// 当 Module Graph 构建完成后 收集 Module 中的 errors 和 warnings
 	finish(callback) {
+		// 清除构建队列
 		this.factorizeQueue.clear();
 		if (this.profile) {
 			this.logger.time("finish module profiles");
@@ -2253,7 +2207,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.logger.time("finish modules");
 		const { modules } = this;
 
-		// NOTE:
 		// ResolverCachePlugin
 		// InferAsyncModulesPlugin
 		// FlagDependencyExportsPlugin
@@ -2264,12 +2217,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// extract warnings and errors from modules
 			this.logger.time("report dependency errors and warnings");
 			this.moduleGraph.freeze();
-			// NOTE:
-			// 收集module及module中的dependencies中的 errors 和 warning
+			// 收集 Module 及 Module.dependencies 中的 errors 和 warning
 			for (const module of modules) {
-				// 递归收集module中的dependencies中的warnings 和 errors
+				// 递归收集 Module 中的 dependencies 中的 warnings 和 errors
 				this.reportDependencyErrorsAndWarnings(module, [module]);
-				// 收集module中的warnings 和 errors
+
+				// 收集 Module 中的 warnings 和 errors
 				const errors = module.getErrors();
 				if (errors !== undefined) {
 					for (const error of errors) {
@@ -2314,6 +2267,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @param {Callback} callback signals when the call finishes
 	 * @returns {void}
 	 */
+	// 
 	seal(callback) {
 		const finalCallback = err => {
 			this.factorizeQueue.clear();
@@ -2332,15 +2286,15 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			ChunkGraph.setChunkGraphForModule(module, chunkGraph);
 		}
 
-		// WarnCaseSensitiveModulesPlugin
-		// (主要是收集errors, 将module的identifier toLocaleLowerCase后对应的module唯一)
-		// compilation 对象停止接收新的模块时触发
+		/**
+		 * compilation 对象停止接收新的模块时触发
+		 * WarnCaseSensitiveModulesPlugin(当模块路径有重复时 抛出错误)
+		 */
 		this.hooks.seal.call();
 
 		this.logger.time("optimize dependencies");
 
 		// SideEffectsFlagPlugin 插件
-		// 仍然是收集错误
 		// 依赖优化开始时触发
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
@@ -2359,7 +2313,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.hooks.beforeChunks.call();
 
 		this.moduleGraph.freeze();
-		/** @type {Map<Entrypoint, Module[]>} */
+		// Map<Entrypoint, Module[]>
 		const chunkGraphInit = new Map();
 
 		// 目前看到大概只是 chunk
@@ -2801,12 +2755,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		});
 	}
 
-	/**
-	 * @param {Module} module module to report from
-	 * @param {DependenciesBlock[]} blocks blocks to report from
-	 * @returns {void}
-	 */
-	// 递归收集module中的dependencies中的warnings 和 errors
+	// 递归收集 Module 中的 dependencies 中的 warnings 和 errors
 	reportDependencyErrorsAndWarnings(module, blocks) {
 		for (let indexBlock = 0; indexBlock < blocks.length; indexBlock++) {
 			const block = blocks[indexBlock];
@@ -3222,13 +3171,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return entrypoint;
 	}
 
-	/**
-	 * This method first looks to see if a name is provided for a new chunk,
-	 * and first looks to see if any named chunks already exist and reuse that chunk instead.
-	 *
-	 * @param {string=} name optional chunk name to be provided
-	 * @returns {Chunk} create a chunk (invoked during seal event)
-	 */
+	// 返回 Chunk
+	// 创建 Chunk 并缓存 Chunk
 	addChunk(name) {
 		if (name) {
 			const chunk = this.namedChunks.get(name);

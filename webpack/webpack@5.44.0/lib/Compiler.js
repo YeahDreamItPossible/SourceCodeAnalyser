@@ -33,49 +33,6 @@ const { join, dirname, mkdirp } = require("./util/fs");
 const { makePathsRelative } = require("./util/identifier");
 const { isSourceEqual } = require("./util/source");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/WebpackOptions").EntryNormalized} Entry */
-/** @typedef {import("../declarations/WebpackOptions").OutputNormalized} OutputOptions */
-/** @typedef {import("../declarations/WebpackOptions").WatchOptions} WatchOptions */
-/** @typedef {import("../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("../declarations/WebpackOptions").WebpackPluginInstance} WebpackPluginInstance */
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./FileSystemInfo").FileSystemInfoEntry} FileSystemInfoEntry */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./util/fs").InputFileSystem} InputFileSystem */
-/** @typedef {import("./util/fs").IntermediateFileSystem} IntermediateFileSystem */
-/** @typedef {import("./util/fs").OutputFileSystem} OutputFileSystem */
-/** @typedef {import("./util/fs").WatchFileSystem} WatchFileSystem */
-
-/**
- * @typedef {Object} CompilationParams
- * @property {NormalModuleFactory} normalModuleFactory
- * @property {ContextModuleFactory} contextModuleFactory
- */
-
-/**
- * @template T
- * @callback Callback
- * @param {Error=} err
- * @param {T=} result
- */
-
-/**
- * @callback RunAsChildCallback
- * @param {Error=} err
- * @param {Chunk[]=} entries
- * @param {Compilation=} compilation
- */
-
-/**
- * @typedef {Object} AssetEmittedInfo
- * @property {Buffer} content
- * @property {Source} source
- * @property {Compilation} compilation
- * @property {string} outputPath
- * @property {string} targetPath
- */
-
 /**
  * @param {string[]} array an array
  * @returns {boolean} true, if the array is sorted
@@ -584,11 +541,6 @@ class Compiler {
 		}
 	}
 
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @param {Callback<void>} callback signals when the assets are emitted
-	 * @returns {void}
-	 */
 	// 创建目录 并写入文件
 	emitAssets(compilation, callback) {
 		let outputPath;
@@ -899,10 +851,7 @@ class Compiler {
 		});
 	}
 
-	/**
-	 * @param {Callback<void>} callback signals when the call finishes
-	 * @returns {void}
-	 */
+	// 将文件写入到缓存中
 	emitRecords(callback) {
 		if (!this.recordsOutputPath) return callback();
 
@@ -946,10 +895,6 @@ class Compiler {
 		});
 	}
 
-	/**
-	 * @param {Callback<void>} callback signals when the call finishes
-	 * @returns {void}
-	 */
 	// 读取缓存的记录
 	readRecords(callback) {
 		if (!this.recordsInputPath) {
@@ -1070,10 +1015,6 @@ class Compiler {
 		return (this._lastCompilation = new Compilation(this));
 	}
 
-	/**
-	 * @param {CompilationParams} params the compilation parameters
-	 * @returns {Compilation} the created compilation
-	 */
 	// 创建 Compilation 的实例 并注册插件compilation.hooks
 	newCompilation(params) {
 		const compilation = this.createCompilation();
@@ -1188,10 +1129,6 @@ class Compiler {
 		return params;
 	}
 
-	/**
-	 * @param {Callback<Compilation>} callback signals when the compilation finishes
-	 * @returns {void}
-	 */
 	compile(callback) {
 		const params = this.newCompilationParams();
 		// 直接执行回调
@@ -1200,7 +1137,7 @@ class Compiler {
 
 			// ExternalsPlugin
 			// normalModuleFactory.hooks.factorize 注册钩子
-			// 主要时 从输出的bundle排除依赖(该依赖通过cdn 或者别的方式 以什么样的方式 引入)
+			// 主要时 从输出的bundle排除依赖(该依赖通过cdn的方式引入)
 			this.hooks.compile.call(params);
 
 			const compilation = this.newCompilation(params);
@@ -1248,11 +1185,7 @@ class Compiler {
 			});
 		});
 	}
-
-	/**
-	 * @param {Callback<void>} callback signals when the compiler closes
-	 * @returns {void}
-	 */
+	
 	close(callback) {
 		// 直接执行回调
 		this.hooks.shutdown.callAsync(err => {

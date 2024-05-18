@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ChunkGroup = require("./ChunkGroup");
@@ -34,7 +29,6 @@ class Entrypoint extends ChunkGroup {
 		this.options = entryOptions;
 
 		// 运行时chunk
-		/** @type {Chunk=} */
 		this._runtimeChunk = undefined;
 		// 入口chunk
 		/** @type {Chunk=} */
@@ -52,11 +46,7 @@ class Entrypoint extends ChunkGroup {
 		return this._initial;
 	}
 
-	/**
-	 * Sets the runtimeChunk for an entrypoint.
-	 * @param {Chunk} chunk the chunk being set as the runtime chunk.
-	 * @returns {void}
-	 */
+	// 设置 
 	setRuntimeChunk(chunk) {
 		this._runtimeChunk = chunk;
 	}
@@ -73,20 +63,12 @@ class Entrypoint extends ChunkGroup {
 		return null;
 	}
 
-	/**
-	 * Sets the chunk with the entrypoint modules for an entrypoint.
-	 * @param {Chunk} chunk the chunk being set as the entrypoint chunk.
-	 * @returns {void}
-	 */
+	// 设置
 	setEntrypointChunk(chunk) {
 		this._entrypointChunk = chunk;
 	}
 
-	/**
-	 * Returns the chunk which contains the entrypoint modules
-	 * (or at least the execution of them)
-	 * @returns {Chunk} chunk
-	 */
+	// 返回
 	getEntrypointChunk() {
 		return this._entrypointChunk;
 	}

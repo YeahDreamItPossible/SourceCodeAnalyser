@@ -1,45 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { SyncHook } = require("tapable");
 
 /**
- * @typedef {Object} RuleCondition
- * @property {string | string[]} property
- * @property {boolean} matchWhenEmpty
- * @property {function(string): boolean} fn
+ * rules: [{ conditions: [], effects: [], rules: [], oneOf: []}]
+ * condition: { property: String, matchWhenEmpty: Boolean || Function, fn: Function}
+ * 
  */
 
 /**
- * @typedef {Object} Condition
- * @property {boolean} matchWhenEmpty
- * @property {function(string): boolean} fn
+ * 模块匹配规则
  */
-
-/**
- * @typedef {Object} CompiledRule
- * @property {RuleCondition[]} conditions
- * @property {(Effect|function(object): Effect[])[]} effects
- * @property {CompiledRule[]=} rules
- * @property {CompiledRule[]=} oneOf
- */
-
-/**
- * @typedef {Object} Effect
- * @property {string} type
- * @property {any} value
- */
-
-/**
- * @typedef {Object} RuleSet
- * @property {Map<string, any>} references map of references in the rule set (may grow over time)
- * @property {function(object): Effect[]} exec execute the rule set
- */
-
 class RuleSetCompiler {
 	constructor(plugins) {
 		this.hooks = Object.freeze({
@@ -52,6 +23,10 @@ class RuleSetCompiler {
 				"references"
 			])
 		});
+		// BasicMatcherRulePlugin
+		// DescriptionDataMatcherRulePlugin
+		// BasicEffectRulePlugin
+		// UseEffectRulePlugin
 		if (plugins) {
 			for (const plugin of plugins) {
 				plugin.apply(this);
@@ -60,11 +35,20 @@ class RuleSetCompiler {
 	}
 
 	/**
-	 * @param {object[]} ruleSet raw user provided rules
-	 * @returns {RuleSet} compiled RuleSet
+	 * 
 	 */
 	compile(ruleSet) {
+		// refs: Map<loader.ident, laoder.options>
 		const refs = new Map();
+		// 在创建NormalModuleFactory实例时 调用ruleSetCompiler.compile
+		// ruleSet: [{ rules: Webpack.Config.defaultRules },{ rules: Wepback.Config.rules }]
+		// rules: [
+		//	{ 
+		//			rules: [], 
+		//			oneOf: [], 
+		//			conditions: [{ property: String, matchWhenEmpty: Boolean || Function, fn: Function }], 
+		//			effects: [{ type: String, value: { loader: String, options: Object, ident: String(唯一标识符) } }]
+		// ]
 		const rules = this.compileRules("ruleSet", ruleSet, refs);
 
 		/**
@@ -143,39 +127,30 @@ class RuleSetCompiler {
 		};
 	}
 
-	/**
-	 * @param {string} path current path
-	 * @param {object[]} rules the raw rules provided by user
-	 * @param {Map<string, any>} refs references
-	 * @returns {CompiledRule[]} rules
-	 */
+	// 编译所有的规则
 	compileRules(path, rules, refs) {
 		return rules.map((rule, i) =>
 			this.compileRule(`${path}[${i}]`, rule, refs)
 		);
 	}
 
-	/**
-	 * @param {string} path current path
-	 * @param {object} rule the raw rule provided by user
-	 * @param {Map<string, any>} refs references
-	 * @returns {CompiledRule} normalized and compiled rule for processing
-	 */
+	// 返回标准化后的规则
 	compileRule(path, rule, refs) {
 		const unhandledProperties = new Set(
 			Object.keys(rule).filter(key => rule[key] !== undefined)
 		);
 
-		/** @type {CompiledRule} */
 		const compiledRule = {
-			conditions: [],
-			effects: [],
-			rules: undefined,
-			oneOf: undefined
+			conditions: [], // 条件
+			effects: [], // 副作用
+			rules: undefined, // 规则
+			oneOf: undefined // 
 		};
 
+		// 编译Webpack.Config.Module.Rule.[xx]
 		this.hooks.rule.call(path, rule, unhandledProperties, compiledRule, refs);
 
+		// 编译Webpack.Config.Module.Rule.rules
 		if (unhandledProperties.has("rules")) {
 			unhandledProperties.delete("rules");
 			const rules = rule.rules;
@@ -184,6 +159,7 @@ class RuleSetCompiler {
 			compiledRule.rules = this.compileRules(`${path}.rules`, rules, refs);
 		}
 
+		// 编译Webpack.Config.Module.Rule.oneOf
 		if (unhandledProperties.has("oneOf")) {
 			unhandledProperties.delete("oneOf");
 			const oneOf = rule.oneOf;
@@ -204,9 +180,14 @@ class RuleSetCompiler {
 	}
 
 	/**
-	 * @param {string} path current path
-	 * @param {any} condition user provided condition value
-	 * @returns {Condition} compiled condition
+	 * 根据条件(condition)编译成对应的匹配规则
+	 * 匹配规则: { matchWhenEmpty: Boolean || Function, fn: Function}
+	 * 条件condition:
+	 * 1. 字符串: 匹配输入必须以提供的字符串开始
+	 * 2. 正则表达式: test 输入值
+	 * 3. 函数
+	 * 4. 条件数组: test 输入值
+	 * 5. 对象: 匹配所有属性
 	 */
 	compileCondition(path, condition) {
 		if (condition === "") {
@@ -222,12 +203,14 @@ class RuleSetCompiler {
 				"Expected condition but got falsy value"
 			);
 		}
+		// 字符串匹配: 匹配输入必须以提供的字符串开始
 		if (typeof condition === "string") {
 			return {
 				matchWhenEmpty: condition.length === 0,
 				fn: str => typeof str === "string" && str.startsWith(condition)
 			};
 		}
+		// 函数
 		if (typeof condition === "function") {
 			try {
 				return {
@@ -242,12 +225,14 @@ class RuleSetCompiler {
 				);
 			}
 		}
+		// 正则匹配
 		if (condition instanceof RegExp) {
 			return {
 				matchWhenEmpty: condition.test(""),
 				fn: v => typeof v === "string" && condition.test(v)
 			};
 		}
+		// 条件数组匹配
 		if (Array.isArray(condition)) {
 			const items = condition.map((c, i) =>
 				this.compileCondition(`${path}[${i}]`, c)
@@ -263,10 +248,12 @@ class RuleSetCompiler {
 			);
 		}
 
+		// 对象匹配
 		const conditions = [];
 		for (const key of Object.keys(condition)) {
 			const value = condition[key];
 			switch (key) {
+				// 匹配数组中任何一个条件
 				case "or":
 					if (value) {
 						if (!Array.isArray(value)) {
@@ -279,6 +266,7 @@ class RuleSetCompiler {
 						conditions.push(this.compileCondition(`${path}.or`, value));
 					}
 					break;
+				// 必须匹配数组中的所有条件
 				case "and":
 					if (value) {
 						if (!Array.isArray(value)) {
@@ -295,6 +283,7 @@ class RuleSetCompiler {
 						}
 					}
 					break;
+				// 必须排除这个条件
 				case "not":
 					if (value) {
 						const matcher = this.compileCondition(`${path}.not`, value);
@@ -323,10 +312,7 @@ class RuleSetCompiler {
 		return this.combineConditionsAnd(conditions);
 	}
 
-	/**
-	 * @param {Condition[]} conditions some conditions
-	 * @returns {Condition} merged condition
-	 */
+	// 当条件数组匹配时 只需满足至少一个匹配条件即可
 	combineConditionsOr(conditions) {
 		if (conditions.length === 0) {
 			return {
@@ -343,10 +329,7 @@ class RuleSetCompiler {
 		}
 	}
 
-	/**
-	 * @param {Condition[]} conditions some conditions
-	 * @returns {Condition} merged condition
-	 */
+	// 当对象匹配时 需要满足对象中的所有匹配规则
 	combineConditionsAnd(conditions) {
 		if (conditions.length === 0) {
 			return {
@@ -363,12 +346,7 @@ class RuleSetCompiler {
 		}
 	}
 
-	/**
-	 * @param {string} path current path
-	 * @param {any} value value at the error location
-	 * @param {string} message message explaining the problem
-	 * @returns {Error} an error object
-	 */
+	// 抛出错误
 	error(path, value, message) {
 		return new Error(
 			`Compiling RuleSet failed: ${message} (at ${path}: ${value})`

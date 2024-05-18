@@ -1,13 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
 const getLazyHashedEtag = require("./cache/getLazyHashedEtag");
 const mergeEtags = require("./cache/mergeEtags");
+
+/**
+ * 装饰器模式
+ */
 
 /** @typedef {import("./Cache")} Cache */
 /** @typedef {import("./Cache").Etag} Etag */
@@ -195,19 +194,12 @@ class ItemCacheFacade {
 }
 
 class CacheFacade {
-	/**
-	 * @param {Cache} cache the root cache
-	 * @param {string} name the child cache name
-	 */
 	constructor(cache, name) {
 		this._cache = cache;
 		this._name = name;
 	}
 
-	/**
-	 * @param {string} name the child cache name#
-	 * @returns {CacheFacade} child cache
-	 */
+	// 复制
 	getChildCache(name) {
 		return new CacheFacade(this._cache, `${this._name}|${name}`);
 	}
@@ -242,23 +234,12 @@ class CacheFacade {
 		return mergeEtags(a, b);
 	}
 
-	/**
-	 * @template T
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @param {CallbackCache<T>} callback signals when the value is retrieved
-	 * @returns {void}
-	 */
+	// 读取缓存
 	get(identifier, etag, callback) {
 		this._cache.get(`${this._name}|${identifier}`, etag, callback);
 	}
 
-	/**
-	 * @template T
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @returns {Promise<T>} promise with the data
-	 */
+	// 以返回Promise的方式读取缓存
 	getPromise(identifier, etag) {
 		return new Promise((resolve, reject) => {
 			this._cache.get(`${this._name}|${identifier}`, etag, (err, data) => {
@@ -271,25 +252,12 @@ class CacheFacade {
 		});
 	}
 
-	/**
-	 * @template T
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @param {T} data the value to store
-	 * @param {CallbackCache<void>} callback signals when the value is stored
-	 * @returns {void}
-	 */
+	// 缓存
 	store(identifier, etag, data, callback) {
 		this._cache.store(`${this._name}|${identifier}`, etag, data, callback);
 	}
 
-	/**
-	 * @template T
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @param {T} data the value to store
-	 * @returns {Promise<void>} promise signals when the value is stored
-	 */
+	// 以返回Promise的方式缓存
 	storePromise(identifier, etag, data) {
 		return new Promise((resolve, reject) => {
 			this._cache.store(`${this._name}|${identifier}`, etag, data, err => {

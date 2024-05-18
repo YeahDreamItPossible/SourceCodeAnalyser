@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const glob2regexp = require("glob-to-regexp");
@@ -29,7 +24,7 @@ const formatLocation = require("../formatLocation");
  * @property {Map<Module, Set<string>>} dynamic
  */
 
-/** @type {WeakMap<any, Map<string, RegExp>>} */
+// WeakMap<any, Map<string, RegExp>>
 const globToRegexpCache = new WeakMap();
 
 /**
@@ -51,17 +46,11 @@ const globToRegexp = (glob, cache) => {
 };
 
 class SideEffectsFlagPlugin {
-	/**
-	 * @param {boolean} analyseSource analyse source code for side effects
-	 */
 	constructor(analyseSource = true) {
+		// 表示: 是否要分析源代码的副作用
 		this._analyseSource = analyseSource;
 	}
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+
 	apply(compiler) {
 		let cache = globToRegexpCache.get(compiler.root);
 		if (cache === undefined) {
@@ -72,15 +61,22 @@ class SideEffectsFlagPlugin {
 			"SideEffectsFlagPlugin",
 			(compilation, { normalModuleFactory }) => {
 				const moduleGraph = compilation.moduleGraph;
+
+				/**
+				 * 根据 package.json 中的 sideEffects 字段 判断该模块是否有副作用
+				 * 然后设置 Module.factoryMeta.sideEffectFree
+				 */
 				normalModuleFactory.hooks.module.tap(
 					"SideEffectsFlagPlugin",
 					(module, data) => {
 						const resolveData = data.resourceResolveData;
+						// resolveData.descriptionFileData 是读取 package.json 后返回的内容
 						if (
 							resolveData &&
 							resolveData.descriptionFileData &&
 							resolveData.relativePath
 						) {
+							// package.json sideEffects字段
 							const sideEffects = resolveData.descriptionFileData.sideEffects;
 							if (sideEffects !== undefined) {
 								if (module.factoryMeta === undefined) {
@@ -99,6 +95,11 @@ class SideEffectsFlagPlugin {
 						return module;
 					}
 				);
+
+				/**
+				 * 根据 Webpack.Config.Module.Type 字段 判断该模块是否有副作用
+				 * 然后设置 Module.factoryMeta.sideEffectFree
+				 */
 				normalModuleFactory.hooks.module.tap(
 					"SideEffectsFlagPlugin",
 					(module, data) => {
@@ -111,6 +112,7 @@ class SideEffectsFlagPlugin {
 						return module;
 					}
 				);
+
 				if (this._analyseSource) {
 					/**
 					 * @param {JavascriptParser} parser the parser
@@ -229,6 +231,10 @@ class SideEffectsFlagPlugin {
 							.tap("SideEffectsFlagPlugin", parserHandler);
 					}
 				}
+
+				/**
+				 * 
+				 */
 				compilation.hooks.optimizeDependencies.tap(
 					{
 						name: "SideEffectsFlagPlugin",
@@ -319,6 +325,7 @@ class SideEffectsFlagPlugin {
 		);
 	}
 
+	// 根据 package.json 中的 sideEffects 字段 判断该模块是否有副作用
 	static moduleHasSideEffects(moduleName, flagValue, cache) {
 		switch (typeof flagValue) {
 			case "undefined":

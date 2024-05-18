@@ -183,11 +183,17 @@ makeSerializable(
 /** @type {WeakMap<Compilation, NormalModuleCompilationHooks>} */
 const compilationHooksMap = new WeakMap();
 
+/**
+ * 资源引入路径:
+ * import { add } from '../loaders/first.js?auth=Lee!../loaders/second.js?user=Wang!./math.js?ts=123'
+ * 模块规则配置:
+ * [
+ * 		{ test: /\.js$/, loader: './loaders/first.js', options: { name: 'first' } },
+ * 		{ test: /\.js$/, loader: './loaders/second.js', options: { name: 'second'} }
+ * ]
+ */
+
 class NormalModule extends Module {
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @returns {NormalModuleCompilationHooks} the attached hooks
-	 */
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
 			throw new TypeError(
@@ -243,38 +249,45 @@ class NormalModule extends Module {
 	}) {
 		super(type, getContext(resource), layer);
 
-		// Info from Factory
-		// 绝对路径: 该路径包括了loaders路径和资源路径
-		/** @type {string} */
+		// 模块路径: 将loaders路径和资源路径组合后的绝对路径
+		// 例如: 
+		// /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang! +
+		// /path/laoders/first.js???ruleSet[1].rules[0]!/path/loaders/second.js?ruleSet[1].rules[1]! +
+		// /path/math.js?ts=123
 		this.request = request;
-		// 绝对路径?
-		/** @type {string} */
+		// 模块路径: 将模块引入路径全部转换成绝对路径
+		// 例如: /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang!/path/math.js?ts=123
 		this.userRequest = userRequest;
-		// 相对路径: 模块路径
-		/** @type {string} */
+		// 资源路径: 模块引入路径
+		// 例如: ../loaders/first.js?auth=Lee!../loaders/second.js?user=Wang!./math.js?ts=123
 		this.rawRequest = rawRequest;
 
 		/** @type {boolean} */
 		this.binary = /^(asset|webassembly)\b/.test(type);
 
-		/** @type {Parser} */
+		// 解析器
 		this.parser = parser;
+		// 解析器选项
 		this.parserOptions = parserOptions;
 
-		/** @type {Generator} */
+		// 生成器
 		this.generator = generator;
+		// 生成器选项
 		this.generatorOptions = generatorOptions;
 
-		// 绝对路径: 资源路径
-		/** @type {string} */
+		// 资源路径(绝对路径 且包括参数)
+		// 例如: /path/math.js?ts=123
 		this.resource = resource;
 		this.resourceResolveData = resourceResolveData;
 		//
 		/** @type {string | undefined} */
 		this.matchResource = matchResource;
 
-		// loaders
-		/** @type {LoaderItem[]} */
+		/**
+		 * NormalModuleFactory 筛选后的loaders
+		 * 1. 模块引入路径解析出来的loaders
+		 * 2. 根据 Webpack.Config.Module.Rule 匹配出来的loaders
+		 */
 		this.loaders = loaders;
 		if (resolveOptions !== undefined) {
 			// already declared in super class
@@ -282,16 +295,12 @@ class NormalModule extends Module {
 		}
 
 		// Info from Build
-		/** @type {WebpackError=} */
 		this.error = null;
-		// 模块源文件
-		/** @private @type {Source=} */
+		// 源文件经过loader加工后的source(WebpackSource实例)
 		this._source = null;
-		// 源文件尺寸
-		/** @private @type {Map<string, number> | undefined} **/
+		// source尺寸
 		this._sourceSizes = undefined;
-		// 源文件类型
-		/** @private @type {Set<string>} */
+		// source类型
 		this._sourceTypes = undefined;
 
 		// Cache
@@ -302,9 +311,7 @@ class NormalModule extends Module {
 		this._addedSideEffectsBailout = undefined;
 	}
 
-	/**
-	 * @returns {string} a unique identifier of the module
-	 */
+	// 返回模块标识符
 	identifier() {
 		if (this.layer === null) {
 			return this.request;
@@ -457,13 +464,6 @@ class NormalModule extends Module {
 		return new RawSource(content);
 	}
 
-	/**
-	 * @param {ResolverWithOptions} resolver a resolver
-	 * @param {WebpackOptions} options webpack options
-	 * @param {Compilation} compilation the compilation
-	 * @param {InputFileSystem} fs file system from reading
-	 * @returns {NormalModuleLoaderContext} loader context
-	 */
 	// 创建loader运行时上下文
 	createLoaderContext(resolver, options, compilation, fs) {
 		const { requestShortener } = compilation.runtimeTemplate;
@@ -642,6 +642,7 @@ class NormalModule extends Module {
 		return loaderContext;
 	}
 
+	// 返回当前loader
 	getCurrentLoader(loaderContext, index = loaderContext.loaderIndex) {
 		if (
 			this.loaders &&
@@ -655,14 +656,8 @@ class NormalModule extends Module {
 		return null;
 	}
 
-	/**
-	 * @param {string} context the compilation context
-	 * @param {string | Buffer} content the content
-	 * @param {string | TODO} sourceMap an optional source map
-	 * @param {Object=} associatedObjectForCache object for caching
-	 * @returns {Source} the created source
-	 */
-	// 该方法作用是 将loader 加载后的结果 封装成 Source 的实例
+	
+	// 将loaders加载后的结果source 封装成 WebpackSource 的实例
 	// 原因: 为了快速获取该结果的特性
 	createSource(context, content, sourceMap, associatedObjectForCache) {
 		if (Buffer.isBuffer(content)) {
@@ -696,14 +691,10 @@ class NormalModule extends Module {
 	}
 
 	/**
-	 * @param {WebpackOptions} options webpack options
-	 * @param {Compilation} compilation the compilation
-	 * @param {ResolverWithOptions} resolver the resolver
-	 * @param {InputFileSystem} fs the file system
-	 * @param {function(WebpackError=): void} callback callback function
-	 * @returns {void}
+	 * 构建 NormalModule
+	 * 1. 运行所有的loaders 返回结果source
+	 * 2. 将 source 构建成 WebpackSource类的实例
 	 */
-	// 该方法作用是 运行loaders 并将结果 封装成类的实例
 	doBuild(options, compilation, resolver, fs, callback) {
 		const loaderContext = this.createLoaderContext(
 			resolver,
@@ -747,7 +738,7 @@ class NormalModule extends Module {
 				return callback(error);
 			}
 
-			// 将 单纯的content 创建成 一个 Source 实例
+			// 将 source 创建成 一个 Source 实例
 			this._source = this.createSource(
 				options.context,
 				this.binary ? asBuffer(source) : asString(source),
@@ -774,7 +765,7 @@ class NormalModule extends Module {
 			return;
 		}
 
-		// 运行loaders 来获取 loaders 处理后的内容
+		// 运行loaders 来获取 source
 		runLoaders(
 			{
 				resource: this.resource,
@@ -887,6 +878,7 @@ class NormalModule extends Module {
 		return false;
 	}
 
+	// 
 	_initBuildHash(compilation) {
 		const hash = createHash(compilation.outputOptions.hashFunction);
 		if (this._source) {
@@ -899,12 +891,10 @@ class NormalModule extends Module {
 	}
 
 	/**
-	 * @param {WebpackOptions} options webpack options
-	 * @param {Compilation} compilation the compilation
-	 * @param {ResolverWithOptions} resolver the resolver
-	 * @param {InputFileSystem} fs the file system
-	 * @param {function(WebpackError=): void} callback callback function
-	 * @returns {void}
+	 * 构建 NormalModule
+	 * 1. 运行所有的loaders 返回结果source
+	 * 2. 将 source 构建成 WebpackSource类的实例
+	 * 3. this.parser.parse(this._source.source)
 	 */
 	build(options, compilation, resolver, fs, callback) {
 		this._forceBuild = false;
@@ -1041,7 +1031,7 @@ class NormalModule extends Module {
 
 			let result;
 			try {
-				// 此阶段获取子模块
+				// 运行parser
 				result = this.parser.parse(this._ast || this._source.source(), {
 					current: this,
 					module: this,
@@ -1068,6 +1058,7 @@ class NormalModule extends Module {
 	 * @param {ModuleGraph} moduleGraph the module graph
 	 * @returns {ConnectionState} how this module should be connected to referencing modules when consumed for side-effects only
 	 */
+	// 返回
 	getSideEffectsConnectionState(moduleGraph) {
 		if (this.factoryMeta !== undefined) {
 			if (this.factoryMeta.sideEffectFree) return false;
@@ -1112,9 +1103,7 @@ class NormalModule extends Module {
 		}
 	}
 
-	/**
-	 * @returns {Set<string>} types available (do not mutate)
-	 */
+	// 返回
 	getSourceTypes() {
 		if (this._sourceTypes === undefined) {
 			this._sourceTypes = this.generator.getTypes(this);
@@ -1196,12 +1185,7 @@ class NormalModule extends Module {
 		this._forceBuild = true;
 	}
 
-	/**
-	 * @param {NeedBuildContext} context context info
-	 * @param {function(WebpackError=, boolean=): void} callback callback function, returns true, if the module needs a rebuild
-	 * @returns {void}
-	 */
-	// 模块是否需要打包
+	// 判断当前 NoramlModule 是否需要构建
 	needBuild({ fileSystemInfo, valueCacheVersions }, callback) {
 		// build if enforced
 		if (this._forceBuild) return callback(null, true);

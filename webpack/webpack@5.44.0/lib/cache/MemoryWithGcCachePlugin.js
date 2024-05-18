@@ -1,26 +1,19 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Cache = require("../Cache");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../Cache").Etag} Etag */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
+/**
+ * 缓存策略Webpack.Config.Cache.type
+ * 内存缓存
+ */
 class MemoryWithGcCachePlugin {
 	constructor({ maxGenerations }) {
+		// 定义内存缓存中未使用的缓存项的生命周期
+		// cache.maxGenerations: 1: 在一次编译中未使用的缓存被删除
+		// cache.maxGenerations: Infinity: 缓存将永远保存
 		this._maxGenerations = maxGenerations;
 	}
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+	
 	apply(compiler) {
 		const maxGenerations = this._maxGenerations;
 		/** @type {Map<string, { etag: Etag | null, data: any }>} */
@@ -78,12 +71,16 @@ class MemoryWithGcCachePlugin {
 				}
 			}
 		});
+
+		// 缓存
 		compiler.cache.hooks.store.tap(
 			{ name: "MemoryWithGcCachePlugin", stage: Cache.STAGE_MEMORY },
 			(identifier, etag, data) => {
 				cache.set(identifier, { etag, data });
 			}
 		);
+
+		// 读取缓存
 		compiler.cache.hooks.get.tap(
 			{ name: "MemoryWithGcCachePlugin", stage: Cache.STAGE_MEMORY },
 			(identifier, etag, gotHandlers) => {
@@ -117,6 +114,8 @@ class MemoryWithGcCachePlugin {
 				});
 			}
 		);
+
+		// 清除缓存
 		compiler.cache.hooks.shutdown.tap(
 			{ name: "MemoryWithGcCachePlugin", stage: Cache.STAGE_MEMORY },
 			() => {

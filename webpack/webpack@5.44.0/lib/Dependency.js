@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const memoize = require("./util/memoize");
@@ -83,6 +78,7 @@ const getIgnoredModule = memoize(() => {
 	return new RawModule("/* (ignored) */", `ignored`, `(ignored)`);
 });
 
+// 依赖
 class Dependency {
 	constructor() {
 		/** @type {Module} */
@@ -113,23 +109,17 @@ class Dependency {
 		this._loc = undefined;
 	}
 
-	/**
-	 * @returns {string} a display name for the type of dependency
-	 */
+	// 返回 Dependency 的类型
 	get type() {
 		return "unknown";
 	}
 
-	/**
-	 * @returns {string} a dependency category, typical categories are "commonjs", "amd", "esm"
-	 */
+	// 返回 Dependency 的分类
+	// commonjs || amd || esm
 	get category() {
 		return "unknown";
 	}
 
-	/**
-	 * @returns {DependencyLocation} location
-	 */
 	get loc() {
 		if (this._loc !== undefined) return this._loc;
 		/** @type {SyntheticDependencyLocation & RealDependencyLocation} */
@@ -177,9 +167,6 @@ class Dependency {
 		this._loc = loc;
 	}
 
-	/**
-	 * @returns {string | null} an identifier to merge equal requests
-	 */
 	// 获取资源标识符
 	getResourceIdentifier() {
 		return null;

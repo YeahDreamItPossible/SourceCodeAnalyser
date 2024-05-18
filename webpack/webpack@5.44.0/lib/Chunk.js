@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ChunkGraph = require("./ChunkGraph");
@@ -61,9 +56,6 @@ let debugId = 1000;
  * Chunks are "rendered" into bundles that get emitted when the build completes.
  */
 class Chunk {
-	/**
-	 * @param {string=} name of chunk being created, is optional (for subclasses)
-	 */
 	constructor(name) {
 		//
 		/** @type {number | string | null} */
@@ -74,7 +66,6 @@ class Chunk {
 		this.debugId = debugId++;
 
 		// 标识: chunk名
-		/** @type {string} */
 		this.name = name;
 
 		/** @type {SortableSet<string>} */
@@ -83,11 +74,11 @@ class Chunk {
 		this.preventIntegration = false;
 
 		// 输出文件模板 output.filename
-		/** @type {(string | function(PathData, AssetInfo=): string)?} */
+		// (string | function(PathData, AssetInfo=): string)?
 		this.filenameTemplate = undefined;
 
 		// Entrypoint
-		/** @private @type {SortableSet<ChunkGroup>} */
+		// SortableSet<ChunkGroup>
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
 
 		// 标识:
@@ -102,7 +93,6 @@ class Chunk {
 		this.auxiliaryFiles = new Set();
 
 		// 标识: 标识当前chunk是否已被输出(不确定)
-		/** @type {boolean} */
 		this.rendered = false;
 
 		/** @type {string=} */
@@ -489,18 +479,12 @@ class Chunk {
 		return undefined;
 	}
 
-	/**
-	 * @param {ChunkGroup} chunkGroup the chunkGroup the chunk is being added
-	 * @returns {void}
-	 */
+	// 添加 ChunkGroup
 	addGroup(chunkGroup) {
 		this._groups.add(chunkGroup);
 	}
 
-	/**
-	 * @param {ChunkGroup} chunkGroup the chunkGroup the chunk is being removed from
-	 * @returns {void}
-	 */
+	// 移除 ChunkGroup
 	removeGroup(chunkGroup) {
 		this._groups.delete(chunkGroup);
 	}

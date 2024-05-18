@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
@@ -129,24 +124,21 @@ class Module extends DependenciesBlock {
 		super();
 
 		// 模块类型
-		/** @type {string} */
 		this.type = type;
-		// 上下文模块路径
-		/** @type {string | null} */
+		// 上下文模块路径(绝对路径)
+		// 例如: /path/myProject/src
 		this.context = context;
 		/** @type {string | null} */
 		this.layer = layer;
 		// 标识: 标识当前module是否需要Id
-		/** @type {boolean} */
 		this.needId = true;
-
-		// Unique Id
-		/** @type {number} */
+		// 模块唯一标识符
 		this.debugId = debugId++;
 
 		// Info from Factory
 		/** @type {ResolveOptions} */
 		this.resolveOptions = EMPTY_RESOLVE_OPTIONS;
+		// 
 		/** @type {object | undefined} */
 		this.factoryMeta = undefined;
 		// TODO refactor this -> options object filled from Factory
@@ -157,18 +149,17 @@ class Module extends DependenciesBlock {
 		this.useSimpleSourceMap = false;
 
 
-		// Info from Build
 		// 警告
-		/** @type {WebpackError[] | undefined} */
+		// WebpackError[]
 		this._warnings = undefined;
 		// 错误
-		/** @type {WebpackError[] | undefined} */
+		// WebpackError[]
 		this._errors = undefined;
 		// 打包元信息
-		/** @type {BuildMeta} */
+		// BuildMeta
 		this.buildMeta = undefined;
 		// 打包信息
-		/** @type {Record<string, any>} */
+		// Record<string, any>
 		this.buildInfo = undefined;
 		/** @type {Dependency[] | undefined} */
 		// NOTE:
@@ -513,10 +504,8 @@ class Module extends DependenciesBlock {
 		super.clearDependenciesAndBlocks();
 	}
 
-	/**
-	 * @param {WebpackError} warning the warning
-	 * @returns {void}
-	 */
+	// 添加警告
+	// warning: <WebpackError>
 	addWarning(warning) {
 		if (this._warnings === undefined) {
 			this._warnings = [];
@@ -524,24 +513,18 @@ class Module extends DependenciesBlock {
 		this._warnings.push(warning);
 	}
 
-	/**
-	 * @returns {Iterable<WebpackError> | undefined} list of warnings if any
-	 */
+	// 返回 Module 中的所有警告
 	getWarnings() {
 		return this._warnings;
 	}
 
-	/**
-	 * @returns {number} number of warnings
-	 */
+	// 返回 Module 中的警告数量
 	getNumberOfWarnings() {
 		return this._warnings !== undefined ? this._warnings.length : 0;
 	}
 
-	/**
-	 * @param {WebpackError} error the error
-	 * @returns {void}
-	 */
+	// 添加错误
+	// error: <WebpackError>
 	addError(error) {
 		if (this._errors === undefined) {
 			this._errors = [];
@@ -549,24 +532,17 @@ class Module extends DependenciesBlock {
 		this._errors.push(error);
 	}
 
-	/**
-	 * @returns {Iterable<WebpackError> | undefined} list of errors if any
-	 */
+	// 返回 Module 中的所有错误
 	getErrors() {
 		return this._errors;
 	}
 
-	/**
-	 * @returns {number} number of errors
-	 */
+	// 返回 Module 中的错误数量
 	getNumberOfErrors() {
 		return this._errors !== undefined ? this._errors.length : 0;
 	}
 
-	/**
-	 * removes all warnings and errors
-	 * @returns {void}
-	 */
+	// 清空 Module 中的所有警告 和 错误
 	clearWarningsAndErrors() {
 		if (this._warnings !== undefined) {
 			this._warnings.length = 0;
@@ -735,37 +711,19 @@ class Module extends DependenciesBlock {
 		// should be overridden to support this feature
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @returns {string} a unique identifier of the module
-	 */
+	// 抽象方法
 	identifier() {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @param {RequestShortener} requestShortener the request shortener
-	 * @returns {string} a user readable identifier of the module
-	 */
+	// 抽象方法
 	readableIdentifier(requestShortener) {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @param {WebpackOptions} options webpack options
-	 * @param {Compilation} compilation the compilation
-	 * @param {ResolverWithOptions} resolver the resolver
-	 * @param {InputFileSystem} fs the file system
-	 * @param {function(WebpackError=): void} callback callback function
-	 * @returns {void}
-	 */
+	// 抽象方法
 	build(options, compilation, resolver, fs, callback) {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();

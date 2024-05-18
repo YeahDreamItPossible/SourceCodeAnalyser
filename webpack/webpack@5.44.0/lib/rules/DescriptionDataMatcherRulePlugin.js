@@ -1,20 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
-
-/** @typedef {import("./RuleSetCompiler")} RuleSetCompiler */
-/** @typedef {import("./RuleSetCompiler").RuleCondition} RuleCondition */
 
 const RULE_PROPERTY = "descriptionData";
 
+/**
+ * 根据条件(condition.descriptionData)编译成对应的匹配规则条件
+ * 匹配规则: { property: String, matchWhenEmpty: Boolean || Function, fn: Function}\
+ */
 class DescriptionDataMatcherRulePlugin {
-	/**
-	 * @param {RuleSetCompiler} ruleSetCompiler the rule set compiler
-	 * @returns {void}
-	 */
 	apply(ruleSetCompiler) {
 		ruleSetCompiler.hooks.rule.tap(
 			"DescriptionDataMatcherRulePlugin",

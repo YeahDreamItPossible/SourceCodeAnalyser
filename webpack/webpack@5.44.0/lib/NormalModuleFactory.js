@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
@@ -29,45 +24,13 @@ const { cachedCleverMerge, cachedSetProperty } = require("./util/cleverMerge");
 const { join } = require("./util/fs");
 const { parseResource } = require("./util/identifier");
 
-/** @typedef {import("../declarations/WebpackOptions").ModuleOptionsNormalized} ModuleOptions */
-/** @typedef {import("./Generator")} Generator */
-/** @typedef {import("./ModuleFactory").ModuleFactoryCreateData} ModuleFactoryCreateData */
-/** @typedef {import("./ModuleFactory").ModuleFactoryResult} ModuleFactoryResult */
-/** @typedef {import("./Parser")} Parser */
-/** @typedef {import("./ResolverFactory")} ResolverFactory */
-/** @typedef {import("./dependencies/ModuleDependency")} ModuleDependency */
-/** @typedef {import("./util/fs").InputFileSystem} InputFileSystem */
-
-/**
- * @typedef {Object} ResolveData
- * @property {ModuleFactoryCreateData["contextInfo"]} contextInfo
- * @property {ModuleFactoryCreateData["resolveOptions"]} resolveOptions
- * @property {string} context
- * @property {string} request
- * @property {ModuleDependency[]} dependencies
- * @property {Object} createData
- * @property {LazySet<string>} fileDependencies
- * @property {LazySet<string>} missingDependencies
- * @property {LazySet<string>} contextDependencies
- * @property {boolean} cacheable allow to use the unsafe cache
- */
-
-/**
- * @typedef {Object} ResourceData
- * @property {string} resource
- * @property {string} path
- * @property {string} query
- * @property {string} fragment
- */
-
-/** @typedef {ResourceData & { data: Record<string, any> }} ResourceDataWithData */
-
 const EMPTY_RESOLVE_OPTIONS = {};
 const EMPTY_PARSER_OPTIONS = {};
 const EMPTY_GENERATOR_OPTIONS = {};
 
 const MATCH_RESOURCE_REGEX = /^([^!]+)!=!/;
 
+// 返回loader的完整路径(包括参数)
 const loaderToIdent = data => {
 	if (!data.options) {
 		return data.loader;
@@ -84,6 +47,9 @@ const loaderToIdent = data => {
 	return data.loader + "?" + JSON.stringify(data.options);
 };
 
+// 返回模块的完整路径(包括loader路径和模块路径)
+// loader路径是绝对路径 且包括路径参数
+// 模块路径是绝对路径 且包括路径参数
 const stringifyLoadersAndResource = (loaders, resource) => {
 	let str = "";
 	for (const loader of loaders) {
@@ -92,10 +58,7 @@ const stringifyLoadersAndResource = (loaders, resource) => {
 	return str + resource;
 };
 
-/**
- * @param {string} resultString resultString
- * @returns {{loader: string, options: string|undefined}} parsed loader request
- */
+// 根据loader路径转换成({ loader: String, options: String})
 const identToLoaderRequest = resultString => {
 	const idx = resultString.indexOf("?");
 	if (idx >= 0) {
@@ -168,6 +131,7 @@ const unsafeCacheDependencies = new WeakMap();
 /** @type {WeakMap<Module, object>} */
 const unsafeCacheData = new WeakMap();
 
+// 返回 RuleSetCompiler 的实例
 const ruleSetCompiler = new RuleSetCompiler([
 	new BasicMatcherRulePlugin("test", "resource"),
 	new BasicMatcherRulePlugin("scheme"),
@@ -192,9 +156,21 @@ const ruleSetCompiler = new RuleSetCompiler([
 	new UseEffectRulePlugin()
 ]);
 
-// 主要作用是
-// 1. get (resolver, loaders, parser, generator)
-// 2. create module
+/**
+ * 主要作用是获取创建 NormalModule 的所有参数 如下:
+ * 1. 获取所有的loader
+ * 2. 获取resolver parser generator
+ * 3. 生成NormalModule
+ * 在获取所有loaders的过程中
+ * 1. 根据模块加载路径来获取所有的loaders 并根据模块路径中的前缀(! !! -!)进行筛选
+ * 2. 根据匹配规则来筛选匹配后的loaders
+ */
+/**
+ * loader分类
+ * 1. 前置loader(preLoader)
+ * 2. 普通loader(loader)
+ * 3. 后置loader(postLoaders)
+ */
 class NormalModuleFactory extends ModuleFactory {
 	/**
 	 * @param {Object} param params
@@ -251,6 +227,7 @@ class NormalModuleFactory extends ModuleFactory {
 				rules: options.rules
 			}
 		]);
+
 		this.unsafeCache = !!options.unsafeCache;
 		this.cachePredicate =
 			typeof options.unsafeCache === "function"
@@ -258,13 +235,14 @@ class NormalModuleFactory extends ModuleFactory {
 				: () => true;
 		this.context = context || "";
 		this.fs = fs;
+
+		// 用户自定义解析器(Webpack.Config.Module.parser)
 		this._globalParserOptions = options.parser;
+		// 用户自定义生成器(Wepback.Config.Module.generator)
 		this._globalGeneratorOptions = options.generator;
 		// Map<Type, WeakMap<ParserOptions, Parser>
-		/** @type {Map<string, WeakMap<Object, TODO>>} */
 		this.parserCache = new Map();
 		// Map<Type, WeakMap<GeneratorOptions, Generator>
-		/** @type {Map<string, WeakMap<Object, Generator>>} */
 		this.generatorCache = new Map();
 		/** @type {Set<Module>} */
 		this._restoredUnsafeCacheEntries = new Set();
@@ -321,6 +299,7 @@ class NormalModuleFactory extends ModuleFactory {
 										return callback(new Error("Empty dependency (no request)"));
 									}
 
+									// 创建NormalModule
 									createdModule = new NormalModule(createData);
 								}
 
@@ -360,10 +339,9 @@ class NormalModuleFactory extends ModuleFactory {
 
 				/** @type {ResourceData | undefined} */
 				let matchResourceData = undefined;
-				/** @type {string} */
+				// 模块引入路径(该路径包括loader路径和模块路径)
 				let requestWithoutMatchResource = request;
-				// TODO: 这种暂时没遇到
-				// 以 [任意字母,除了!]{1}!=! 开头
+				// 以 `(任意字符,除了!){1,}!=!` 开头
 				// MATCH_RESOURCE_REGEX = /^([^!]+)!=!/
 				const matchResourceMatch = MATCH_RESOURCE_REGEX.exec(request);
 				if (matchResourceMatch) {
@@ -376,7 +354,7 @@ class NormalModuleFactory extends ModuleFactory {
 							secondChar === 47 ||
 							(secondChar === 46 && matchResource.charCodeAt(2) === 47)
 						) {
-							// if matchResources startsWith ../ or ./
+							// matchResources以 ./ or ../ 开头
 							matchResource = join(this.fs, context, matchResource);
 						}
 					}
@@ -388,21 +366,25 @@ class NormalModuleFactory extends ModuleFactory {
 						matchResourceMatch[0].length
 					);
 				}
-
-				// 此时应该是以相对路径解析loaders
-				// 前置 后置 普通loader 和行内loader
+				
+				// 模块路径是否有禁用loader规则
 				const firstChar = requestWithoutMatchResource.charCodeAt(0);
 				const secondChar = requestWithoutMatchResource.charCodeAt(1);
+				// 使用 -! 前缀，将禁用所有已配置的 preLoader 和 loader，但是不禁用 postLoaders
 				const noPreAutoLoaders = firstChar === 45 && secondChar === 33; // startsWith "-!"
+				// 使用 ! 前缀，将禁用所有已配置的 normal loader(普通 loader)
 				const noAutoLoaders = noPreAutoLoaders || firstChar === 33; // startsWith "!"
-				const noPrePostAutoLoaders = firstChar === 33 && secondChar === 33; // startsWith "!!";
+				// 使用 !! 前缀，将禁用所有已配置的 loader（preLoader, loader, postLoader）
+				const noPrePostAutoLoaders = firstChar === 33 && secondChar === 33;
+				// 模块引入路径中解析后的loaders路径
 				const rawElements = requestWithoutMatchResource
 					.slice(
 						noPreAutoLoaders || noPrePostAutoLoaders ? 2 : noAutoLoaders ? 1 : 0
 					)
 					.split(/!+/);
+				// 模块路径(不包括loaders路径)
 				const unresolvedResource = rawElements.pop();
-				// 获取所有的loaders [{loader: String, options: Object}]
+				// 正常化所有的loaders<Array<{ loader: String, options: String }>>
 				// 此时每个loader的loader是相对路径
 				const elements = rawElements.map(identToLoaderRequest);
 
@@ -459,7 +441,7 @@ class NormalModuleFactory extends ModuleFactory {
 						stringifyLoadersAndResource(loaders, resourceData.resource);
 
 					const resourceDataForRules = matchResourceData || resourceData;
-					// 通过匹配规则来获取自定义使用的loaders
+					// 通过匹配规则来获取Webpack.Config.Module.Rule中匹配的loaders
 					const result = this.ruleSet.exec({
 						resource: resourceDataForRules.path,
 						realResource: resourceData.path,
@@ -477,9 +459,13 @@ class NormalModuleFactory extends ModuleFactory {
 					});
 					// loaders分类
 					const settings = {};
+					// postLoader
 					const useLoadersPost = [];
+					// 正常loader
 					const useLoaders = [];
+					// preLoader
 					const useLoadersPre = [];
+					// 筛选preLoader loader postLoader
 					for (const r of result) {
 						if (r.type === "use") {
 							if (!noAutoLoaders && !noPrePostAutoLoaders) {
@@ -561,7 +547,7 @@ class NormalModuleFactory extends ModuleFactory {
 									? matchResourceData.resource
 									: undefined,
 								resourceResolveData: resourceData.data,
-								settings,
+								settings, // TODO:
 								type,
 								parser: this.getParser(type, settings.parser),
 								parserOptions: settings.parser,
@@ -613,8 +599,7 @@ class NormalModuleFactory extends ModuleFactory {
 					);
 				});
 
-				// 赋值loaders
-				// 讲每个loader的loader转化成绝对路径
+				// 将每个loader的loader从相对路径转化成绝对路径
 				this.resolveRequestArray(
 					contextInfo,
 					context,
@@ -667,6 +652,7 @@ class NormalModuleFactory extends ModuleFactory {
 							  )
 							: resolveOptions
 					);
+					// 获取模块的绝对路径
 					this.resolveResource(
 						contextInfo,
 						context,
@@ -677,7 +663,7 @@ class NormalModuleFactory extends ModuleFactory {
 							if (err) return continueCallback(err);
 							if (resolvedResource !== false) {
 								resourceData = {
-									// 绝对路径
+									// 模块路径(绝对路径)
 									resource: resolvedResource,
 									data: resolvedResourceResolveData,
 									...cacheParseResource(resolvedResource)
@@ -699,11 +685,7 @@ class NormalModuleFactory extends ModuleFactory {
 		}
 	}
 
-	/**
-	 * @param {ModuleFactoryCreateData} data data object
-	 * @param {function(Error=, ModuleFactoryResult=): void} callback callback
-	 * @returns {void}
-	 */
+	// 创建模块
 	create(data, callback) {
 		const dependencies = /** @type {ModuleDependency[]} */ (data.dependencies);
 		if (this.unsafeCache) {
@@ -809,6 +791,7 @@ class NormalModuleFactory extends ModuleFactory {
 		});
 	}
 
+	// 根据模块路径和上下文路径来获取模块的绝对路径
 	resolveResource(
 		contextInfo,
 		context,
@@ -967,6 +950,7 @@ If changing the source code is not an option there is also a resolve options cal
 		);
 	}
 
+	// 获取loaders中每个loader的绝对路径
 	resolveRequestArray(
 		contextInfo,
 		context,
@@ -1027,6 +1011,7 @@ If changing the source code is not an option there is also a resolve options cal
 		);
 	}
 
+	// 返回parser 并缓存该type对应的parser
 	getParser(type, parserOptions = EMPTY_PARSER_OPTIONS) {
 		let cache = this.parserCache.get(type);
 
@@ -1046,9 +1031,11 @@ If changing the source code is not an option there is also a resolve options cal
 	}
 
 	/**
-	 * @param {string} type type
-	 * @param {{[k: string]: any}} parserOptions parser options
-	 * @returns {Parser} parser
+	 * 根据type返回对应的内置parser
+	 * asset || asset/inline || asset/resource || asset/source
+	 * webassembly/async || webassembly/sync
+	 * javascript/auto || javascript/dynamic || javascript/esm
+	 * json
 	 */
 	createParser(type, parserOptions = {}) {
 		parserOptions = mergeGlobalOptions(
@@ -1064,6 +1051,7 @@ If changing the source code is not an option there is also a resolve options cal
 		return parser;
 	}
 
+	// 返回generator 并缓存该type对应的generator
 	getGenerator(type, generatorOptions = EMPTY_GENERATOR_OPTIONS) {
 		let cache = this.generatorCache.get(type);
 
@@ -1082,6 +1070,13 @@ If changing the source code is not an option there is also a resolve options cal
 		return generator;
 	}
 
+	/**
+	 * 根据type返回对应的内置generator
+	 * asset || asset/inline || asset/resource || asset/source
+	 * webassembly/async || webassembly/sync
+	 * javascript/auto || javascript/dynamic || javascript/esm
+	 * json
+	 */
 	createGenerator(type, generatorOptions = {}) {
 		generatorOptions = mergeGlobalOptions(
 			this._globalGeneratorOptions,

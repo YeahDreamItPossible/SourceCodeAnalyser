@@ -228,9 +228,6 @@ class ChunkGraphChunk {
 }
 
 class ChunkGraph {
-	/**
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 */
 	constructor(moduleGraph) {
 		// module => 记录当前module属于哪些chunk
 		/** @private @type {WeakMap<Module, ChunkGraphModule>} */
@@ -244,7 +241,6 @@ class ChunkGraph {
 		/** @private @type {Map<string, string | number>} */
 		this._runtimeIds = new Map();
 
-		/** @type {ModuleGraph} */
 		this.moduleGraph = moduleGraph;
 
 		this._getGraphRoots = this._getGraphRoots.bind(this);
@@ -1198,7 +1194,7 @@ class ChunkGraph {
 	 * @param {Module} module the module
 	 * @returns {string | number} the id of the module
 	 */
-	// 获取模块ID
+	// 返回 ChunkGraphModule.id
 	getModuleId(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.id;
@@ -1577,14 +1573,7 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 		return cgc.runtimeRequirementsInTree;
 	}
 
-	// TODO remove in webpack 6
-	// 根据Module实例来获取ChunkGraph
-	/**
-	 * @param {Module} module the module
-	 * @param {string} deprecateMessage message for the deprecation message
-	 * @param {string} deprecationCode code for the deprecation
-	 * @returns {ChunkGraph} the chunk graph
-	 */
+	// 返回 Module 对应的 ChunkGraph
 	static getChunkGraphForModule(module, deprecateMessage, deprecationCode) {
 		// NOTE:
 		// 这里用fn来包括 主要是API遗弃
@@ -1611,35 +1600,18 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 		return newFn(module);
 	}
 
-	// TODO remove in webpack 6
-	/**
-	 * @param {Module} module the module
-	 * @param {ChunkGraph} chunkGraph the chunk graph
-	 * @returns {void}
-	 */
+	// 缓存 Module 对应的 ChunkGraph
 	static setChunkGraphForModule(module, chunkGraph) {
 		chunkGraphForModuleMap.set(module, chunkGraph);
 	}
-
-	// TODO remove in webpack 6
-	/**
-	 * @param {Module} module the module
-	 * @returns {void}
-	 */
+	
+	// 移除 Module 对应的 ChunkGraph
 	static clearChunkGraphForModule(module) {
 		chunkGraphForModuleMap.delete(module);
 	}
 
-	// TODO remove in webpack 6
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {string} deprecateMessage message for the deprecation message
-	 * @param {string} deprecationCode code for the deprecation
-	 * @returns {ChunkGraph} the chunk graph
-	 */
-	// 根据Chunk实例来获取ChunkGraph
+	// 返回 Chunk 对应的 ChunkGraph
 	static getChunkGraphForChunk(chunk, deprecateMessage, deprecationCode) {
-		// NOTE:
 		// 这里用fn来包括 主要是API遗弃
 		const fn = deprecateGetChunkGraphForChunkMap.get(deprecateMessage);
 		if (fn) return fn(chunk);
@@ -1663,36 +1635,24 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 		deprecateGetChunkGraphForChunkMap.set(deprecateMessage, newFn);
 		return newFn(chunk);
 	}
-
-	// TODO remove in webpack 6
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {ChunkGraph} chunkGraph the chunk graph
-	 * @returns {void}
-	 */
+	
+	// 缓存 Chunk 对应的 ChunkGraph
 	static setChunkGraphForChunk(chunk, chunkGraph) {
 		chunkGraphForChunkMap.set(chunk, chunkGraph);
 	}
 
-	// TODO remove in webpack 6
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {void}
-	 */
+	// 移除 Chunk 对应的 ChunkGraph
 	static clearChunkGraphForChunk(chunk) {
 		chunkGraphForChunkMap.delete(chunk);
 	}
 }
 
-// TODO remove in webpack 6
-/** @type {WeakMap<Module, ChunkGraph>} */
+// WeakMap<Module, ChunkGraph>
 const chunkGraphForModuleMap = new WeakMap();
 
-// TODO remove in webpack 6
-/** @type {WeakMap<Chunk, ChunkGraph>} */
+// WeakMap<Chunk, ChunkGraph>
 const chunkGraphForChunkMap = new WeakMap();
 
-// TODO remove in webpack 6
 /** @type {Map<string, (module: Module) => ChunkGraph>} */
 const deprecateGetChunkGraphForModuleMap = new Map();
 

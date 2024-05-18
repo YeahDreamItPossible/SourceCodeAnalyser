@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Factory = require("enhanced-resolve").ResolverFactory;
@@ -86,11 +81,7 @@ module.exports = class ResolverFactory {
 		this.cache = new Map();
 	}
 
-	/**
-	 * @param {string} type type of resolver
-	 * @param {ResolveOptionsWithDependencyType=} resolveOptions options
-	 * @returns {ResolverWithOptions} the resolver
-	 */
+	// 返回type对应的resolver 并缓存该resolver
 	get(type, resolveOptions = EMPTY_RESOLVE_OPTIONS) {
 		let typedCaches = this.cache.get(type);
 		if (!typedCaches) {
@@ -117,15 +108,15 @@ module.exports = class ResolverFactory {
 	}
 
 	/**
-	 * @param {string} type type of resolver
-	 * @param {ResolveOptionsWithDependencyType} resolveOptionsWithDepType options
-	 * @returns {ResolverWithOptions} the resolver
+	 * 创建type对应的resolver(底层仍然是通过ResolverFactory.createResolver(resolveOptions))
+	 * normal || context || loader
 	 */
 	_create(type, resolveOptionsWithDepType) {
 		/** @type {ResolveOptionsWithDependencyType} */
 		const originalResolveOptions = { ...resolveOptionsWithDepType };
 
 		const resolveOptions = convertToResolveOptions(
+			// 将 resolveOptionsWithDepType 和 Webpack.Config.resolve 属性合并
 			this.hooks.resolveOptions.for(type).call(resolveOptionsWithDepType)
 		);
 		const resolver = /** @type {ResolverWithOptions} */ (

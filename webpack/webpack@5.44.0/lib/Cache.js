@@ -95,14 +95,7 @@ class Cache {
 		});
 	}
 
-	/**
-	 * @template T
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @param {T} data the value to store
-	 * @param {CallbackCache<void>} callback signals when the value is stored
-	 * @returns {void}
-	 */
+	// 缓存
 	store(identifier, etag, data, callback) {
 		this.hooks.store.callAsync(
 			identifier,

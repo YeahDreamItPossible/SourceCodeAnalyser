@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const makeSerializable = require("./util/makeSerializable");
@@ -19,38 +14,24 @@ const makeSerializable = require("./util/makeSerializable");
 class DependenciesBlock {
 	constructor() {
 		// 依赖
-		/** @type {Dependency[]} */
 		this.dependencies = [];
 		// 分组块
 		/** @type {AsyncDependenciesBlock[]} */
 		this.blocks = [];
 	}
 
-	/**
-	 * Adds a DependencyBlock to DependencyBlock relationship.
-	 * This is used for when a Module has a AsyncDependencyBlock tie (for code-splitting)
-	 *
-	 * @param {AsyncDependenciesBlock} block block being added
-	 * @returns {void}
-	 */
+	// 添加块
 	addBlock(block) {
 		this.blocks.push(block);
 		block.parent = this;
 	}
 
-	/**
-	 * @param {Dependency} dependency dependency being tied to block.
-	 * This is an "edge" pointing to another "node" on module graph.
-	 * @returns {void}
-	 */
+	// 添加依赖
 	addDependency(dependency) {
 		this.dependencies.push(dependency);
 	}
 
-	/**
-	 * @param {Dependency} dependency dependency being removed
-	 * @returns {void}
-	 */
+	// 移除依赖
 	removeDependency(dependency) {
 		const idx = this.dependencies.indexOf(dependency);
 		if (idx >= 0) {
@@ -58,10 +39,7 @@ class DependenciesBlock {
 		}
 	}
 
-	/**
-	 * Removes all dependencies and blocks
-	 * @returns {void}
-	 */
+	// 清除所有的依赖和块
 	clearDependenciesAndBlocks() {
 		this.dependencies.length = 0;
 		this.blocks.length = 0;

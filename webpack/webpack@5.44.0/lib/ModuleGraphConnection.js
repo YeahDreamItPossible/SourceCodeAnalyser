@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 /** @typedef {import("./Dependency")} Dependency */
@@ -49,17 +44,13 @@ const intersectConnectionStates = (a, b) => {
 	return a;
 };
 
-// 模块与依赖之间的连接关系
-// 两个module之间的依赖关系?
+/**
+ * 描述当前模块的引用关系(通过 Dependency 来获取对应的 Module 和 父Module)
+ * Dependency 与 Module 的引用关系(当前依赖Dependency 与 引用当前依赖Dependency的Module)
+ * Module 与 Module 的引用关系(使用当前依赖的Module 与 引用 使用当前依赖的Module 的父Module)
+ * 
+ */
 class ModuleGraphConnection {
-	/**
-	 * @param {Module|null} originModule the referencing module
-	 * @param {Dependency|null} dependency the referencing dependency
-	 * @param {Module} module the referenced module
-	 * @param {string=} explanation some extra detail
-	 * @param {boolean=} weak the reference is weak
-	 * @param {false | function(ModuleGraphConnection, RuntimeSpec): ConnectionState=} condition condition for the connection
-	 */
 	constructor(
 		originModule,
 		dependency,
@@ -68,17 +59,17 @@ class ModuleGraphConnection {
 		weak = false,
 		condition = undefined
 	) {
-		// 引用当前module的module
+		// 引用 当前Module 的 父Module
 		this.originModule = originModule;
-		// 加工后的引用当前module的module
+		// 引用 当前Module 的 父Module(该父Module已经被加工过)
 		this.resolvedOriginModule = originModule;
 
-		// 当前module的依赖
+		// 当前依赖Dependency
 		this.dependency = dependency;
 
-		// 加工后的当前module
+		// 当前Module(已经被加工过)
 		this.resolvedModule = module;
-		// 当前module
+		// 当前Module
 		this.module = module;
 
 		this.weak = weak;
@@ -94,6 +85,7 @@ class ModuleGraphConnection {
 		}
 	}
 
+	// 克隆
 	clone() {
 		const clone = new ModuleGraphConnection(
 			this.resolvedOriginModule,
@@ -126,10 +118,7 @@ class ModuleGraphConnection {
 		}
 	}
 
-	/**
-	 * @param {string} explanation the explanation to add
-	 * @returns {void}
-	 */
+	// 添加解释(explanation: String)
 	addExplanation(explanation) {
 		if (this.explanations === undefined) {
 			this.explanations = new Set();
@@ -137,6 +126,7 @@ class ModuleGraphConnection {
 		this.explanations.add(explanation);
 	}
 
+	// 返回序列化后的解释
 	get explanation() {
 		if (this.explanations === undefined) return "";
 		return Array.from(this.explanations).join(" ");

@@ -1,32 +1,24 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Cache = require("../Cache");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../Cache").Etag} Etag */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
+/**
+ * 缓存策略Webpack.Config.Cache.type
+ * 内存缓存
+ */
 class MemoryCachePlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
-		/** @type {Map<string, { etag: Etag | null, data: any }>} */
 		const cache = new Map();
+
+		// 缓存
 		compiler.cache.hooks.store.tap(
 			{ name: "MemoryCachePlugin", stage: Cache.STAGE_MEMORY },
 			(identifier, etag, data) => {
 				cache.set(identifier, { etag, data });
 			}
 		);
+
+		// 读取缓存
 		compiler.cache.hooks.get.tap(
 			{ name: "MemoryCachePlugin", stage: Cache.STAGE_MEMORY },
 			(identifier, etag, gotHandlers) => {
@@ -46,6 +38,8 @@ class MemoryCachePlugin {
 				});
 			}
 		);
+
+		// 清除缓存
 		compiler.cache.hooks.shutdown.tap(
 			{ name: "MemoryCachePlugin", stage: Cache.STAGE_MEMORY },
 			() => {
