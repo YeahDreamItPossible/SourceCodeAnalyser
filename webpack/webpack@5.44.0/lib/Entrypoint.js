@@ -28,25 +28,20 @@ class Entrypoint extends ChunkGroup {
 		});
 		this.options = entryOptions;
 
-		// 运行时chunk
+		// 运行时Chunk
 		this._runtimeChunk = undefined;
-		// 入口chunk
-		/** @type {Chunk=} */
+		// 入口Chunk
 		this._entrypointChunk = undefined;
-
-		// 标识
-		/** @type {boolean} */
+		// 标识: 是否是 异步ChunkGroup
 		this._initial = initial;
 	}
 
-	/**
-	 * @returns {boolean} true, when this chunk group will be loaded on initial page load
-	 */
+	// 
 	isInitial() {
 		return this._initial;
 	}
 
-	// 设置 
+	// 设置 运行时chunk
 	setRuntimeChunk(chunk) {
 		this._runtimeChunk = chunk;
 	}

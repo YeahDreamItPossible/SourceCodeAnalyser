@@ -26,11 +26,19 @@
 
 - tapable
 
-- raw-loader[]
+- [raw-loader@4.0.2]()
 
-- file-loader[]
+- [file-loader@6.2.0]()
 
-- url-loader[]
+- [url-loader@4.1.1]()
+
+- [tapable@2.2.1]()
+
+- [enhanced-resolve@5.8.3]()
+
+- [webpack-sources@3.2.3]()
+
+- [webpack@5.44.0]()
 
 - localforage
 
@@ -40,10 +48,8 @@
 ## 进行中的库
 
 - webpack
+  
 
-  - [webpack@5.44.0]()
-
-  - [tapable@2.2.1]()
 
 - node
 

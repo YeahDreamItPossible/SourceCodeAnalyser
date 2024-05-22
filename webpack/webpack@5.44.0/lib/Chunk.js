@@ -58,46 +58,35 @@ let debugId = 1000;
 class Chunk {
 	constructor(name) {
 		//
-		/** @type {number | string | null} */
 		this.id = null;
-		/** @type {(number|string)[] | null} */
 		this.ids = null;
-		/** @type {number} */
+		// 调试debug 唯一标识符
 		this.debugId = debugId++;
-
 		// 标识: chunk名
 		this.name = name;
-
 		/** @type {SortableSet<string>} */
 		this.idNameHints = new SortableSet();
-		/** @type {boolean} */
+		// RuntimeChunk.preventIntegration = true
 		this.preventIntegration = false;
-
 		// 输出文件模板 output.filename
-		// (string | function(PathData, AssetInfo=): string)?
+		// Webpack.Config.Entry.filename
 		this.filenameTemplate = undefined;
-
-		// Entrypoint
-		// SortableSet<ChunkGroup>
+		// ChunkGroup
+		// Set<ChunkGroup>
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
-
-		// 标识:
-		/** @type {RuntimeSpec} */
+		// Webpack.Config.Entry.dependOn 的keys + RuntimeChunk 的 key
 		this.runtime = undefined;
-
 		// 输出文件 如: app.67f6cda2.js
-		/** @type {Set<string>} */
+		// Set<string>
 		this.files = new ChunkFilesSet();
 		// 保存的输出文件名 如: app.67f6cda2.js
-		/** @type {Set<string>} */
+		// Set<string>
 		this.auxiliaryFiles = new Set();
-
 		// 标识: 标识当前chunk是否已被输出(不确定)
 		this.rendered = false;
-
-		/** @type {string=} */
+		// 当前Chunk完整hash
 		this.hash = undefined;
-		/** @type {Record<string, string>} */
+		// Record<string, string>
 		this.contentHash = Object.create(null);
 		/** @type {string=} */
 		this.renderedHash = undefined;
@@ -142,10 +131,8 @@ class Chunk {
 		);
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {boolean} true, if the chunk could be added
-	 */
+	// 是否成功添加 Module
+	// ChunkGraphChunk.modules 是否包含当前 Module
 	addModule(module) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -161,6 +148,7 @@ class Chunk {
 	 * @param {Module} module the module
 	 * @returns {void}
 	 */
+	// 
 	removeModule(module) {
 		ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -169,9 +157,7 @@ class Chunk {
 		).disconnectChunkAndModule(this, module);
 	}
 
-	/**
-	 * @returns {number} the number of module which are contained in this chunk
-	 */
+	// 返回当前Chunk包含Module的数量
 	getNumberOfModules() {
 		return ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -207,10 +193,7 @@ class Chunk {
 		return chunkGraph.compareChunks(this, otherChunk);
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {boolean} true, if the chunk contains the module
-	 */
+	// 返回当前Chunk是否包含当前Module
 	containsModule(module) {
 		return ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -219,9 +202,7 @@ class Chunk {
 		).isModuleInChunk(module, this);
 	}
 
-	/**
-	 * @returns {Module[]} the modules for this chunk
-	 */
+	// 返回当前Chunk包含的所有Module
 	getModules() {
 		return ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -504,10 +485,7 @@ class Chunk {
 		return this._groups.size;
 	}
 
-	// TODO:
-	/**
-	 * @returns {Iterable<ChunkGroup>} the chunkGroups that the said chunk is referenced in
-	 */
+	// 返回排序后的 ChunkGroup
 	get groupsIterable() {
 		this._groups.sort();
 		return this._groups;

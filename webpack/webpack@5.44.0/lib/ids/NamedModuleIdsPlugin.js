@@ -14,19 +14,11 @@ const {
 	assignAscendingModuleIds
 } = require("./IdHelpers");
 
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
 class NamedModuleIdsPlugin {
 	constructor(options) {
 		this.options = options || {};
 	}
-
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+	
 	apply(compiler) {
 		const { root } = compiler;
 		compiler.hooks.compilation.tap("NamedModuleIdsPlugin", compilation => {

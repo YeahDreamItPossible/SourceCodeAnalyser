@@ -425,3 +425,32 @@ Module => DependenciesBlock => Dependency => AsyncDependenciesBlock => Dependenc
 
 // 文件的输出是在compiler 发生的
 // compilation 仅仅是生成 asserts 信息 并不输出结果
+
+Dependency => ModuleDependency => WorkerDependency 
+Dependency => ModuleDependency => EntryDependency 
+Dependency => ModuleDependency => HarmonyImportDependency => HarmonyImportSideEffectDependency 
+Dependency => ModuleDependency => HarmonyImportDependency => HarmonyImportSpecifierDependency 
+Dependency => ModuleDependency => HarmonyImportDependency => HarmonyExportImportedSpecifierDependency 
+Dependency => ModuleDependency => HarmonyImportDependency => HarmonyAcceptImportDependency 
+Dependency => ModuleDependency => AMDRequireItemDependency 
+Dependency => ModuleDependency => CommonJsRequireDependency 
+Dependency => ModuleDependency => CommonJsFullRequireDependency 
+Dependency => ModuleDependency => RequireResolveDependency 
+Dependency => ModuleDependency => CommonJsExportRequireDependency 
+Dependency => ModuleDependency => LoaderDependency 
+Dependency => ModuleDependency => LoaderImportDependency 
+Dependency => ModuleDependency => WebpackIsIncludedDependency 
+Dependency => ModuleDependency => RequireIncludeDependency 
+Dependency => ModuleDependency => RequireEnsureItemDependency 
+Dependency => ModuleDependency => ContextElementDependency 
+Dependency => ModuleDependency => ImportDependency 
+Dependency => ModuleDependency => ImportDependency => ImportEagerDependency 
+Dependency => ModuleDependency => ImportDependency => ImportWeakDependency 
+Dependency => ModuleDependency => URLDependency
+Dependency => ContextDependency => AMDRequireContextDependency 
+Dependency => ContextDependency => CommonJsRequireContextDependency 
+Dependency => ContextDependency => RequireResolveContextDependency 
+Dependency => ContextDependency => RequireContextDependency 
+Dependency => ContextDependency => ImportContextDependency 
+Dependency => NullDependency => CommonJsSelfReferenceDependency 
+Dependency => NullDependency => ModuleDecoratorDependency 

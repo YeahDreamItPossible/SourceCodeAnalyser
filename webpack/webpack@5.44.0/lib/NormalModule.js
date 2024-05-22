@@ -262,7 +262,7 @@ class NormalModule extends Module {
 		// 例如: ../loaders/first.js?auth=Lee!../loaders/second.js?user=Wang!./math.js?ts=123
 		this.rawRequest = rawRequest;
 
-		/** @type {boolean} */
+		// 标识: 经过loader加工后的源代码类型是Buffer 还是String
 		this.binary = /^(asset|webassembly)\b/.test(type);
 
 		// 解析器
@@ -278,9 +278,9 @@ class NormalModule extends Module {
 		// 资源路径(绝对路径 且包括参数)
 		// 例如: /path/math.js?ts=123
 		this.resource = resource;
+		// resolve解析resource返回的数据
 		this.resourceResolveData = resourceResolveData;
-		//
-		/** @type {string | undefined} */
+		// 匹配的路径资源
 		this.matchResource = matchResource;
 
 		/**
@@ -296,15 +296,16 @@ class NormalModule extends Module {
 
 		// Info from Build
 		this.error = null;
-		// 源文件经过loader加工后的source(WebpackSource实例)
+		// 经过loader加工后的源代码(WebpackSource实例)
 		this._source = null;
-		// source尺寸
+		// 经过loader加工后的源代码尺寸
 		this._sourceSizes = undefined;
-		// source类型
+		// 经过loader加工后的源代码类型
 		this._sourceTypes = undefined;
 
 		// Cache
 		this._lastSuccessfulBuildMeta = {};
+		// 标识: 当前模块是否要强制构建
 		this._forceBuild = true;
 		this._isEvaluatingSideEffects = false;
 		/** @type {WeakSet<ModuleGraph> | undefined} */
@@ -341,10 +342,7 @@ class NormalModule extends Module {
 		);
 	}
 
-	/**
-	 * @returns {string | null} absolute path which should be used for condition matching (usually the resource path)
-	 */
-	// 获取绝对路径 但不包含路径参数
+	// 获取模块绝对路径 但不包含路径参数
 	nameForCondition() {
 		const resource = this.matchResource || this.resource;
 		const idx = resource.indexOf("?");
@@ -352,13 +350,7 @@ class NormalModule extends Module {
 		return resource;
 	}
 
-	/**
-	 * Assuming this module is in the cache. Update the (cached) module with
-	 * the fresh module from the factory. Usually updates internal references
-	 * and properties.
-	 * @param {Module} module fresh module
-	 * @returns {void}
-	 */
+	// 更新当前模块信息
 	updateCacheModule(module) {
 		super.updateCacheModule(module);
 		const m = /** @type {NormalModule} */ (module);
@@ -377,9 +369,7 @@ class NormalModule extends Module {
 		this._sourceSizes = m._sourceSizes;
 	}
 
-	/**
-	 * Assuming this module is in the cache. Remove internal references to allow freeing some memory.
-	 */
+	// 清除缓存
 	cleanupForCache() {
 		// Make sure to cache types and sizes before cleanup
 		if (this._sourceTypes === undefined) this.getSourceTypes();
@@ -1103,7 +1093,7 @@ class NormalModule extends Module {
 		}
 	}
 
-	// 返回
+	// 返回模块类型
 	getSourceTypes() {
 		if (this._sourceTypes === undefined) {
 			this._sourceTypes = this.generator.getTypes(this);
@@ -1111,10 +1101,7 @@ class NormalModule extends Module {
 		return this._sourceTypes;
 	}
 
-	/**
-	 * @param {CodeGenerationContext} context context for code generation
-	 * @returns {CodeGenerationResult} result
-	 */
+	// 生成代码
 	codeGeneration({
 		dependencyTemplates,
 		runtimeTemplate,
@@ -1171,16 +1158,12 @@ class NormalModule extends Module {
 		return resultEntry;
 	}
 
-	/**
-	 * @returns {Source | null} the original source for the module before webpack transformation
-	 */
+	// 返回经过loader加工后的源代码(WebpackSource实例)
 	originalSource() {
 		return this._source;
 	}
 
-	/**
-	 * @returns {void}
-	 */
+	// 当前模块必须要经过构建
 	invalidateBuild() {
 		this._forceBuild = true;
 	}

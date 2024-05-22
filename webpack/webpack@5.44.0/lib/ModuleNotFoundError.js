@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
@@ -41,6 +36,7 @@ const previouslyPolyfilledBuiltinModules = {
 	zlib: "browserify-zlib"
 };
 
+// 模块未找到错误
 class ModuleNotFoundError extends WebpackError {
 	/**
 	 * @param {Module} module module tied to dependency

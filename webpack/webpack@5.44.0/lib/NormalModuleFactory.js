@@ -1093,6 +1093,10 @@ If changing the source code is not an option there is also a resolve options cal
 		return generator;
 	}
 
+	/**
+	 * 根据type返回对应的内置resolver
+	 * noamal || loader
+	 */
 	getResolver(type, resolveOptions) {
 		return this.resolverFactory.get(type, resolveOptions);
 	}

@@ -77,40 +77,39 @@ class ChunkGroup {
 		} else if (!options) {
 			options = { name: undefined };
 		}
-		/** @type {number} */
+		// debugId 唯一标识符
 		this.groupDebugId = debugId++;
+		// 
 		this.options = options;
 
-		// 存放子ChunkGroup
-		/** @type {SortableSet<ChunkGroup>} */
+		// 嵌套的ChunkGroup
+		// 子ChunkGroup
+		// Set<ChunkGroup>
 		this._children = new SortableSet(undefined, sortById);
-		// 存放父ChunkGroup
-		/** @type {SortableSet<ChunkGroup>} */
+		// 父ChunkGroup
+		// Set<ChunkGroup>
 		this._parents = new SortableSet(undefined, sortById);
-		// 存放异步Entrypoint
-		/** @type {SortableSet<ChunkGroup>} */
+		// 异步Entrypoint
+		// Set<ChunkGroup>
 		this._asyncEntrypoints = new SortableSet(undefined, sortById);
 
 		//
 		this._blocks = new SortableSet();
-
 		// 分离chunk后的所有Chunk
-		/** @type {Chunk[]} */
+		// Chunk[]
 		this.chunks = [];
-
-		// 存放模块和依赖 Object(module, dependency, loc)
-		/** @type {OriginRecord[]} */
+		// 存放模块和依赖 Object<module, dependency, loc>[]
 		this.origins = [];
 
 		// TODO: 模块对应的索引
 		/** Indices in top-down order */
-		/** @private @type {Map<Module, number>} */
+		// Map<Module, number>
 		this._modulePreOrderIndices = new Map();
 		/** Indices in bottom-up order */
-		/** @private @type {Map<Module, number>} */
+		// Map<Module, number>
 		this._modulePostOrderIndices = new Map();
 
-		/** @type {number} */
+		// 排序
 		this.index = undefined;
 	}
 
@@ -135,47 +134,28 @@ class ChunkGroup {
 		}
 	}
 
-	/**
-	 * returns the name of current ChunkGroup
-	 * @returns {string|undefined} returns the ChunkGroup name
-	 */
+	// 返回当前ChunkGroup.name
 	get name() {
 		return this.options.name;
 	}
 
-	/**
-	 * sets a new name for current ChunkGroup
-	 * @param {string} value the new name for ChunkGroup
-	 * @returns {void}
-	 */
+	// 设置当前ChunkGroup.name
 	set name(value) {
 		this.options.name = value;
 	}
 
-	// 所有chunk debugId拼接
-	/* istanbul ignore next */
-	/**
-	 * get a uniqueId for ChunkGroup, made up of its member Chunk debugId's
-	 * @returns {string} a unique concatenation of chunk debugId's
-	 */
+	// 所有Chunk debugId拼接
 	get debugId() {
 		return Array.from(this.chunks, x => x.debugId).join("+");
 	}
 
-	// 所有chunk id拼接
-	/**
-	 * get a unique id for ChunkGroup, made up of its member Chunk id's
-	 * @returns {string} a unique concatenation of chunk ids
-	 */
+	// 所有Chunk id拼接
 	get id() {
 		return Array.from(this.chunks, x => x.id).join("+");
 	}
 
-	/**
-	 * Performs an unshift of a specific chunk
-	 * @param {Chunk} chunk chunk being unshifted
-	 * @returns {boolean} returns true if attempted chunk shift is accepted
-	 */
+	// ChunkGraph.chunks 添加 chunk
+	// 如果该 chunk 存在 则更新该 chunk
 	unshiftChunk(chunk) {
 		const oldIdx = this.chunks.indexOf(chunk);
 		if (oldIdx > 0) {
@@ -267,23 +247,19 @@ class ChunkGroup {
 		return false;
 	}
 
-	/**
-	 * @param {ChunkGroup} group chunk group to add
-	 * @returns {boolean} returns true if chunk group was added
-	 */
+	// 添加 子ChunkGroup
 	addChild(group) {
 		const size = this._children.size;
 		this._children.add(group);
 		return size !== this._children.size;
 	}
 
-	/**
-	 * @returns {ChunkGroup[]} returns the children of this group
-	 */
+	// 返回所有的子ChunkGroup
 	getChildren() {
 		return this._children.getFromCache(getArray);
 	}
 
+	// 返回所有的子ChunkGroup数量
 	getNumberOfChildren() {
 		return this._children.size;
 	}
@@ -292,10 +268,7 @@ class ChunkGroup {
 		return this._children;
 	}
 
-	/**
-	 * @param {ChunkGroup} group the chunk group to remove
-	 * @returns {boolean} returns true if the chunk group was removed
-	 */
+	// 移除 某个子ChunkGroup
 	removeChild(group) {
 		if (!this._children.has(group)) {
 			return false;
@@ -306,10 +279,7 @@ class ChunkGroup {
 		return true;
 	}
 
-	/**
-	 * @param {ChunkGroup} parentChunk the parent group to be added into
-	 * @returns {boolean} returns true if this chunk group was added to the parent group
-	 */
+	// 添加 父ChunkGroup
 	addParent(parentChunk) {
 		if (!this._parents.has(parentChunk)) {
 			this._parents.add(parentChunk);
@@ -318,21 +288,17 @@ class ChunkGroup {
 		return false;
 	}
 
-	/**
-	 * @returns {ChunkGroup[]} returns the parents of this group
-	 */
+	// 返回所有的 父ChunkGroup
 	getParents() {
 		return this._parents.getFromCache(getArray);
 	}
 
+	// 返回所有的 父ChunkGroup的数量
 	getNumberOfParents() {
 		return this._parents.size;
 	}
 
-	/**
-	 * @param {ChunkGroup} parent the parent group
-	 * @returns {boolean} returns true if the parent group contains this group
-	 */
+	// 返回是否存在某个父ChunkGroup
 	hasParent(parent) {
 		return this._parents.has(parent);
 	}

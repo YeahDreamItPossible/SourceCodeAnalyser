@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
@@ -33,20 +28,14 @@ const deprecatedGetInitFragments = util.deprecate(
 
 const TYPES = new Set(["javascript"]);
 
+// JS生成器
 class JavascriptGenerator extends Generator {
-	/**
-	 * @param {NormalModule} module fresh module
-	 * @returns {Set<string>} available types (do not mutate)
-	 */
+	// 返回当前生成器类型
 	getTypes(module) {
 		return TYPES;
 	}
 
-	/**
-	 * @param {NormalModule} module the module
-	 * @param {string=} type source type
-	 * @returns {number} estimate size of the module
-	 */
+	// 返回模块尺寸
 	getSize(module, type) {
 		const originalSource = module.originalSource();
 		if (!originalSource) {
@@ -81,11 +70,7 @@ class JavascriptGenerator extends Generator {
 		}
 	}
 
-	/**
-	 * @param {NormalModule} module module for which the code should be generated
-	 * @param {GenerateContext} generateContext context for generate
-	 * @returns {Source} generated code
-	 */
+	// 生成代码
 	generate(module, generateContext) {
 		const originalSource = module.originalSource();
 		if (!originalSource) {

@@ -31,8 +31,11 @@ const idsSymbol = Symbol("HarmonyImportSpecifierDependency.ids");
 class HarmonyImportSpecifierDependency extends HarmonyImportDependency {
 	constructor(request, sourceOrder, ids, name, range, strictExportPresence) {
 		super(request, sourceOrder);
+		// 
 		this.ids = ids;
+		//
 		this.name = name;
+		//
 		this.range = range;
 		this.strictExportPresence = strictExportPresence;
 		this.namespaceObjectAsContext = false;

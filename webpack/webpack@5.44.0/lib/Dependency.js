@@ -81,7 +81,7 @@ const getIgnoredModule = memoize(() => {
 // 依赖
 class Dependency {
 	constructor() {
-		/** @type {Module} */
+		// 引用当前依赖的 Module
 		this._parentModule = undefined;
 		/** @type {DependenciesBlock} */
 		this._parentDependenciesBlock = undefined;
@@ -93,13 +93,13 @@ class Dependency {
 		this.optional = false;
 
 		// 位置信息
-		// SL(start line) 起始行
+		// 起始行 SL(start line) 
 		this._locSL = 0;
-		// SC(start column) 起始列
+		// 起始列 SC(start column) 
 		this._locSC = 0;
-		// EL(end line) 结束行
+		// 结束行 EL(end line) 
 		this._locEL = 0;
-		// EC(end column) 结束列
+		// 结束列 EC(end column) 
 		this._locEC = 0;
 		// 索引(Index)
 		this._locI = undefined;
@@ -110,6 +110,7 @@ class Dependency {
 	}
 
 	// 返回 Dependency 的类型
+	// javacript/auto javascript/dynamic 
 	get type() {
 		return "unknown";
 	}

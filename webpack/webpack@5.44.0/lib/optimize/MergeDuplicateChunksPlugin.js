@@ -1,20 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { STAGE_BASIC } = require("../OptimizationStages");
 const { runtimeEqual } = require("../util/runtime");
 
-/** @typedef {import("../Compiler")} Compiler */
-
 class MergeDuplicateChunksPlugin {
-	/**
-	 * @param {Compiler} compiler the compiler
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"MergeDuplicateChunksPlugin",

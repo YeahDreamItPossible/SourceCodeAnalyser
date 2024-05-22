@@ -101,20 +101,14 @@ const createObjectForExportsInfo = (data, exportsInfo, runtime) => {
 
 const TYPES = new Set(["javascript"]);
 
+// JSON生成器
 class JsonGenerator extends Generator {
-	/**
-	 * @param {NormalModule} module fresh module
-	 * @returns {Set<string>} available types (do not mutate)
-	 */
+	// 返回当前生成器类型
 	getTypes(module) {
 		return TYPES;
 	}
 
-	/**
-	 * @param {NormalModule} module the module
-	 * @param {string=} type source type
-	 * @returns {number} estimate size of the module
-	 */
+	// 返回模块尺寸
 	getSize(module, type) {
 		let data =
 			module.buildInfo &&
@@ -133,11 +127,7 @@ class JsonGenerator extends Generator {
 		return undefined;
 	}
 
-	/**
-	 * @param {NormalModule} module module for which the code should be generated
-	 * @param {GenerateContext} generateContext context for generate
-	 * @returns {Source} generated code
-	 */
+	// 生成代码
 	generate(
 		module,
 		{

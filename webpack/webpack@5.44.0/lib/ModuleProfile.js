@@ -1,10 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
+/**
+ * 描述模块构建性能
+ */
 class ModuleProfile {
 	constructor() {
 		this.startTime = Date.now();

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
@@ -28,9 +23,6 @@ const { join } = require("./util/fs");
 const EMPTY_RESOLVE_OPTIONS = {};
 
 module.exports = class ContextModuleFactory extends ModuleFactory {
-	/**
-	 * @param {ResolverFactory} resolverFactory resolverFactory
-	 */
 	constructor(resolverFactory) {
 		super();
 		/** @type {AsyncSeriesWaterfallHook<[TODO[], ContextModuleOptions]>} */
@@ -78,11 +70,6 @@ module.exports = class ContextModuleFactory extends ModuleFactory {
 		this.resolverFactory = resolverFactory;
 	}
 
-	/**
-	 * @param {ModuleFactoryCreateData} data data object
-	 * @param {function(Error=, ModuleFactoryResult=): void} callback callback
-	 * @returns {void}
-	 */
 	create(data, callback) {
 		const context = data.context;
 		const dependencies = data.dependencies;
@@ -91,6 +78,7 @@ module.exports = class ContextModuleFactory extends ModuleFactory {
 		const fileDependencies = new LazySet();
 		const missingDependencies = new LazySet();
 		const contextDependencies = new LazySet();
+		// 直接执行回调
 		this.hooks.beforeResolve.callAsync(
 			{
 				context: context,

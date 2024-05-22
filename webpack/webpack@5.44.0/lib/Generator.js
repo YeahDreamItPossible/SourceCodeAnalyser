@@ -38,44 +38,28 @@
  * @property {RuntimeSpec} runtime
  */
 
-/**
- *
- */
+// 生成器基类
 class Generator {
 	static byType(map) {
 		return new ByTypeGenerator(map);
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @param {NormalModule} module fresh module
-	 * @returns {Set<string>} available types (do not mutate)
-	 */
+	// 抽象方法
+	// 返回模块类型
 	getTypes(module) {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @param {NormalModule} module the module
-	 * @param {string=} type source type
-	 * @returns {number} estimate size of the module
-	 */
+	// 抽象方法
+	// 返回模块尺寸
 	getSize(module, type) {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @param {NormalModule} module module for which the code should be generated
-	 * @param {GenerateContext} generateContext context for generate
-	 * @returns {Source} generated code
-	 */
+	// 抽象方法
+	// 生成代码
 	generate(
 		module,
 		{ dependencyTemplates, runtimeTemplate, moduleGraph, type }

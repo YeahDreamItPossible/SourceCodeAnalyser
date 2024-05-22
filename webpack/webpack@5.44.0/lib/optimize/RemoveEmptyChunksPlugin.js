@@ -1,33 +1,19 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { STAGE_BASIC, STAGE_ADVANCED } = require("../OptimizationStages");
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
-
 class RemoveEmptyChunksPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("RemoveEmptyChunksPlugin", compilation => {
-			/**
-			 * @param {Iterable<Chunk>} chunks the chunks array
-			 * @returns {void}
-			 */
 			const handler = chunks => {
 				const chunkGraph = compilation.chunkGraph;
 				for (const chunk of chunks) {
 					if (
+						// 当前 ChunkGraphChunk 没有包含任何的Module
 						chunkGraph.getNumberOfChunkModules(chunk) === 0 &&
+						// 
 						!chunk.hasRuntime() &&
+						// 当前 ChunkGraphChunk 没有包含任何的 EntryModule
 						chunkGraph.getNumberOfEntryModules(chunk) === 0
 					) {
 						compilation.chunkGraph.disconnectChunk(chunk);
@@ -36,7 +22,6 @@ class RemoveEmptyChunksPlugin {
 				}
 			};
 
-			// TODO do it once
 			compilation.hooks.optimizeChunks.tap(
 				{
 					name: "RemoveEmptyChunksPlugin",

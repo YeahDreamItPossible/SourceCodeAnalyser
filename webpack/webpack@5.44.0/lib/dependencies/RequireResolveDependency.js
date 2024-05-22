@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
@@ -14,6 +9,7 @@ const ModuleDependencyAsId = require("./ModuleDependencyTemplateAsId");
 /** @typedef {import("../ModuleGraph")} ModuleGraph */
 /** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
 
+// 通过 webpack特有的 require.resolve 语法引入的依赖
 class RequireResolveDependency extends ModuleDependency {
 	constructor(request, range) {
 		super(request);

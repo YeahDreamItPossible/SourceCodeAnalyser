@@ -898,8 +898,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {ChunkGraph} */
 		this.chunkGraph = undefined;
 
-		// 代码生成的结果
-		/** @type {CodeGenerationResults} */
+		// 缓存 Module生成的代码结果
+		// CodeGenerationResults
 		this.codeGenerationResults = undefined;
 
 		/** @type {AsyncQueue<Module, Module, Module>} */
@@ -945,7 +945,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		// 关于入口
 		// 入口文件映射<入口名, EntryData>
-		/** @type {Map<string, EntryData>} */
+		// Map<string, EntryData>
 		this.entries = new Map();
 		/** @type {EntryData} */
 		this.globalEntry = {
@@ -956,7 +956,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		};
 		// 入口点<入口名, Entrypoint>
-		/** @type {Map<string, Entrypoint>} */
+		// Map<EntrypointName, Entrypoint>
 		this.entrypoints = new Map();
 		/** @type {Entrypoint[]} */
 		this.asyncEntrypoints = [];
@@ -965,14 +965,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Set<Chunk>} */
 		this.chunks = new Set();
 		arrayToSetDeprecation(this.chunks, "Compilation.chunks");
-		// chunk group
-		/** @type {ChunkGroup[]} */
+		// ChunkGroup[]
 		this.chunkGroups = [];
-		// <chunk name, chunk group>
-		/** @type {Map<string, ChunkGroup>} */
+		// Map<ChunkGroupName, ChunkGroup>
 		this.namedChunkGroups = new Map();
-		// chunk映射<chunk名, chunk>
-		/** @type {Map<string, Chunk>} */
+		// Map<ChunkName, Chunk>
 		this.namedChunks = new Map();
 
 		// 缓存的模块 Set<Module>
@@ -1017,9 +1014,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {WeakSet<Module>} */
 		this.builtModules = new WeakSet();
 
-		// 生成代码的modules
-		// 存储已经生成
-		/** @type {WeakSet<Module>} */
+		// 已经生成结果的 Module
+		// WeakSet<Module>
 		this.codeGeneratedModules = new WeakSet();
 		/** @type {WeakSet<Module>} */
 		this.buildTimeExecutedModules = new WeakSet();
@@ -2341,10 +2337,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 				const module = this.moduleGraph.getModule(dep);
 				if (module) {
-					// NOTE: 非常重要
-					// 绑定module 与 chunk 的关联关系
-					// module => ChunkGraphModule
-					// chunk => ChunkGraphChunk
+					/**
+					 * 绑定 Module 与 Chunk 的关联关系
+					 * Module => ChunkGraphModule
+					 * Chunk => ChunkGraphChunk
+					 */
 					chunkGraph.connectChunkAndEntryModule(chunk, module, entrypoint);
 					this.assignDepth(module);
 					const modulesList = chunkGraphInit.get(entrypoint);
@@ -2376,7 +2373,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		}
 
-		// 加工 entry.[].dependOn 和 entry.[].runtime
+		// 处理 Webpack.Config.Entry 的引用关系
+		// Webpack.Config.Entry.dependOn 和 Webpack.Config.Entry.runtime
 		const runtimeChunks = new Set();
 		outer: for (const [
 			name,
@@ -2384,6 +2382,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				options: { dependOn, runtime }
 			}
 		] of this.entries) {
+			// webpack.Config.Entry.dependOn 和 Webpack.Config.Entry.runtime 不允许同时出现
 			if (dependOn && runtime) {
 				const err =
 					new WebpackError(`Entrypoint '${name}' has 'dependOn' and 'runtime' specified. This is not valid.
@@ -2394,8 +2393,6 @@ Remove the 'runtime' option from the entrypoint.`);
 				err.chunk = entry.getEntrypointChunk();
 				this.errors.push(err);
 			}
-			// entry dependOn 和 runtime
-			// 分离依赖
 			if (dependOn) {
 				const entry = this.entrypoints.get(name);
 				const referencedChunks = entry
@@ -2788,6 +2785,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
+	// 代码生成
 	codeGeneration(callback) {
 		const { chunkGraph } = this;
 		this.codeGenerationResults = new CodeGenerationResults();
@@ -2820,6 +2818,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		this._runCodeGenerationJobs(jobs, callback);
 	}
 
+	// 
 	_runCodeGenerationJobs(jobs, callback) {
 		let statModulesFromCache = 0;
 		let statModulesGenerated = 0;
@@ -2883,6 +2882,11 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 	 * @param {CodeGenerationResults} results results
 	 * @param {function(WebpackError=, boolean=): void} callback callback
 	 */
+	/**
+	 * Module生成代码
+	 * 1. Module.codeGeneration 生成代码
+	 * 2. 缓存生成的代码
+	 */
 	_codeGenerationModule(
 		module,
 		runtime,
@@ -2932,6 +2936,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				result = cachedResult;
 			}
 			for (const runtime of runtimes) {
+				// 缓存
 				results.add(module, runtime, result);
 			}
 			if (!cachedResult) {
@@ -3326,7 +3331,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// 给 Entrypoint 和 AsyncEntryponit中的Runtime Chunk 分配 chunk.id
+	// 给 每个Entrypoint 和 每个AsyncEntryponit中的RuntimeChunk 分配 chunk.id
+	// 设置 ChunkGraph._runtimeIds
 	assignRuntimeIds() {
 		const { chunkGraph } = this;
 		const processEntrypoint = ep => {
@@ -3921,7 +3927,7 @@ This prevents using hashes of each other and should be avoided.`);
 		};
 	}
 
-	// 清除上次运行时生成的assets
+	// 清除Chunk上次运行时生成的assets
 	clearAssets() {
 		for (const chunk of this.chunks) {
 			chunk.files.clear();
@@ -3955,11 +3961,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	/**
-	 * @param {RenderManifestOptions} options options object
-	 * @returns {RenderManifestEntry[]} manifest entries
-	 */
-	// 获取render chunks的方法
+	// 获取render chunk的方法
 	getRenderManifest(options) {
 		// 插件
 		// JavascriptModulesPlugin  获得render函数

@@ -145,7 +145,8 @@ class ModuleGraph {
 	}
 
 	// 设置dependency的父module 和 父dependenciesBlock
-	// Dependency._parentModule Dependency.__parentDependenciesBlock
+	// Dependency._parentModule  
+	// Dependency.__parentDependenciesBlock
 	setParents(dependency, block, module) {
 		dependency._parentDependenciesBlock = block;
 		dependency._parentModule = module;

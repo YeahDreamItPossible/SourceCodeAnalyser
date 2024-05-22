@@ -113,7 +113,7 @@
 // COMPONENT_KEPT_ALIVE.shapeFlag = 1 << 9
 
 /**
- * 在V3中
+ * [ RefImpl ObjectRefImpl CustomRefImpl ComputedRefImpl ]
  * ref shallowRef => RefImpl
  * toRef => ObjectRefImpl
  * computed => ComputedRefImpl
@@ -233,7 +233,11 @@ var Vue = (function (exports) {
 		return !!value || value === '';
 	}
 
-	// 正常化: 将不同类型的style正常化对象或者字符串值
+	/**
+	 * 正常化: 将不同类型的 props.style 转换化对象或者字符串值
+	 * 示例: [{display: flex}, {color: red}] => { display: flex, color: red }
+	 * 示例: ['display:flex;color:red;', 'fontSize: 16px;'] => { display: flex, color: red, fontSize: 16px }
+	 */
 	function normalizeStyle(value) {
 		if (isArray(value)) {
 			const res = {};
@@ -259,7 +263,10 @@ var Vue = (function (exports) {
 	}
 	const listDelimiterRE = /;(?![^(]*\))/g;
 	const propertyDelimiterRE = /:(.+)/;
-	// 示例: 将 'display:flex;color:red;' => '{display: flex, color: red}'
+	/**
+	 * 将字符串类型的style转换成style对象
+	 * 示例: 将 display:flex;color:red; => { display: flex, color: red }
+	 */
 	function parseStringStyle(cssText) {
 		const ret = {};
 		cssText.split(listDelimiterRE).forEach(item => {
@@ -270,8 +277,12 @@ var Vue = (function (exports) {
 		});
 		return ret;
 	}
-	// 正常化: 将不同类型的 class值 正常化字符串
-	// 示例: 将 '{'el-button': isExit, 'el-button_loading': hasUserInfo}' || '['el-button', 'el-button_loading']' => 'el-button el-button_loading'
+
+	/**
+	 * 正常化: 将不同类型的 props.class 值 转化成字符串
+	 * 示例: ['el-button', 'el-button_loaing'] => 'el-button el-button_loading'
+	 * 示例: { scale: isExit, move: isFinish } => 'scale move'
+	 */
 	function normalizeClass(value) {
 		let res = '';
 		if (isString(value)) {
@@ -4232,7 +4243,7 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: Transition结束 */
 
-	// 定义组件(选项式组件 or 组合式组件)
+	// 定义组件选项式组件 or 组合式组件)
 	// options: Object || Function
 	function defineComponent(options) {
 		return isFunction(options) ? { setup: options, name: options.name } : options;
@@ -8790,19 +8801,15 @@ var Vue = (function (exports) {
 		return n1.type === n2.type && n1.key === n2.key;
 	}
 
-	// vnode转换器(预处理vnode args) 
-	// 如果设置该转换函数 
-	// 在处理vnode时 
-	// 则会先调用该转换函数 
-	// 后调用_createVNode函数
-	// vnode => vnode
+	// vnode转换器(在调用Vue.h之前 对参数进行预处理)
 	let vnodeArgsTransformer;
+	// 设置vnode转换器
 	function transformVNodeArgs(transformer) {
 		vnodeArgsTransformer = transformer;
 	}
 
-	// 创建vnode
-	// 函数包装: 暴漏api给用户 可以在让用户在创建vnode之前对vnode参数进行预处理
+	// 等同于 createVNode
+	// 函数包装: 在创建vnode之前对vnode参数进行预处理
 	const createVNodeWithArgsTransform = (...args) => {
 		return _createVNode(...(vnodeArgsTransformer
 			? vnodeArgsTransformer(args, currentRenderingInstance)
@@ -8810,9 +8817,10 @@ var Vue = (function (exports) {
 	};
 
 	const InternalObjectKey = `__vInternal`;
-	// 正常化: 正常化创建vnode中的props.key
+
+	// 正常化: 根据props.key来正常化创建vnode.key
 	const normalizeKey = ({ key }) => key != null ? key : null;
-	// 正常化: 正常化ref
+	// 正常化: 根据props.ref来正常化创建vnode.ref
 	const normalizeRef = ({ ref, ref_key, ref_for }) => {
 		return (ref != null
 			? isString(ref) || isRef(ref) || isFunction(ref)
@@ -8826,16 +8834,12 @@ var Vue = (function (exports) {
 		const vnode = {
 			// 标识: 标记当前是vnode
 			__v_isVNode: true,
-
 			// 标识: vnode 不能被响应式
 			__v_skip: true,
-
 			// 类型: VNodeTypes | ClassComponent || HTMLElement Name
 			type,
-			
 			// 属性
 			props,
-
 			key: props && normalizeKey(props),
 
 			ref: props && normalizeRef(props),
@@ -8845,7 +8849,6 @@ var Vue = (function (exports) {
 
 			// 子元素(vnode)
 			children,
-
 			// 当前组件实例
 			component: null,
 
@@ -8855,13 +8858,10 @@ var Vue = (function (exports) {
 
 			// 指令
 			dirs: null,
-
 			// 过渡hook
 			transition: null,
-
 			// 当前元素
 			el: null,
-
 			anchor: null,
 			target: null,
 			targetAnchor: null,
@@ -8870,7 +8870,6 @@ var Vue = (function (exports) {
 			patchFlag,
 			dynamicProps,
 			dynamicChildren: null,
-
 			// 应用上下文
 			appContext: null
 		};
@@ -8888,7 +8887,7 @@ var Vue = (function (exports) {
 				? 8 /* TEXT_CHILDREN */
 				: 16 /* ARRAY_CHILDREN */;
 		}
-		// validate key
+		// vnode.key 不能是 NaN
 		if (vnode.key !== vnode.key) {
 			warn$1(`VNode created with invalid key (NaN). VNode type:`, vnode.type);
 		}
@@ -8911,13 +8910,14 @@ var Vue = (function (exports) {
 		return vnode;
 	}
 
-	// 创建vnode(对外api)
+	// 创建vnode
 	const createVNode = (createVNodeWithArgsTransform);
 
+	// 创建vnode(内部实现)
 	// 在创建vnode之前 先对vnode 参数进行预处理
 	// 函数包装: 主要是内部处理 type shapeFlag
 	function _createVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, isBlockNode = false) {
-		// type类型必须存在
+		// type字段必须存在
 		if (!type || type === NULL_DYNAMIC_COMPONENT) {
 			if (!type) {
 				warn$1(`Invalid vnode type when creating vnode: ${type}.`);
@@ -8925,11 +8925,12 @@ var Vue = (function (exports) {
 			type = Comment;
 		}
 
-		// type 本身就是vnode
+		// 当type是vnode类型时 返回复制后的vnode
 		if (isVNode(type)) {
 			// createVNode receiving an existing vnode. This happens in cases like
 			// <component :is="vnode"/>
 			// #2078 make sure to merge refs during the clone instead of overwriting it
+			// 复制
 			const cloned = cloneVNode(type, props, true /* mergeRef: true */);
 			if (children) {
 				normalizeChildren(cloned, children);
@@ -8952,17 +8953,16 @@ var Vue = (function (exports) {
 			type = type.__vccOpts;
 		}
 
-		// class & style normalization.
+		// 对props.class和props.style进行转换
 		if (props) {
-			// for reactive or proxy objects, we need to clone it to enable mutation.
+			// 返回 Object类型的props
 			props = guardReactiveProps(props);
 			let { class: klass, style } = props;
 			if (klass && !isString(klass)) {
 				props.class = normalizeClass(klass);
 			}
 			if (isObject(style)) {
-				// reactive state objects need to be cloned since they are likely to be
-				// mutated
+				// 返回 Object类型的style
 				if (isProxy(style) && !isArray(style)) {
 					style = extend({}, style);
 				}
@@ -8970,12 +8970,12 @@ var Vue = (function (exports) {
 			}
 		}
 
-		// 将vnode type编码成位图
-		// 1 元素(ELEMENT) Vue.h
-		// 128 SUSPENSE 
-		// 64 TELEPORT 
-		// 4 选项式组件(STATEFUL_COMPONENT) 
+		// 将vnode type编码成位
+		// 1 元素(ELEMENT)
 		// 2 函数式组件(FUNCTIONAL_COMPONENT)
+		// 4 选项式组件(STATEFUL_COMPONENT) 
+		// 64 TELEPORT 
+		// 128 SUSPENSE 
 		const shapeFlag = isString(type)
 			? 1 /* ELEMENT */
 			: isSuspense(type)
@@ -9000,6 +9000,7 @@ var Vue = (function (exports) {
 		return createBaseVNode(type, props, children, patchFlag, dynamicProps, shapeFlag, isBlockNode, true);
 	}
 
+	// 返回 Object类型的props
 	function guardReactiveProps(props) {
 		if (!props)
 			return null;
@@ -9127,8 +9128,7 @@ var Vue = (function (exports) {
 		return child.el === null || child.memo ? child : cloneVNode(child);
 	}
 
-	// 正常化: 正常化vnode的children属性
-	// 并调整vnode的shapeFlag属性
+	// 正常化vnode.children 并根据vnode.children来调整vnode.shapeFlag
 	function normalizeChildren(vnode, children) {
 		let type = 0;
 		const { shapeFlag } = vnode;
@@ -9668,6 +9668,8 @@ var Vue = (function (exports) {
 		}
 		return name ? classify(name) : isRoot ? `App` : `Anonymous`;
 	}
+	
+	// 断言: 是否是
 	function isClassComponent(value) {
 		return isFunction(value) && '__vccOpts' in value;
 	}
@@ -9807,21 +9809,23 @@ var Vue = (function (exports) {
 		return [awaitable, () => setCurrentInstance(ctx)];
 	}
 
-	// Vue.h(创建vnode)
-	// 最终调用 createVNode
+	/**
+	 * Vue.h 返回vnode
+	 * 内部 正常化props和children 最终调用 createVNode
+	 */
 	function h(type, propsOrChildren, children) {
 		const l = arguments.length;
 		if (l === 2) {
 			if (isObject(propsOrChildren) && !isArray(propsOrChildren)) {
-				// single vnode without props
+				// 没有props
 				if (isVNode(propsOrChildren)) {
 					return createVNode(type, null, [propsOrChildren]);
 				}
-				// props without children
+				// 没有children
 				return createVNode(type, propsOrChildren);
 			}
 			else {
-				// omit props
+				// 没有props
 				return createVNode(type, null, propsOrChildren);
 			}
 		}

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
@@ -13,16 +8,23 @@ const memoize = require("../util/memoize");
 
 const getRawModule = memoize(() => require("../RawModule"));
 
+/**
+ * 模块依赖
+ * 示例: 
+ * import { add } from '../plugins/loaders/first.js?auth=lee!../plugins/loaders/second.js?use=wang!./utils/math.js?ts=12345'
+ */
 class ModuleDependency extends Dependency {
 	/**
 	 * @param {string} request request path which needs resolving
 	 */
 	constructor(request) {
 		super();
-		// 绝对路径
+		// 模块路径
+		// 示例:
+		// '../plugins/loaders/first.js?auth=lee!../plugins/loaders/second.js?use=wang!./utils/math.js?ts=12345'
 		this.request = request;
-		//
 		this.userRequest = request;
+		// 范围
 		this.range = undefined;
 	}
 
