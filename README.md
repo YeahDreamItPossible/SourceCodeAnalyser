@@ -26,11 +26,11 @@
 
 - tapable
 
-- [raw-loader@4.0.2]()
+- [raw-loader@4.0.2](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/webpack/raw-loader%404.0.2/index.js)
 
-- [file-loader@6.2.0]()
+- [file-loader@6.2.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/webpack/file-loader%406.2.0/index.js)
 
-- [url-loader@4.1.1]()
+- [url-loader@4.1.1](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/webpack/url-loader%404.1.1/index.js)
 
 - [tapable@2.2.1]()
 
