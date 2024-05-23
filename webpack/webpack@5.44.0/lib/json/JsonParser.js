@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const parseJson = require("json-parse-better-errors");
@@ -14,26 +9,19 @@ const JsonData = require("./JsonData");
 /** @typedef {import("../Parser").ParserState} ParserState */
 /** @typedef {import("../Parser").PreparsedAst} PreparsedAst */
 
+// Json类型语法解析器
 class JsonParser extends Parser {
-	/**
-	 * @param {JsonModulesPluginParserOptions} options parser options
-	 */
 	constructor(options) {
 		super();
 		this.options = options || {};
 	}
 
-	/**
-	 * @param {string | Buffer | PreparsedAst} source the source to parse
-	 * @param {ParserState} state the parser state
-	 * @returns {ParserState} the parser state
-	 */
+	// 调用parse函数
 	parse(source, state) {
 		if (Buffer.isBuffer(source)) {
 			source = source.toString("utf-8");
 		}
 
-		/** @type {JsonModulesPluginParserOptions["parse"]} */
 		const parseFn =
 			typeof this.options.parse === "function" ? this.options.parse : parseJson;
 
