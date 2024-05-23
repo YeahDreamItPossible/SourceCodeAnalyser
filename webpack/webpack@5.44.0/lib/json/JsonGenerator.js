@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { RawSource } = require("webpack-sources");
@@ -11,19 +6,16 @@ const { UsageState } = require("../ExportsInfo");
 const Generator = require("../Generator");
 const RuntimeGlobals = require("../RuntimeGlobals");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../ExportsInfo")} ExportsInfo */
-/** @typedef {import("../Generator").GenerateContext} GenerateContext */
-/** @typedef {import("../Module").ConcatenationBailoutReasonContext} ConcatenationBailoutReasonContext */
-/** @typedef {import("../NormalModule")} NormalModule */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
 
+// 将 数据 序列化 并替换掉空格
 const stringifySafe = data => {
+	// 数据序列化
 	const stringified = JSON.stringify(data);
 	if (!stringified) {
 		return undefined; // Invalid JSON
 	}
 
+	// 替换空格
 	return stringified.replace(/\u2028|\u2029/g, str =>
 		str === "\u2029" ? "\\u2029" : "\\u2028"
 	); // invalid in JavaScript but valid JSON
@@ -101,14 +93,14 @@ const createObjectForExportsInfo = (data, exportsInfo, runtime) => {
 
 const TYPES = new Set(["javascript"]);
 
-// JSON生成器
+// JSON类型代码生成器
 class JsonGenerator extends Generator {
 	// 返回当前生成器类型
 	getTypes(module) {
 		return TYPES;
 	}
 
-	// 返回模块尺寸
+	// 返回模块大小
 	getSize(module, type) {
 		let data =
 			module.buildInfo &&
@@ -118,11 +110,6 @@ class JsonGenerator extends Generator {
 		return stringifySafe(data).length + 10;
 	}
 
-	/**
-	 * @param {NormalModule} module module for which the bailout reason should be determined
-	 * @param {ConcatenationBailoutReasonContext} context context
-	 * @returns {string | undefined} reason why this module can't be concatenated, undefined when it can be concatenated
-	 */
 	getConcatenationBailoutReason(module, context) {
 		return undefined;
 	}

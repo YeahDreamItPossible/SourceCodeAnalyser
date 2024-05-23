@@ -1,12 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { register } = require("../util/serialization");
 
+// 存储Json数据
 class JsonData {
 	constructor(data) {
 		this._buffer = undefined;

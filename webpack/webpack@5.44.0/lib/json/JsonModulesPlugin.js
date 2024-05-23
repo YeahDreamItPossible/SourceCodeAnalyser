@@ -15,12 +15,10 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 给 compiler.hooks.compilation 注册事件
+// 给 normalModuleFactory.hooks.createParser 注册事件
+// 给 normalMOduleFactory.hooks.createGenerator 注册事件
 class JsonModulesPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"JsonModulesPlugin",
