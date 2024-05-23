@@ -23,9 +23,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * (0, fn)() 改变fn的this绑定
  */
 
-/**
- * 将文件按照特定格式输出到特定目录中
- */
+// 将文件按照特定格式输出到特定目录中
 function loader(content) {
   // 获取当前Loader options
   // 该选项注册在Webpack.Config Module.Rule.options中
