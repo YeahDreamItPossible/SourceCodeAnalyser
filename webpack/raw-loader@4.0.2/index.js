@@ -3,9 +3,7 @@ import { validate } from 'schema-utils';
 
 import schema from './options.json';
 
-/**
- * 将资源文件转换成UTF-8字符串
- */
+// 将资源文件转换成字符串
 export default function rawLoader(source) {
   // 获取当前Loader options
   // 该选项注册在Webpack.Config Module.Rule.options中
