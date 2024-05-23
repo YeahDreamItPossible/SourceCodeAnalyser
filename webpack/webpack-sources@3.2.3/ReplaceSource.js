@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
@@ -19,6 +15,7 @@ const hasStableSort =
 // This is larger than max string length
 const MAX_SOURCE_POSITION = 0x20000000;
 
+// 支持 替换 和 插入 来装饰源代码的 Source
 class Replacement {
 	constructor(start, end, content, name) {
 		this.start = start;
@@ -31,6 +28,7 @@ class Replacement {
 	}
 }
 
+// 
 class ReplaceSource extends Source {
 	constructor(source, name) {
 		super();

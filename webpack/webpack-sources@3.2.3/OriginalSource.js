@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
@@ -10,12 +6,17 @@ const getGeneratedSourceInfo = require("./helpers/getGeneratedSourceInfo");
 const Source = require("./Source");
 const splitIntoPotentialTokens = require("./helpers/splitIntoPotentialTokens");
 
+// 
 class OriginalSource extends Source {
 	constructor(value, name) {
 		super();
+		// 标识: 是否是Buffer类型
 		const isBuffer = Buffer.isBuffer(value);
+		// 
 		this._value = isBuffer ? undefined : value;
+		// Buffer类型的源代码
 		this._valueAsBuffer = isBuffer ? value : undefined;
+		// 标识:
 		this._name = name;
 	}
 

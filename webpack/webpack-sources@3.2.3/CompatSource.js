@@ -1,11 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const Source = require("./Source");
 
+// 将类似 Source 的对象转换为实际的 Source 对象
 class CompatSource extends Source {
 	static from(sourceLike) {
 		return sourceLike instanceof Source

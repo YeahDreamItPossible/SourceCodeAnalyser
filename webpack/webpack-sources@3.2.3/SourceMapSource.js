@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const Source = require("./Source");
@@ -9,6 +5,7 @@ const streamChunksOfSourceMap = require("./helpers/streamChunksOfSourceMap");
 const streamChunksOfCombinedSourceMap = require("./helpers/streamChunksOfCombinedSourceMap");
 const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
 
+// 
 class SourceMapSource extends Source {
 	constructor(
 		value,

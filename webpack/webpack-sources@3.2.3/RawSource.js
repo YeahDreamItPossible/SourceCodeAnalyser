@@ -1,13 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const streamChunksOfRawSource = require("./helpers/streamChunksOfRawSource");
 const Source = require("./Source");
 
+// 没有SourceMap的源代码
 class RawSource extends Source {
 	constructor(value, convertToString = false) {
 		super();
@@ -15,16 +11,22 @@ class RawSource extends Source {
 		if (!isBuffer && typeof value !== "string") {
 			throw new TypeError("argument 'value' must be either string of Buffer");
 		}
+		// 标识: 是否是Buffer类型
 		this._valueIsBuffer = !convertToString && isBuffer;
+		// 
 		this._value = convertToString && isBuffer ? undefined : value;
+		// Buffer类型的源代码
 		this._valueAsBuffer = isBuffer ? value : undefined;
+		// String类型的源代码
 		this._valueAsString = isBuffer ? undefined : value;
 	}
 
+	// 断言: 当前源代码是否是Buffer类型
 	isBuffer() {
 		return this._valueIsBuffer;
 	}
 
+	// 返回 String 或者 Buffer形式的源代码(source code)
 	source() {
 		if (this._value === undefined) {
 			this._value = this._valueAsBuffer.toString("utf-8");
@@ -32,6 +34,7 @@ class RawSource extends Source {
 		return this._value;
 	}
 
+	// 返回 Buffer 形式的源代码(source code)
 	buffer() {
 		if (this._valueAsBuffer === undefined) {
 			this._valueAsBuffer = Buffer.from(this._value, "utf-8");
@@ -39,6 +42,7 @@ class RawSource extends Source {
 		return this._valueAsBuffer;
 	}
 
+	// 该类不返回SourceMap
 	map(options) {
 		return null;
 	}
@@ -69,6 +73,7 @@ class RawSource extends Source {
 		);
 	}
 
+	// 更新hash值
 	updateHash(hash) {
 		if (this._valueAsBuffer === undefined) {
 			this._valueAsBuffer = Buffer.from(this._value, "utf-8");

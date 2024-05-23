@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const Source = require("./Source");
@@ -11,6 +7,8 @@ const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
 
 const REPLACE_REGEX = /\n(?=.|\s)/g;
 
+// 在源代码的每一个行前加上特定前缀
+// 示例: 'Hello\nWorld\nOver' => 'Hello\nLeeWorld\nLeeOver'
 class PrefixSource extends Source {
 	constructor(prefix, source) {
 		super();
@@ -36,7 +34,6 @@ class PrefixSource extends Source {
 	}
 
 	// TODO efficient buffer() implementation
-
 	map(options) {
 		return getMap(this, options);
 	}

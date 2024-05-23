@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const Source = require("./Source");
@@ -11,6 +7,7 @@ const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
 
 const stringsAsRawSources = new WeakSet();
 
+// 将 多个Source 拼接到 源Source
 class ConcatSource extends Source {
 	constructor() {
 		super();
