@@ -108,9 +108,10 @@ const {
 
 /** @typedef {AsyncSeriesBailHook<[ResolveRequest, ResolveContext], ResolveRequest | null>} ResolveStepHook */
 
+
 /**
- * @param {string} str input string
- * @returns {string} in camel case
+ * 将(短横线连接的)字符串转换成小驼峰
+ * 示例: hello-world => helloWorld 
  */
 function toCamelCase(str) {
 	return str.replace(/-([a-z])/g, str => str.substr(1).toUpperCase());
@@ -163,8 +164,8 @@ class Resolver {
 	}
 
 	/**
-	 * @param {string | ResolveStepHook} name hook name or hook itself
-	 * @returns {ResolveStepHook} the hook
+	 * 根据 HookName 返回对应的 Hook
+	 * 如果该Hook不存在 则创建新的Hook并返回
 	 */
 	ensureHook(name) {
 		if (typeof name !== "string") {
@@ -260,6 +261,7 @@ class Resolver {
 	 * @param {function(Error | null, (string|false)=, ResolveRequest=): void} callback callback function
 	 * @returns {void}
 	 */
+	// 根据 上下文 和 路径 返回绝对路径
 	resolve(context, path, request, resolveContext, callback) {
 		if (!context || typeof context !== "object")
 			return callback(new Error("context argument is not an object"));
@@ -413,7 +415,6 @@ class Resolver {
 
 			// ParsePlugin
 			// 主要调用resolver.parse
-
 			// DescriptionFilePlugin
 			//
 			return hook.callAsync(request, innerContext, (err, result) => {
@@ -430,6 +431,7 @@ class Resolver {
 	 * @param {string} identifier identifier
 	 * @returns {ParsedIdentifier} parsed identifier
 	 */
+	// 根据 路径 返回解析后的
 	parse(identifier) {
 		const part = {
 			request: "",
@@ -459,18 +461,17 @@ class Resolver {
 		return part;
 	}
 
+	// 断言: 是否是模块
 	isModule(path) {
 		return getType(path) === PathType.Normal;
 	}
 
+	// 断言: 是否是
 	isPrivate(path) {
 		return getType(path) === PathType.Internal;
 	}
 
-	/**
-	 * @param {string} path a path
-	 * @returns {boolean} true, if the path is a directory path
-	 */
+	// 断言: 是否是目录
 	isDirectory(path) {
 		return path.endsWith("/");
 	}

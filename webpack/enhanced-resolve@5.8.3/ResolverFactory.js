@@ -143,22 +143,37 @@ function normalizeAlias(alias) {
  * @param {UserResolveOptions} options input options
  * @returns {ResolveOptions} output options
  */
+// 根据用户自定义options返回解析后的options
 function createOptions(options) {
 	const mainFieldsSet = new Set(options.mainFields || ["main"]);
 	const mainFields = [];
 
+	/**
+	 * 标准化 Resolver.options.mainFields
+	 * ['main', ['index'], {name: ['root'], forceRelative: true}]
+	 * => [
+	 * 			{ name: ['main'], forceRelative: true},
+	 * 			{ name: ['index'], forceRelative: true},
+	 * 			{ name: ['root'], forceRelative: true},
+	 * ]
+	 */
 	for (const item of mainFieldsSet) {
+		// 字符串类型
 		if (typeof item === "string") {
 			mainFields.push({
 				name: [item],
 				forceRelative: true
 			});
-		} else if (Array.isArray(item)) {
+		} 
+		// 数组类型
+		else if (Array.isArray(item)) {
 			mainFields.push({
 				name: item,
 				forceRelative: true
 			});
-		} else {
+		} 
+		// 对象类型
+		else {
 			mainFields.push({
 				name: Array.isArray(item.name) ? item.name : [item.name],
 				forceRelative: item.forceRelative
@@ -220,7 +235,9 @@ function createOptions(options) {
 		mainFiles: new Set(options.mainFiles || ["index"]),
 		plugins: options.plugins || [],
 		pnpApi: processPnpApiOption(options.pnpApi),
+		// 
 		roots: new Set(options.roots || undefined),
+		// 
 		fullySpecified: options.fullySpecified || false,
 		resolveToContext: options.resolveToContext || false,
 		preferRelative: options.preferRelative || false,
@@ -297,6 +314,7 @@ exports.createResolver = function (options) {
 	resolver.ensureHook("existingFile");
 	resolver.ensureHook("resolved");
 
+	// 注册插件
 	// resolve
 	for (const { source, resolveOptions } of [
 		{ source: "resolve", resolveOptions: { fullySpecified } },
@@ -607,6 +625,7 @@ exports.createResolver = function (options) {
 
 	//// RESOLVER ////
 
+	// 使用插件
 	for (const plugin of plugins) {
 		if (typeof plugin === "function") {
 			plugin.call(resolver, resolver);

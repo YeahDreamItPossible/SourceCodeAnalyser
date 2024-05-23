@@ -20,16 +20,13 @@ const CHAR_COLON = ":".charCodeAt(0);
 const posixNormalize = path.posix.normalize;
 const winNormalize = path.win32.normalize;
 
-/**
- * @enum {number}
- */
 const PathType = Object.freeze({
-	Empty: 0,
-	Normal: 1,
-	Relative: 2,
-	AbsoluteWin: 3,
-	AbsolutePosix: 4,
-	Internal: 5
+	Empty: 0, // 空路径
+	Normal: 1, // 
+	Relative: 2, // 相对路径
+	AbsoluteWin: 3, // window下的绝对路径
+	AbsolutePosix: 4, // 可移植操作下的绝对路径
+	Internal: 5 // 路径片段
 });
 exports.PathType = PathType;
 
@@ -82,13 +79,18 @@ const getType = p => {
 			return PathType.Normal;
 		}
 	}
+
+	// 根据路径前缀来判断路径类型
 	const c0 = p.charCodeAt(0);
 	switch (c0) {
+		// 以 . 开头
 		case CHAR_DOT: {
 			const c1 = p.charCodeAt(1);
 			switch (c1) {
+				// 以 ./ 开头 标识相对路径
 				case CHAR_SLASH:
 					return PathType.Relative;
+				// 以 .. 开头
 				case CHAR_DOT: {
 					const c2 = p.charCodeAt(2);
 					if (c2 === CHAR_SLASH) return PathType.Relative;
@@ -97,11 +99,16 @@ const getType = p => {
 			}
 			return PathType.Normal;
 		}
+		// 以 / 开头 标识可移植操作下的绝对路径
 		case CHAR_SLASH:
 			return PathType.AbsolutePosix;
+		// 以 # 开头
 		case CHAR_HASH:
 			return PathType.Internal;
 	}
+
+	// 判断是不是windox下的绝对路径
+	// 示例: C:\\Demo\\say.js
 	const c1 = p.charCodeAt(1);
 	if (c1 === CHAR_COLON) {
 		const c2 = p.charCodeAt(2);
@@ -113,6 +120,8 @@ const getType = p => {
 			return PathType.AbsoluteWin;
 		}
 	}
+
+	// 默认返回
 	return PathType.Normal;
 };
 exports.getType = getType;

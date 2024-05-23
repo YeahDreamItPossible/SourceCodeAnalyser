@@ -18,6 +18,7 @@ const nodeContext = {
 	environments: ["node+es3+es5+process+native"]
 };
 
+// 返回 Resolver 的实例
 const asyncResolver = ResolverFactory.createResolver({
 	conditionNames: ["node"],
 	extensions: [".js", ".json", ".node"],
