@@ -53,6 +53,7 @@ class IdleFileCachePlugin {
 		/** @type {Map<string | typeof BUILD_DEPENDENCIES_KEY, () => Promise>} */
 		const pendingIdleTasks = new Map();
 
+		// 存储
 		compiler.cache.hooks.store.tap(
 			{ name: "IdleFileCachePlugin", stage: Cache.STAGE_DISK },
 			(identifier, etag, data) => {
@@ -62,6 +63,7 @@ class IdleFileCachePlugin {
 			}
 		);
 
+		// 读取
 		compiler.cache.hooks.get.tapPromise(
 			{ name: "IdleFileCachePlugin", stage: Cache.STAGE_DISK },
 			(identifier, etag, gotHandlers) => {

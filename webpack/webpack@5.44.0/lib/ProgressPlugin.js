@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Compiler = require("./Compiler");
@@ -103,6 +98,10 @@ const createDefaultHandler = (profile, logger) => {
 /** @type {WeakMap<Compiler,ReportProgress>} */
 const progressReporters = new WeakMap();
 
+/**
+ * 进度插件
+ * 自定义报告当前编译进度
+ */
 class ProgressPlugin {
 	/**
 	 * @param {Compiler} compiler the current compiler
@@ -136,10 +135,6 @@ class ProgressPlugin {
 		this.percentBy = options.percentBy;
 	}
 
-	/**
-	 * @param {Compiler | MultiCompiler} compiler webpack compiler
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const handler =
 			this.handler ||

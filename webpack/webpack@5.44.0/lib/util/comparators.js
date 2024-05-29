@@ -49,11 +49,7 @@ exports.compareChunksById = (a, b) => {
 	return compareIds(a.id, b.id);
 };
 
-/**
- * @param {Module} a module
- * @param {Module} b module
- * @returns {-1|0|1} compare result
- */
+// 对 Moudle 进行排序
 exports.compareModulesByIdentifier = (a, b) => {
 	return compareIds(a.identifier(), b.identifier());
 };
@@ -190,12 +186,9 @@ const compareChunks = (chunkGraph, a, b) => {
 /** @type {ParameterizedComparator<ChunkGraph, Chunk>} */
 exports.compareChunks = createCachedParameterizedComparator(compareChunks);
 
-/**
- * @param {string|number} a first id
- * @param {string|number} b second id
- * @returns {-1|0|1} compare result
- */
+// 比较大小
 const compareIds = (a, b) => {
+	// 当 a 与 b 数据类型不一致时
 	if (typeof a !== typeof b) {
 		return typeof a < typeof b ? -1 : 1;
 	}

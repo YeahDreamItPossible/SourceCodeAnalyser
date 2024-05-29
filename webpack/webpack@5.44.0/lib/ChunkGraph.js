@@ -56,11 +56,7 @@ class ModuleHashInfo {
 
 /** @template T @typedef {(set: SortableSet<T>) => T[]} SetToArrayFunction<T> */
 
-/**
- * @template T
- * @param {SortableSet<T>} set the set
- * @returns {T[]} set as array
- */
+// 返回 类Set值 的 Set 形式
 const getArray = set => {
 	return Array.from(set);
 };
@@ -124,10 +120,8 @@ const createOrderedArrayFunction = comparator => {
 	return fn;
 };
 
-/**
- * @param {Iterable<Module>} modules the modules to get the count/size of
- * @returns {number} the size of the modules
- */
+
+// 返回所有的 Module 的大小之和
 const getModulesSize = modules => {
 	let size = 0;
 	for (const module of modules) {
@@ -169,17 +163,17 @@ const isAvailableChunk = (a, b) => {
 	return true;
 };
 
-// Module => Chunk
-// 当前Module属于哪些Chunk
+// 当前 Module 属于哪些 Chunk
+// Module => ChunkGraphModule
 class ChunkGraphModule {
 	constructor() {
-		// 包含当前Module的 Chunk
+		// 包含当前 Module 的 块
 		// Set<Chunk>
 		this.chunks = new SortableSet();
-		// 包含当前Module的入口Chunk
+		// 包含当前 Module 的 入口块
 		// Set<Chunk>
 		this.entryInChunks = undefined;
-		// 包含当前Module的运行时Chunk
+		// 包含当前 Module 的 运行时块
 		// Set<Chunk>
 		this.runtimeInChunks = undefined;
 
@@ -188,34 +182,35 @@ class ChunkGraphModule {
 
 		// Module.id
 		this.id = null;
-		/** @type {RuntimeSpecMap<Set<string>> | undefined} */
+		// 运行时所需要的与 webpack 相关的变量
+		// RuntimeSpecMap<Set<string>> | undefined
 		this.runtimeRequirements = undefined;
-		/** @type {RuntimeSpecMap<string>} */
+		// RuntimeSpecMap<string>
 		this.graphHashes = undefined;
-		/** @type {RuntimeSpecMap<string>} */
+		// RuntimeSpecMap<string>
 		this.graphHashesWithConnections = undefined;
 	}
 }
 
-// Chunk => Module
-// 当前Chunk中所包含的Module
+// 当前 Chunk 中所包含的 Module
+// Chunk => ChunkGraphChunk
 class ChunkGraphChunk {
 	constructor() {
-		// 当前Chunk所包含的Module
+		// 当前 Chunk 所包含的Module
 		// Set<Module>
 		this.modules = new SortableSet();
-		// 入口modules
+		// 入口Module 与 入口点
 		// Map<Module, Entrypoint>
 		this.entryModules = new Map();
-		// 当前Chunk所包含的RuntimeModule
+		// 当前 Chunk 所包含的 RuntimeModule
 		// Set<RuntimeModule>
 		this.runtimeModules = new SortableSet();
 
-		// TODO: 目前未看到有什么作用
+		// TODO:
 		/** @type {Set<RuntimeModule> | undefined} */
 		this.fullHashModules = undefined;
 
-		// 运行时需要的字段变量Set<string>
+		// 运行时所需要的与 webpack 相关的变量
 		// 示例: __webpack_require__ __webpack_require__.o
 		this.runtimeRequirements = undefined;
 		// Set<string>
@@ -225,20 +220,21 @@ class ChunkGraphChunk {
 
 class ChunkGraph {
 	constructor(moduleGraph) {
-		// 记录当前Module属于哪些Chunk
+		// 记录当前 Module 属于哪些 Chunk
 		// WeakMap<Module, ChunkGraphModule>
 		this._modules = new WeakMap();
-		// 记录当前Chunk有哪些Module
+		// 记录当前 Chunk 有哪些 Module
 		// WeakMap<Chunk, ChunkGraphChunk>
 		this._chunks = new WeakMap();
-
-		/** @private @type {WeakMap<AsyncDependenciesBlock, ChunkGroup>} */
+		// 记录当前异步 Module 属于那些 ChunkGroup
+		// WeakMap<AsyncDependenciesBlock, ChunkGroup>
 		this._blockChunkGroups = new WeakMap();
-		/** @private @type {Map<string, string | number>} */
+		//
+		// Map<String, String | number>
 		this._runtimeIds = new Map();
-
+		// ModuleGraph
 		this.moduleGraph = moduleGraph;
-
+		// 
 		this._getGraphRoots = this._getGraphRoots.bind(this);
 
 		// 缓存 便于数据查找
@@ -510,16 +506,14 @@ class ChunkGraph {
 		return cgm.chunks.getFromUnorderedCache(getModuleRuntimes);
 	}
 
-	// 返回 当前Chunk包含的Module 的数量
+	// 返回 当前 Chunk 包含的 Module 的数量
 	getNumberOfChunkModules(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules.size;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {Iterable<Module>} return the modules for this chunk
-	 */
+	// 返回当前 Chunk 下的所有 Module
+	// ChunkGraphChunk.modules
 	getChunkModulesIterable(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules;
@@ -543,6 +537,8 @@ class ChunkGraph {
 	 * @param {function(Module, Module): -1|0|1} comparator comparator function
 	 * @returns {Iterable<Module>} return the modules for this chunk
 	 */
+	// 返回当前 Chunk 下的所有 Module
+	// 返回 ChunkGraphChunk.modules
 	getOrderedChunkModulesIterable(chunk, comparator) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		cgc.modules.sortWith(comparator);
@@ -565,11 +561,9 @@ class ChunkGraph {
 		return modulesWithSourceType;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {Module[]} return the modules for this chunk (cached, do not modify)
-	 */
+	// 以 Set 形式返回当前 Chunk 下的所有 Module
 	getChunkModules(chunk) {
+		// 根据 Chunk 找到对应的 ChunkGraphChunk
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules.getFromUnorderedCache(getArray);
 	}
@@ -677,6 +671,7 @@ class ChunkGraph {
 	 * @param {ChunkFilterPredicate=} filterChunkFn predicate function used to filter chunks
 	 * @returns {boolean} return true if module exists in graph
 	 */
+	// 返回
 	hasModuleInGraph(chunk, filterFn, filterChunkFn) {
 		const queue = new Set(chunk.groupsIterable);
 		const chunksProcessed = new Set();
@@ -701,11 +696,7 @@ class ChunkGraph {
 		return false;
 	}
 
-	/**
-	 * @param {Chunk} chunkA first chunk
-	 * @param {Chunk} chunkB second chunk
-	 * @returns {-1|0|1} this is a comparator function like sort and returns -1, 0, or 1 based on sort order
-	 */
+	// 比较 ChunkA 和 ChunkB 下包含 Module 数量的大小
 	compareChunks(chunkA, chunkB) {
 		const cgcA = this._getChunkGraphChunk(chunkA);
 		const cgcB = this._getChunkGraphChunk(chunkB);
@@ -716,10 +707,7 @@ class ChunkGraph {
 		return compareModuleIterables(cgcA.modules, cgcB.modules);
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {number} total size of all modules in the chunk
-	 */
+	// 返回当前 Chunk 下所有的 Module 的大小之和
 	getChunkModulesSize(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules.getFromUnorderedCache(getModulesSize);
@@ -743,13 +731,11 @@ class ChunkGraph {
 		return cgc.modules.getFromUnorderedCache(this._getGraphRoots);
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {ChunkSizeOptions} options options object
-	 * @returns {number} total size of the chunk
-	 */
+	// 根据选项返回 Chunk 的大小
 	getChunkSize(chunk, options = {}) {
+		// 根据 Chunk 找到对应的 ChunkGraphChunk
 		const cgc = this._getChunkGraphChunk(chunk);
+		// 返回 ChunkGraphChunk 下所有 Module 的大小之和
 		const modulesSize = cgc.modules.getFromUnorderedCache(getModulesSize);
 		const chunkOverhead =
 			typeof options.chunkOverhead === "number" ? options.chunkOverhead : 10000;
@@ -763,12 +749,7 @@ class ChunkGraph {
 		);
 	}
 
-	/**
-	 * @param {Chunk} chunkA chunk
-	 * @param {Chunk} chunkB chunk
-	 * @param {ChunkSizeOptions} options options object
-	 * @returns {number} total size of the chunk or false if chunks can't be integrated
-	 */
+	// 根据选项返回 ChunkA 与ChunkB 合并后的 Chunk 大小
 	getIntegratedChunksSize(chunkA, chunkB, options = {}) {
 		const cgcA = this._getChunkGraphChunk(chunkA);
 		const cgcB = this._getChunkGraphChunk(chunkB);
@@ -790,11 +771,7 @@ class ChunkGraph {
 		);
 	}
 
-	/**
-	 * @param {Chunk} chunkA chunk
-	 * @param {Chunk} chunkB chunk
-	 * @returns {boolean} true, if chunks could be integrated
-	 */
+	// 返回 两个 Chunk 能否被合成一体
 	canChunksBeIntegrated(chunkA, chunkB) {
 		if (chunkA.preventIntegration || chunkB.preventIntegration) {
 			return false;
@@ -813,6 +790,7 @@ class ChunkGraph {
 			}
 		}
 
+		// 如果 ChunkA 或者 ChunkB 有运行时模块
 		if (
 			this.getNumberOfEntryModules(chunkA) > 0 ||
 			this.getNumberOfEntryModules(chunkB) > 0
@@ -823,11 +801,7 @@ class ChunkGraph {
 		return true;
 	}
 
-	/**
-	 * @param {Chunk} chunkA the target chunk
-	 * @param {Chunk} chunkB the chunk to integrate
-	 * @returns {void}
-	 */
+	// 将 ChunkB 合并到 ChunkA 中
 	integrateChunks(chunkA, chunkB) {
 		// Decide for one name (deterministic)
 		if (chunkA.name && chunkB.name) {

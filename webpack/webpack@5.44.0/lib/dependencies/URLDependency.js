@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Ivan Kopeykin @vankop
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -13,33 +8,20 @@ const makeSerializable = require("../util/makeSerializable");
 const memoize = require("../util/memoize");
 const ModuleDependency = require("./ModuleDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../ModuleGraphConnection")} ModuleGraphConnection */
-/** @typedef {import("../ModuleGraphConnection").ConnectionState} ConnectionState */
-/** @typedef {import("../util/Hash")} Hash */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
-
 const getRawModule = memoize(() => require("../RawModule"));
 
+// URL依赖
+// 当代码中包含 new URL('./xx/xx.xx', import.meta.url)
 class URLDependency extends ModuleDependency {
-	/**
-	 * @param {string} request request
-	 * @param {[number, number]} range range of the arguments of new URL( |> ... <| )
-	 * @param {[number, number]} outerRange range of the full |> new URL(...) <|
-	 * @param {boolean=} relative use relative urls instead of absolute with base uri
-	 */
 	constructor(request, range, outerRange, relative) {
 		super(request);
+		// [number, number]
 		this.range = range;
+		// [number, number]
 		this.outerRange = outerRange;
+		// 是否时相对路径
 		this.relative = relative || false;
-		/** @type {Set<string> | boolean} */
+		// Set<string> | boolean>
 		this.usedByExports = undefined;
 	}
 
@@ -51,10 +33,7 @@ class URLDependency extends ModuleDependency {
 		return "url";
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @returns {null | false | function(ModuleGraphConnection, RuntimeSpec): ConnectionState} function to determine if the connection is active
-	 */
+	// 
 	getCondition(moduleGraph) {
 		return getDependencyUsedByExportsCondition(
 			this,
@@ -63,10 +42,7 @@ class URLDependency extends ModuleDependency {
 		);
 	}
 
-	/**
-	 * @param {string} context context directory
-	 * @returns {Module} a module
-	 */
+	// 返回 RawModule 的实例
 	createIgnoredModule(context) {
 		const RawModule = getRawModule();
 		return new RawModule(
@@ -97,12 +73,6 @@ class URLDependency extends ModuleDependency {
 URLDependency.Template = class URLDependencyTemplate extends (
 	ModuleDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(dependency, source, templateContext) {
 		const {
 			chunkGraph,
@@ -112,6 +82,7 @@ URLDependency.Template = class URLDependencyTemplate extends (
 			runtime
 		} = templateContext;
 		const dep = /** @type {URLDependency} */ (dependency);
+		// ModuleGraphConnection
 		const connection = moduleGraph.getConnection(dep);
 		// Skip rendering depending when dependency is conditional
 		if (connection && !connection.isTargetActive(runtime)) {

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const HarmonyAcceptDependency = require("./HarmonyAcceptDependency");
@@ -20,18 +15,12 @@ const HarmonyExportDependencyParserPlugin = require("./HarmonyExportDependencyPa
 const HarmonyImportDependencyParserPlugin = require("./HarmonyImportDependencyParserPlugin");
 const HarmonyTopLevelThisParserPlugin = require("./HarmonyTopLevelThisParserPlugin");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// ES模块插件
 class HarmonyModulesPlugin {
 	constructor(options) {
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"HarmonyModulesPlugin",
@@ -97,13 +86,16 @@ class HarmonyModulesPlugin {
 					new HarmonyAcceptImportDependency.Template()
 				);
 
+				// 代码解析器
 				const handler = (parser, parserOptions) => {
 					// TODO webpack 6: rename harmony to esm or module
 					if (parserOptions.harmony !== undefined && !parserOptions.harmony)
 						return;
 
 					new HarmonyDetectionParserPlugin(this.options).apply(parser);
+					// ES模块 import 语句
 					new HarmonyImportDependencyParserPlugin(parserOptions).apply(parser);
+					// ES模块 export 语句
 					new HarmonyExportDependencyParserPlugin(parserOptions).apply(parser);
 					new HarmonyTopLevelThisParserPlugin().apply(parser);
 				};

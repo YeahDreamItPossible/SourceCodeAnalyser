@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { pathToFileURL } = require("url");
@@ -21,18 +16,6 @@ const {
 } = require("./HarmonyImportDependencyParserPlugin");
 const WorkerDependency = require("./WorkerDependency");
 
-/** @typedef {import("estree").Expression} Expression */
-/** @typedef {import("estree").ObjectExpression} ObjectExpression */
-/** @typedef {import("estree").Pattern} Pattern */
-/** @typedef {import("estree").Property} Property */
-/** @typedef {import("estree").SpreadElement} SpreadElement */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Entrypoint").EntryOptions} EntryOptions */
-/** @typedef {import("../Parser").ParserState} ParserState */
-/** @typedef {import("../javascript/BasicEvaluatedExpression")} BasicEvaluatedExpression */
-/** @typedef {import("../javascript/JavascriptParser")} JavascriptParser */
-/** @typedef {import("./HarmonyImportDependencyParserPlugin").HarmonySettings} HarmonySettings */
-
 const getUrl = module => {
 	return pathToFileURL(module.resource).toString();
 };
@@ -44,20 +27,21 @@ const DEFAULT_SYNTAX = [
 	"Worker from worker_threads"
 ];
 
-/** @type {WeakMap<ParserState, number>} */
+// WeakMap<ParserState, number>
 const workerIndexMap = new WeakMap();
 
+// Worker插件
+// 
 class WorkerPlugin {
 	constructor(chunkLoading, wasmLoading, module) {
+		// Webpack.Config.output.workerChunkLoading
 		this._chunkLoading = chunkLoading;
+		// Webpack.Config.output.workerWasmLoading
 		this._wasmLoading = wasmLoading;
+		// Webpack.Config.output.module
 		this._module = module;
 	}
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+	
 	apply(compiler) {
 		if (this._chunkLoading) {
 			new EnableChunkLoadingPlugin(this._chunkLoading).apply(compiler);
@@ -161,11 +145,10 @@ class WorkerPlugin {
 					};
 				};
 
-				/**
-				 * @param {JavascriptParser} parser the parser
-				 * @param {object} parserOptions options
-				 */
 				const parserPlugin = (parser, parserOptions) => {
+					// 当 Webpack.Config.module.parser.['javascript/auto'].work = false 时
+					// 当 Webpack.Config.module.parser.['javascript/esm'].work = false 时
+					// 明确禁用 Worker
 					if (parserOptions.worker === false) return;
 					const options = !Array.isArray(parserOptions.worker)
 						? ["..."]
@@ -270,6 +253,7 @@ class WorkerPlugin {
 							entryOptions.name = options.name;
 						}
 
+						// 设置 entryOptions.runtime = hash
 						if (entryOptions.runtime === undefined) {
 							let i = workerIndexMap.get(parser.state) || 0;
 							workerIndexMap.set(parser.state, i + 1);
@@ -366,6 +350,8 @@ class WorkerPlugin {
 
 						return true;
 					};
+
+					// 根据不同的 type 注册不同的钩子
 					const processItem = item => {
 						if (item.endsWith("()")) {
 							parser.hooks.call

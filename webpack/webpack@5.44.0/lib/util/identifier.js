@@ -6,8 +6,11 @@
 
 const path = require("path");
 
+// window 下绝对路径
 const WINDOWS_ABS_PATH_REGEXP = /^[a-zA-Z]:[\\/]/;
+// 能否匹配到 | 或者 ! 字符
 const SEGMENTS_SPLIT_REGEXP = /([|!])/;
+// 全局匹配 \ 字符
 const WINDOWS_PATH_SEPARATOR_REGEXP = /\\/g;
 
 /**
@@ -15,11 +18,7 @@ const WINDOWS_PATH_SEPARATOR_REGEXP = /\\/g;
  * @property {Map<string, Map<string, string>>=} relativePaths
  */
 
-/**
- * @param {string} context context for relative path
- * @param {string} maybeAbsolutePath path to make relative
- * @returns {string} relative path in request style
- */
+// 将 路径 转换成相对于给定上下文的 相对路径
 const absoluteToRequest = (context, maybeAbsolutePath) => {
 	if (maybeAbsolutePath[0] === "/") {
 		if (
@@ -78,6 +77,7 @@ const requestToAbsolute = (context, relativePath) => {
 	return relativePath;
 };
 
+// 缓存函数执行的结果
 const makeCacheable = fn => {
 	/** @type {WeakMap<object, Map<string, Map<string, string>>>} */
 	const cache = new WeakMap();

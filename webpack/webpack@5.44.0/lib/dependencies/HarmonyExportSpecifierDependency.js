@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const makeSerializable = require("../util/makeSerializable");
@@ -16,13 +11,18 @@ const NullDependency = require("./NullDependency");
 /** @typedef {import("../ModuleGraph")} ModuleGraph */
 /** @typedef {import("../ModuleGraphConnection").ConnectionState} ConnectionState */
 
+// ES模块 导出标识符 依赖
+// 当遇到 export 语句 且 导出具体的标识符 时
 class HarmonyExportSpecifierDependency extends NullDependency {
 	constructor(id, name) {
 		super();
+		// 模块导出的标识符(as字段之后的标识符)
 		this.id = id;
+		// 模块导出的标识符(as字段之前的标识符)
 		this.name = name;
 	}
 
+	// 返回依赖类型
 	get type() {
 		return "harmony export specifier";
 	}
@@ -41,10 +41,6 @@ class HarmonyExportSpecifierDependency extends NullDependency {
 		};
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 * @returns {ConnectionState} how this dependency connects the module to referencing modules
-	 */
 	getModuleEvaluationSideEffectsState(moduleGraph) {
 		return false;
 	}

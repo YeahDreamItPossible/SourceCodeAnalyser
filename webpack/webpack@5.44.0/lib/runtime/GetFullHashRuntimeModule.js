@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -15,9 +11,7 @@ class GetFullHashRuntimeModule extends RuntimeModule {
 		this.fullHash = true;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
+	// __webpack_require__.h = 
 	generate() {
 		const { runtimeTemplate } = this.compilation;
 		return `${RuntimeGlobals.getFullHash} = ${runtimeTemplate.returningFunction(

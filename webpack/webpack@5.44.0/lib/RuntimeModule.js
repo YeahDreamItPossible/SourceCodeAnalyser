@@ -33,6 +33,7 @@ class RuntimeModule extends Module {
 	 */
 	constructor(name, stage = 0) {
 		super("runtime");
+		// 
 		this.name = name;
 		this.stage = stage;
 		this.buildMeta = {};
@@ -44,25 +45,18 @@ class RuntimeModule extends Module {
 		/** @type {ChunkGraph} */
 		this.chunkGraph = undefined;
 		this.fullHash = false;
-		/** @type {string} */
+		// 缓存的生成的代码
 		this._cachedGeneratedCode = undefined;
 	}
 
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @param {Chunk} chunk the chunk
-	 * @param {ChunkGraph} chunkGraph the chunk graph
-	 * @returns {void}
-	 */
+	// 绑定 this.compilation this.chunk this.chunkGraph
 	attach(compilation, chunk, chunkGraph = compilation.chunkGraph) {
 		this.compilation = compilation;
 		this.chunk = chunk;
 		this.chunkGraph = chunkGraph;
 	}
 
-	/**
-	 * @returns {string} a unique identifier of the module
-	 */
+	// 返回 模块唯一标识符
 	identifier() {
 		return `webpack/runtime/${this.name}`;
 	}
@@ -71,38 +65,24 @@ class RuntimeModule extends Module {
 	 * @param {RequestShortener} requestShortener the request shortener
 	 * @returns {string} a user readable identifier of the module
 	 */
+	// 返回 模块唯一标识符
 	readableIdentifier(requestShortener) {
 		return `webpack/runtime/${this.name}`;
 	}
 
-	/**
-	 * @param {NeedBuildContext} context context info
-	 * @param {function(WebpackError=, boolean=): void} callback callback function, returns true, if the module needs a rebuild
-	 * @returns {void}
-	 */
+	// 是否需要构建
 	needBuild(context, callback) {
 		return callback(null, false);
 	}
 
-	/**
-	 * @param {WebpackOptions} options webpack options
-	 * @param {Compilation} compilation the compilation
-	 * @param {ResolverWithOptions} resolver the resolver
-	 * @param {InputFileSystem} fs the file system
-	 * @param {function(WebpackError=): void} callback callback function
-	 * @returns {void}
-	 */
+	// 构建
 	build(options, compilation, resolver, fs, callback) {
 		// do nothing
 		// should not be called as runtime modules are added later to the compilation
 		callback();
 	}
 
-	/**
-	 * @param {Hash} hash the hash used to track dependencies
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
+	// 更新hash
 	updateHash(hash, context) {
 		hash.update(this.name);
 		hash.update(`${this.stage}`);
@@ -120,17 +100,12 @@ class RuntimeModule extends Module {
 		super.updateHash(hash, context);
 	}
 
-	/**
-	 * @returns {Set<string>} types available (do not mutate)
-	 */
+	// 返回 类型
 	getSourceTypes() {
 		return TYPES;
 	}
 
-	/**
-	 * @param {CodeGenerationContext} context context for code generation
-	 * @returns {CodeGenerationResult} result
-	 */
+	// 代码生成
 	codeGeneration(context) {
 		const sources = new Map();
 		const generatedCode = this.getGeneratedCode();
@@ -148,10 +123,7 @@ class RuntimeModule extends Module {
 		};
 	}
 
-	/**
-	 * @param {string=} type the source type for which the size should be estimated
-	 * @returns {number} the estimated size of the module (must be non-zero)
-	 */
+	// 返回 生成后代码大小
 	size(type) {
 		try {
 			const source = this.getGeneratedCode();
@@ -161,19 +133,14 @@ class RuntimeModule extends Module {
 		}
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @returns {string} runtime code
-	 */
+	// 生成代码
+	// 抽象方法
 	generate() {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
+	// 返回 生成的代码
 	getGeneratedCode() {
 		if (this._cachedGeneratedCode) {
 			return this._cachedGeneratedCode;

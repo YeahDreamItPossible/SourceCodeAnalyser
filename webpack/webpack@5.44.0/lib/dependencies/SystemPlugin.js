@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -16,14 +11,8 @@ const makeSerializable = require("../util/makeSerializable");
 const ConstDependency = require("./ConstDependency");
 const SystemRuntimeModule = require("./SystemRuntimeModule");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// TODO:
 class SystemPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"SystemPlugin",

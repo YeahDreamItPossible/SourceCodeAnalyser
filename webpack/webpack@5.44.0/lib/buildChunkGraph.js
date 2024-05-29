@@ -98,18 +98,19 @@ const getActiveStateOfConnections = (connections, runtime) => {
 const extractBlockModulesMap = compilation => {
 	const { moduleGraph } = compilation;
 
-	/** @type {Map<DependenciesBlock, Map<Module, ModuleGraphConnection[]>>} */
+	// Map<DependenciesBlock, Map<Module, ModuleGraphConnection[]>>
 	const blockModulesMap = new Map();
 
 	const blockQueue = new Set();
 
 	for (const module of compilation.modules) {
-		/** @type {WeakMap<Dependency, ModuleGraphConnection>} */
+		// WeakMap<Dependency, ModuleGraphConnection>
 		let moduleMap;
 
 		for (const connection of moduleGraph.getOutgoingConnections(module)) {
 			const d = connection.dependency;
 			// We skip connections without dependency
+			// 筛选 ModuleGraphConnection 
 			if (!d) continue;
 			const m = connection.module;
 			// We skip connections without Module pointer
@@ -205,13 +206,13 @@ const visitModules = (
 	let nextFreeModulePreOrderIndex = 0;
 	let nextFreeModulePostOrderIndex = 0;
 
-	/** @type {Map<DependenciesBlock, ChunkGroupInfo>} */
+	// Map<DependenciesBlock, ChunkGroupInfo>
 	const blockChunkGroups = new Map();
 
-	/** @type {Map<string, ChunkGroupInfo>} */
+	// Map<string, ChunkGroupInfo>
 	const namedChunkGroups = new Map();
 
-	/** @type {Map<string, ChunkGroupInfo>} */
+	// Map<string, ChunkGroupInfo>
 	const namedAsyncEntrypoints = new Map();
 
 	const ADD_AND_ENTER_ENTRY_MODULE = 0;
@@ -1262,16 +1263,16 @@ const buildChunkGraph = (compilation, inputEntrypointsAndModules) => {
 
 	// SHARED STATE
 
-	/** @type {Map<AsyncDependenciesBlock, BlockChunkGroupConnection[]>} */
+	// Map<AsyncDependenciesBlock, BlockChunkGroupConnection[]>
 	const blockConnections = new Map();
 
-	/** @type {Set<ChunkGroup>} */
+	// Set<ChunkGroup>
 	const allCreatedChunkGroups = new Set();
 
-	/** @type {Map<ChunkGroup, ChunkGroupInfo>} */
+	// Set<ChunkGroup, ChunkGroupInfo>
 	const chunkGroupInfoMap = new Map();
 
-	/** @type {Set<DependenciesBlock>} */
+	// Set<DependenciesBlock>
 	const blocksWithNestedBlocks = new Set();
 
 	// PART ONE

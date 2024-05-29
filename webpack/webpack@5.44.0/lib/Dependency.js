@@ -83,13 +83,17 @@ class Dependency {
 	constructor() {
 		// 引用当前依赖的 Module
 		this._parentModule = undefined;
-		/** @type {DependenciesBlock} */
+		// 引用当前依赖的 异步Module
 		this._parentDependenciesBlock = undefined;
+		// 标识 当前依赖 是否是弱的
+		// 弱依赖 意味着这个依赖 对于模块的运行不是必须的
+		// 即使这个依赖不存在 模块也能以某种降级模式运行
 		// TODO check if this can be moved into ModuleDependency
-		/** @type {boolean} */
 		this.weak = false;
-		// TODO check if this can be moved into ModuleDependency
-		/** @type {boolean} */
+		// 标识 当前依赖 是否是可选的
+		// 与弱依赖类似 可选依赖也不是模块运行所必需的
+		// 可选依赖通常有一个更具体的含义 即当这个依赖不存在时
+		// 模块应该能够优雅地处理这种情况 而不是简单地失败
 		this.optional = false;
 
 		// 位置信息
@@ -121,6 +125,7 @@ class Dependency {
 		return "unknown";
 	}
 
+	// 返回 位置信息
 	get loc() {
 		if (this._loc !== undefined) return this._loc;
 		/** @type {SyntheticDependencyLocation & RealDependencyLocation} */
@@ -140,6 +145,7 @@ class Dependency {
 		return (this._loc = loc);
 	}
 
+	// 设置 位置信息
 	set loc(loc) {
 		if ("start" in loc && typeof loc.start === "object") {
 			this._locSL = loc.start.line || 0;
@@ -173,12 +179,8 @@ class Dependency {
 		return null;
 	}
 
-	/**
-	 * Returns the referenced module and export
-	 * @deprecated
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @returns {never} throws error
-	 */
+	// Dependency.getReference 移除
+	// 
 	// 获取关联的模块和输出
 	getReference(moduleGraph) {
 		throw new Error(
@@ -192,6 +194,7 @@ class Dependency {
 	 * @param {RuntimeSpec} runtime the runtime for which the module is analysed
 	 * @returns {(string[] | ReferencedExport)[]} referenced exports
 	 */
+	// 返回关联输出
 	getReferencedExports(moduleGraph, runtime) {
 		return Dependency.EXPORTS_OBJECT_REFERENCED;
 	}
@@ -213,30 +216,17 @@ class Dependency {
 		return undefined;
 	}
 
-	/**
-	 * Returns warnings
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @returns {WebpackError[]} warnings
-	 */
+	// 返回所有的警告 Array<WebpackError>
 	getWarnings(moduleGraph) {
 		return null;
 	}
 
-	/**
-	 * Returns errors
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @returns {WebpackError[]} errors
-	 */
+	// 返回所有的错误 Array<WebpackError>
 	getErrors(moduleGraph) {
 		return null;
 	}
 
-	/**
-	 * Update the hash
-	 * @param {Hash} hash hash to be updated
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
+	// 更新hash
 	updateHash(hash, context) {}
 
 	/**
@@ -286,11 +276,13 @@ class Dependency {
 	}
 }
 
-/** @type {string[][]} */
+// Array<Array<String>>
 Dependency.NO_EXPORTS_REFERENCED = [];
-/** @type {string[][]} */
+// Array<Array<String>>
 Dependency.EXPORTS_OBJECT_REFERENCED = [[]];
 
+// Dependency.prototype.module 移除
+// Compilation.ModuleGraph.getModule(Dependency) 替代
 Object.defineProperty(Dependency.prototype, "module", {
 	/**
 	 * @deprecated
@@ -313,6 +305,7 @@ Object.defineProperty(Dependency.prototype, "module", {
 	}
 });
 
+// Dependency.prototype.disconnect 移除 不再支持
 Object.defineProperty(Dependency.prototype, "disconnect", {
 	get() {
 		throw new Error(

@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -13,9 +9,6 @@ class CompatGetDefaultExportRuntimeModule extends HelperRuntimeModule {
 		super("compat get default export");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { runtimeTemplate } = this.compilation;
 		const fn = RuntimeGlobals.compatGetDefaultExport;

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const HotModuleReplacementPlugin = require("../HotModuleReplacementPlugin");
@@ -31,9 +26,12 @@ const harmonySpecifierTag = Symbol("harmony import");
  * @property {boolean} await
  */
 
+// ES模块 静态import 语法分析器插件
 module.exports = class HarmonyImportDependencyParserPlugin {
 	constructor(options) {
+		// Wepback.Config.module.parser.strictExportPresence
 		this.strictExportPresence = options.strictExportPresence;
+		// Webpack.Config.module.strictThisContextOnImports
 		this.strictThisContextOnImports = options.strictThisContextOnImports;
 	}
 

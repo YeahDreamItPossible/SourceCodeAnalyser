@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -15,9 +10,7 @@ class StartupChunkDependenciesRuntimeModule extends RuntimeModule {
 		this.asyncChunkLoading = asyncChunkLoading;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
+	// 
 	generate() {
 		const { chunkGraph, chunk, compilation } = this;
 		const { runtimeTemplate } = compilation;

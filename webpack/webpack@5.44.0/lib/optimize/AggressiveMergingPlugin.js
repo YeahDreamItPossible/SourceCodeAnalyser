@@ -1,15 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { STAGE_ADVANCED } = require("../OptimizationStages");
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
-
+// 合并 Chunk
 class AggressiveMergingPlugin {
 	constructor(options) {
 		if (
@@ -23,11 +16,6 @@ class AggressiveMergingPlugin {
 		this.options = options || {};
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const options = this.options;
 		const minSizeReduce = options.minSizeReduce || 1.5;
@@ -42,7 +30,8 @@ class AggressiveMergingPlugin {
 					},
 					chunks => {
 						const chunkGraph = compilation.chunkGraph;
-						/** @type {{a: Chunk, b: Chunk, improvement: number}[]} */
+						// 先获取要合并Chunk的队列
+						// Array<{a: Chunk, b: Chunk, improvement: number}>
 						let combinations = [];
 						for (const a of chunks) {
 							if (a.canBeInitial()) continue;

@@ -29,9 +29,6 @@ const getCriticalDependencyWarning = memoize(() =>
 );
 
 class ImportMetaPlugin {
-	/**
-	 * @param {Compiler} compiler compiler
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"ImportMetaPlugin",

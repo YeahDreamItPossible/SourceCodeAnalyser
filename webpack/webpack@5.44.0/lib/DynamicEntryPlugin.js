@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Naoyuki Kanezawa @nkzawa
-*/
-
 "use strict";
 
 const EntryOptionPlugin = require("./EntryOptionPlugin");
@@ -14,21 +9,19 @@ const EntryDependency = require("./dependencies/EntryDependency");
 /** @typedef {import("../declarations/WebpackOptions").EntryStaticNormalized} EntryStatic */
 /** @typedef {import("./Compiler")} Compiler */
 
+// 动态入口插件
 class DynamicEntryPlugin {
 	/**
 	 * @param {string} context the context path
 	 * @param {EntryDynamic} entry the entry value
 	 */
 	constructor(context, entry) {
+		// Webpack.Config.context
 		this.context = context;
+		// Webpack.Config.entry
 		this.entry = entry;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"DynamicEntryPlugin",

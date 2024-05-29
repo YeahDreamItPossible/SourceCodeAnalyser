@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("./RuntimeGlobals");
@@ -84,11 +79,8 @@ const TREE_DEPENDENCIES = {
 	[RuntimeGlobals.shareScopeMap]: [RuntimeGlobals.hasOwnProperty]
 };
 
+// 运行时插件
 class RuntimePlugin {
-	/**
-	 * @param {Compiler} compiler the Compiler
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("RuntimePlugin", compilation => {
 			compilation.dependencyTemplates.set(

@@ -9,6 +9,8 @@ const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 const ModuleDependencyTemplateAsId = require("./ModuleDependencyTemplateAsId");
 
+// TODO:
+// HMR 相关
 class ImportMetaHotAcceptDependency extends ModuleDependency {
 	constructor(request, range) {
 		super(request);

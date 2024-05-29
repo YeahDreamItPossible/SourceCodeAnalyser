@@ -149,6 +149,8 @@ const findDependencyForName = (
 	return undefined;
 };
 
+// ES模块 export标识符 依赖
+// 当遇到 export 和 import 复合语句时 即: export * from '...'
 class HarmonyExportImportedSpecifierDependency extends HarmonyImportDependency {
 	/**
 	 * @param {string} request the request string
@@ -204,6 +206,7 @@ class HarmonyExportImportedSpecifierDependency extends HarmonyImportDependency {
 	 * @param {ModuleGraph} moduleGraph the module graph
 	 * @returns {string[]} the imported id
 	 */
+	// 返回 moduleGrpah._metaMap
 	getIds(moduleGraph) {
 		return moduleGraph.getMeta(this)[idsSymbol] || this.ids;
 	}

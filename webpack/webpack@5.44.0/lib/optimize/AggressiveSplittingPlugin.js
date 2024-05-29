@@ -51,6 +51,7 @@ const isNotAEntryModule = (chunkGraph, chunk) => {
 /** @type {WeakSet<Chunk>} */
 const recordedChunks = new WeakSet();
 
+// TODO:
 class AggressiveSplittingPlugin {
 	/**
 	 * @param {AggressiveSplittingPluginOptions=} options options object
@@ -81,11 +82,6 @@ class AggressiveSplittingPlugin {
 		return recordedChunks.has(chunk);
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(
 			"AggressiveSplittingPlugin",

@@ -66,46 +66,43 @@ const sortOrigin = (a, b) => {
 	return compareLocations(a.loc, b.loc);
 };
 
+// 块组(ChunkGroup): 用来对 Chunk 使用描述
 class ChunkGroup {
-	/**
-	 * Creates an instance of ChunkGroup.
-	 * @param {string|ChunkGroupOptions=} options chunk group options passed to chunkGroup
-	 */
 	constructor(options) {
 		if (typeof options === "string") {
 			options = { name: options };
 		} else if (!options) {
 			options = { name: undefined };
 		}
-		// debugId 唯一标识符
+		// 当前 块组 的debugId(唯一标识符)
 		this.groupDebugId = debugId++;
-		// 
+		// 当前 块组 选项
 		this.options = options;
 
-		// 嵌套的ChunkGroup
-		// 子ChunkGroup
+		// ChunkGroup 嵌套关系
+		// 当前 块组 包含的 子块组
 		// Set<ChunkGroup>
 		this._children = new SortableSet(undefined, sortById);
-		// 父ChunkGroup
+		// 当前 块组 包含的 父块组
 		// Set<ChunkGroup>
 		this._parents = new SortableSet(undefined, sortById);
-		// 异步Entrypoint
+		// 当前 块组 包含的 异步块组
 		// Set<ChunkGroup>
 		this._asyncEntrypoints = new SortableSet(undefined, sortById);
 
-		//
+		// Set<>
 		this._blocks = new SortableSet();
-		// 分离chunk后的所有Chunk
-		// Chunk[]
+		// 当前 块组 包含的块
+		// Array<Chunk>
 		this.chunks = [];
-		// 存放模块和依赖 Object<module, dependency, loc>[]
+		// 存放模块和依赖 Array<{module, dependency, loc}>
 		this.origins = [];
 
-		// TODO: 模块对应的索引
-		/** Indices in top-down order */
+		// 模块对应的索引
+		// 自上而下的索引
 		// Map<Module, number>
 		this._modulePreOrderIndices = new Map();
-		/** Indices in bottom-up order */
+		// 自下而上的索引
 		// Map<Module, number>
 		this._modulePostOrderIndices = new Map();
 
@@ -113,16 +110,14 @@ class ChunkGroup {
 		this.index = undefined;
 	}
 
-	/**
-	 * when a new chunk is added to a chunkGroup, addingOptions will occur.
-	 * @param {ChunkGroupOptions} options the chunkGroup options passed to addOptions
-	 * @returns {void}
-	 */
+	// 添加 块组 选项
 	addOptions(options) {
 		for (const key of Object.keys(options)) {
+			// 当前 key 不存在
 			if (this.options[key] === undefined) {
 				this.options[key] = options[key];
-			} else if (this.options[key] !== options[key]) {
+			} 
+			else if (this.options[key] !== options[key]) {
 				if (key.endsWith("Order")) {
 					this.options[key] = Math.max(this.options[key], options[key]);
 				} else {
@@ -204,11 +199,7 @@ class ChunkGroup {
 		return true;
 	}
 
-	/**
-	 * @param {Chunk} oldChunk chunk to be replaced
-	 * @param {Chunk} newChunk New chunk that will be replaced with
-	 * @returns {boolean} returns true if the replacement was successful
-	 */
+	// 返回是否成功 替换 块
 	replaceChunk(oldChunk, newChunk) {
 		const oldIdx = this.chunks.indexOf(oldChunk);
 		if (oldIdx < 0) return false;
@@ -264,6 +255,7 @@ class ChunkGroup {
 		return this._children.size;
 	}
 
+	// 返回 this._children
 	get childrenIterable() {
 		return this._children;
 	}
@@ -303,6 +295,7 @@ class ChunkGroup {
 		return this._parents.has(parent);
 	}
 
+	// 返回 this._parents
 	get parentsIterable() {
 		return this._parents;
 	}
@@ -507,6 +500,7 @@ class ChunkGroup {
 	 * @param {Module} module the module
 	 * @returns {number} index
 	 */
+	// 
 	getModulePreOrderIndex(module) {
 		return this._modulePreOrderIndices.get(module);
 	}

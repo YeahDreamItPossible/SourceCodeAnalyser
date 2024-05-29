@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Yuta Hiroto @hiroppy
-*/
-
 "use strict";
 
 const { cleverMerge } = require("../util/cleverMerge");
@@ -64,12 +59,11 @@ const getAssetSourceGenerator = memoize(() =>
 const type = "asset";
 const plugin = "AssetModulesPlugin";
 
+// 给 compiler.hooks.compilation 注册事件
+// 给 normalModuleFactory.hooks.createParser 注册事件
+// 给 normalMOduleFactory.hooks.createGenerator 注册事件
+// ...
 class AssetModulesPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			plugin,

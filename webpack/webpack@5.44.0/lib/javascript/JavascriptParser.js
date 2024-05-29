@@ -96,6 +96,29 @@ class VariableInfo {
  * @property {boolean} isAsmJs
  * @property {boolean} inTry
  */
+/**
+ * Expression 表达式分类
+ * ArrowFunctionExpression 箭头函数表达式
+ * AssignmentExpression
+ * AwaitExpression
+ * BinaryExpression
+ * CallExpression
+ * ClassExpression
+ * ConditionalExpression
+ * FunctionExpression
+ * Identifier
+ * LogicalExpression
+ * MemberExpression
+ * NewExpression
+ * ObjectExpression
+ * SequenceExpression
+ * SpreadElement
+ * TaggedTemplateExpression
+ * TemplateLiteral
+ * ThisExpression
+ * UnaryExpression
+ * UpdateExpression
+ */
 
 const joinRanges = (startRange, endRange) => {
 	if (!endRange) return startRange;
@@ -148,17 +171,22 @@ class JavascriptParser extends Parser {
 	constructor(sourceType = "auto") {
 		super();
 		this.hooks = Object.freeze({
-			/** @type {HookMap<SyncBailHook<[UnaryExpressionNode], BasicEvaluatedExpression | undefined | null>>} */
+			// 当代码片段中有有计算 typeof 自由变量 表达式时
+			// HookMap<SyncBailHook<[UnaryExpressionNode], BasicEvaluatedExpression | undefined | null>>
 			evaluateTypeof: new HookMap(() => new SyncBailHook(["expression"])),
-			/** @type {HookMap<SyncBailHook<[ExpressionNode], BasicEvaluatedExpression | undefined | null>>} */
+			// 当代码片段中有计算表达式时
+			// HookMap<SyncBailHook<[ExpressionNode], BasicEvaluatedExpression | undefined | null>>
 			evaluate: new HookMap(() => new SyncBailHook(["expression"])),
-			/** @type {HookMap<SyncBailHook<[IdentifierNode | ThisExpressionNode | MemberExpressionNode | MetaPropertyNode], BasicEvaluatedExpression | undefined | null>>} */
+			// 当代码片段中有有计算 自由变量 标识符时
+			// HookMap<SyncBailHook<[IdentifierNode | ThisExpressionNode | MemberExpressionNode | MetaPropertyNode], BasicEvaluatedExpression | undefined | null>>
 			evaluateIdentifier: new HookMap(() => new SyncBailHook(["expression"])),
-			/** @type {HookMap<SyncBailHook<[IdentifierNode | ThisExpressionNode | MemberExpressionNode], BasicEvaluatedExpression | undefined | null>>} */
+			// 当代码片段中有有计算 已有定义 标识符时
+			// HookMap<SyncBailHook<[IdentifierNode | ThisExpressionNode | MemberExpressionNode], BasicEvaluatedExpression | undefined | null>>
 			evaluateDefinedIdentifier: new HookMap(
 				() => new SyncBailHook(["expression"])
 			),
-			/** @type {HookMap<SyncBailHook<[CallExpressionNode, BasicEvaluatedExpression | undefined], BasicEvaluatedExpression | undefined | null>>} */
+			// 
+			// HookMap<SyncBailHook<[CallExpressionNode, BasicEvaluatedExpression | undefined], BasicEvaluatedExpression | undefined | null>>
 			evaluateCallExpressionMember: new HookMap(
 				() => new SyncBailHook(["expression", "param"])
 			),
@@ -166,16 +194,20 @@ class JavascriptParser extends Parser {
 			isPure: new HookMap(
 				() => new SyncBailHook(["expression", "commentsStartPosition"])
 			),
-			/** @type {SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>} */
+			//
+			// SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>
 			preStatement: new SyncBailHook(["statement"]),
-
-			/** @type {SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>} */
+			// 
+			// SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>
 			blockPreStatement: new SyncBailHook(["declaration"]),
-			/** @type {SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>} */
+			// 当代码片段中包含语句时
+			// SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>
 			statement: new SyncBailHook(["statement"]),
-			/** @type {SyncBailHook<[IfStatementNode], boolean | void>} */
+			// 当代码片段中包含 if 语句时
+			// SyncBailHook<[IfStatementNode], boolean | void>
 			statementIf: new SyncBailHook(["statement"]),
-			/** @type {SyncBailHook<[ExpressionNode, ClassExpressionNode | ClassDeclarationNode], boolean | void>} */
+			// 当代码片段中包含 clss 表达式时
+			// SyncBailHook<[ExpressionNode, ClassExpressionNode | ClassDeclarationNode], boolean | void>
 			classExtendsExpression: new SyncBailHook([
 				"expression",
 				"classDefinition"
@@ -190,31 +222,43 @@ class JavascriptParser extends Parser {
 			]),
 			/** @type {HookMap<SyncBailHook<[LabeledStatementNode], boolean | void>>} */
 			label: new HookMap(() => new SyncBailHook(["statement"])),
-			/** @type {SyncBailHook<[StatementNode, ImportSource], boolean | void>} */
+			// 为代码片段中每个包含 静态import 语句时调用
+			// SyncBailHook<[StatementNode, ImportSource], boolean | void>
 			import: new SyncBailHook(["statement", "source"]),
-			/** @type {SyncBailHook<[StatementNode, ImportSource, string, string], boolean | void>} */
+			// 为代码片段中每个 import 语句中包含具体的导入标识符(import specifier) 时调用
+			// SyncBailHook<[StatementNode, ImportSource, string, string], boolean | void>
 			importSpecifier: new SyncBailHook([
 				"statement",
 				"source",
 				"exportName",
 				"identifierName"
 			]),
-			/** @type {SyncBailHook<[StatementNode], boolean | void>} */
+			// 为代码片段中每个 import 语句中导出的函数被调用 时调用
+			// SyncBailHook<[ExpressionNode], boolean | void>
+			importCall: new SyncBailHook(["expression"]),
+			// 为代码片段中每个出现 export 语句时调用
+			// SyncBailHook<[StatementNode], boolean | void>
 			export: new SyncBailHook(["statement"]),
-			/** @type {SyncBailHook<[StatementNode, ImportSource], boolean | void>} */
+			// 当代码片段中有 export * from '' 语句时
+			// SyncBailHook<[StatementNode, ImportSource], boolean | void>
 			exportImport: new SyncBailHook(["statement", "source"]),
-			/** @type {SyncBailHook<[StatementNode, DeclarationNode], boolean | void>} */
+			// 为代码片段中每个 export 语句(该导出语句导出具体声明)时调用 
+			// 示例: export const myName = 'Lee'
+			// SyncBailHook<[StatementNode, DeclarationNode], boolean | void>
 			exportDeclaration: new SyncBailHook(["statement", "declaration"]),
-			/** @type {SyncBailHook<[StatementNode, DeclarationNode], boolean | void>} */
+			// 为代码片段中每个 export default 语句(该导出语句默认声明)时调用 
+			// SyncBailHook<[StatementNode, DeclarationNode], boolean | void>
 			exportExpression: new SyncBailHook(["statement", "declaration"]),
-			/** @type {SyncBailHook<[StatementNode, string, string, number | undefined], boolean | void>} */
+			// 为代码片段中每个 export 语句(该导出语句导出具体声明)时调用 
+			// SyncBailHook<[StatementNode, string, string, number | undefined], boolean | void>
 			exportSpecifier: new SyncBailHook([
 				"statement",
 				"identifierName",
 				"exportName",
 				"index"
 			]),
-			/** @type {SyncBailHook<[StatementNode, ImportSource, string, string, number | undefined], boolean | void>} */
+			// 
+			// SyncBailHook<[StatementNode, ImportSource, string, string, number | undefined], boolean | void>
 			exportImportSpecifier: new SyncBailHook([
 				"statement",
 				"source",
@@ -226,33 +270,48 @@ class JavascriptParser extends Parser {
 			preDeclarator: new SyncBailHook(["declarator", "statement"]),
 			/** @type {SyncBailHook<[VariableDeclaratorNode, StatementNode], boolean | void>} */
 			declarator: new SyncBailHook(["declarator", "statement"]),
-			/** @type {HookMap<SyncBailHook<[DeclarationNode], boolean | void>>} */
+			// 当分析 变量声明 时
+			// 示例: var a = 2
+			// HookMap<SyncBailHook<[DeclarationNode], boolean | void>>
 			varDeclaration: new HookMap(() => new SyncBailHook(["declaration"])),
-			/** @type {HookMap<SyncBailHook<[DeclarationNode], boolean | void>>} */
+			// 当分析 用 let 关键字声明变量 时
+			// 示例: let name = 'Lee'
+			// HookMap<SyncBailHook<[DeclarationNode], boolean | void>>
 			varDeclarationLet: new HookMap(() => new SyncBailHook(["declaration"])),
-			/** @type {HookMap<SyncBailHook<[DeclarationNode], boolean | void>>} */
+			// 当分析 用 const 关键字声明变量 时
+			// 示例: const name = 'Lee'
+			// HookMap<SyncBailHook<[DeclarationNode], boolean | void>>
 			varDeclarationConst: new HookMap(() => new SyncBailHook(["declaration"])),
-			/** @type {HookMap<SyncBailHook<[DeclarationNode], boolean | void>>} */
+			// 当分析 用 var 关键字声明变量 时
+			// 示例: var name = 'Lee'
+			// HookMap<SyncBailHook<[DeclarationNode], boolean | void>>
 			varDeclarationVar: new HookMap(() => new SyncBailHook(["declaration"])),
 			/** @type {HookMap<SyncBailHook<[IdentifierNode], boolean | void>>} */
 			pattern: new HookMap(() => new SyncBailHook(["pattern"])),
-			/** @type {HookMap<SyncBailHook<[ExpressionNode], boolean | void>>} */
+			// 是否可以重命名给
+			// HookMap<SyncBailHook<[ExpressionNode], boolean | void>>
 			canRename: new HookMap(() => new SyncBailHook(["initExpression"])),
-			/** @type {HookMap<SyncBailHook<[ExpressionNode], boolean | void>>} */
+			// 当重命名给新的标识符时
+			// 示例: var a = b
+			// HookMap<SyncBailHook<[ExpressionNode], boolean | void>>
 			rename: new HookMap(() => new SyncBailHook(["initExpression"])),
-			/** @type {HookMap<SyncBailHook<[import("estree").AssignmentExpression], boolean | void>>} */
+			// 当解析 赋值表达式 时
+			// 示例: a += 2
+			// HookMap<SyncBailHook<[import("estree").AssignmentExpression], boolean | void>>
 			assign: new HookMap(() => new SyncBailHook(["expression"])),
 			/** @type {HookMap<SyncBailHook<[import("estree").AssignmentExpression, string[]], boolean | void>>} */
 			assignMemberChain: new HookMap(
 				() => new SyncBailHook(["expression", "members"])
 			),
-			/** @type {HookMap<SyncBailHook<[ExpressionNode], boolean | void>>} */
+			// 当分析 typeof 关键字时
+			// 示例: typeof obj
+			// HookMap<SyncBailHook<[ExpressionNode], boolean | void>>
 			typeof: new HookMap(() => new SyncBailHook(["expression"])),
 			/** @type {SyncBailHook<[ExpressionNode], boolean | void>} */
-			importCall: new SyncBailHook(["expression"]),
-			/** @type {SyncBailHook<[ExpressionNode], boolean | void>} */
 			topLevelAwait: new SyncBailHook(["expression"]),
-			/** @type {HookMap<SyncBailHook<[ExpressionNode], boolean | void>>} */
+			// 当分析函数调用时
+			// 示例: sayHello()
+			// HookMap<SyncBailHook<[ExpressionNode], boolean | void>>
 			call: new HookMap(() => new SyncBailHook(["expression"])),
 			/** Something like "a.b()" */
 			/** @type {HookMap<SyncBailHook<[CallExpressionNode, string[]], boolean | void>>} */
@@ -283,11 +342,17 @@ class JavascriptParser extends Parser {
 			),
 			/** @type {SyncBailHook<[ChainExpressionNode], boolean | void>} */
 			optionalChaining: new SyncBailHook(["optionalChaining"]),
-			/** @type {HookMap<SyncBailHook<[NewExpressionNode], boolean | void>>} */
+			// 当遇到 new 表达式时
+			// 示例: new MyClass()
+			// HookMap<SyncBailHook<[NewExpressionNode], boolean | void>>
 			new: new HookMap(() => new SyncBailHook(["expression"])),
-			/** @type {HookMap<SyncBailHook<[ExpressionNode], boolean | void>>} */
+			// 当分析表达式时
+			// 示例: const a = 'Hell'
+			// {HookMap<SyncBailHook<[ExpressionNode], boolean | void>>
 			expression: new HookMap(() => new SyncBailHook(["expression"])),
-			/** @type {HookMap<SyncBailHook<[ExpressionNode, string[]], boolean | void>>} */
+			// 当分析 条件表达式 时
+			// 示例: condition ? 'success' : 'fail'
+			// HookMap<SyncBailHook<[ExpressionNode, string[]], boolean | void>>
 			expressionMemberChain: new HookMap(
 				() => new SyncBailHook(["expression", "members"])
 			),
@@ -299,9 +364,11 @@ class JavascriptParser extends Parser {
 			expressionConditionalOperator: new SyncBailHook(["expression"]),
 			/** @type {SyncBailHook<[ExpressionNode], boolean | void>} */
 			expressionLogicalOperator: new SyncBailHook(["expression"]),
-			/** @type {SyncBailHook<[ProgramNode, CommentNode[]], boolean | void>} */
+			// 当访问代码片段中的抽象语法树(ast)时
+			// SyncBailHook<[ProgramNode, CommentNode[]], boolean | void>
 			program: new SyncBailHook(["ast", "comments"]),
-			/** @type {SyncBailHook<[ProgramNode, CommentNode[]], boolean | void>} */
+			// 
+			// SyncBailHook<[ProgramNode, CommentNode[]], boolean | void>
 			finish: new SyncBailHook(["ast", "comments"])
 		});
 		this.sourceType = sourceType;

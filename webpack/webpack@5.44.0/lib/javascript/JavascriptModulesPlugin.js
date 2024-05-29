@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { SyncWaterfallHook, SyncHook, SyncBailHook } = require("tapable");
@@ -128,6 +123,10 @@ const printGeneratedCodeForStack = (module, code) => {
 /** @type {WeakMap<Compilation, CompilationHooks>} */
 const compilationHooksMap = new WeakMap();
 
+// 给 compiler.hooks.compilation 注册事件
+// 给 normalModuleFactory.hooks.createParser 注册事件
+// 给 normalMOduleFactory.hooks.createGenerator 注册事件
+// ...
 class JavascriptModulesPlugin {
 	/**
 	 * @param {Compilation} compilation the compilation
@@ -184,11 +183,6 @@ class JavascriptModulesPlugin {
 		this._moduleFactoryCache = new WeakMap();
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"JavascriptModulesPlugin",
@@ -701,6 +695,7 @@ class JavascriptModulesPlugin {
 			}
 		}
 
+		// 生成 __webpack_modules__ 对象
 		const chunkModules = Template.renderChunkModules(
 			chunkRenderContext,
 			inlinedModules
@@ -952,6 +947,7 @@ class JavascriptModulesPlugin {
 	 * @param {CompilationHooks} hooks hooks
 	 * @returns {{ header: string[], beforeStartup: string[], startup: string[], afterStartup: string[], allowInlineStartup: boolean }} the generated source of the bootstrap code
 	 */
+	// 生成 引导程序源代码
 	renderBootstrap(renderContext, hooks) {
 		const { chunkGraph, moduleGraph, chunk, runtimeTemplate } = renderContext;
 
@@ -1006,6 +1002,7 @@ class JavascriptModulesPlugin {
 			buf.push("");
 		}
 
+		// 生成 __webpack_require__ 函数
 		if (useRequire) {
 			buf.push("// The require function");
 			buf.push(`function __webpack_require__(moduleId) {`);
@@ -1230,6 +1227,7 @@ class JavascriptModulesPlugin {
 	 * @param {CompilationHooks} hooks hooks
 	 * @returns {string} the generated source of the require function
 	 */
+	// 生成 __webpack_require__ 函数内容
 	renderRequire(renderContext, hooks) {
 		const {
 			chunk,

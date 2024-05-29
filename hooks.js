@@ -426,10 +426,21 @@ Module => DependenciesBlock => Dependency => AsyncDependenciesBlock => Dependenc
 // 文件的输出是在compiler 发生的
 // compilation 仅仅是生成 asserts 信息 并不输出结果
 
-Dependency => ModuleDependency => WorkerDependency 
+// 依赖
+// 当代码片段中含有 new Worker()
+Dependency => ModuleDependency => WorkerDependency
+// 当代码片段中含有 new URL()
+Dependency => ModuleDependency => URLDependency
+// 入口依赖
 Dependency => ModuleDependency => EntryDependency 
-Dependency => ModuleDependency => HarmonyImportDependency => HarmonyImportSideEffectDependency 
+// 静态导入 代码分析
+Dependency => ModuleDependency => HarmonyImportDependency
+// 静态导入 副作用依赖
+Dependency => ModuleDependency => HarmonyImportDependency => HarmonyImportSideEffectDependency
+// 静态导入 标识符依赖 
 Dependency => ModuleDependency => HarmonyImportDependency => HarmonyImportSpecifierDependency 
+// 静态导入 标识符依赖 
+// export * from '...'
 Dependency => ModuleDependency => HarmonyImportDependency => HarmonyExportImportedSpecifierDependency 
 Dependency => ModuleDependency => HarmonyImportDependency => HarmonyAcceptImportDependency 
 Dependency => ModuleDependency => AMDRequireItemDependency 
@@ -442,15 +453,67 @@ Dependency => ModuleDependency => LoaderImportDependency
 Dependency => ModuleDependency => WebpackIsIncludedDependency 
 Dependency => ModuleDependency => RequireIncludeDependency 
 Dependency => ModuleDependency => RequireEnsureItemDependency 
+// 
 Dependency => ModuleDependency => ContextElementDependency 
-Dependency => ModuleDependency => ImportDependency 
-Dependency => ModuleDependency => ImportDependency => ImportEagerDependency 
-Dependency => ModuleDependency => ImportDependency => ImportWeakDependency 
+// URL
 Dependency => ModuleDependency => URLDependency
+// 动态导入 代码分析
+Dependency => ModuleDependency => ImportDependency 
+// 动态导入 且 内敛注释 webpackMode = eager
+Dependency => ModuleDependency => ImportDependency => ImportEagerDependency 
+// 动态导入 且 内敛注释 webpackMode = weak
+Dependency => ModuleDependency => ImportDependency => ImportWeakDependency 
+
+Dependency => NullDependency => CommonJsSelfReferenceDependency 
+Dependency => NullDependency => ModuleDecoratorDependency 
+
+// 上下文依赖
+Dependency => ContextDependency
+// 动态导入 且导入路径包含动态表达式
+Dependency => ContextDependency => ImportContextDependency
+// 
 Dependency => ContextDependency => AMDRequireContextDependency 
 Dependency => ContextDependency => CommonJsRequireContextDependency 
 Dependency => ContextDependency => RequireResolveContextDependency 
 Dependency => ContextDependency => RequireContextDependency 
-Dependency => ContextDependency => ImportContextDependency 
-Dependency => NullDependency => CommonJsSelfReferenceDependency 
-Dependency => NullDependency => ModuleDecoratorDependency 
+
+
+
+resolver  路径解析器
+parser    语法分析器(语法解析器)
+generator 代码生成器
+
+
+模块
+DependenciesBlock => Module
+// 
+DependenciesBlock => Module => NormalModule
+//
+DependenciesBlock => Module => RawModule
+// 运行时模块
+DependenciesBlock => Module => RuntimeModule
+// __webpack_require__.o = 
+DependenciesBlock => Module => RuntimeModule => HasOwnPropertyRuntimeModule
+//
+DependenciesBlock => Module => RuntimeModule => AutoPublicPathRuntimeModule
+//
+DependenciesBlock => Module => RuntimeModule => ChunkNameRuntimeModule
+//
+DependenciesBlock => Module => RuntimeModule => CompatRuntimeModule
+//
+DependenciesBlock => Module => RuntimeModule => EnsureChunkRuntimeModule
+//
+DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule
+//
+DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule => AsyncModuleRuntimeModule
+//
+DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule => AsyncModuleRuntimeModule
+//
+DependenciesBlock => Module => ContextModule
+DependenciesBlock => Module => DllModule
+DependenciesBlock => Module => ExternalModule
+// 异步模块
+DependenciesBlock => AsyncDependenciesBlock
+DependenciesBlock => AsyncDependenciesBlock => RequireEnsureDependenciesBlock
+DependenciesBlock => AsyncDependenciesBlock => AMDRequireDependenciesBlock
+

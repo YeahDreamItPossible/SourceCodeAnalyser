@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const InitFragment = require("./InitFragment");
@@ -13,21 +8,6 @@ const compileBooleanMatcher = require("./util/compileBooleanMatcher");
 const propertyAccess = require("./util/propertyAccess");
 const { forEachRuntime, subtractRuntime } = require("./util/runtime");
 
-/** @typedef {import("../declarations/WebpackOptions").OutputNormalized} OutputOptions */
-/** @typedef {import("./AsyncDependenciesBlock")} AsyncDependenciesBlock */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./Dependency")} Dependency */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-/** @typedef {import("./RequestShortener")} RequestShortener */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
-/**
- * @param {Module} module the module
- * @param {ChunkGraph} chunkGraph the chunk graph
- * @returns {string} error message
- */
 const noModuleIdErrorMessage = (module, chunkGraph) => {
 	return `Module ${module.identifier()} has no id assigned.
 This should not happen.
@@ -51,41 +31,44 @@ Module has these incoming connections: ${Array.from(
 };
 
 class RuntimeTemplate {
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @param {OutputOptions} outputOptions the compilation output options
-	 * @param {RequestShortener} requestShortener the request shortener
-	 */
 	constructor(compilation, outputOptions, requestShortener) {
 		this.compilation = compilation;
+		// Webpack.Config.output
 		this.outputOptions = outputOptions || {};
 		this.requestShortener = requestShortener;
 	}
 
+	// 是否对代码添加 IIFE 外层包囊
 	isIIFE() {
 		return this.outputOptions.iife;
 	}
 
+	// 是否以模块类型输出Javascript文件
 	isModule() {
 		return this.outputOptions.module;
 	}
 
+	// 是否支持 const 关键字
 	supportsConst() {
 		return this.outputOptions.environment.const;
 	}
 
+	// 是否支持箭头函数
 	supportsArrowFunction() {
 		return this.outputOptions.environment.arrowFunction;
 	}
 
+	// 是否支持 forOf 语句
 	supportsForOf() {
 		return this.outputOptions.environment.forOf;
 	}
 
+	// 断言:
 	supportsDestructuring() {
 		return this.outputOptions.environment.destructuring;
 	}
 
+	// 
 	supportsBigIntLiteral() {
 		return this.outputOptions.environment.bigIntLiteral;
 	}
@@ -103,24 +86,28 @@ class RuntimeTemplate {
 		return false;
 	}
 
+	// 返回带有返回值的函数代码(如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数)
 	returningFunction(returnValue, args = "") {
 		return this.supportsArrowFunction()
 			? `(${args}) => (${returnValue})`
 			: `function(${args}) { return ${returnValue}; }`;
 	}
 
+	// 返回函数代码(如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数)
 	basicFunction(args, body) {
 		return this.supportsArrowFunction()
 			? `(${args}) => {\n${Template.indent(body)}\n}`
 			: `function(${args}) {\n${Template.indent(body)}\n}`;
 	}
 
+	// 返回函数代码(如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数)
 	expressionFunction(expression, args = "") {
 		return this.supportsArrowFunction()
 			? `(${args}) => (${expression})`
 			: `function(${args}) { ${expression}; }`;
 	}
 
+	// 返回空函数代码(如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数)
 	emptyFunction() {
 		return this.supportsArrowFunction() ? "x => {}" : "function() {}";
 	}
@@ -141,10 +128,12 @@ class RuntimeTemplate {
 			  );
 	}
 
+	// 对代码外层用 IIFE 代码包囊
 	iife(args, body) {
 		return `(${this.basicFunction(args, body)})()`;
 	}
 
+	// 返回 forEach 代码
 	forEach(variable, array, body) {
 		return this.supportsForOf()
 			? `for(const ${variable} of ${array}) {\n${Template.indent(body)}\n}`
@@ -163,6 +152,7 @@ class RuntimeTemplate {
 	 * @param {string=} options.exportName name of the export
 	 * @returns {string} comment
 	 */
+	// 返回 注释代码
 	comment({ request, chunkName, chunkReason, message, exportName }) {
 		let content;
 		if (this.outputOptions.pathinfo) {
@@ -184,11 +174,7 @@ class RuntimeTemplate {
 		}
 	}
 
-	/**
-	 * @param {object} options generation options
-	 * @param {string=} options.request request string used originally
-	 * @returns {string} generated error block
-	 */
+	// 返回 错误代码块
 	throwMissingModuleErrorBlock({ request }) {
 		const err = `Cannot find module '${request}'`;
 		return `var e = new Error(${JSON.stringify(
@@ -196,22 +182,14 @@ class RuntimeTemplate {
 		)}); e.code = 'MODULE_NOT_FOUND'; throw e;`;
 	}
 
-	/**
-	 * @param {object} options generation options
-	 * @param {string=} options.request request string used originally
-	 * @returns {string} generated error function
-	 */
+	// 返回 错误函数
 	throwMissingModuleErrorFunction({ request }) {
 		return `function webpackMissingModule() { ${this.throwMissingModuleErrorBlock(
 			{ request }
 		)} }`;
 	}
 
-	/**
-	 * @param {object} options generation options
-	 * @param {string=} options.request request string used originally
-	 * @returns {string} generated error IIFE
-	 */
+	// 生成 错误的 IIFE
 	missingModule({ request }) {
 		return `Object(${this.throwMissingModuleErrorFunction({ request })}())`;
 	}
@@ -273,14 +251,8 @@ class RuntimeTemplate {
 		}
 	}
 
-	/**
-	 * @param {Object} options options object
-	 * @param {Module} options.module the module
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {string} options.request the request that should be printed as comment
-	 * @param {boolean=} options.weak if the dependency is weak (will create a nice error message)
-	 * @returns {string} the expression
-	 */
+	// 返回 带注释 的 序列化后的模块路径字符串
+	// 示例: /*! ./imgs/cache.png */ \"./src/imgs/cache.png\"
 	moduleId({ module, chunkGraph, request, weak }) {
 		if (!module) {
 			return this.missingModule({
@@ -302,15 +274,8 @@ class RuntimeTemplate {
 		return `${this.comment({ request })}${JSON.stringify(moduleId)}`;
 	}
 
-	/**
-	 * @param {Object} options options object
-	 * @param {Module} options.module the module
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {string} options.request the request that should be printed as comment
-	 * @param {boolean=} options.weak if the dependency is weak (will create a nice error message)
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {string} the expression
-	 */
+	// 返回 模块加载字符串
+	// 示例: __webpack_require__(/*! ./imgs/cache.png */ \"./src/imgs/cache.png\")
 	moduleRaw({ module, chunkGraph, request, weak, runtimeRequirements }) {
 		if (!module) {
 			return this.missingModule({
@@ -629,6 +594,10 @@ class RuntimeTemplate {
 	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
 	 * @returns {[string, string]} the import statement and the compat statement
 	 */
+	// 返回 加工后的import语句
+	// 示例:
+	// 
+	// var _utils_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils/math */ \"./src/utils/math.js\");
 	importStatement({
 		update,
 		module,

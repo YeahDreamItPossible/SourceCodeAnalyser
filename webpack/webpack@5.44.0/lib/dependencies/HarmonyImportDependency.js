@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ConditionalInitFragment = require("../ConditionalInitFragment");
@@ -27,17 +22,15 @@ const ModuleDependency = require("./ModuleDependency");
 /** @typedef {import("../util/Hash")} Hash */
 /** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
 
+// ES模块依赖
 class HarmonyImportDependency extends ModuleDependency {
-	/**
-	 *
-	 * @param {string} request request string
-	 * @param {number} sourceOrder source order
-	 */
 	constructor(request, sourceOrder) {
 		super(request);
+		// Number
 		this.sourceOrder = sourceOrder;
 	}
 
+	// 返回 依赖分类
 	get category() {
 		return "esm";
 	}
@@ -48,14 +41,15 @@ class HarmonyImportDependency extends ModuleDependency {
 	 * @param {RuntimeSpec} runtime the runtime for which the module is analysed
 	 * @returns {(string[] | ReferencedExport)[]} referenced exports
 	 */
+	// 
 	getReferencedExports(moduleGraph, runtime) {
 		return Dependency.NO_EXPORTS_REFERENCED;
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 * @returns {string} name of the variable for the import
-	 */
+	// 返回 加工后import变量的名称
+	// 示例: 
+	// import { math } from './utils/math.js'
+	// _utils_math__WEBPACK_IMPORTED_MODULE_0__
 	getImportVar(moduleGraph) {
 		const module = moduleGraph.getParentModule(this);
 		const meta = moduleGraph.getMeta(module);
@@ -70,14 +64,14 @@ class HarmonyImportDependency extends ModuleDependency {
 		return importVar;
 	}
 
-	/**
-	 * @param {boolean} update create new variables or update existing one
-	 * @param {DependencyTemplateContext} templateContext the template context
-	 * @returns {[string, string]} the import statement and the compat statement
-	 */
+	// 返回 [String, String]
+	// 返回 加工后 import 语句
+	//
+	// 示例:
+	// var _utils_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils/math */ \"./src/utils/math.js\");
 	getImportStatement(
-		update,
-		{ runtimeTemplate, module, moduleGraph, chunkGraph, runtimeRequirements }
+		update, // Boolean
+		{ runtimeTemplate, module, moduleGraph, chunkGraph, runtimeRequirements } // DependencyTemplateContext
 	) {
 		return runtimeTemplate.importStatement({
 			update,
@@ -198,12 +192,14 @@ class HarmonyImportDependency extends ModuleDependency {
 		}
 	}
 
+	// 序列化
 	serialize(context) {
 		const { write } = context;
 		write(this.sourceOrder);
 		super.serialize(context);
 	}
 
+	// 反序列化
 	deserialize(context) {
 		const { read } = context;
 		this.sourceOrder = read();

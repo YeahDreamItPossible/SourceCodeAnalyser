@@ -63,31 +63,26 @@ class ModuleGraphModule {
 		// 存放 ModuleGraphConnection
 		// 引用 当前Module 的 ModuleGraphConnection
 		this.incomingConnections = new SortableSet();
-
 		// 存放 ModuleGraphConnection
 		// 当前Module 引用的 ModuleGraphConnection
 		this.outgoingConnections = undefined;
-
 		// 父模块
+		// 当前Module 是由哪些模块引入的 称引入当前模块为父模块(issuer)
 		this.issuer = undefined;
-
+		// TODO:
 		/** @type {(string | OptimizationBailoutFunction)[]} */
 		this.optimizationBailout = [];
 		// 导出信息
 		// exports<ExportsInfo>
 		this.exports = new ExportsInfo();
-
-		//
-		/** @type {number} */
+		// Number
 		this.preOrderIndex = null;
-		/** @type {number} */
+		// Number
 		this.postOrderIndex = null;
-
 		// 深度
-		// depth<Number>
+		// Number
 		this.depth = null;
-		// 性能分析
-		// profile<ModuleProfile>
+		// 性能分析 ModuleProfile
 		this.profile = undefined;
 		// 标识: 当前模块是异步模块
 		this.async = false;
@@ -101,17 +96,15 @@ class ModuleGraphModule {
  */
 class ModuleGraph {
 	constructor() {
-		// 记录入口dependency与module连接关系的信息
-		/** @type {Map<Dependency, ModuleGraphConnection>} */
+		// Map<Dependency, ModuleGraphConnection>
 		this._dependencyMap = new Map();
-		// 记录当前module被谁引用以及引用了谁
-		/** @type {Map<Module, ModuleGraphModule>} */
+		// Map<Module, ModuleGraphModule>
 		this._moduleMap = new Map();
-		// 好像没啥卵用(全局搜索未发现使用)?!
-		/** @type {Map<Module, Set<ModuleGraphConnection>>} */
+		// TOOD: 好像没啥卵用(全局搜索未发现使用)?!
+		// Map<Module, Set<ModuleGraphConnection>>
 		this._originMap = new Map();
-
-		/** @type {Map<any, Object>} */
+		// 元信息
+		// Map<any, Object>
 		this._metaMap = new Map();
 
 		// Caching
@@ -163,7 +156,7 @@ class ModuleGraph {
 	}
 
 	/**
-	 * 构建模块间的引用关系
+	 * 构建当前模块的引用关系
 	 * 1. 构建 Module 与 Dependency 的引用关系
 	 * 2. 构建 Module 与 Module 的引用关系
 	 */
@@ -190,19 +183,15 @@ class ModuleGraph {
 		mgm.outgoingConnections.add(connection);
 	}
 
-	/**
-	 * @param {Dependency} dependency the referencing dependency
-	 * @param {Module} module the referenced module
-	 * @returns {void}
-	 */
-	// 更新缓存中的 Module
-	// 更新 ModuleGraphConnection
+	// 更新 ModuleGraphConnection 中 Dependency 与 Module 关联关系
+	// 更新 Module 与 ModuleGraphModule 关联关系
 	updateModule(dependency, module) {
 		const connection = this._dependencyMap.get(dependency);
 		if (connection.module === module) return;
 		const newConnection = connection.clone();
 		newConnection.module = module;
 		this._dependencyMap.set(dependency, newConnection);
+		// 旧连接 失活
 		connection.setActive(false);
 		const originMgm = this._getModuleGraphModule(connection.originModule);
 		originMgm.outgoingConnections.add(newConnection);
@@ -211,6 +200,7 @@ class ModuleGraph {
 	}
 
 	// 根据 Dependency 移除对应 ModuleGraphConnection
+	// 根据 ModuleGraphModule.module 和 ModuleGraphModule.orginModule 移除 与 ModuleGraphModule 关联关系
 	removeConnection(dependency) {
 		// 根据 Dependency 找到对应的 ModuleGraphConnection
 		const connection = this._dependencyMap.get(dependency);
@@ -234,11 +224,7 @@ class ModuleGraph {
 		connection.addExplanation(explanation);
 	}
 
-	/**
-	 * @param {Module} sourceModule the source module
-	 * @param {Module} targetModule the target module
-	 * @returns {void}
-	 */
+	// 复制 ModuleGraphModule 属性到 ModuleGraphModule 属性 
 	cloneModuleAttributes(sourceModule, targetModule) {
 		const oldMgm = this._getModuleGraphModule(sourceModule);
 		const newMgm = this._getModuleGraphModule(targetModule);
@@ -249,10 +235,7 @@ class ModuleGraph {
 		newMgm.async = oldMgm.async;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {void}
-	 */
+	// 重置 ModuleGraphModule 属性
 	removeModuleAttributes(module) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.postOrderIndex = null;
@@ -261,9 +244,7 @@ class ModuleGraph {
 		mgm.async = false;
 	}
 
-	/**
-	 * @returns {void}
-	 */
+	// 重置所有的 ModuleGraphModule 属性
 	removeAllModuleAttributes() {
 		for (const mgm of this._moduleMap.values()) {
 			mgm.postOrderIndex = null;
@@ -273,12 +254,7 @@ class ModuleGraph {
 		}
 	}
 
-	/**
-	 * @param {Module} oldModule the old referencing module
-	 * @param {Module} newModule the new referencing module
-	 * @param {function(ModuleGraphConnection): boolean} filterConnection filter predicate for replacement
-	 * @returns {void}
-	 */
+	// 将 旧 ModuleGraphModule.outgoingConnections 和 ModuleGraphModule.incomingConnections 通过过滤器过滤后 移动新 ModuleGraphModule
 	moveModuleConnections(oldModule, newModule, filterConnection) {
 		if (oldModule === newModule) return;
 		const oldMgm = this._getModuleGraphModule(oldModule);
@@ -435,16 +411,15 @@ class ModuleGraph {
 		mgm.issuer = issuer;
 	}
 
-	// 如果 ModuleGraphModule.issuer 未被设置过 设置 ModuleGraphModule.issuer
+	// 设置 ModuleGraphModule.issuer
 	setIssuerIfUnset(module, issuer) {
+		// 根据 Module 找到对应的 ModuleGraphModule
 		const mgm = this._getModuleGraphModule(module);
+		// 设置 ModuleGraphModule.issuer
 		if (mgm.issuer === undefined) mgm.issuer = issuer;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {(string | OptimizationBailoutFunction)[]} optimization bailouts
-	 */
+	// 返回 ModuleGraphModule.optimizationBailout
 	getOptimizationBailout(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.optimizationBailout;
@@ -484,11 +459,7 @@ class ModuleGraph {
 		return mgm.exports.getExportInfo(exportName);
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {string} exportName the export
-	 * @returns {ExportInfo} info about the export (do not modify)
-	 */
+	// 返回 ModuleGraphModule.exports.[某个属性] 该属性是只读的 不允许修改
 	getReadOnlyExportInfo(module, exportName) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.exports.getReadOnlyExportInfo(exportName);
@@ -509,39 +480,25 @@ class ModuleGraph {
 		return mgm.exports.getUsedExports(runtime);
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {number} the index of the module
-	 */
+	// 返回 ModuleGraphModule.preOrderIndex
 	getPreOrderIndex(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.preOrderIndex;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {number} the index of the module
-	 */
+	// 返回 ModuleGraphModule.postOrderIndex
 	getPostOrderIndex(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.postOrderIndex;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {number} index the index of the module
-	 * @returns {void}
-	 */
+	// 设置 ModuleGraphModule.preOrderIndex
 	setPreOrderIndex(module, index) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.preOrderIndex = index;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {number} index the index of the module
-	 * @returns {boolean} true, if the index was set
-	 */
+	// 返回 是否成功设置 ModuleGraphModule.preOrderIndex
 	setPreOrderIndexIfUnset(module, index) {
 		const mgm = this._getModuleGraphModule(module);
 		if (mgm.preOrderIndex === null) {
@@ -551,21 +508,13 @@ class ModuleGraph {
 		return false;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {number} index the index of the module
-	 * @returns {void}
-	 */
+	// 设置 ModuleGraphModule.postOrderIndex
 	setPostOrderIndex(module, index) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.postOrderIndex = index;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {number} index the index of the module
-	 * @returns {boolean} true, if the index was set
-	 */
+	// 返回 是否成功设置 ModuleGraphModule.postOrderIndex
 	setPostOrderIndexIfUnset(module, index) {
 		const mgm = this._getModuleGraphModule(module);
 		if (mgm.postOrderIndex === null) {
@@ -610,10 +559,7 @@ class ModuleGraph {
 		mgm.async = true;
 	}
 
-	/**
-	 * @param {any} thing any thing
-	 * @returns {Object} metadata
-	 */
+	// 返回 元数据
 	getMeta(thing) {
 		let meta = this._metaMap.get(thing);
 		if (meta === undefined) {
@@ -623,18 +569,17 @@ class ModuleGraph {
 		return meta;
 	}
 
-	/**
-	 * @param {any} thing any thing
-	 * @returns {Object} metadata
-	 */
+	// 返回 元数据
 	getMetaIfExisting(thing) {
 		return this._metaMap.get(thing);
 	}
 
+	// 冻结
 	freeze() {
 		this._cache = new WeakTupleMap();
 	}
 
+	// 解冻
 	unfreeze() {
 		this._cache = undefined;
 	}
@@ -691,8 +636,7 @@ class ModuleGraph {
 // WeakMap<Module, ModuleGraph>
 const moduleGraphForModuleMap = new WeakMap();
 
-// TODO remove in webpack 6
-/** @type {Map<string, (module: Module) => ModuleGraph>} */
+// Map<string, (module: Module) => ModuleGraph>
 const deprecateMap = new Map();
 
 module.exports = ModuleGraph;

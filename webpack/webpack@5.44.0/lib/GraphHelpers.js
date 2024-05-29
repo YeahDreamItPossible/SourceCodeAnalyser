@@ -1,20 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("./AsyncDependenciesBlock")} AsyncDependenciesBlock */
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./ChunkGroup")} ChunkGroup */
-/** @typedef {import("./DependenciesBlock")} DependenciesBlock */
-/** @typedef {import("./Module")} Module */
-
 /**
- * @param {ChunkGroup} chunkGroup the ChunkGroup to connect
- * @param {Chunk} chunk chunk to tie to ChunkGroup
- * @returns {void}
+ * 绑定 Chunk 与 ChunkGroup 关联关系
+ * ChunkGroup.prototype.chunks.push(Chunk)
+ * Chunk.prototype._groups.push(ChunkGroup)
  */
 const connectChunkGroupAndChunk = (chunkGroup, chunk) => {
 	if (chunkGroup.pushChunk(chunk)) {
@@ -23,9 +12,9 @@ const connectChunkGroupAndChunk = (chunkGroup, chunk) => {
 };
 
 /**
- * @param {ChunkGroup} parent parent ChunkGroup to connect
- * @param {ChunkGroup} child child ChunkGroup to connect
- * @returns {void}
+ * 绑定 ChunkGroup 的层级关系
+ * ChunkGroup.prototype._parents.add(child)
+ * ChunkGroup.prototype._children.add(parent)
  */
 const connectChunkGroupParentAndChild = (parent, child) => {
 	if (parent.addChild(child)) {

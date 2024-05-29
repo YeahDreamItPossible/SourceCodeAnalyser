@@ -64,11 +64,15 @@ makeSerializable(
 
 class ExportsInfo {
 	constructor() {
-		/** @type {Map<string, ExportInfo>} */
+		// Map<string, ExportInfo>
 		this._exports = new Map();
+		//
 		this._otherExportsInfo = new ExportInfo(null);
+		// 
 		this._sideEffectsOnlyInfo = new ExportInfo("*side effects only*");
+		// 
 		this._exportsAreOrdered = false;
+		// 
 		/** @type {ExportsInfo=} */
 		this._redirectTo = undefined;
 	}
@@ -204,10 +208,7 @@ class ExportsInfo {
 		}
 	}
 
-	/**
-	 * @param {string} name export name
-	 * @returns {ExportInfo} export info for this name
-	 */
+	// 根据 export name 返回 ExportInfo
 	getOwnExportInfo(name) {
 		const info = this._exports.get(name);
 		if (info !== undefined) return info;
@@ -221,6 +222,7 @@ class ExportsInfo {
 	 * @param {string} name export name
 	 * @returns {ExportInfo} export info for this name
 	 */
+	// 根据 export name 返回 ExportInfo
 	getExportInfo(name) {
 		const info = this._exports.get(name);
 		if (info !== undefined) return info;
@@ -232,10 +234,7 @@ class ExportsInfo {
 		return newInfo;
 	}
 
-	/**
-	 * @param {string} name export name
-	 * @returns {ExportInfo} export info for this name
-	 */
+	// 根据 export name 返回 ExportInfo
 	getReadOnlyExportInfo(name) {
 		const info = this._exports.get(name);
 		if (info !== undefined) return info;
@@ -464,6 +463,7 @@ class ExportsInfo {
 	 * @param {RuntimeSpec} runtime the runtime
 	 * @returns {SortableSet<string> | boolean | null} set of used exports, or true (when namespace object is used), or false (when unused), or null (when unknown)
 	 */
+	// 
 	getUsedExports(runtime) {
 		if (!this._redirectTo !== undefined) {
 			switch (this._otherExportsInfo.getUsed(runtime)) {
@@ -512,6 +512,7 @@ class ExportsInfo {
 	/**
 	 * @returns {null | true | string[]} list of exports when known
 	 */
+	// 
 	getProvidedExports() {
 		if (!this._redirectTo !== undefined) {
 			switch (this._otherExportsInfo.provided) {
@@ -788,6 +789,7 @@ class ExportInfo {
 	 * @param {ExportInfo=} initFrom init values from this ExportInfo
 	 */
 	constructor(name, initFrom) {
+		// 
 		/** @type {string} */
 		this.name = name;
 		/** @private @type {string | null} */
@@ -850,26 +852,26 @@ class ExportInfo {
 		this._maxTarget = undefined;
 	}
 
-	// TODO webpack 5 remove
-	/** @private */
+	// ExportInfo.prototype.used 属性被移除
+	// ExportInfo.prototype._used 代替 但是该属性是私有属性
 	get used() {
 		throw new Error("REMOVED");
 	}
-	/** @private */
+
+	// ExportInfo.prototype.usedName 属性被移除
+	// ExportInfo.prototype._usedName 代替 但是该属性是私有属性
 	get usedName() {
 		throw new Error("REMOVED");
 	}
-	/**
-	 * @private
-	 * @param {*} v v
-	 */
+	
+	// ExportInfo.prototype.used 属性被移除
+	// ExportInfo.prototype._used 代替 但是该属性是私有属性
 	set used(v) {
 		throw new Error("REMOVED");
 	}
-	/**
-	 * @private
-	 * @param {*} v v
-	 */
+
+	// ExportInfo.prototype.usedName 属性被移除
+	// ExportInfo.prototype._usedName 代替 但是该属性是私有属性
 	set usedName(v) {
 		throw new Error("REMOVED");
 	}

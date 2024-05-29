@@ -17,7 +17,7 @@ const Stats = require("./Stats");
  * @param {Error=} err
  * @param {T=} result
  */
-
+// 监听器
 class Watching {
 	/**
 	 * @param {Compiler} compiler the compiler

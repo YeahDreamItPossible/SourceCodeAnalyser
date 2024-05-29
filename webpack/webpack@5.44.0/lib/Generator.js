@@ -1,58 +1,20 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./ConcatenationScope")} ConcatenationScope */
-/** @typedef {import("./DependencyTemplate")} DependencyTemplate */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("./Module").ConcatenationBailoutReasonContext} ConcatenationBailoutReasonContext */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-/** @typedef {import("./NormalModule")} NormalModule */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("./util/Hash")} Hash */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
-/**
- * @typedef {Object} GenerateContext
- * @property {DependencyTemplates} dependencyTemplates mapping from dependencies to templates
- * @property {RuntimeTemplate} runtimeTemplate the runtime template
- * @property {ModuleGraph} moduleGraph the module graph
- * @property {ChunkGraph} chunkGraph the chunk graph
- * @property {Set<string>} runtimeRequirements the requirements for runtime
- * @property {RuntimeSpec} runtime the runtime
- * @property {ConcatenationScope=} concatenationScope when in concatenated module, information about other concatenated modules
- * @property {string} type which kind of code should be generated
- * @property {function(): Map<string, any>=} getData get access to the code generation data
- */
-
-/**
- * @typedef {Object} UpdateHashContext
- * @property {NormalModule} module the module
- * @property {ChunkGraph} chunkGraph
- * @property {RuntimeSpec} runtime
- */
-
-// 生成器基类
+// 代码生成器
 class Generator {
 	static byType(map) {
 		return new ByTypeGenerator(map);
 	}
 
 	// 抽象方法
-	// 返回模块类型
+	// 返回代码生成器类型
 	getTypes(module) {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
 	}
 
 	// 抽象方法
-	// 返回模块尺寸
+	// 返回模块大小
 	getSize(module, type) {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
@@ -68,19 +30,12 @@ class Generator {
 		throw new AbstractMethodError();
 	}
 
-	/**
-	 * @param {NormalModule} module module for which the bailout reason should be determined
-	 * @param {ConcatenationBailoutReasonContext} context context
-	 * @returns {string | undefined} reason why this module can't be concatenated, undefined when it can be concatenated
-	 */
+	// 返回模块无法被连接时的理由
 	getConcatenationBailoutReason(module, context) {
 		return `Module Concatenation is not implemented for ${this.constructor.name}`;
 	}
 
-	/**
-	 * @param {Hash} hash hash that will be modified
-	 * @param {UpdateHashContext} updateHashContext context for updating hash
-	 */
+	// 更新hash
 	updateHash(hash, { module, runtime }) {
 		// no nothing
 	}
@@ -93,30 +48,19 @@ class ByTypeGenerator extends Generator {
 		this._types = new Set(Object.keys(map));
 	}
 
-	/**
-	 * @param {NormalModule} module fresh module
-	 * @returns {Set<string>} available types (do not mutate)
-	 */
+	// 返回代码生成器类型
 	getTypes(module) {
 		return this._types;
 	}
 
-	/**
-	 * @param {NormalModule} module the module
-	 * @param {string=} type source type
-	 * @returns {number} estimate size of the module
-	 */
+	// 返回模块大小
 	getSize(module, type) {
 		const t = type || "javascript";
 		const generator = this.map[t];
 		return generator ? generator.getSize(module, t) : 0;
 	}
 
-	/**
-	 * @param {NormalModule} module module for which the code should be generated
-	 * @param {GenerateContext} generateContext context for generate
-	 * @returns {Source} generated code
-	 */
+	// 代码生成
 	generate(module, generateContext) {
 		const type = generateContext.type;
 		const generator = this.map[type];

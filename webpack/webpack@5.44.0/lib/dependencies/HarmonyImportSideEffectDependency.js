@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const makeSerializable = require("../util/makeSerializable");
@@ -19,8 +14,11 @@ const HarmonyImportDependency = require("./HarmonyImportDependency");
 /** @typedef {import("../util/Hash")} Hash */
 /** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
 
+// ES模块导入副作用依赖
+// 当遇到 import 语句时 则会创建 HarmonyImportSideEffectDependency 的示例
 class HarmonyImportSideEffectDependency extends HarmonyImportDependency {
 	constructor(request, sourceOrder) {
+		// request: 模块引入依赖
 		super(request, sourceOrder);
 	}
 
@@ -28,10 +26,7 @@ class HarmonyImportSideEffectDependency extends HarmonyImportDependency {
 		return "harmony side effect evaluation";
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @returns {null | false | function(ModuleGraphConnection, RuntimeSpec): ConnectionState} function to determine if the connection is active
-	 */
+	// 返回 用于确认连接是否处于活动状态的函数
 	getCondition(moduleGraph) {
 		return connection => {
 			const refModule = connection.resolvedModule;
@@ -40,10 +35,7 @@ class HarmonyImportSideEffectDependency extends HarmonyImportDependency {
 		};
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 * @returns {ConnectionState} how this dependency connects the module to referencing modules
-	 */
+	// 此依赖关系如何将模块连接到引用模块
 	getModuleEvaluationSideEffectsState(moduleGraph) {
 		const refModule = moduleGraph.getModule(this);
 		if (!refModule) return true;

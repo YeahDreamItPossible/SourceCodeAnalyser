@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { ConcatSource } = require("webpack-sources");
@@ -24,6 +19,7 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 将字符串包装成单行注释
 const wrapComment = str => {
 	if (!str.includes("\n")) {
 		return Template.toComment(str);
@@ -36,6 +32,7 @@ const wrapComment = str => {
 		.trimRight()}\n */`;
 };
 
+// 给每个chunk文件头部添加banner注释
 class BannerPlugin {
 	/**
 	 * @param {BannerPluginArgument} options options object
@@ -52,6 +49,7 @@ class BannerPlugin {
 		this.options = options;
 
 		const bannerOption = options.banner;
+		// options.raw 如果值为 true，将直接输出，不会被作为注释
 		if (typeof bannerOption === "function") {
 			const getBanner = bannerOption;
 			this.banner = this.options.raw

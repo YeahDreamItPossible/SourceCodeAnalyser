@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
@@ -28,36 +23,36 @@ const HarmonyImportDependency = require("./HarmonyImportDependency");
 
 const idsSymbol = Symbol("HarmonyImportSpecifierDependency.ids");
 
+// ES模块导入标识符依赖
+// 当 import 语句中 包含具体的导入标识符时
 class HarmonyImportSpecifierDependency extends HarmonyImportDependency {
 	constructor(request, sourceOrder, ids, name, range, strictExportPresence) {
 		super(request, sourceOrder);
 		// 
 		this.ids = ids;
-		//
+		// 导入的标识符(即变量)
 		this.name = name;
-		//
+		// 
 		this.range = range;
+		// 
 		this.strictExportPresence = strictExportPresence;
 		this.namespaceObjectAsContext = false;
 		this.call = undefined;
 		this.directImport = undefined;
 		this.shorthand = undefined;
 		this.asiSafe = undefined;
-		/** @type {Set<string> | boolean} */
+		// Set<string> | boolean
 		this.usedByExports = undefined;
 	}
 
-	// TODO webpack 6 remove
+	// HarmonyImportSpecifierDependency.prototype.id 移除
+	// HarmonyImportSpecifierDependency.prototype.ids 替代
 	get id() {
 		throw new Error("id was renamed to ids and type changed to string[]");
 	}
-
-	// TODO webpack 6 remove
 	getId() {
 		throw new Error("id was renamed to ids and type changed to string[]");
 	}
-
-	// TODO webpack 6 remove
 	setId() {
 		throw new Error("id was renamed to ids and type changed to string[]");
 	}
@@ -66,22 +61,19 @@ class HarmonyImportSpecifierDependency extends HarmonyImportDependency {
 		return "harmony import specifier";
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 * @returns {string[]} the imported ids
-	 */
+	// 返回 导入的字段
+	// 示例: import { add, minus } from 'xx' => ids: [ 'add', 'minus' ]
 	getIds(moduleGraph) {
+		// 返回 moduleGraph._metaMap[this]
 		const meta = moduleGraph.getMetaIfExisting(this);
 		if (meta === undefined) return this.ids;
 		const ids = meta[idsSymbol];
+		// 优先返回 moduleGraph._metaMap
+		// 其次 this.ids
 		return ids !== undefined ? ids : this.ids;
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 * @param {string[]} ids the imported ids
-	 * @returns {void}
-	 */
+	// 设置 moduleGraph._metaMap[this](idsSymbol) = ids
 	setIds(moduleGraph, ids) {
 		moduleGraph.getMeta(this)[idsSymbol] = ids;
 	}

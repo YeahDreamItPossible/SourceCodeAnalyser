@@ -1,21 +1,6 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
-
-/** @typedef {import("../../declarations/WebpackOptions").EntryStatic} EntryStatic */
-/** @typedef {import("../../declarations/WebpackOptions").EntryStaticNormalized} EntryStaticNormalized */
-/** @typedef {import("../../declarations/WebpackOptions").LibraryName} LibraryName */
-/** @typedef {import("../../declarations/WebpackOptions").LibraryOptions} LibraryOptions */
-/** @typedef {import("../../declarations/WebpackOptions").OptimizationRuntimeChunk} OptimizationRuntimeChunk */
-/** @typedef {import("../../declarations/WebpackOptions").OptimizationRuntimeChunkNormalized} OptimizationRuntimeChunkNormalized */
-/** @typedef {import("../../declarations/WebpackOptions").OutputNormalized} OutputNormalized */
-/** @typedef {import("../../declarations/WebpackOptions").WebpackOptions} WebpackOptions */
-/** @typedef {import("../../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptionsNormalized */
 
 const handledDeprecatedNoEmitOnErrors = util.deprecate(
 	(noEmitOnErrors, emitOnErrors) => {
@@ -30,62 +15,27 @@ const handledDeprecatedNoEmitOnErrors = util.deprecate(
 	"DEP_WEBPACK_CONFIGURATION_OPTIMIZATION_NO_EMIT_ON_ERRORS"
 );
 
-/**
- * @template T
- * @template R
- * @param {T|undefined} value value or not
- * @param {function(T): R} fn nested handler
- * @returns {R} result value
- */
+// 对某个对象进行嵌套解析
 const nestedConfig = (value, fn) =>
 	value === undefined ? fn(/** @type {T} */ ({})) : fn(value);
 
-/**
- * @template T
- * @param {T|undefined} value value or not
- * @returns {T} result value
- */
+// 浅复制
 const cloneObject = value => {
-	return /** @type {T} */ ({ ...value });
+	return ({ ...value });
 };
 
-/**
- * @template T
- * @template R
- * @param {T|undefined} value value or not
- * @param {function(T): R} fn nested handler
- * @returns {R|undefined} result value
- */
+// 对某个对象进行嵌套解析
 const optionalNestedConfig = (value, fn) =>
 	value === undefined ? undefined : fn(value);
 
-/**
- * @template T
- * @template R
- * @param {T[]|undefined} value array or not
- * @param {function(T[]): R[]} fn nested handler
- * @returns {R[]|undefined} cloned value
- */
+// 对某个数组尽心嵌套解析
 const nestedArray = (value, fn) => (Array.isArray(value) ? fn(value) : fn([]));
 
-/**
- * @template T
- * @template R
- * @param {T[]|undefined} value array or not
- * @param {function(T[]): R[]} fn nested handler
- * @returns {R[]|undefined} cloned value
- */
+// 对某个数组尽心嵌套解析
 const optionalNestedArray = (value, fn) =>
 	Array.isArray(value) ? fn(value) : undefined;
 
-/**
- * @template T
- * @template R
- * @param {Record<string, T>|undefined} value value or not
- * @param {function(T): R} fn nested handler
- * @param {Record<string, function(T): R>=} customKeys custom nested handler for some keys
- * @returns {Record<string, R>} result value
- */
+// 对某个对象进行嵌套解析
 const keyedNestedConfig = (value, fn, customKeys) => {
 	const result =
 		value === undefined
@@ -109,14 +59,16 @@ const keyedNestedConfig = (value, fn, customKeys) => {
 	return result;
 };
 
-/**
- * @param {WebpackOptions} config input config
- * @returns {WebpackOptionsNormalized} normalized options
- */
+// 标准化 Webpack.Config 选项
 const getNormalizedWebpackOptions = config => {
 	return {
+		// 设置 require.amd 或 define.amd 的值 
+		// 当设置 amd 为 false 会禁用 webpack 的 AMD 支持
 		amd: config.amd,
+		// 当出现第一个 WebpackError 时 将停止打包 
+		// 默认false(表示记录错误并继续打包)
 		bail: config.bail,
+		// 缓存(缓存生成的 webpack 模块和 chunk 来改善构建速度)
 		cache: optionalNestedConfig(config.cache, cache => {
 			if (cache === false) return false;
 			if (cache === true) {
@@ -128,21 +80,41 @@ const getNormalizedWebpackOptions = config => {
 			switch (cache.type) {
 				case "filesystem":
 					return {
+						// 
 						type: "filesystem",
+						// 
 						allowCollectingMemory: cache.allowCollectingMemory,
+						// 
 						maxMemoryGenerations: cache.maxMemoryGenerations,
+						// 缓存文件在文件系统缓存中的事件
+						// 默认值: 5184000000ms(一个月)
 						maxAge: cache.maxAge,
+						// 是否跟踪并记录缓存项的详细时间信息
+						// 默认值: false(不记录)
 						profile: cache.profile,
+						// 
 						buildDependencies: cloneObject(cache.buildDependencies),
+						// 缓存文件存放的目录 
+						// 默认为 node_modules/.cache/webpack
 						cacheDirectory: cache.cacheDirectory,
+						// 缓存文件存放的路径
+						// 默认值: path.resolve(cache.cacheDirectory, cache.name)
 						cacheLocation: cache.cacheLocation,
+						// 用于哈希生成的算法
+						// 默认值: md4
 						hashAlgorithm: cache.hashAlgorithm,
+						// 缓存文件的压缩类型
 						compression: cache.compression,
+						// 缓存存储发生的时间间隔
+						// 默认值: 60000ms
 						idleTimeout: cache.idleTimeout,
 						idleTimeoutForInitialStore: cache.idleTimeoutForInitialStore,
 						idleTimeoutAfterLargeChanges: cache.idleTimeoutAfterLargeChanges,
+						// 缓存名称
 						name: cache.name,
+						//
 						store: cache.store,
+						// 
 						version: cache.version
 					};
 				case undefined:
@@ -156,12 +128,18 @@ const getNormalizedWebpackOptions = config => {
 					throw new Error(`Not implemented cache.type ${cache.type}`);
 			}
 		}),
+		// 基础目录(绝对路径) 用于从配置中解析入口点(entry point)和 加载器(loader)
+		// 默认使用 Node.js 进程的当前工作目录 即: process.cwd()
 		context: config.context,
+		// 所依赖的 Webpack.Config.name 列表
 		dependencies: config.dependencies,
+		// 开发服务器选项
 		devServer: optionalNestedConfig(config.devServer, devServer => ({
 			...devServer
 		})),
+		// 如何生成SourceMap
 		devtool: config.devtool,
+		// 入口对象(开始打包构建的入口)
 		entry:
 			config.entry === undefined
 				? { main: {} }
@@ -171,10 +149,16 @@ const getNormalizedWebpackOptions = config => {
 							Promise.resolve().then(fn).then(getNormalizedEntryStatic)
 				  )(config.entry)
 				: getNormalizedEntryStatic(config.entry),
+		// 实验特性
 		experiments: cloneObject(config.experiments),
+		// 外部扩展(从输出的 bundle 中排除依赖)
 		externals: config.externals,
+		//
 		externalsPresets: cloneObject(config.externalsPresets),
+		// 指定 externals 的默认类型
+		// 默认值: var
 		externalsType: config.externalsType,
+		// 忽略掉特定的警告
 		ignoreWarnings: config.ignoreWarnings
 			? config.ignoreWarnings.map(ignore => {
 					if (typeof ignore === "function") return ignore;
@@ -200,9 +184,13 @@ const getNormalizedWebpackOptions = config => {
 					};
 			  })
 			: undefined,
+		// 基础设施水平的日志选项
 		infrastructureLogging: cloneObject(config.infrastructureLogging),
+		// 在 loader 上下文中暴漏自定义值
 		loader: cloneObject(config.loader),
+		// 打包模式 development || production || none
 		mode: config.mode,
+		// 模块配置
 		module: nestedConfig(config.module, module => ({
 			noParse: module.noParse,
 			unsafeCache: module.unsafeCache,
@@ -228,7 +216,9 @@ const getNormalizedWebpackOptions = config => {
 			defaultRules: optionalNestedArray(module.defaultRules, r => [...r]),
 			rules: nestedArray(module.rules, r => [...r])
 		})),
+		// 配置名称
 		name: config.name,
+		// 是否 polyfill 或 mock 某些 Node.js 全局变量
 		node: nestedConfig(
 			config.node,
 			node =>
@@ -236,6 +226,7 @@ const getNormalizedWebpackOptions = config => {
 					...node
 				}
 		),
+		// 优化
 		optimization: nestedConfig(config.optimization, optimization => {
 			return {
 				...optimization,
@@ -262,6 +253,7 @@ const getNormalizedWebpackOptions = config => {
 						: optimization.emitOnErrors
 			};
 		}),
+		// 输出
 		output: nestedConfig(config.output, output => {
 			const { library } = output;
 			const libraryAsName = /** @type {LibraryName} */ (library);
@@ -358,28 +350,38 @@ const getNormalizedWebpackOptions = config => {
 			};
 			return result;
 		}),
+		// 限制并行处理的模块数量
+		// 默认值: 100
 		parallelism: config.parallelism,
+		// 性能相关配置
 		performance: optionalNestedConfig(config.performance, performance => {
 			if (performance === false) return false;
 			return {
 				...performance
 			};
 		}),
+		// 插件
 		plugins: nestedArray(config.plugins, p => [...p]),
+		// 
 		profile: config.profile,
+		// 
 		recordsInputPath:
 			config.recordsInputPath !== undefined
 				? config.recordsInputPath
 				: config.recordsPath,
+		// 
 		recordsOutputPath:
 			config.recordsOutputPath !== undefined
 				? config.recordsOutputPath
 				: config.recordsPath,
+		// 路径解析器选项
 		resolve: nestedConfig(config.resolve, resolve => ({
 			...resolve,
 			byDependency: keyedNestedConfig(resolve.byDependency, cloneObject)
 		})),
+		// 
 		resolveLoader: cloneObject(config.resolveLoader),
+		// 快照选项
 		snapshot: nestedConfig(config.snapshot, snapshot => ({
 			resolveBuildDependencies: optionalNestedConfig(
 				snapshot.resolveBuildDependencies,
@@ -406,6 +408,7 @@ const getNormalizedWebpackOptions = config => {
 			immutablePaths: optionalNestedArray(snapshot.immutablePaths, p => [...p]),
 			managedPaths: optionalNestedArray(snapshot.managedPaths, p => [...p])
 		})),
+		// 统计对象
 		stats: nestedConfig(config.stats, stats => {
 			if (stats === false) {
 				return {
@@ -426,16 +429,16 @@ const getNormalizedWebpackOptions = config => {
 				...stats
 			};
 		}),
+		// 构建目标
 		target: config.target,
+		// 观察模式
 		watch: config.watch,
+		// 观察选项
 		watchOptions: cloneObject(config.watchOptions)
 	};
 };
 
-/**
- * @param {EntryStatic} entry static entry options
- * @returns {EntryStaticNormalized} normalized static entry options
- */
+// 标准化 Webpack.Config.entry 选项
 const getNormalizedEntryStatic = entry => {
 	if (typeof entry === "string") {
 		return {
@@ -484,10 +487,7 @@ const getNormalizedEntryStatic = entry => {
 	return result;
 };
 
-/**
- * @param {OptimizationRuntimeChunk=} runtimeChunk runtimeChunk option
- * @returns {OptimizationRuntimeChunkNormalized=} normalized runtimeChunk option
- */
+// 标准化 Webpack.Config.optimization.runtimeChunk
 const getNormalizedOptimizationRuntimeChunk = runtimeChunk => {
 	if (runtimeChunk === undefined) return undefined;
 	if (runtimeChunk === false) return false;
@@ -507,4 +507,5 @@ const getNormalizedOptimizationRuntimeChunk = runtimeChunk => {
 	};
 };
 
+// 主要对用户Webpack.Config 标准化
 exports.getNormalizedWebpackOptions = getNormalizedWebpackOptions;

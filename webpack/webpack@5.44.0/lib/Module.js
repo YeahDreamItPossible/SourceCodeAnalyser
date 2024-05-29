@@ -115,20 +115,14 @@ const deprecatedNeedRebuild = util.deprecate(
 /** @typedef {(requestShortener: RequestShortener) => string} OptimizationBailoutFunction */
 
 class Module extends DependenciesBlock {
-	/**
-	 * @param {string} type the module type
-	 * @param {string=} context an optional context
-	 * @param {string=} layer an optional layer in which the module is
-	 */
 	constructor(type, context = null, layer = null) {
 		super();
-
 		// 模块类型
 		this.type = type;
-		// 上下文模块路径(绝对路径)
-		// 例如: /path/myProject/src
+		// 模块上下文路径(绝对路径)
+		// 示例: /path/myProject/src
 		this.context = context;
-		/** @type {string | null} */
+		// 图层
 		this.layer = layer;
 		// 标识: 标识当前module是否需要Id
 		this.needId = true;
@@ -143,11 +137,10 @@ class Module extends DependenciesBlock {
 		this.factoryMeta = undefined;
 		// TODO refactor this -> options object filled from Factory
 		// TODO webpack 6: use an enum
-		/** @type {boolean} */
+		// 标识: 是否使用SourceMap
 		this.useSourceMap = false;
-		/** @type {boolean} */
+		// 标识: 是否使用SourceMap
 		this.useSimpleSourceMap = false;
-
 
 		// 警告
 		// WebpackError[]
@@ -155,14 +148,13 @@ class Module extends DependenciesBlock {
 		// 错误
 		// WebpackError[]
 		this._errors = undefined;
-		// 打包元信息
-		// BuildMeta
+		// 构建元信息
+		// Record<string, any>
 		this.buildMeta = undefined;
-		// 打包信息
+		// 构建信息
 		// Record<string, any>
 		this.buildInfo = undefined;
 		/** @type {Dependency[] | undefined} */
-		// NOTE:
 		// 这个依赖 暂时不知道是什么
 		this.presentationalDependencies = undefined;
 	}
@@ -962,7 +954,7 @@ class Module extends DependenciesBlock {
 
 makeSerializable(Module, "webpack/lib/Module");
 
-// TODO remove in webpack 6
+// Module.prototype.hasEqualsChunks 属性被移除
 Object.defineProperty(Module.prototype, "hasEqualsChunks", {
 	get() {
 		throw new Error(
@@ -971,7 +963,7 @@ Object.defineProperty(Module.prototype, "hasEqualsChunks", {
 	}
 });
 
-// TODO remove in webpack 6
+// Module.prototype.isUsed 属性被移除
 Object.defineProperty(Module.prototype, "isUsed", {
 	get() {
 		throw new Error(
@@ -980,7 +972,7 @@ Object.defineProperty(Module.prototype, "isUsed", {
 	}
 });
 
-// TODO remove in webpack 6
+// Module.prototype.errors 属性被移除
 Object.defineProperty(Module.prototype, "errors", {
 	get: util.deprecate(
 		/**
@@ -998,7 +990,7 @@ Object.defineProperty(Module.prototype, "errors", {
 	)
 });
 
-// TODO remove in webpack 6
+// Module.prototype.warnings 属性被移除
 Object.defineProperty(Module.prototype, "warnings", {
 	get: util.deprecate(
 		/**
@@ -1016,7 +1008,8 @@ Object.defineProperty(Module.prototype, "warnings", {
 	)
 });
 
-// TODO remove in webpack 6
+// Module.prototype.used 属性被移除
+// ModuleGraph.getUsedExports 替代
 Object.defineProperty(Module.prototype, "used", {
 	get() {
 		throw new Error(

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ConstDependency = require("./dependencies/ConstDependency");
@@ -11,19 +6,13 @@ const { approve } = require("./javascript/JavascriptParserHelpers");
 
 /** @typedef {import("./Compiler")} Compiler */
 
+// 根据键值对定义 自动加载模块
 class ProvidePlugin {
-	/**
-	 * @param {Record<string, string | string[]>} definitions the provided identifiers
-	 */
+	// Record<string, string | string[]>
 	constructor(definitions) {
 		this.definitions = definitions;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const definitions = this.definitions;
 		compiler.hooks.compilation.tap(

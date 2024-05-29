@@ -399,15 +399,12 @@ const byLocation = compareSelect(err => err.loc, compareLocations);
 
 const compareErrors = concatComparators(byModule, byLocation, byMessage);
 
+// 编译过程
 class Compilation {
-	/**
-	 * Creates an instance of Compilation.
-	 * @param {Compiler} compiler the compiler which created the compilation
-	 */
 	constructor(compiler) {
 		const getNormalModuleLoader = () => deprecatedNormalModuleLoaderHook(this);
 		/** @typedef {{ additionalAssets?: true | Function }} ProcessAssetsAdditionalOptions */
-		/** @type {AsyncSeriesHook<[CompilationAssets], ProcessAssetsAdditionalOptions>} */
+		// AsyncSeriesHook<[CompilationAssets], ProcessAssetsAdditionalOptions>
 		const processAssetsHook = new AsyncSeriesHook(["assets"]);
 
 		let savedAssets = new Set();
@@ -523,7 +520,7 @@ class Compilation {
 			}
 		});
 
-		/** @type {SyncHook<[CompilationAssets]>} */
+		// SyncHook<[CompilationAssets]>
 		const afterProcessAssetsHook = new SyncHook(["assets"]);
 
 		/**
@@ -842,15 +839,20 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		});
 
-		/** @type {string=} */
+		// 编译过程名称
 		this.name = undefined;
+		// 编译过程开始时间(时间戳 以ms为单位)
 		this.startTime = undefined;
+		// 编译过程结束时间(时间戳 以ms为单位)
 		this.endTime = undefined;
 
-		/** @type {Compiler} */
+		// 编译器
 		this.compiler = compiler;
+		// 路径解析器
 		this.resolverFactory = compiler.resolverFactory;
+		// 输入文件系统
 		this.inputFileSystem = compiler.inputFileSystem;
+		// 
 		this.fileSystemInfo = new FileSystemInfo(this.inputFileSystem, {
 			managedPaths: compiler.managedPaths,
 			immutablePaths: compiler.immutablePaths,
@@ -864,22 +866,28 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		}
 		/** @type {Map<string, string | Set<string>>} */
 		this.valueCacheVersions = new Map();
+		// 路径缩短器
 		this.requestShortener = compiler.requestShortener;
 		this.compilerPath = compiler.compilerPath;
 
 		this.logger = this.getLogger("webpack.Compilation");
 
+		// Webpack.Config
 		const options = compiler.options;
 		this.options = options;
+		// Webpack.Config.output
 		this.outputOptions = options && options.output;
-		/** @type {boolean} */
+		// Webpack.Config.bail
 		this.bail = (options && options.bail) || false;
-		/** @type {boolean} */
+		// Webpack.Config.profile
 		this.profile = (options && options.profile) || false;
 
 		// 模板
+		// 废弃
 		this.mainTemplate = new MainTemplate(this.outputOptions, this);
+		// 废弃
 		this.chunkTemplate = new ChunkTemplate(this.outputOptions, this);
+		// 运行时模板
 		this.runtimeTemplate = new RuntimeTemplate(
 			this,
 			this.outputOptions,
@@ -893,42 +901,45 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		// 模块图
 		this.moduleGraph = new ModuleGraph();
-
 		// chunk图
-		/** @type {ChunkGraph} */
 		this.chunkGraph = undefined;
 
 		// 缓存 Module生成的代码结果
 		// CodeGenerationResults
 		this.codeGenerationResults = undefined;
 
-		/** @type {AsyncQueue<Module, Module, Module>} */
+		// 任务队列
+		// 解析依赖队列
+		// AsyncQueue<Module, Module, Module>
 		this.processDependenciesQueue = new AsyncQueue({
 			name: "processDependencies",
 			parallelism: options.parallelism || 100,
 			processor: this._processModuleDependencies.bind(this)
 		});
-		// NOTE:
-		/** @type {AsyncQueue<Module, string, Module>} */
+		// 添加模块队列
+		// AsyncQueue<Module, string, Module>
 		this.addModuleQueue = new AsyncQueue({
 			name: "addModule",
 			parent: this.processDependenciesQueue,
 			getKey: module => module.identifier(),
 			processor: this._addModule.bind(this)
 		});
-		/** @type {AsyncQueue<FactorizeModuleOptions, string, Module>} */
+		// 创建模块队列
+		// AsyncQueue<FactorizeModuleOptions, string, Module>
 		this.factorizeQueue = new AsyncQueue({
 			name: "factorize",
 			parent: this.addModuleQueue,
 			processor: this._factorizeModule.bind(this)
 		});
-		/** @type {AsyncQueue<Module, Module, Module>} */
+		// 构建模块队列
+		// AsyncQueue<Module, Module, Module>
 		this.buildQueue = new AsyncQueue({
 			name: "build",
 			parent: this.factorizeQueue,
 			processor: this._buildModule.bind(this)
 		});
-		/** @type {AsyncQueue<Module, Module, Module>} */
+		// 重新构建模块队列
+		// AsyncQueue<Module, Module, Module>
 		this.rebuildQueue = new AsyncQueue({
 			name: "rebuild",
 			parallelism: options.parallelism || 100,
@@ -943,11 +954,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		 */
 		this.creatingModuleDuringBuild = new WeakMap();
 
-		// 关于入口
-		// 入口文件映射<入口名, EntryData>
-		// Map<string, EntryData>
+		// 入口
+		// 入口文件映射(单页面应用 或者 多页面应用) Map<EntryName, EntryData>
 		this.entries = new Map();
-		/** @type {EntryData} */
+		// 全局入口
 		this.globalEntry = {
 			dependencies: [],
 			includeDependencies: [],
@@ -961,8 +971,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Entrypoint[]} */
 		this.asyncEntrypoints = [];
 
-		// 关于chunk
-		/** @type {Set<Chunk>} */
+		// Set<Chunk>
 		this.chunks = new Set();
 		arrayToSetDeprecation(this.chunks, "Compilation.chunks");
 		// ChunkGroup[]
@@ -975,17 +984,21 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// 缓存的模块 Set<Module>
 		this.modules = new Set();
 		arrayToSetDeprecation(this.modules, "Compilation.modules");
-		// 缓存模块 Map<string, Module>
+		// 缓存模块 Map<ModuleId, Module>
 		this._modules = new Map();
 
 		this.records = null;
-		/** @type {string[]} */
+		//
+		// Array<String>
 		this.additionalChunkAssets = [];
+		// Object<String, Source>
 		/** @type {CompilationAssets} */
 		this.assets = {};
-		/** @type {Map<string, AssetInfo>} */
+		// 
+		// Map<string, AssetInfo>
 		this.assetsInfo = new Map();
-		/** @type {Map<string, Map<string, Set<string>>>} */
+		// 
+		// Map<string, Map<string, Set<string>>>
 		this._assetsRelatedIn = new Map();
 
 		// 收集错误和警告
@@ -994,14 +1007,16 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// WebpackError[]
 		this.warnings = [];
 
-		/** @type {Compilation[]} */
+		// Compilation[]
 		this.children = [];
-		/** @type {Map<string, LogEntry[]>} */
+		// Map<string, LogEntry[]>
 		this.logging = new Map();
 
+		// DependencyConstructor => ModuleFactory
 		// Map<DependencyConstructor, ModuleFactory>
 		this.dependencyFactories = new Map();
-		/** @type {DependencyTemplates} */
+		// DependencyConstructor => DependencyTemplate
+		// this._dependencyTemplates.map  Map<DependencyConstructor, DependencyTemplate>
 		this.dependencyTemplates = new DependencyTemplates();
 		this.childrenCounters = {};
 		/** @type {Set<number|string>} */
@@ -1010,16 +1025,17 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.usedModuleIds = null;
 		/** @type {boolean} */
 		this.needAdditionalPass = false;
-		//
-		/** @type {WeakSet<Module>} */
+		// 存储 已经被构建过的Module
+		// WeakSet<Module>
 		this.builtModules = new WeakSet();
 
 		// 已经生成结果的 Module
 		// WeakSet<Module>
 		this.codeGeneratedModules = new WeakSet();
-		/** @type {WeakSet<Module>} */
+		// 
+		// WeakSet<Module>
 		this.buildTimeExecutedModules = new WeakSet();
-		/** @private @type {Map<Module, Callback[]>} */
+		// Map<Module, Callback[]>
 		this._rebuildingModules = new Map();
 		/** @type {Set<string>} */
 		this.emittedAssets = new Set();
@@ -1027,16 +1043,16 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.comparedForEmitAssets = new Set();
 
 		// 文件依赖
-		/** @type {LazySet<string>} */
+		// Set<string>
 		this.fileDependencies = new LazySet();
 		// 上下文依赖
-		/** @type {LazySet<string>} */
+		// Set<string>
 		this.contextDependencies = new LazySet();
 		// 缺失的依赖
-		/** @type {LazySet<string>} */
+		// Set<string>
 		this.missingDependencies = new LazySet();
 		// 打包依赖
-		/** @type {LazySet<string>} */
+		// Set<string>
 		this.buildDependencies = new LazySet();
 		// TODO webpack 6 remove
 		this.compilationDependencies = {
@@ -1048,7 +1064,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		};
 
 		// 缓存
+		// 模块缓存
 		this._modulesCache = this.getCache("Compilation/modules");
+		// 
 		this._assetsCache = this.getCache("Compilation/assets");
 		this._codeGenerationCache = this.getCache("Compilation/codeGeneration");
 	}
@@ -1102,18 +1120,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		return statsPrinter;
 	}
 
-	/**
-	 * @param {string} name cache name
-	 * @returns {CacheFacade} the cache facade instance
-	 */
+	// 返回 Cache
 	getCache(name) {
 		return this.compiler.getCache(name);
 	}
 
-	/**
-	 * @param {string | (function(): string)} name name of the logger, or function called once to get the logger name
-	 * @returns {Logger} a logger with that name
-	 */
 	// 返回logger
 	getLogger(name) {
 		if (!name) {
@@ -1229,15 +1240,16 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	// 添加模块
+	// 添加模块队列中 添加添加模块任务
 	addModule(module, callback) {
 		this.addModuleQueue.add(module, callback);
 	}
 
 	// 缓存module
-	// compilation.modules
-	// compilation._modules
-	// ModuleGraph.setModuleGraphForModule(module, this.moduleGraph)
+	// 1. 根据 Webpack.Config.Cache.type 缓存模块
+	// 2. compilation.modules
+	// 3. compilation._modules
+	// 4. ModuleGraph.setModuleGraphForModule(module, this.moduleGraph)
 	_addModule(module, callback) {
 		const identifier = module.identifier();
 		const alreadyAddedModule = this._modules.get(identifier);
@@ -1276,31 +1288,26 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 	}
 
-	/**
-	 * Fetches a module from a compilation by its identifier
-	 * @param {Module} module the module provided
-	 * @returns {Module} the module requested
-	 */
+	// 根据 Module.id 返回 Module
 	getModule(module) {
 		const identifier = module.identifier();
 		return this._modules.get(identifier);
 	}
-
-	/**
-	 * Attempts to search for a module by its identifier
-	 * @param {string} identifier identifier (usually path) for module
-	 * @returns {Module|undefined} attempt to search for module and return it, else undefined
-	 */
+	
+	// 根据 Module.id 返回 Module
 	findModule(identifier) {
 		return this._modules.get(identifier);
 	}
 
-	// 构建模块
+	// 构建模块队列中 添加模块构建任务
 	buildModule(module, callback) {
 		this.buildQueue.add(module, callback);
 	}
 
-	// 
+	// 构建模块
+	// 1. 运行所有的Loader 返回source
+	// 2. 将 source 构建成 WebpackSource类的实例
+	// 3. 运行parser.parse(this._source.source) 给字段赋值 Module.dependencies Module.blocks Module.buildInfo Module.buildMeta
 	_buildModule(module, callback) {
 		const currentProfile = this.profile
 			? this.moduleGraph.getProfile(module)
@@ -1365,19 +1372,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	/**
-	 * @param {Module} module to be processed for deps
-	 * @param {ModuleCallback} callback callback to be triggered
-	 * @returns {void}
-	 */
+	// 解析依赖队列中 添加解析依赖任务
 	processModuleDependencies(module, callback) {
 		this.processDependenciesQueue.add(module, callback);
 	}
 
-	/**
-	 * @param {Module} module to be processed for deps
-	 * @returns {void}
-	 */
+	// 非递归的解析模块中的依赖
 	processModuleDependenciesNonRecursive(module) {
 		const processDependenciesBlock = block => {
 			if (block.dependencies) {
@@ -1393,11 +1393,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		processDependenciesBlock(module);
 	}
 
-	/**
-	 * @param {Module} module to be processed for deps
-	 * @param {ModuleCallback} callback callback to be triggered
-	 * @returns {void}
-	 */
+	// 解析 Module.dependencies 和 Module.blocks 
+	// 并处理依赖中包含的模块创建过程 handleModuleCreation
 	_processModuleDependencies(module, callback) {
 		/**
 		 * @type {Array<{factory: ModuleFactory, dependencies: Dependency[], originModule: Module|null}>}
@@ -1563,6 +1560,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	) {
 		const moduleGraph = this.moduleGraph;
 
+		// 
 		const currentProfile = this.profile ? new ModuleProfile() : undefined;
 
 		// 1. NormalModuleFactory获取创建NormalModule需要的参数(loaders...) 并创建NormalModule
@@ -1605,9 +1603,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					}
 
 					/**
-					 * 构建模块间的引用关系
+					 * 构建当前模块的引用关系
 					 * 1. 构建 Module 与 Dependency 的引用关系
-					 * 2. 构建 Module 与 Module 的引用关系
+					 * 2. 构建 Module 与 父Module 的引用关系
 					 */
 					for (let i = 0; i < dependencies.length; i++) {
 						const dependency = dependencies[i];
@@ -1618,6 +1616,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						);
 					}
 
+					// 设置 ModuleGraphModule.issuer = originModule
 					moduleGraph.setIssuerIfUnset(
 						module,
 						originModule !== undefined ? originModule : null
@@ -1634,9 +1633,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						}
 					}
 
-					// 循环依赖
-					// TODO:
-					// Check for cycles when build is trigger inside another build
+					// 检查是否存在循环依赖
 					let creatingModuleDuringBuildSet = undefined;
 					if (!recursive && this.buildQueue.isProcessing(originModule)) {
 						// Track build dependency
@@ -1672,10 +1669,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					}
 
 					/**
-					 * 解析 NormalModule
+					 * 构建 NormalModule
 					 * 1. 运行所有的loaders 返回结果source
 					 * 2. 将 source 构建成 WebpackSource类的实例
-					 * 3. this.parser.parse(this._source.source)
+					 * 3. this.parser.parse(this._source.source) 给字段赋值 Module.dependencies Module.buildInfo Module.buildMeta
 					 */
 					this.buildModule(module, err => {
 						if (creatingModuleDuringBuildSet !== undefined) {
@@ -1714,28 +1711,15 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	/**
-	 * @typedef {Object} FactorizeModuleOptions
-	 * @property {ModuleProfile} currentProfile
-	 * @property {ModuleFactory} factory
-	 * @property {Dependency[]} dependencies
-	 * @property {Module | null} originModule
-	 * @property {Partial<ModuleFactoryCreateDataContextInfo>=} contextInfo
-	 * @property {string=} context
-	 */
-	/**
-	 * @param {FactorizeModuleOptions} options options object
-	 * @param {ModuleCallback} callback callback
-	 * @returns {void}
-	 */
-	// 构建模块
+	// 创建模块队列中  添加创建任务
 	factorizeModule(options, callback) {
 		this.factorizeQueue.add(options, callback);
 	}
 
-	// 根绝 context上下文 构建模块
-	// 创建NormalModule
+	// 通过调用 ModuleFactory.create() 来创建 Module
+	// 示例: 
 	// NormalModuleFactory.create() => NormalModule
+	// ContextModuleFactory.create() => ContextModule
 	_factorizeModule(
 		{
 			currentProfile,
@@ -1816,7 +1800,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		return this.addModuleTree({ context, dependency }, callback);
 	}
 
-	// 添加模块树
+	// 构建整个模块树
 	addModuleTree({ context, dependency, contextInfo }, callback) {
 		if (
 			typeof dependency !== "object" ||
@@ -1828,6 +1812,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			);
 		}
 		const Dep = /** @type {DepConstructor} */ (dependency.constructor);
+		// 根据 Dependency 找到对应 ModuleFactory
+		// 示例: EntryDependency => NormalModuleFactory
 		const moduleFactory = this.dependencyFactories.get(Dep);
 		if (!moduleFactory) {
 			return callback(
@@ -1860,15 +1846,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	}
 
 	// 添加入口
-	/**
-	 * @param {string} context context path for entry
-	 * @param {Dependency} entry entry dependency that should be followed
-	 * @param {string | EntryOptions} optionsOrName options or deprecated name of entry
-	 * @param {ModuleCallback} callback callback function
-	 * @returns {void} returns
-	 */
 	addEntry(context, entry, optionsOrName, callback) {
-		// TODO webpack 6 remove
 		const options =
 			typeof optionsOrName === "object"
 				? optionsOrName
@@ -1878,13 +1856,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this._addEntryItem(context, entry, "dependencies", options, callback);
 	}
 
-	/**
-	 * @param {string} context context path for entry
-	 * @param {Dependency} dependency dependency that should be followed
-	 * @param {EntryOptions} options options
-	 * @param {ModuleCallback} callback callback function
-	 * @returns {void} returns
-	 */
+	// TODO: 模块联邦 
 	addInclude(context, dependency, options, callback) {
 		this._addEntryItem(
 			context,
@@ -1895,14 +1867,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	/**
-	 * @param {string} context context path for entry
-	 * @param {Dependency} entry entry dependency that should be followed
-	 * @param {"dependencies" | "includeDependencies"} target type of entry
-	 * @param {EntryOptions} options options
-	 * @param {ModuleCallback} callback callback function
-	 * @returns {void} returns
-	 */
+	// 添加单项入口
 	_addEntryItem(context, entry, target, options, callback) {
 		const { name } = options;
 		let entryData =
@@ -2259,11 +2224,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.moduleGraph.unfreeze();
 	}
 
-	/**
-	 * @param {Callback} callback signals when the call finishes
-	 * @returns {void}
-	 */
-	// 
+	// 冻结
 	seal(callback) {
 		const finalCallback = err => {
 			this.factorizeQueue.clear();
@@ -2282,15 +2243,13 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			ChunkGraph.setChunkGraphForModule(module, chunkGraph);
 		}
 
-		/**
-		 * compilation 对象停止接收新的模块时触发
-		 * WarnCaseSensitiveModulesPlugin(当模块路径有重复时 抛出错误)
-		 */
+		// compilation 对象停止接收新的模块时触发
+		// WarnCaseSensitiveModulesPlugin(当模块路径有重复时 抛出错误)
 		this.hooks.seal.call();
 
 		this.logger.time("optimize dependencies");
 
-		// SideEffectsFlagPlugin 插件
+		// SideEffectsFlagPlugin 插件(moduleGraph._metaMap[xx] = ids)
 		// 依赖优化开始时触发
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
@@ -2312,7 +2271,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// Map<Entrypoint, Module[]>
 		const chunkGraphInit = new Map();
 
-		// 目前看到大概只是 chunk
+		// 根据 Webpack.Config.Entry 创建 Chunk 和 ChunkGroup
+		// 绑定 Chunk 与 ChunkGroup 关联关系
+		// Chunk._groups.push(ChunkGroup)
+		// ChunkGroup.chunks.push(chunk)
 		for (const [name, { dependencies, includeDependencies, options }] of this
 			.entries) {
 			const chunk = this.addChunk(name);
@@ -2373,8 +2335,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		}
 
-		// 处理 Webpack.Config.Entry 的引用关系
-		// Webpack.Config.Entry.dependOn 和 Webpack.Config.Entry.runtime
+		// 根据 Webpack.Config.Entry.runtime 来绑定 ChunkGroup._runtimeChunk
+		// 根据 Wepback.Config.Entry.dependOn 来绑定 ChunkGroup 的层级关系
+		//  Webpack.Config.Entry.dependOn 和 Webpack.Config.Entry.runtime
 		const runtimeChunks = new Set();
 		outer: for (const [
 			name,
@@ -2418,6 +2381,7 @@ Remove the 'runtime' option from the entrypoint.`);
 					}
 					dependOnEntries.push(dependency);
 				}
+				// 构建 ChunkGroup 的层级关系
 				for (const dependency of dependOnEntries) {
 					connectChunkGroupParentAndChild(dependency, entry);
 				}
@@ -2451,7 +2415,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 
 		// TODO:
-		// 为什么要再次手动构建chunkGraph 好好研究研究
+		// 根据 ModuleGraph 和 Chunk 构建 ChunkGraph
 		buildChunkGraph(this, chunkGraphInit);
 
 		// 空调用
@@ -2785,7 +2749,10 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// 代码生成
+	/**
+	 * 获取 所有的代码生成任务
+	 * 运行代码生成任务
+	 */
 	codeGeneration(callback) {
 		const { chunkGraph } = this;
 		this.codeGenerationResults = new CodeGenerationResults();
@@ -2917,7 +2884,6 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					codeGenerated = true;
 					this.codeGeneratedModules.add(module);
 					// 重点看
-					// ast => result ?!
 					result = module.codeGeneration({
 						chunkGraph,
 						moduleGraph,
@@ -3047,13 +3013,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// TODO webpack 6 make chunkGraph argument non-optional
-	/**
-	 * @param {Chunk} chunk target chunk
-	 * @param {RuntimeModule} module runtime module
-	 * @param {ChunkGraph} chunkGraph the chunk graph
-	 * @returns {void}
-	 */
+	// 添加 运行时模块
 	addRuntimeModule(chunk, module, chunkGraph = this.chunkGraph) {
 		// Deprecated ModuleGraph association
 		ModuleGraph.setModuleGraphForModule(module, this.moduleGraph);
@@ -3176,8 +3136,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return entrypoint;
 	}
 
-	// 返回 Chunk
-	// 创建 Chunk 并缓存 Chunk
+	// 返回 Chunk (创建 Chunk 并缓存 Chunk)
 	addChunk(name) {
 		if (name) {
 			const chunk = this.namedChunks.get(name);
@@ -3194,10 +3153,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return chunk;
 	}
 
-	/**
-	 * @param {Module} module module to assign depth
-	 * @returns {void}
-	 */
+	// 递归设置 ModuleGraphModule.depth
 	assignDepth(module) {
 		const moduleGraph = this.moduleGraph;
 
@@ -3770,6 +3726,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {Source | function(Source): Source} newSourceOrFunction new asset source or function converting old to new
 	 * @param {AssetInfo | function(AssetInfo | undefined): AssetInfo} assetInfoUpdateOrFunction new asset info or function converting old to new
 	 */
+	// 更新Asset
 	updateAsset(
 		file,
 		newSourceOrFunction,
@@ -4135,6 +4092,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {PathData} data context data
 	 * @returns {string} interpolated path
 	 */
+	// 
 	getPath(filename, data = {}) {
 		if (!data.hash) {
 			data = {
@@ -4165,6 +4123,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {PathData} data context data
 	 * @returns {string} interpolated path
 	 */
+	// 
 	getAssetPath(filename, data) {
 		// TemplatedPathPlugin
 		return this.hooks.assetPath.call(

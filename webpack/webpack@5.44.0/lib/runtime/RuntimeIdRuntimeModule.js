@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -12,9 +8,7 @@ class RuntimeIdRuntimeModule extends RuntimeModule {
 		super("runtimeId");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
+	// __webpack_require__.j = xx
 	generate() {
 		const { chunkGraph, chunk } = this;
 		const runtime = chunk.runtime;

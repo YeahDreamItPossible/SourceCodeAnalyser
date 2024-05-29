@@ -4,8 +4,6 @@ const Dependency = require("../Dependency");
 const DependencyTemplate = require("../DependencyTemplate");
 const memoize = require("../util/memoize");
 
-/** @typedef {import("../Module")} Module */
-
 const getRawModule = memoize(() => require("../RawModule"));
 
 /**
@@ -14,31 +12,23 @@ const getRawModule = memoize(() => require("../RawModule"));
  * import { add } from '../plugins/loaders/first.js?auth=lee!../plugins/loaders/second.js?use=wang!./utils/math.js?ts=12345'
  */
 class ModuleDependency extends Dependency {
-	/**
-	 * @param {string} request request path which needs resolving
-	 */
 	constructor(request) {
 		super();
-		// 模块路径
-		// 示例:
+		// 模块引入路径
 		// '../plugins/loaders/first.js?auth=lee!../plugins/loaders/second.js?use=wang!./utils/math.js?ts=12345'
 		this.request = request;
+		// 
 		this.userRequest = request;
-		// 范围
+		// 范围 [Number, Number]
 		this.range = undefined;
 	}
 
-	/**
-	 * @returns {string | null} an identifier to merge equal requests
-	 */
+	// 获取资源标识符
 	getResourceIdentifier() {
 		return `module${this.request}`;
 	}
 
-	/**
-	 * @param {string} context context directory
-	 * @returns {Module} a module
-	 */
+	// 返回 RawModule 的实例
 	createIgnoredModule(context) {
 		const RawModule = getRawModule();
 		return new RawModule(

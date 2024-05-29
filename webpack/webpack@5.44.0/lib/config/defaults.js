@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const fs = require("fs");
@@ -15,57 +10,17 @@ const {
 	getDefaultTarget
 } = require("./target");
 
-/** @typedef {import("../../declarations/WebpackOptions").CacheOptionsNormalized} CacheOptions */
-/** @typedef {import("../../declarations/WebpackOptions").EntryDescription} EntryDescription */
-/** @typedef {import("../../declarations/WebpackOptions").EntryNormalized} Entry */
-/** @typedef {import("../../declarations/WebpackOptions").Experiments} Experiments */
-/** @typedef {import("../../declarations/WebpackOptions").ExternalsPresets} ExternalsPresets */
-/** @typedef {import("../../declarations/WebpackOptions").ExternalsType} ExternalsType */
-/** @typedef {import("../../declarations/WebpackOptions").InfrastructureLogging} InfrastructureLogging */
-/** @typedef {import("../../declarations/WebpackOptions").JavascriptParserOptions} JavascriptParserOptions */
-/** @typedef {import("../../declarations/WebpackOptions").Library} Library */
-/** @typedef {import("../../declarations/WebpackOptions").LibraryName} LibraryName */
-/** @typedef {import("../../declarations/WebpackOptions").LibraryOptions} LibraryOptions */
-/** @typedef {import("../../declarations/WebpackOptions").Loader} Loader */
-/** @typedef {import("../../declarations/WebpackOptions").Mode} Mode */
-/** @typedef {import("../../declarations/WebpackOptions").ModuleOptionsNormalized} ModuleOptions */
-/** @typedef {import("../../declarations/WebpackOptions").Node} WebpackNode */
-/** @typedef {import("../../declarations/WebpackOptions").Optimization} Optimization */
-/** @typedef {import("../../declarations/WebpackOptions").OutputNormalized} Output */
-/** @typedef {import("../../declarations/WebpackOptions").Performance} Performance */
-/** @typedef {import("../../declarations/WebpackOptions").ResolveOptions} ResolveOptions */
-/** @typedef {import("../../declarations/WebpackOptions").RuleSetRules} RuleSetRules */
-/** @typedef {import("../../declarations/WebpackOptions").SnapshotOptions} SnapshotOptions */
-/** @typedef {import("../../declarations/WebpackOptions").Target} Target */
-/** @typedef {import("../../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("./target").TargetProperties} TargetProperties */
-
 const NODE_MODULES_REGEXP = /[\\/]node_modules[\\/]/i;
 
-/**
- * Sets a constant default value when undefined
- * @template T
- * @template {keyof T} P
- * @param {T} obj an object
- * @param {P} prop a property of this object
- * @param {T[P]} value a default value of the property
- * @returns {void}
- */
+// 对 对象 的某个属性 设置默认值
+// DefineProperty
 const D = (obj, prop, value) => {
 	if (obj[prop] === undefined) {
 		obj[prop] = value;
 	}
 };
 
-/**
- * Sets a dynamic default value when undefined, by calling the factory function
- * @template T
- * @template {keyof T} P
- * @param {T} obj an object
- * @param {P} prop a property of this object
- * @param {function(): T[P]} factory a default value factory for the property
- * @returns {void}
- */
+// 对 对象 的某个属性 设置默认值(工厂函数返回的值)
 const F = (obj, prop, factory) => {
 	if (obj[prop] === undefined) {
 		obj[prop] = factory();
@@ -111,21 +66,14 @@ const A = (obj, prop, factory) => {
 	}
 };
 
-/**
- * @param {WebpackOptions} options options to be modified
- * @returns {void}
- */
-// 1. 设置options.context = cwd
-// 2. 设置options.infrastructureLogging
+// 1. 对 Webpack.Config.context 设置默认值
+// 2. 对 Webpack.Config.infrastructureLogging 设置默认值
 const applyWebpackOptionsBaseDefaults = options => {
 	F(options, "context", () => process.cwd());
 	applyInfrastructureLoggingDefaults(options.infrastructureLogging);
 };
 
-/**
- * @param {WebpackOptions} options options to be modified
- * @returns {void}
- */
+// 对 Webpack.Config.xx 设置默认值
 const applyWebpackOptionsDefaults = options => {
 	F(options, "context", () => process.cwd());
 	F(options, "target", () => {
@@ -245,10 +193,7 @@ const applyWebpackOptionsDefaults = options => {
 	);
 };
 
-/**
- * @param {Experiments} experiments options
- * @returns {void}
- */
+// 对 Webpack.Config.experiments 设置默认值
 const applyExperimentsDefaults = experiments => {
 	D(experiments, "topLevelAwait", false);
 	D(experiments, "syncWebAssembly", false);
@@ -256,14 +201,7 @@ const applyExperimentsDefaults = experiments => {
 	D(experiments, "outputModule", false);
 };
 
-/**
- * @param {CacheOptions} cache options
- * @param {Object} options options
- * @param {string} options.name name
- * @param {string} options.mode mode
- * @param {boolean} options.development is development mode
- * @returns {void}
- */
+// 对 Webpack.Config.cache 设置默认值
 const applyCacheDefaults = (cache, { name, mode, development }) => {
 	if (cache === false) return;
 	switch (cache.type) {
@@ -318,13 +256,7 @@ const applyCacheDefaults = (cache, { name, mode, development }) => {
 	}
 };
 
-/**
- * @param {SnapshotOptions} snapshot options
- * @param {Object} options options
- * @param {boolean} options.production is production
- * @returns {void}
- */
-// 设置options.snapshot
+// 对 Webpack.Config.snapshot 设置默认值
 const applySnapshotDefaults = (snapshot, { production }) => {
 	A(snapshot, "managedPaths", () => {
 		if (process.versions.pnp === "3") {
@@ -379,10 +311,7 @@ const applySnapshotDefaults = (snapshot, { production }) => {
 	);
 };
 
-/**
- * @param {JavascriptParserOptions} parserOptions parser options
- * @returns {void}
- */
+// 对 Webpack.Config.module.parser.javascript 设置默认值
 const applyJavascriptParserOptionsDefaults = parserOptions => {
 	D(parserOptions, "unknownContextRequest", ".");
 	D(parserOptions, "unknownContextRegExp", false);
@@ -400,14 +329,7 @@ const applyJavascriptParserOptionsDefaults = parserOptions => {
 	D(parserOptions, "strictThisContextOnImports", false);
 };
 
-/**
- * @param {ModuleOptions} module options
- * @param {Object} options options
- * @param {boolean} options.cache is caching enabled
- * @param {boolean} options.syncWebAssembly is syncWebAssembly enabled
- * @param {boolean} options.asyncWebAssembly is asyncWebAssembly enabled
- * @returns {void}
- */
+// 对 Webpack.Config.module 设置默认值
 const applyModuleDefaults = (
 	module,
 	{ cache, syncWebAssembly, asyncWebAssembly }
@@ -548,19 +470,7 @@ const applyModuleDefaults = (
 	});
 };
 
-/**
- * @param {Output} output options
- * @param {Object} options options
- * @param {string} options.context context
- * @param {TargetProperties | false} options.targetProperties target properties
- * @param {boolean} options.isAffectedByBrowserslist is affected by browserslist
- * @param {boolean} options.outputModule is outputModule experiment enabled
- * @param {boolean} options.development is development mode
- * @param {Entry} options.entry entry option
- * @param {ModuleOptions} options.module module option
- * @returns {void}
- */
-// 设置options.output
+// 对 Webpack.Config.output 设置默认值
 const applyOutputDefaults = (
 	output,
 	{
@@ -854,12 +764,7 @@ const applyOutputDefaults = (
 	});
 };
 
-/**
- * @param {ExternalsPresets} externalsPresets options
- * @param {Object} options options
- * @param {TargetProperties | false} options.targetProperties target properties
- * @returns {void}
- */
+// 对 Webpack.Config.externalsPresets 设置默认值
 const applyExternalsPresetsDefaults = (
 	externalsPresets,
 	{ targetProperties }
@@ -895,12 +800,7 @@ const applyExternalsPresetsDefaults = (
 	);
 };
 
-/**
- * @param {Loader} loader options
- * @param {Object} options options
- * @param {TargetProperties | false} options.targetProperties target properties
- * @returns {void}
- */
+// 对 Webpack.Config.loader 设置默认值
 const applyLoaderDefaults = (loader, { targetProperties }) => {
 	F(loader, "target", () => {
 		if (targetProperties) {
@@ -917,12 +817,7 @@ const applyLoaderDefaults = (loader, { targetProperties }) => {
 	});
 };
 
-/**
- * @param {WebpackNode} node options
- * @param {Object} options options
- * @param {TargetProperties | false} options.targetProperties target properties
- * @returns {void}
- */
+// 对 Webpack.Config.node 设置默认值
 const applyNodeDefaults = (node, { targetProperties }) => {
 	if (node === false) return;
 	F(node, "global", () => {
@@ -939,12 +834,7 @@ const applyNodeDefaults = (node, { targetProperties }) => {
 	});
 };
 
-/**
- * @param {Performance} performance options
- * @param {Object} options options
- * @param {boolean} options.production is production
- * @returns {void}
- */
+// 对 Webpack.Config.performance 设置默认值
 const applyPerformanceDefaults = (performance, { production }) => {
 	if (performance === false) return;
 	D(performance, "maxAssetSize", 250000);
@@ -952,15 +842,7 @@ const applyPerformanceDefaults = (performance, { production }) => {
 	F(performance, "hints", () => (production ? "warning" : false));
 };
 
-/**
- * @param {Optimization} optimization options
- * @param {Object} options options
- * @param {boolean} options.production is production
- * @param {boolean} options.development is development
- * @param {boolean} options.records using records
- * @returns {void}
- */
-// 设置options.optimization
+// 对 Webpack.Config.optimization 设置默认值
 const applyOptimizationDefaults = (
 	optimization,
 	{ production, development, records }
@@ -1041,14 +923,7 @@ const applyOptimizationDefaults = (
 	}
 };
 
-/**
- * @param {Object} options options
- * @param {boolean} options.cache is cache enable
- * @param {string} options.context build context
- * @param {TargetProperties | false} options.targetProperties target properties
- * @param {Mode} options.mode mode
- * @returns {ResolveOptions} resolve options
- */
+// 返回 Webpack.Config.resolve 默认选项
 const getResolveDefaults = ({ cache, context, targetProperties, mode }) => {
 	/** @type {string[]} */
 	const conditions = ["webpack"];
@@ -1120,13 +995,8 @@ const getResolveDefaults = ({ cache, context, targetProperties, mode }) => {
 	return resolveOptions;
 };
 
-/**
- * @param {Object} options options
- * @param {boolean} options.cache is cache enable
- * @returns {ResolveOptions} resolve options
- */
+// 返回 Webpack.Config.resolveLoader 默认选项
 const getResolveLoaderDefaults = ({ cache }) => {
-	/** @type {ResolveOptions} */
 	const resolveOptions = {
 		cache,
 		conditionNames: ["loader", "require", "node"],
@@ -1139,11 +1009,7 @@ const getResolveLoaderDefaults = ({ cache }) => {
 	return resolveOptions;
 };
 
-/**
- * @param {InfrastructureLogging} infrastructureLogging options
- * @returns {void}
- */
-// 设置options.infrastructureLogging
+// 对 Webpack.Config.infrastructureLogging 设置默认值
 const applyInfrastructureLoggingDefaults = infrastructureLogging => {
 	F(infrastructureLogging, "stream", () => process.stderr);
 	const tty =

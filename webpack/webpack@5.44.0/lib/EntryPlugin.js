@@ -1,35 +1,18 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const EntryDependency = require("./dependencies/EntryDependency");
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./Entrypoint").EntryOptions} EntryOptions */
-
+// 入口插件
 class EntryPlugin {
-	/**
-	 * An entry plugin which will handle
-	 * creation of the EntryDependency
-	 *
-	 * @param {string} context context path
-	 * @param {string} entry entry path
-	 * @param {EntryOptions | string=} options entry options (passing a string is deprecated)
-	 */
 	constructor(context, entry, options) {
+		// Webpack.Config.context
 		this.context = context;
+		// Webpack.Config.entry.descriptor.import
 		this.entry = entry;
+		// Webpack.Config.entry.descriptor
 		this.options = options || "";
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"EntryPlugin",
@@ -51,11 +34,7 @@ class EntryPlugin {
 		});
 	}
 
-	/**
-	 * @param {string} entry entry request
-	 * @param {EntryOptions | string} options entry options (passing string is deprecated)
-	 * @returns {EntryDependency} the dependency
-	 */
+	// 返回 EntryDependency 的示例
 	static createDependency(entry, options) {
 		const dep = new EntryDependency(entry);
 		// TODO webpack 6 remove string option

@@ -12,11 +12,6 @@ const { STAGE_BASIC } = require("../OptimizationStages");
 /** @typedef {import("../Compiler")} Compiler */
 
 class EnsureChunkConditionsPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"EnsureChunkConditionsPlugin",

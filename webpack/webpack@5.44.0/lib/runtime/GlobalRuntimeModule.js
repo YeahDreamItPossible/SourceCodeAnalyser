@@ -1,21 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
+// 返回 全局对象 的代码
 class GlobalRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("global");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
+	// __webpack_require__.g
 	generate() {
 		return Template.asString([
 			`${RuntimeGlobals.global} = (function() {`,

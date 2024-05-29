@@ -1,32 +1,23 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { contextify } = require("./util/identifier");
 
+// 路径缩短器
 class RequestShortener {
-	/**
-	 * @param {string} dir the directory
-	 * @param {object=} associatedObjectForCache an object to which the cache will be attached
-	 */
 	constructor(dir, associatedObjectForCache) {
+		// 将 给定的路径 转换成相对于给定上下文的 相对路径
 		this.contextify = contextify.bindContextCache(
-			dir,
-			associatedObjectForCache
+			dir, // Webpack.Config.context
+			associatedObjectForCache // Compiler示例
 		);
 	}
 
-	/**
-	 * @param {string | undefined | null} request the request to shorten
-	 * @returns {string | undefined | null} the shortened request
-	 */
 	shorten(request) {
 		if (!request) {
 			return request;
 		}
+		// 将 用户资源加载路径 转换成相对于给定上下文的 相对路径
+		// Loader Path + Module Path 均为相对路径
 		return this.contextify(request);
 	}
 }

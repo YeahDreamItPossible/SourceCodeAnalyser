@@ -1,23 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 
-/** @typedef {import("../Compilation")} Compilation */
-
+// __webpack_require__.y
 class SystemContextRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("__system_context__");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
+		// __webpack_require__.y = __system_context__;
 		return `${RuntimeGlobals.systemContext} = __system_context__;`;
 	}
 }

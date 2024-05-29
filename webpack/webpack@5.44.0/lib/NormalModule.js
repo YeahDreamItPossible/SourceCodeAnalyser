@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const parseJson = require("json-parse-better-errors");
@@ -180,11 +175,11 @@ makeSerializable(
  * @property {HookMap<AsyncSeriesBailHook<[string, NormalModule], string | Buffer>>} readResourceForScheme
  */
 
-/** @type {WeakMap<Compilation, NormalModuleCompilationHooks>} */
+// WeakMap<Compilation, NormalModuleCompilationHooks>
 const compilationHooksMap = new WeakMap();
 
 /**
- * 资源引入路径:
+ * 资源加载路径:
  * import { add } from '../loaders/first.js?auth=Lee!../loaders/second.js?user=Wang!./math.js?ts=123'
  * 模块规则配置:
  * [
@@ -193,6 +188,11 @@ const compilationHooksMap = new WeakMap();
  * ]
  */
 
+/**
+ * 1. 通过所有的加载器(Loader)返回加工后的source
+ * 2. 通过语法解析器(parser) 对代码语法解析
+ * 3. 通过代码生成器(generator) 生成中间代码
+ */
 class NormalModule extends Module {
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
@@ -250,42 +250,42 @@ class NormalModule extends Module {
 		super(type, getContext(resource), layer);
 
 		// 模块路径: 将loaders路径和资源路径组合后的绝对路径
-		// 例如: 
+		// 示例: 
 		// /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang! +
 		// /path/laoders/first.js???ruleSet[1].rules[0]!/path/loaders/second.js?ruleSet[1].rules[1]! +
 		// /path/math.js?ts=123
 		this.request = request;
-		// 模块路径: 将模块引入路径全部转换成绝对路径
-		// 例如: /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang!/path/math.js?ts=123
+		// 将 模块加载路径 全部转换成 绝对路径
+		// 示例: /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang!/path/math.js?ts=123
 		this.userRequest = userRequest;
-		// 资源路径: 模块引入路径
-		// 例如: ../loaders/first.js?auth=Lee!../loaders/second.js?user=Wang!./math.js?ts=123
+		// 资源加载路径
+		// 示例: ../loaders/first.js?auth=Lee!../loaders/second.js?user=Wang!./math.js?ts=123
 		this.rawRequest = rawRequest;
 
 		// 标识: 经过loader加工后的源代码类型是Buffer 还是String
 		this.binary = /^(asset|webassembly)\b/.test(type);
 
-		// 解析器
+		// 语法分析器
 		this.parser = parser;
-		// 解析器选项
+		// 语法分析器选项
 		this.parserOptions = parserOptions;
 
-		// 生成器
+		// 代码生成器
 		this.generator = generator;
-		// 生成器选项
+		// 代码生成器选项
 		this.generatorOptions = generatorOptions;
 
-		// 资源路径(绝对路径 且包括参数)
-		// 例如: /path/math.js?ts=123
+		// 序列化后的模块路径(绝对路径 且包括参数)
+		// 示例: /path/math.js?ts=123
 		this.resource = resource;
-		// resolve解析resource返回的数据
+		// 路径解析器解析resource返回的数据
 		this.resourceResolveData = resourceResolveData;
 		// 匹配的路径资源
 		this.matchResource = matchResource;
 
 		/**
 		 * NormalModuleFactory 筛选后的loaders
-		 * 1. 模块引入路径解析出来的loaders
+		 * 1. 模块加载路径解析出来的loaders
 		 * 2. 根据 Webpack.Config.Module.Rule 匹配出来的loaders
 		 */
 		this.loaders = loaders;
@@ -296,18 +296,20 @@ class NormalModule extends Module {
 
 		// Info from Build
 		this.error = null;
-		// 经过loader加工后的源代码(WebpackSource实例)
+		// 经过Loader加工后的源代码(WebpackSource实例)
 		this._source = null;
-		// 经过loader加工后的源代码尺寸
+		// 经过Loader加工后的源代码大小
 		this._sourceSizes = undefined;
-		// 经过loader加工后的源代码类型
+		// 经过Loader加工后的源代码类型
 		this._sourceTypes = undefined;
 
-		// Cache
+		// 上次成功构建时的 this.buildMeta
 		this._lastSuccessfulBuildMeta = {};
 		// 标识: 当前模块是否要强制构建
 		this._forceBuild = true;
+		//
 		this._isEvaluatingSideEffects = false;
+		// 
 		/** @type {WeakSet<ModuleGraph> | undefined} */
 		this._addedSideEffectsBailout = undefined;
 	}
@@ -647,7 +649,7 @@ class NormalModule extends Module {
 	}
 
 	
-	// 将loaders加载后的结果source 封装成 WebpackSource 的实例
+	// 将 Loader 加载后的结果source 封装成 WebpackSource 的实例
 	// 原因: 为了快速获取该结果的特性
 	createSource(context, content, sourceMap, associatedObjectForCache) {
 		if (Buffer.isBuffer(content)) {
@@ -682,8 +684,8 @@ class NormalModule extends Module {
 
 	/**
 	 * 构建 NormalModule
-	 * 1. 运行所有的loaders 返回结果source
-	 * 2. 将 source 构建成 WebpackSource类的实例
+	 * 1. 运行所有的Loader 返回结果source
+	 * 2. 将 source 封装成 WebpackSource类的实例
 	 */
 	doBuild(options, compilation, resolver, fs, callback) {
 		const loaderContext = this.createLoaderContext(
@@ -755,7 +757,7 @@ class NormalModule extends Module {
 			return;
 		}
 
-		// 运行loaders 来获取 source
+		// 运行所有的 Loader 返回加载器返回的结果
 		runLoaders(
 			{
 				resource: this.resource,
@@ -788,7 +790,6 @@ class NormalModule extends Module {
 					loaderContext.fs =
 						undefined;
 
-				// 标记: 运行loader 返回的结果
 				if (!result) {
 					return processResult(
 						err || new Error("No result from loader-runner processing"),
@@ -868,7 +869,7 @@ class NormalModule extends Module {
 		return false;
 	}
 
-	// 
+	// 根据 source 生成 hash
 	_initBuildHash(compilation) {
 		const hash = createHash(compilation.outputOptions.hashFunction);
 		if (this._source) {
@@ -882,9 +883,9 @@ class NormalModule extends Module {
 
 	/**
 	 * 构建 NormalModule
-	 * 1. 运行所有的loaders 返回结果source
-	 * 2. 将 source 构建成 WebpackSource类的实例
-	 * 3. this.parser.parse(this._source.source)
+	 * 1. 运行所有的Loader 返回结果source
+	 * 2. 将 source 封装成 WebpackSource类的实例
+	 * 3. this.parser.parse 对source(this._source.source) 进行分析
 	 */
 	build(options, compilation, resolver, fs, callback) {
 		this._forceBuild = false;
@@ -897,16 +898,16 @@ class NormalModule extends Module {
 		this.clearDependenciesAndBlocks();
 		this.buildMeta = {};
 		this.buildInfo = {
-			cacheable: false,
-			parsed: true,
-			fileDependencies: undefined,
-			contextDependencies: undefined,
-			missingDependencies: undefined,
-			buildDependencies: undefined,
-			valueDependencies: undefined,
-			hash: undefined,
-			assets: undefined,
-			assetsInfo: undefined
+			cacheable: false, // 表示当前 Module 能否被缓存
+			parsed: true, // 表示当前 Module 已经被语法分析过
+			fileDependencies: undefined, // 
+			contextDependencies: undefined, // 
+			missingDependencies: undefined, //
+			buildDependencies: undefined, //
+			valueDependencies: undefined, //
+			hash: undefined, // 对 source 进行hash
+			assets: undefined, // 
+			assetsInfo: undefined //
 		};
 
 		const startTime = compilation.compiler.fsStartTime || Date.now();
@@ -1101,7 +1102,7 @@ class NormalModule extends Module {
 		return this._sourceTypes;
 	}
 
-	// 生成代码
+	// 通过代码生成器(generator) 生成中间代码
 	codeGeneration({
 		dependencyTemplates,
 		runtimeTemplate,
@@ -1158,7 +1159,8 @@ class NormalModule extends Module {
 		return resultEntry;
 	}
 
-	// 返回经过loader加工后的源代码(WebpackSource实例)
+	// 返回 this._source
+	// 返回经过加载器 Loader 加工后的source(WebpackSource实例)
 	originalSource() {
 		return this._source;
 	}

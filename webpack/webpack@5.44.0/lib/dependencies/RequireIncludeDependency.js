@@ -5,12 +5,6 @@ const Template = require("../Template");
 const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency").ReferencedExport} ReferencedExport */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
-
 // 通过 webpack特有的 require.include 语法引入的依赖
 class RequireIncludeDependency extends ModuleDependency {
 	constructor(request, range) {
@@ -19,14 +13,7 @@ class RequireIncludeDependency extends ModuleDependency {
 		this.range = range;
 	}
 
-	/**
-	 * Returns list of exports referenced by this dependency
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @param {RuntimeSpec} runtime the runtime for which the module is analysed
-	 * @returns {(string[] | ReferencedExport)[]} referenced exports
-	 */
 	getReferencedExports(moduleGraph, runtime) {
-		// This doesn't use any export
 		return Dependency.NO_EXPORTS_REFERENCED;
 	}
 
@@ -47,12 +34,6 @@ makeSerializable(
 RequireIncludeDependency.Template = class RequireIncludeDependencyTemplate extends (
 	ModuleDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(dependency, source, { runtimeTemplate }) {
 		const dep = /** @type {RequireIncludeDependency} */ (dependency);
 		const comment = runtimeTemplate.outputOptions.pathinfo

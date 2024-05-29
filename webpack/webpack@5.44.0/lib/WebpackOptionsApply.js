@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const OptionsApply = require("./OptionsApply");
@@ -54,19 +49,12 @@ const DefaultStatsPrinterPlugin = require("./stats/DefaultStatsPrinterPlugin");
 
 const { cleverMerge } = require("./util/cleverMerge");
 
-/** @typedef {import("../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("./Compiler")} Compiler */
-
+// 使用 Webpack.plugins
 class WebpackOptionsApply extends OptionsApply {
 	constructor() {
 		super();
 	}
 
-	/**
-	 * @param {WebpackOptions} options options object
-	 * @param {Compiler} compiler compiler object
-	 * @returns {WebpackOptions} options object
-	 */
 	process(options, compiler) {
 		compiler.outputPath = options.output.path;
 		compiler.recordsInputPath = options.recordsInputPath || null;
@@ -189,6 +177,7 @@ class WebpackOptionsApply extends OptionsApply {
 			).apply(compiler);
 		}
 
+		// Webpack.Config.devtool
 		if (options.devtool) {
 			if (options.devtool.includes("source-map")) {
 				const hidden = options.devtool.includes("hidden");
@@ -201,14 +190,22 @@ class WebpackOptionsApply extends OptionsApply {
 					? require("./EvalSourceMapDevToolPlugin")
 					: require("./SourceMapDevToolPlugin");
 				new Plugin({
+					// 定义生成的 SourceMap 的名称(不设置将默认置为 inlined)
 					filename: inline ? null : options.output.sourceMapFilename,
+					// 
 					moduleFilenameTemplate: options.output.devtoolModuleFilenameTemplate,
+					// 
 					fallbackModuleFilenameTemplate:
 						options.output.devtoolFallbackModuleFilenameTemplate,
+					// 在原始资源后追加给定值。通常是 #sourceMappingURL 注释。
 					append: hidden ? false : undefined,
+					// 表示 loader 是否生成 source map
 					module: moduleMaps ? true : cheap ? false : true,
+					// 表示是否应该使用 column mapping
 					columns: cheap ? false : true,
+					// 防止源文件的内容被包含在 source map 中
 					noSources: noSources,
+					// 
 					namespace: options.output.devtoolNamespace
 				}).apply(compiler);
 			} else if (options.devtool.includes("eval")) {
@@ -280,7 +277,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}).apply(compiler);
 		}
 
-		// 主要是 entry
+		// 注册入口插件
 		new EntryOptionPlugin().apply(compiler);
 		compiler.hooks.entryOption.call(options.context, options.entry);
 

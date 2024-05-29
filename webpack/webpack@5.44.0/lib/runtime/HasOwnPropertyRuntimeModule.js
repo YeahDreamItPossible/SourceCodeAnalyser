@@ -1,22 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Sergey Melyukov @smelukov
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
+// __webpack_require__.o
 class HasOwnPropertyRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("hasOwnProperty shorthand");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
+	// __webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 	generate() {
 		const { runtimeTemplate } = this.compilation;
 

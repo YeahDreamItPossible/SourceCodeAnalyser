@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ConcatenationScope = require("../ConcatenationScope");
@@ -11,13 +6,8 @@ const makeSerializable = require("../util/makeSerializable");
 const HarmonyExportInitFragment = require("./HarmonyExportInitFragment");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").ExportsSpec} ExportsSpec */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../ModuleGraphConnection").ConnectionState} ConnectionState */
-
+// ES模块 export 表达式依赖
+// 当代码片段中包含 export default 时
 class HarmonyExportExpressionDependency extends NullDependency {
 	constructor(range, rangeStatement, prefix, declarationId) {
 		super();
@@ -31,11 +21,6 @@ class HarmonyExportExpressionDependency extends NullDependency {
 		return "harmony export expression";
 	}
 
-	/**
-	 * Returns the exported names
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @returns {ExportsSpec | undefined} export names
-	 */
 	getExports(moduleGraph) {
 		return {
 			exports: ["default"],
@@ -45,10 +30,6 @@ class HarmonyExportExpressionDependency extends NullDependency {
 		};
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 * @returns {ConnectionState} how this dependency connects the module to referencing modules
-	 */
 	getModuleEvaluationSideEffectsState(moduleGraph) {
 		// The expression/declaration is already covered by SideEffectsFlagPlugin
 		return false;
@@ -81,12 +62,6 @@ makeSerializable(
 HarmonyExportExpressionDependency.Template = class HarmonyExportDependencyTemplate extends (
 	NullDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(
 		dependency,
 		source,

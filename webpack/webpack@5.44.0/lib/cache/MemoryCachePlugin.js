@@ -2,15 +2,13 @@
 
 const Cache = require("../Cache");
 
-/**
- * 缓存策略Webpack.Config.Cache.type
- * 内存缓存
- */
+// 根据 Webpack.Config.cache.type = memory 使用该插件
+// 内存缓存策略
 class MemoryCachePlugin {
 	apply(compiler) {
 		const cache = new Map();
 
-		// 缓存
+		// 存储
 		compiler.cache.hooks.store.tap(
 			{ name: "MemoryCachePlugin", stage: Cache.STAGE_MEMORY },
 			(identifier, etag, data) => {
@@ -26,8 +24,10 @@ class MemoryCachePlugin {
 				if (cacheEntry === null) {
 					return null;
 				} else if (cacheEntry !== undefined) {
+					// 验证
 					return cacheEntry.etag === etag ? cacheEntry.data : null;
 				}
+				// 重新存储
 				gotHandlers.push((result, callback) => {
 					if (result === undefined) {
 						cache.set(identifier, null);

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Ivan Kopeykin @vankop
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
@@ -10,27 +5,15 @@ const Template = require("../Template");
 const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Compilation")} Compilation */
-/** @typedef {import("../Dependency").ReferencedExport} ReferencedExport */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
-
+// TODO:
 class WebpackIsIncludedDependency extends ModuleDependency {
 	constructor(request, range) {
 		super(request);
-
+		// 当前依赖是弱依赖
 		this.weak = true;
 		this.range = range;
 	}
 
-	/**
-	 * Returns list of exports referenced by this dependency
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @param {RuntimeSpec} runtime the runtime for which the module is analysed
-	 * @returns {(string[] | ReferencedExport)[]} referenced exports
-	 */
 	getReferencedExports(moduleGraph, runtime) {
 		// This doesn't use any export
 		return Dependency.NO_EXPORTS_REFERENCED;
@@ -49,12 +32,6 @@ makeSerializable(
 WebpackIsIncludedDependency.Template = class WebpackIsIncludedDependencyTemplate extends (
 	ModuleDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(dependency, source, { runtimeTemplate, chunkGraph, moduleGraph }) {
 		const dep = /** @type {WebpackIsIncludedDependency} */ (dependency);
 		const connection = moduleGraph.getConnection(dep);

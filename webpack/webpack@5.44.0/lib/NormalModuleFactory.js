@@ -30,7 +30,7 @@ const EMPTY_GENERATOR_OPTIONS = {};
 
 const MATCH_RESOURCE_REGEX = /^([^!]+)!=!/;
 
-// 返回loader的完整路径(包括参数)
+// 根据 Loader 对象 返回序列化后的加载器(Loader)路径(绝对路径 + 参数 + 标识符)
 const loaderToIdent = data => {
 	if (!data.options) {
 		return data.loader;
@@ -47,9 +47,10 @@ const loaderToIdent = data => {
 	return data.loader + "?" + JSON.stringify(data.options);
 };
 
-// 返回模块的完整路径(包括loader路径和模块路径)
-// loader路径是绝对路径 且包括路径参数
-// 模块路径是绝对路径 且包括路径参数
+/**
+ * 根据所有的 Loader 对象 和 模块路径 来返回 完整的模块路径
+ * 该路径包括 序列化后的加载器(Loader)路径 和 序列化后的模块路径
+ */
 const stringifyLoadersAndResource = (loaders, resource) => {
 	let str = "";
 	for (const loader of loaders) {
@@ -58,7 +59,8 @@ const stringifyLoadersAndResource = (loaders, resource) => {
 	return str + resource;
 };
 
-// 根据loader路径转换成({ loader: String, options: String})
+// 根据 Loader.loader 路径 返回标准化后的 Loader 对象
+// Loader<{ loader: String, options: String }>
 const identToLoaderRequest = resultString => {
 	const idx = resultString.indexOf("?");
 	if (idx >= 0) {
@@ -157,30 +159,33 @@ const ruleSetCompiler = new RuleSetCompiler([
 ]);
 
 /**
- * 主要作用是获取创建 NormalModule 的所有参数 如下:
- * 1. 获取所有的loader
- * 2. 获取resolver parser generator
- * 3. 生成NormalModule
- * 在获取所有loaders的过程中
- * 1. 根据模块加载路径来获取所有的loaders 并根据模块路径中的前缀(! !! -!)进行筛选
- * 2. 根据匹配规则来筛选匹配后的loaders
- */
-/**
  * loader分类
  * 1. 前置loader(preLoader)
  * 2. 普通loader(loader)
  * 3. 后置loader(postLoaders)
  */
+/**
+ * Loader<{ loader: String, options: String, ident: String }>
+ * Loader.loader  资源加载器路径(绝对路径)
+ * Loader.options 资源加载器选项
+ * Loader.ident   资源加载器标识符(id)
+ */
+
+/**
+ * 正常模块工厂
+ * 获取创建 NormalModule 所需要的所有参数,并创建 NormalModule 的实例 
+ * 主要参数如下:
+ * 1. 所有的资源加载器(Loader)
+ * 2. 特定类型的路径解析器(resolver)
+ * 3. 特定类型的语法分析器(parser)
+ * 4. 特定类型的代码生成器(generator)
+ * 5. 解析后的模块路径
+ * 6. ...
+ * 在获取所有Loader的过程中
+ * 1. 根据模块加载路径来获取所有的loaders 并根据模块路径中的前缀(! !! -!)进行筛选
+ * 2. 根据匹配规则来筛选匹配后的loaders
+ */
 class NormalModuleFactory extends ModuleFactory {
-	/**
-	 * @param {Object} param params
-	 * @param {string=} param.context context
-	 * @param {InputFileSystem} param.fs file system
-	 * @param {ResolverFactory} param.resolverFactory resolverFactory
-	 * @param {ModuleOptions} param.options options
-	 * @param {Object=} param.associatedObjectForCache an object to which the cache will be attached
-	 * @param {boolean=} param.layers enable layers
-	 */
 	constructor({
 		context,
 		fs,
@@ -191,21 +196,16 @@ class NormalModuleFactory extends ModuleFactory {
 	}) {
 		super();
 		this.hooks = Object.freeze({
-			/** @type {AsyncSeriesBailHook<[ResolveData], TODO>} */
+			// 获取创建 NormalModule 所需要的参数
 			resolve: new AsyncSeriesBailHook(["resolveData"]),
-			/** @type {HookMap<AsyncSeriesBailHook<[ResourceDataWithData, ResolveData], true | void>>} */
 			resolveForScheme: new HookMap(
 				() => new AsyncSeriesBailHook(["resourceData", "resolveData"])
 			),
-			/** @type {AsyncSeriesBailHook<[ResolveData], TODO>} */
 			factorize: new AsyncSeriesBailHook(["resolveData"]),
-			/** @type {AsyncSeriesBailHook<[ResolveData], TODO>} */
 			beforeResolve: new AsyncSeriesBailHook(["resolveData"]),
-			/** @type {AsyncSeriesBailHook<[ResolveData], TODO>} */
 			afterResolve: new AsyncSeriesBailHook(["resolveData"]),
-			/** @type {AsyncSeriesBailHook<[ResolveData["createData"], ResolveData], TODO>} */
+			// 创建 NormalModule 的实例
 			createModule: new AsyncSeriesBailHook(["createData", "resolveData"]),
-			/** @type {SyncWaterfallHook<[Module, ResolveData["createData"], ResolveData], TODO>} */
 			module: new SyncWaterfallHook(["module", "createData", "resolveData"]),
 			createParser: new HookMap(() => new SyncBailHook(["parserOptions"])),
 			parser: new HookMap(() => new SyncHook(["parser", "parserOptions"])),
@@ -216,9 +216,10 @@ class NormalModuleFactory extends ModuleFactory {
 				() => new SyncHook(["generator", "generatorOptions"])
 			)
 		});
+		// 路径解析器
 		this.resolverFactory = resolverFactory;
 
-		// module rules
+		// 模块匹配规则
 		this.ruleSet = ruleSetCompiler.compile([
 			{
 				rules: options.defaultRules
@@ -236,10 +237,12 @@ class NormalModuleFactory extends ModuleFactory {
 		this.context = context || "";
 		this.fs = fs;
 
-		// 用户自定义解析器(Webpack.Config.Module.parser)
+		// 用户自定义语法解析器(Webpack.Config.Module.parser)
 		this._globalParserOptions = options.parser;
-		// 用户自定义生成器(Wepback.Config.Module.generator)
+		// 用户自定义代码生成器(Wepback.Config.Module.generator)
 		this._globalGeneratorOptions = options.generator;
+
+		// 缓存
 		// Map<Type, WeakMap<ParserOptions, Parser>
 		this.parserCache = new Map();
 		// Map<Type, WeakMap<GeneratorOptions, Generator>
@@ -251,6 +254,7 @@ class NormalModuleFactory extends ModuleFactory {
 			associatedObjectForCache
 		);
 
+		// 创建 NormalModule 的实例
 		this.hooks.factorize.tapAsync(
 			{
 				name: "NormalModuleFactory",
@@ -317,6 +321,16 @@ class NormalModuleFactory extends ModuleFactory {
 				});
 			}
 		);
+
+		/**
+		 * 
+		 * 1. 根据 模块引入路径 来获取 所有的行内Loader 和 模块路径
+		 * 2. 将行内Loader的loader属性转换成绝对路径
+		 * 3. 将模块路径转换成绝对路径
+		 * 4. 根据模块路径 和 自定义模块匹配规则 来获取匹配后的 Loader
+		 * 5. 将匹配Loader的loader属性转换成绝对路径
+		 */
+		// 获取创建 NormalModule 所需要的参数
 		this.hooks.resolve.tapAsync(
 			{
 				name: "NormalModuleFactory",
@@ -339,7 +353,7 @@ class NormalModuleFactory extends ModuleFactory {
 
 				/** @type {ResourceData | undefined} */
 				let matchResourceData = undefined;
-				// 模块引入路径(该路径包括loader路径和模块路径)
+				// 用户自定义模块加载路径(该路径包括loader路径和模块路径)
 				let requestWithoutMatchResource = request;
 				// 以 `(任意字符,除了!){1,}!=!` 开头
 				// MATCH_RESOURCE_REGEX = /^([^!]+)!=!/
@@ -367,7 +381,7 @@ class NormalModuleFactory extends ModuleFactory {
 					);
 				}
 				
-				// 模块路径是否有禁用loader规则
+				// 模块加载路径是否有禁用loader规则
 				const firstChar = requestWithoutMatchResource.charCodeAt(0);
 				const secondChar = requestWithoutMatchResource.charCodeAt(1);
 				// 使用 -! 前缀，将禁用所有已配置的 preLoader 和 loader，但是不禁用 postLoaders
@@ -404,7 +418,7 @@ class NormalModuleFactory extends ModuleFactory {
 				const continueCallback = needCalls(2, err => {
 					if (err) return callback(err);
 
-					// translate option idents
+					// 转换行内Loader.options 并设置Loader.ident
 					try {
 						for (const item of loaders) {
 							if (typeof item.options === "string" && item.options[0] === "?") {
@@ -434,14 +448,15 @@ class NormalModuleFactory extends ModuleFactory {
 						return callback(null, dependencies[0].createIgnoredModule(context));
 					}
 
+					// 序列化后的模块路径
 					const userRequest =
 						(matchResourceData !== undefined
 							? `${matchResourceData.resource}!=!`
 							: "") +
 						stringifyLoadersAndResource(loaders, resourceData.resource);
-
+					// 路径解析器返回的路径信息
 					const resourceDataForRules = matchResourceData || resourceData;
-					// 通过匹配规则来获取Webpack.Config.Module.Rule中匹配的loaders
+					// 通过匹配规则Webpack.Config.Module.Rule来获取匹配的loaders
 					const result = this.ruleSet.exec({
 						resource: resourceDataForRules.path,
 						realResource: resourceData.path,
@@ -457,6 +472,7 @@ class NormalModuleFactory extends ModuleFactory {
 						compiler: contextInfo.compiler,
 						issuerLayer: contextInfo.issuerLayer || ""
 					});
+
 					// loaders分类
 					const settings = {};
 					// postLoader
@@ -497,7 +513,8 @@ class NormalModuleFactory extends ModuleFactory {
 						if (err) {
 							return callback(err);
 						}
-						// 筛选loaders
+
+						// 合并Loader(筛选后的行内Loader + 匹配规则匹配的Loader)
 						const allLoaders = postLoaders;
 						if (matchResourceData === undefined) {
 							for (const loader of loaders) allLoaders.push(loader);
@@ -507,7 +524,9 @@ class NormalModuleFactory extends ModuleFactory {
 							for (const loader of loaders) allLoaders.push(loader);
 						}
 						for (const loader of preLoaders) allLoaders.push(loader);
+
 						let type = settings.type;
+						// 设置类型
 						if (!type) {
 							const resource =
 								(matchResourceData && matchResourceData.resource) ||
@@ -561,7 +580,7 @@ class NormalModuleFactory extends ModuleFactory {
 						callback();
 					});
 
-					// 后置loaders
+					// 将所有的 后置Loader.loader 属性解析成绝对路径
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -573,7 +592,7 @@ class NormalModuleFactory extends ModuleFactory {
 							continueCallback(err);
 						}
 					);
-					// 正常loaders
+					// 将所有的 正常Loader.loader 属性解析成绝对路径
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -585,7 +604,7 @@ class NormalModuleFactory extends ModuleFactory {
 							continueCallback(err);
 						}
 					);
-					// 前置loaders
+					// 将所有的 前置Loader.loader 属性解析成绝对路径
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -599,7 +618,7 @@ class NormalModuleFactory extends ModuleFactory {
 					);
 				});
 
-				// 将每个loader的loader从相对路径转化成绝对路径
+				// 将所有的 Loader.loader 属性解析成绝对路径
 				this.resolveRequestArray(
 					contextInfo,
 					context,
@@ -642,6 +661,7 @@ class NormalModuleFactory extends ModuleFactory {
 
 				// resource without scheme and with path
 				else {
+					// 获取 resolver
 					const normalResolver = this.getResolver(
 						"normal",
 						dependencyType
@@ -663,8 +683,9 @@ class NormalModuleFactory extends ModuleFactory {
 							if (err) return continueCallback(err);
 							if (resolvedResource !== false) {
 								resourceData = {
-									// 模块路径(绝对路径)
+									// 模块绝对路径
 									resource: resolvedResource,
+									// 模块路径信息
 									data: resolvedResourceResolveData,
 									...cacheParseResource(resolvedResource)
 								};
@@ -685,7 +706,7 @@ class NormalModuleFactory extends ModuleFactory {
 		}
 	}
 
-	// 创建模块
+	// 创建 NormalModule 的实例
 	create(data, callback) {
 		const dependencies = /** @type {ModuleDependency[]} */ (data.dependencies);
 		if (this.unsafeCache) {
@@ -791,7 +812,10 @@ class NormalModuleFactory extends ModuleFactory {
 		});
 	}
 
-	// 根据模块路径和上下文路径来获取模块的绝对路径
+	/**
+	 * 根据模块路径和上下文 返回模块的绝对路径 和绝对路径信息
+	 * 底层调用 Resolver.resolve
+	 */
 	resolveResource(
 		contextInfo,
 		context,
@@ -832,6 +856,8 @@ ${hints.join("\n\n")}`;
 						}
 					);
 				}
+				// resolvedResource 模块绝对路径
+				// resolvedResourceResolveData 模块路径信息
 				callback(err, resolvedResource, resolvedResourceResolveData);
 			}
 		);
@@ -950,7 +976,10 @@ If changing the source code is not an option there is also a resolve options cal
 		);
 	}
 
-	// 获取loaders中每个loader的绝对路径
+	/**
+	 * 将所有的 Loader.loader 属性解析成绝对路径
+	 * 底层调用 Resolver.resolve
+	 */
 	resolveRequestArray(
 		contextInfo,
 		context,
@@ -1011,7 +1040,7 @@ If changing the source code is not an option there is also a resolve options cal
 		);
 	}
 
-	// 返回parser 并缓存该type对应的parser
+	// 根据 特定类型(type) 返回对应的内置 语法分析器(parser) 并缓存该语法分析器
 	getParser(type, parserOptions = EMPTY_PARSER_OPTIONS) {
 		let cache = this.parserCache.get(type);
 
@@ -1031,7 +1060,7 @@ If changing the source code is not an option there is also a resolve options cal
 	}
 
 	/**
-	 * 根据type返回对应的内置parser
+	 * 根据 特定类型(type) 返回对应的内置 语法分析器(parser)
 	 * asset || asset/inline || asset/resource || asset/source
 	 * webassembly/async || webassembly/sync
 	 * javascript/auto || javascript/dynamic || javascript/esm
@@ -1051,7 +1080,9 @@ If changing the source code is not an option there is also a resolve options cal
 		return parser;
 	}
 
-	// 返回generator 并缓存该type对应的generator
+	/**
+	 * 根据 特定类型(type) 返回对应的内置 代码生成器(generator) 并缓存该代码生成器
+	 */
 	getGenerator(type, generatorOptions = EMPTY_GENERATOR_OPTIONS) {
 		let cache = this.generatorCache.get(type);
 
@@ -1071,7 +1102,7 @@ If changing the source code is not an option there is also a resolve options cal
 	}
 
 	/**
-	 * 根据type返回对应的内置generator
+	 * 根据 特定类型(type) 返回对应的内置 代码生成器(generator)
 	 * asset || asset/inline || asset/resource || asset/source
 	 * webassembly/async || webassembly/sync
 	 * javascript/auto || javascript/dynamic || javascript/esm
@@ -1094,7 +1125,7 @@ If changing the source code is not an option there is also a resolve options cal
 	}
 
 	/**
-	 * 根据type返回对应的内置resolver
+	 * 根据 特定类型(type) 返回对应的 路径解析器(resolver)
 	 * noamal || loader
 	 */
 	getResolver(type, resolveOptions) {

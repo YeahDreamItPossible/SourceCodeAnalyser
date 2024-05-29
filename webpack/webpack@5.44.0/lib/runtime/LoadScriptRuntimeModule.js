@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const { SyncWaterfallHook } = require("tapable");
@@ -22,10 +18,6 @@ const HelperRuntimeModule = require("./HelperRuntimeModule");
 const compilationHooksMap = new WeakMap();
 
 class LoadScriptRuntimeModule extends HelperRuntimeModule {
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @returns {LoadScriptCompilationHooks} hooks
-	 */
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
 			throw new TypeError(
@@ -50,9 +42,6 @@ class LoadScriptRuntimeModule extends HelperRuntimeModule {
 		this._withCreateScriptUrl = withCreateScriptUrl;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { compilation } = this;
 		const { runtimeTemplate, outputOptions } = compilation;

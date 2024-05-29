@@ -2,23 +2,8 @@
 
 const ChunkGroup = require("./ChunkGroup");
 
-/** @typedef {import("../declarations/WebpackOptions").EntryDescriptionNormalized} EntryDescription */
-/** @typedef {import("./Chunk")} Chunk */
-
-/** @typedef {{ name?: string } & Omit<EntryDescription, "import">} EntryOptions */
-
-/**
- * Entrypoint serves as an encapsulation primitive for chunks that are
- * a part of a single ChunkGroup. They represent all bundles that need to be loaded for a
- * single instance of a page. Multi-page application architectures will typically yield multiple Entrypoint objects
- * inside of the compilation, whereas a Single Page App may only contain one with many lazy-loaded chunks.
- */
+// 入口点
 class Entrypoint extends ChunkGroup {
-	/**
-	 * Creates an instance of Entrypoint.
-	 * @param {EntryOptions | string} entryOptions the options for the entrypoint (or name)
-	 * @param {boolean=} initial false, when the entrypoint is not initial loaded
-	 */
 	constructor(entryOptions, initial = true) {
 		if (typeof entryOptions === "string") {
 			entryOptions = { name: entryOptions };
@@ -26,30 +11,27 @@ class Entrypoint extends ChunkGroup {
 		super({
 			name: entryOptions.name
 		});
+		// 选项
 		this.options = entryOptions;
-
-		// 运行时Chunk
+		// 运行时块(RuntimeChunk)
 		this._runtimeChunk = undefined;
-		// 入口Chunk
+		// 入口块(EntrypointChunk)
 		this._entrypointChunk = undefined;
-		// 标识: 是否是 异步ChunkGroup
+		// 标识: 当前入口点是否要初始加载
 		this._initial = initial;
 	}
 
-	// 
+	// 返回当前 ChunkGroup 是否要初始加载
 	isInitial() {
 		return this._initial;
 	}
 
-	// 设置 运行时chunk
+	// 设置 运行时块
 	setRuntimeChunk(chunk) {
 		this._runtimeChunk = chunk;
 	}
 
-	/**
-	 * Fetches the chunk reference containing the webpack bootstrap code
-	 * @returns {Chunk | null} returns the runtime chunk or null if there is none
-	 */
+	// 返回 运行时块
 	getRuntimeChunk() {
 		if (this._runtimeChunk) return this._runtimeChunk;
 		for (const parent of this.parentsIterable) {
@@ -58,21 +40,17 @@ class Entrypoint extends ChunkGroup {
 		return null;
 	}
 
-	// 设置
+	// 设置 入口块
 	setEntrypointChunk(chunk) {
 		this._entrypointChunk = chunk;
 	}
 
-	// 返回
+	// 返回 入口Chunk
 	getEntrypointChunk() {
 		return this._entrypointChunk;
 	}
 
-	/**
-	 * @param {Chunk} oldChunk chunk to be replaced
-	 * @param {Chunk} newChunk New chunk that will be replaced with
-	 * @returns {boolean} returns true if the replacement was successful
-	 */
+	// 替换 运行时块 或 替换 入口块
 	replaceChunk(oldChunk, newChunk) {
 		if (this._runtimeChunk === oldChunk) this._runtimeChunk = newChunk;
 		if (this._entrypointChunk === oldChunk) this._entrypointChunk = newChunk;

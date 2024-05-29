@@ -1,43 +1,23 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../ModuleGraphConnection").ConnectionState} ConnectionState */
-/** @typedef {import("../util/Hash")} Hash */
-
+// 
 class ConstDependency extends NullDependency {
-	/**
-	 * @param {string} expression the expression
-	 * @param {number|[number, number]} range the source range
-	 * @param {string[]=} runtimeRequirements runtime requirements
-	 */
 	constructor(expression, range, runtimeRequirements) {
 		super();
+		// String
 		this.expression = expression;
+		// [Number, Number]
 		this.range = range;
+		// Set<String>
 		this.runtimeRequirements = runtimeRequirements
 			? new Set(runtimeRequirements)
 			: null;
 	}
 
-	/**
-	 * Update the hash
-	 * @param {Hash} hash hash to be updated
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
+	// 更新hash
 	updateHash(hash, context) {
 		hash.update(this.range + "");
 		hash.update(this.expression + "");
@@ -75,12 +55,6 @@ makeSerializable(ConstDependency, "webpack/lib/dependencies/ConstDependency");
 ConstDependency.Template = class ConstDependencyTemplate extends (
 	NullDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(dependency, source, templateContext) {
 		const dep = /** @type {ConstDependency} */ (dependency);
 		if (dep.runtimeRequirements) {

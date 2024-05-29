@@ -1,22 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Ivan Kopeykin @vankop
-*/
-
 "use strict";
 
 const { approve } = require("../javascript/JavascriptParserHelpers");
 const InnerGraph = require("../optimize/InnerGraph");
 const URLDependency = require("./URLDependency");
 
-/** @typedef {import("estree").NewExpression} NewExpressionNode */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../javascript/JavascriptParser")} JavascriptParser */
-
 class URLPlugin {
-	/**
-	 * @param {Compiler} compiler compiler
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"URLPlugin",
@@ -27,12 +15,12 @@ class URLPlugin {
 					new URLDependency.Template()
 				);
 
-				/**
-				 * @param {JavascriptParser} parser parser
-				 * @param {object} parserOptions options
-				 */
 				const parserCallback = (parser, parserOptions) => {
+					// 当 Webpack.Config.module.parser.['javascript/auto'].url = false 时
+					// 当 Webpack.Config.module.parser.['javascript/esm'].url = false 时
+					// 明确禁用 Url
 					if (parserOptions.url === false) return;
+					// 是否时相对路径
 					const relative = parserOptions.url === "relative";
 
 					/**

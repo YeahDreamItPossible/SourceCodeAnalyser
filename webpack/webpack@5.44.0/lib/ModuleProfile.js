@@ -1,14 +1,17 @@
 "use strict";
 
-/**
- * 描述模块构建性能
- */
+// Profile 性能分析
+// Performance 性能优化
+// 模块性能分析
 class ModuleProfile {
 	constructor() {
 		this.startTime = Date.now();
 
+		// ModuleFactory.create 调用之前
 		this.factoryStartTime = 0;
+		// ModuleFactory.create 调用之后
 		this.factoryEndTime = 0;
+		// ModuleFactory.create 持续时间
 		this.factory = 0;
 		this.factoryParallelismFactor = 0;
 
@@ -17,8 +20,11 @@ class ModuleProfile {
 		this.restoring = 0;
 		this.restoringParallelismFactor = 0;
 
+		// 缓存 Module 的开始时间
 		this.integrationStartTime = 0;
+		// 缓存 Module 的结束时间
 		this.integrationEndTime = 0;
+		// 缓存 Module 的持续时间
 		this.integration = 0;
 		this.integrationParallelismFactor = 0;
 
@@ -40,28 +46,34 @@ class ModuleProfile {
 		this.additionalIntegration = 0;
 	}
 
+	// 标识 ModuleFactory.create 开始
 	markFactoryStart() {
 		this.factoryStartTime = Date.now();
 	}
 
+	// 标识 ModuleFactory.create 结束
 	markFactoryEnd() {
 		this.factoryEndTime = Date.now();
 		this.factory = this.factoryEndTime - this.factoryStartTime;
 	}
 
+	// 
 	markRestoringStart() {
 		this.restoringStartTime = Date.now();
 	}
 
+	// 
 	markRestoringEnd() {
 		this.restoringEndTime = Date.now();
 		this.restoring = this.restoringEndTime - this.restoringStartTime;
 	}
 
+	// 标识 缓存Module 开始
 	markIntegrationStart() {
 		this.integrationStartTime = Date.now();
 	}
 
+	// 标识 缓存Module 结束
 	markIntegrationEnd() {
 		this.integrationEndTime = Date.now();
 		this.integration = this.integrationEndTime - this.integrationStartTime;

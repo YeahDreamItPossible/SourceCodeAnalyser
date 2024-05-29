@@ -1,13 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Florent Cailhol @ooflorent
-*/
-
 "use strict";
 
 const ConstDependency = require("./ConstDependency");
 const HarmonyExports = require("./HarmonyExports");
 
+// TODO:
+// ES模块 TopLevelThis 语法分析器 插件
 class HarmonyTopLevelThisParserPlugin {
 	apply(parser) {
 		parser.hooks.expression

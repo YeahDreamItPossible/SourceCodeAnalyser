@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const parseJson = require("json-parse-better-errors");
@@ -33,10 +28,7 @@ const { join, dirname, mkdirp } = require("./util/fs");
 const { makePathsRelative } = require("./util/identifier");
 const { isSourceEqual } = require("./util/source");
 
-/**
- * @param {string[]} array an array
- * @returns {boolean} true, if the array is sorted
- */
+// 断言: 当前数组是否是递减的
 const isSorted = array => {
 	for (let i = 1; i < array.length; i++) {
 		if (array[i - 1] > array[i]) return false;
@@ -44,11 +36,8 @@ const isSorted = array => {
 	return true;
 };
 
-/**
- * @param {Object} obj an object
- * @param {string[]} keys the keys of the object
- * @returns {Object} the object with properties sorted by property name
- */
+// 返回排序后的对象(通过对象键排序)
+// 对对象通过键排序
 const sortObject = (obj, keys) => {
 	const o = {};
 	for (const k of keys.sort()) {
@@ -57,11 +46,7 @@ const sortObject = (obj, keys) => {
 	return o;
 };
 
-/**
- * @param {string} filename filename
- * @param {string | string[] | undefined} hashes list of hashes
- * @returns {boolean} true, if the filename contains any hash
- */
+// 判断 当前 filename 是否含有hash数组中某个hash值
 const includesHash = (filename, hashes) => {
 	if (!hashes) return false;
 	if (Array.isArray(hashes)) {
@@ -71,6 +56,7 @@ const includesHash = (filename, hashes) => {
 	}
 };
 
+// 编译器
 class Compiler {
 	/**
 	 * @param {string} context the compilation path
@@ -145,38 +131,39 @@ class Compiler {
 			afterPlugins: new SyncHook(["compiler"]),
 			/** @type {SyncHook<[Compiler]>} */
 			afterResolvers: new SyncHook(["compiler"]),
-			/** @type {SyncBailHook<[string, Entry], boolean>} */
+			// 主要是对 Webpack.Config.Entry 处理
+			// SyncBailHook<[string, Entry], boolean>
 			entryOption: new SyncBailHook(["context", "entry"])
 		});
 
 		this.webpack = webpack;
 
-		// 标识: 当前compiler name
-		/** @type {string=} */
+		// 编译器名称
 		this.name = undefined;
-		/** @type {Compilation=} */
+		// 父编译器名称
 		this.parentCompilation = undefined;
 		// 当前实例
-		/** @type {Compiler} */
 		this.root = this;
 
-		// /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
 		// 输出路径(绝对路径)
+		// 示例: /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
 		/** @type {string} */
 		this.outputPath = "";
-		// 标识:
-		/** @type {Watching} */
+		// 监听器
 		this.watching = undefined;
 
-		// 文件流
-		// 输出流
-		/** @type {OutputFileSystem} */
+		// 文件系统
+		// 输出文件系统
+		// OutputFileSystem
 		this.outputFileSystem = null;
-		/** @type {IntermediateFileSystem} */
+		// 文件系统
+		// IntermediateFileSystem
 		this.intermediateFileSystem = null;
-		/** @type {InputFileSystem} */
+		// 输入文件系统
+		// InputFileSystem
 		this.inputFileSystem = null;
-		/** @type {WatchFileSystem} */
+		// 监听文件系统
+		// WatchFileSystem
 		this.watchFileSystem = null;
 
 		// 记录
@@ -201,21 +188,23 @@ class Compiler {
 		/** @type {number} */
 		this.fsStartTime = undefined;
 
+		// 路径解析器
 		// 路径解析 根据上下文 和 扩展名 将相对路径 通过同步 or 异步的方式解析成 绝对路径
-		/** @type {ResolverFactory} */
 		this.resolverFactory = new ResolverFactory();
 
 		// 日志
 		this.infrastructureLogger = undefined;
 
-		/** @type {WebpackOptions} */
+		// Webpack.Config
 		this.options = /** @type {WebpackOptions} */ ({});
 
 		// 上下文
 		// 默认使用 Node.js 进程的当前工作目录 __dirname
-		// 如 /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo
+		// 示例: /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo
 		this.context = context;
-		// 该类好像是将 loader 的家在路径变换成 绝对路径 ??
+		// 路径缩短器
+		// 将 用户资源加载路径 转换成相对于给定上下文的 相对路径
+		// Loader Path + Module Path 均为相对路径
 		this.requestShortener = new RequestShortener(context, this.root);
 
 		// 缓存
@@ -225,17 +214,16 @@ class Compiler {
 
 		// 标识: 标识compiler是否正在运行
 		/** @type {boolean} */
+		// 当前编译器是否正在运行
 		this.running = false;
-		// 标识: 当前compiler是否空闲
-		/** @type {boolean} */
+		// 当前编译器是否闲置
 		this.idle = false;
-		// 标识: 是否开启watch模式
-		/** @type {boolean} */
+		// 当前编译器是否开启watch模式
 		this.watchMode = false;
 
-		/** @type {Compilation} */
+		// 上一个编译过程 Compilation
 		this._lastCompilation = undefined;
-		/** @type {NormalModuleFactory} */
+		// 上一个模块工厂 NormalModuleFactory
 		this._lastNormalModuleFactory = undefined;
 
 		/** @private @type {WeakMap<Source, { sizeOnlySource: SizeOnlySource, writtenTo: Map<string, number> }>} */
@@ -1009,7 +997,7 @@ class Compiler {
 		return !!this.parentCompilation;
 	}
 
-	// 创建 Compilation 的实例
+	// 返回创建的 Compilation 实例
 	createCompilation() {
 		this._cleanupLastCompilation();
 		return (this._lastCompilation = new Compilation(this));
@@ -1094,7 +1082,7 @@ class Compiler {
 		return compilation;
 	}
 
-	// 创建 NormalModuleFactory 的实例
+	// 返回 创建的 NormalModuleFactory 实例
 	createNormalModuleFactory() {
 		this._cleanupLastNormalModuleFactory();
 		const normalModuleFactory = new NormalModuleFactory({
@@ -1112,7 +1100,7 @@ class Compiler {
 		return normalModuleFactory;
 	}
 
-	// 创建 ContextModuleFactory 的实例
+	// 返回创建的 ContextModuleFactory 实例
 	createContextModuleFactory() {
 		const contextModuleFactory = new ContextModuleFactory(this.resolverFactory);
 		// 空调用
@@ -1129,6 +1117,7 @@ class Compiler {
 		return params;
 	}
 
+	// 开始编译
 	compile(callback) {
 		const params = this.newCompilationParams();
 		// 直接执行回调
@@ -1186,6 +1175,7 @@ class Compiler {
 		});
 	}
 	
+	// 关闭编译
 	close(callback) {
 		// 直接执行回调
 		this.hooks.shutdown.callAsync(err => {

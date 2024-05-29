@@ -1,17 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const NONE = Symbol("not sorted");
 
-/**
- * A subset of Set that offers sorting functionality
- * @template T item type in set
- * @extends {Set<T>}
- */
+// 提供排序功能的 Set 子集
 class SortableSet extends Set {
 	/**
 	 * Create a new sortable set
@@ -21,20 +12,18 @@ class SortableSet extends Set {
 	 */
 	constructor(initialIterable, defaultSort) {
 		super(initialIterable);
-		/** @private @type {undefined | function(T, T): number}} */
+		// 当前排序函数
 		this._sortFn = defaultSort;
+		// 缓存上一个排序函数
 		/** @private @type {typeof NONE | undefined | function(T, T): number}} */
 		this._lastActiveSortFn = NONE;
-		/** @private @type {Map<Function, any> | undefined} */
+		// Map<Function, Function(this)> | undefined>
 		this._cache = undefined;
-		/** @private @type {Map<Function, any> | undefined} */
+		// Map<Function, Function(this)> | undefined>
 		this._cacheOrderIndependent = undefined;
 	}
 
-	/**
-	 * @param {T} value value to add to set
-	 * @returns {this} returns itself
-	 */
+	// 添加元素
 	add(value) {
 		this._lastActiveSortFn = NONE;
 		this._invalidateCache();
@@ -43,30 +32,21 @@ class SortableSet extends Set {
 		return this;
 	}
 
-	/**
-	 * @param {T} value value to delete
-	 * @returns {boolean} true if value existed in set, false otherwise
-	 */
+	// 删除 单个元素
 	delete(value) {
 		this._invalidateCache();
 		this._invalidateOrderedCache();
 		return super.delete(value);
 	}
 
-	/**
-	 * @returns {void}
-	 */
+	// 清空 所有的元素
 	clear() {
 		this._invalidateCache();
 		this._invalidateOrderedCache();
 		return super.clear();
 	}
 
-	/**
-	 * Sort with a comparer function
-	 * @param {SortFunction} sortFn Sorting comparer function
-	 * @returns {void}
-	 */
+	// 通过 给定的排序函数 对元素排序
 	sortWith(sortFn) {
 		if (this.size <= 1 || sortFn === this._lastActiveSortFn) {
 			// already sorted - nothing to do
@@ -82,17 +62,13 @@ class SortableSet extends Set {
 		this._invalidateCache();
 	}
 
+	// 对 元素 排序
 	sort() {
 		this.sortWith(this._sortFn);
 		return this;
 	}
 
-	/**
-	 * Get data from cache
-	 * @template R
-	 * @param {function(SortableSet<T>): R} fn function to calculate value
-	 * @returns {R} returns result of fn(this), cached until set changes
-	 */
+	// 从 缓存 Map<fn, fn(this)> 中返回 fn(this)
 	getFromCache(fn) {
 		if (this._cache === undefined) {
 			this._cache = new Map();
@@ -108,12 +84,7 @@ class SortableSet extends Set {
 		return newData;
 	}
 
-	/**
-	 * Get data from cache (ignoring sorting)
-	 * @template R
-	 * @param {function(SortableSet<T>): R} fn function to calculate value
-	 * @returns {R} returns result of fn(this), cached until set changes
-	 */
+	// 从 缓存 Map<fn, fn(this)> 中返回 fn(this)
 	getFromUnorderedCache(fn) {
 		if (this._cacheOrderIndependent === undefined) {
 			this._cacheOrderIndependent = new Map();
@@ -129,20 +100,14 @@ class SortableSet extends Set {
 		return newData;
 	}
 
-	/**
-	 * @private
-	 * @returns {void}
-	 */
+	// 清除缓存
 	_invalidateCache() {
 		if (this._cache !== undefined) {
 			this._cache.clear();
 		}
 	}
 
-	/**
-	 * @private
-	 * @returns {void}
-	 */
+	// 清除缓存
 	_invalidateOrderedCache() {
 		if (this._cacheOrderIndependent !== undefined) {
 			this._cacheOrderIndependent.clear();

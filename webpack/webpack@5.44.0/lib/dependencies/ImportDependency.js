@@ -1,21 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
 const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../AsyncDependenciesBlock")} AsyncDependenciesBlock */
-/** @typedef {import("../Dependency").ReferencedExport} ReferencedExport */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
-
+// ES模块动态导入依赖
+// 当代码片段中含有 import() 语法时
 class ImportDependency extends ModuleDependency {
 	/**
 	 * @param {string} request the request

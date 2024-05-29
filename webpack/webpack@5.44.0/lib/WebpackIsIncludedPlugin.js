@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Ivan Kopeykin @vankop
-*/
-
 "use strict";
 
 const IgnoreErrorModuleFactory = require("./IgnoreErrorModuleFactory");
@@ -11,16 +6,8 @@ const {
 	toConstantDependency
 } = require("./javascript/JavascriptParserHelpers");
 
-/** @typedef {import("enhanced-resolve/lib/Resolver")} Resolver */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./javascript/JavascriptParser")} JavascriptParser */
-
+// TODO:
 class WebpackIsIncludedPlugin {
-	/**
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"WebpackIsIncludedPlugin",
@@ -34,10 +21,6 @@ class WebpackIsIncludedPlugin {
 					new WebpackIsIncludedDependency.Template()
 				);
 
-				/**
-				 * @param {JavascriptParser} parser the parser
-				 * @returns {void}
-				 */
 				const handler = parser => {
 					parser.hooks.call
 						.for("__webpack_is_included__")

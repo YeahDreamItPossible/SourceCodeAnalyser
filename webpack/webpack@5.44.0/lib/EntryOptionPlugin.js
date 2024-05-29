@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 /** @typedef {import("../declarations/WebpackOptions").EntryDescriptionNormalized} EntryDescription */
@@ -10,11 +5,8 @@
 /** @typedef {import("./Compiler")} Compiler */
 /** @typedef {import("./Entrypoint").EntryOptions} EntryOptions */
 
+// 根据 Webpack.Config.Entry 注册插件
 class EntryOptionPlugin {
-	/**
-	 * @param {Compiler} compiler the compiler instance one is tapping into
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.entryOption.tap("EntryOptionPlugin", (context, entry) => {
 			EntryOptionPlugin.applyEntryOption(compiler, context, entry);
@@ -22,18 +14,16 @@ class EntryOptionPlugin {
 		});
 	}
 
-	/**
-	 * @param {Compiler} compiler the compiler
-	 * @param {string} context context directory
-	 * @param {Entry} entry request
-	 * @returns {void}
-	 */
+	// 使用 Webpack.Config.Entry 值类型 注册入口插件
 	static applyEntryOption(compiler, context, entry) {
 		if (typeof entry === "function") {
+			// 动态入口
 			const DynamicEntryPlugin = require("./DynamicEntryPlugin");
 			new DynamicEntryPlugin(context, entry).apply(compiler);
 		} else {
+			// 静态入口
 			const EntryPlugin = require("./EntryPlugin");
+			// 单页面应用 或者 多页面应用
 			for (const name of Object.keys(entry)) {
 				const desc = entry[name];
 				const options = EntryOptionPlugin.entryDescriptionToOptions(
@@ -48,17 +38,11 @@ class EntryOptionPlugin {
 		}
 	}
 
-	/**
-	 * @param {Compiler} compiler the compiler
-	 * @param {string} name entry name
-	 * @param {EntryDescription} desc entry description
-	 * @returns {EntryOptions} options for the entry
-	 */
+	// 根据 Webpack.Config.entry.descriptor 的值注册插件 并返回 Webpack.Config.entry.descriptor
 	static entryDescriptionToOptions(compiler, name, desc) {
-		/** @type {EntryOptions} */
 		const options = {
 			name,
-			filename: desc.filename,
+			filename: desc.filename, // 
 			runtime: desc.runtime,
 			layer: desc.layer,
 			dependOn: desc.dependOn,

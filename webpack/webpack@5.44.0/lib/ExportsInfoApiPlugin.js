@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ConstDependency = require("./dependencies/ConstDependency");
@@ -12,11 +7,6 @@ const ExportsInfoDependency = require("./dependencies/ExportsInfoDependency");
 /** @typedef {import("./javascript/JavascriptParser")} JavascriptParser */
 
 class ExportsInfoApiPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"ExportsInfoApiPlugin",
@@ -25,10 +15,7 @@ class ExportsInfoApiPlugin {
 					ExportsInfoDependency,
 					new ExportsInfoDependency.Template()
 				);
-				/**
-				 * @param {JavascriptParser} parser the parser
-				 * @returns {void}
-				 */
+				
 				const handler = parser => {
 					parser.hooks.expressionMemberChain
 						.for("__webpack_exports_info__")

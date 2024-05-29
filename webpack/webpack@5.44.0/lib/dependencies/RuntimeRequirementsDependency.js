@@ -1,21 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../util/Hash")} Hash */
-
+// TODO:
+// CommonJS 相关
 class RuntimeRequirementsDependency extends NullDependency {
 	/**
 	 * @param {string[]} runtimeRequirements runtime requirements
@@ -25,12 +14,6 @@ class RuntimeRequirementsDependency extends NullDependency {
 		this.runtimeRequirements = new Set(runtimeRequirements);
 	}
 
-	/**
-	 * Update the hash
-	 * @param {Hash} hash hash to be updated
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
 	updateHash(hash, context) {
 		hash.update(Array.from(this.runtimeRequirements).join() + "");
 	}
@@ -56,12 +39,6 @@ makeSerializable(
 RuntimeRequirementsDependency.Template = class RuntimeRequirementsDependencyTemplate extends (
 	NullDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(dependency, source, { runtimeRequirements }) {
 		const dep = /** @type {RuntimeRequirementsDependency} */ (dependency);
 		for (const req of dep.runtimeRequirements) {

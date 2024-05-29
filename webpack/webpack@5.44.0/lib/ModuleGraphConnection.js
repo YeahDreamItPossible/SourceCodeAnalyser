@@ -63,21 +63,27 @@ class ModuleGraphConnection {
 		this.originModule = originModule;
 		// 引用 当前Module 的 父Module(该父Module已经被加工过)
 		this.resolvedOriginModule = originModule;
-
 		// 当前依赖Dependency
 		this.dependency = dependency;
-
 		// 当前Module(已经被加工过)
 		this.resolvedModule = module;
 		// 当前Module
 		this.module = module;
 
+		// 标识 当前 connection 是否是可选的
+		// TODO: 好像根据 dep.weak 决定
 		this.weak = weak;
+		// 根据 this.condition  决定
+		// 当前Connection 是否是可选的
 		this.conditional = !!condition;
+		// 标识: 当前 connection 是否激活
 		this._active = condition !== false;
-		/** @type {function(ModuleGraphConnection, RuntimeSpec): ConnectionState} */
+		// 条件
+		// 根据 dep.getCondition 决定
+		// function(ModuleGraphConnection, RuntimeSpec): ConnectionState
 		this.condition = condition || undefined;
-		/** @type {Set<string>} */
+		// 
+		// Set<string>
 		this.explanations = undefined;
 		if (explanation) {
 			this.explanations = new Set();
@@ -103,10 +109,7 @@ class ModuleGraphConnection {
 		return clone;
 	}
 
-	/**
-	 * @param {function(ModuleGraphConnection, RuntimeSpec): ConnectionState} condition condition for the connection
-	 * @returns {void}
-	 */
+	// 添加条件
 	addCondition(condition) {
 		if (this.conditional) {
 			const old = this.condition;
@@ -132,47 +135,38 @@ class ModuleGraphConnection {
 		return Array.from(this.explanations).join(" ");
 	}
 
-	// TODO webpack 5 remove
+	// ModuleGraphConnection.prototype.active 属性被移除
+	// ModuleGraphConnection.prototype.getActiveState 替代
 	get active() {
 		throw new Error("Use getActiveState instead");
 	}
 
-	/**
-	 * @param {RuntimeSpec} runtime the runtime
-	 * @returns {boolean} true, if the connection is active
-	 */
+	// 返回 当前Connection 是否是激活的
 	isActive(runtime) {
 		if (!this.conditional) return this._active;
 		return this.condition(this, runtime) !== false;
 	}
 
-	/**
-	 * @param {RuntimeSpec} runtime the runtime
-	 * @returns {boolean} true, if the connection is active
-	 */
+	// 返回当前Connection 是否是激活的
 	isTargetActive(runtime) {
 		if (!this.conditional) return this._active;
 		return this.condition(this, runtime) === true;
 	}
 
-	/**
-	 * @param {RuntimeSpec} runtime the runtime
-	 * @returns {ConnectionState} true: fully active, false: inactive, TRANSITIVE: direct module inactive, but transitive connection maybe active
-	 */
+	// 返回当前Connection 是否激活
 	getActiveState(runtime) {
 		if (!this.conditional) return this._active;
 		return this.condition(this, runtime);
 	}
 
-	/**
-	 * @param {boolean} value active or not
-	 * @returns {void}
-	 */
+	// 设置当前Connection是否激活
 	setActive(value) {
 		this.conditional = false;
 		this._active = value;
 	}
 
+	// ModuleGraphConnection.prototype.active 属性被移除
+	// ModuleGraphConnection.prototype.setActive 替代
 	set active(value) {
 		throw new Error("Use setActive instead");
 	}

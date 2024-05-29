@@ -1,18 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-
+// TODO:
+// 
 class RequireHeaderDependency extends NullDependency {
 	constructor(range) {
 		super();
@@ -41,12 +34,6 @@ makeSerializable(
 RequireHeaderDependency.Template = class RequireHeaderDependencyTemplate extends (
 	NullDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(dependency, source, { runtimeRequirements }) {
 		const dep = /** @type {RequireHeaderDependency} */ (dependency);
 		runtimeRequirements.add(RuntimeGlobals.require);

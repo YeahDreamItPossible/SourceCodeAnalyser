@@ -2,9 +2,7 @@
 
 const CaseSensitiveModulesWarning = require("./CaseSensitiveModulesWarning");
 
-/**
- * 当 Module路径有重复时 抛出错误
- */
+// 当 Module.identifier 有重复时 抛出错误
 class WarnCaseSensitiveModulesPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

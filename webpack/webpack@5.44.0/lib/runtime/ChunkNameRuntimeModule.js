@@ -1,24 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 
+// __webpack_require__.cn
 class ChunkNameRuntimeModule extends RuntimeModule {
-	/**
-	 * @param {string} chunkName the chunk's name
-	 */
 	constructor(chunkName) {
 		super("chunkName");
 		this.chunkName = chunkName;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
+	// __webpack_require__.cn
 	generate() {
 		return `${RuntimeGlobals.chunkName} = ${JSON.stringify(this.chunkName)};`;
 	}

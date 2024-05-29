@@ -7,7 +7,6 @@
 
 const WebpackError = require("./WebpackError");
 
-/** @typedef {import("./Compiler")} Compiler */
 
 class WarnDeprecatedOptionPlugin {
 	/**
@@ -22,11 +21,6 @@ class WarnDeprecatedOptionPlugin {
 		this.suggestion = suggestion;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(
 			"WarnDeprecatedOptionPlugin",

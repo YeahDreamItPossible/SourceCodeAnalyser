@@ -1,29 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { OriginalSource, RawSource } = require("webpack-sources");
 const Module = require("./Module");
 const makeSerializable = require("./util/makeSerializable");
-
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("./Module").CodeGenerationContext} CodeGenerationContext */
-/** @typedef {import("./Module").CodeGenerationResult} CodeGenerationResult */
-/** @typedef {import("./Module").NeedBuildContext} NeedBuildContext */
-/** @typedef {import("./RequestShortener")} RequestShortener */
-/** @typedef {import("./ResolverFactory").ResolverWithOptions} ResolverWithOptions */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("./WebpackError")} WebpackError */
-/** @typedef {import("./util/Hash")} Hash */
-/** @typedef {import("./util/fs").InputFileSystem} InputFileSystem */
 
 const TYPES = new Set(["javascript"]);
 
@@ -36,22 +15,20 @@ class RawModule extends Module {
 	 */
 	constructor(source, identifier, readableIdentifier, runtimeRequirements) {
 		super("javascript/dynamic", null);
+		// 
 		this.sourceStr = source;
+		//
 		this.identifierStr = identifier || this.sourceStr;
+		// 
 		this.readableIdentifierStr = readableIdentifier || this.identifierStr;
+		// 
 		this.runtimeRequirements = runtimeRequirements || null;
 	}
-
-	/**
-	 * @returns {Set<string>} types available (do not mutate)
-	 */
+	
 	getSourceTypes() {
 		return TYPES;
 	}
 
-	/**
-	 * @returns {string} a unique identifier of the module
-	 */
 	identifier() {
 		return this.identifierStr;
 	}
@@ -72,23 +49,12 @@ class RawModule extends Module {
 		return requestShortener.shorten(this.readableIdentifierStr);
 	}
 
-	/**
-	 * @param {NeedBuildContext} context context info
-	 * @param {function(WebpackError=, boolean=): void} callback callback function, returns true, if the module needs a rebuild
-	 * @returns {void}
-	 */
+	// 
 	needBuild(context, callback) {
 		return callback(null, !this.buildMeta);
 	}
 
-	/**
-	 * @param {WebpackOptions} options webpack options
-	 * @param {Compilation} compilation the compilation
-	 * @param {ResolverWithOptions} resolver the resolver
-	 * @param {InputFileSystem} fs the file system
-	 * @param {function(WebpackError=): void} callback callback function
-	 * @returns {void}
-	 */
+	// 
 	build(options, compilation, resolver, fs, callback) {
 		this.buildMeta = {};
 		this.buildInfo = {
@@ -97,10 +63,6 @@ class RawModule extends Module {
 		callback();
 	}
 
-	/**
-	 * @param {CodeGenerationContext} context context for code generation
-	 * @returns {CodeGenerationResult} result
-	 */
 	codeGeneration(context) {
 		const sources = new Map();
 		if (this.useSourceMap || this.useSimpleSourceMap) {
@@ -114,11 +76,6 @@ class RawModule extends Module {
 		return { sources, runtimeRequirements: this.runtimeRequirements };
 	}
 
-	/**
-	 * @param {Hash} hash the hash used to track dependencies
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
 	updateHash(hash, context) {
 		hash.update(this.sourceStr);
 		super.updateHash(hash, context);

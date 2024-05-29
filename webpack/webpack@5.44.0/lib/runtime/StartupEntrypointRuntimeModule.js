@@ -1,13 +1,7 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
-
-/** @typedef {import("../MainTemplate")} MainTemplate */
 
 class StartupEntrypointRuntimeModule extends RuntimeModule {
 	constructor(asyncChunkLoading) {
@@ -15,12 +9,10 @@ class StartupEntrypointRuntimeModule extends RuntimeModule {
 		this.asyncChunkLoading = asyncChunkLoading;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { compilation } = this;
 		const { runtimeTemplate } = compilation;
+		// __webpack_require__.X = function (result, chunkIds, fn) {}
 		return `${
 			RuntimeGlobals.startupEntrypoint
 		} = ${runtimeTemplate.basicFunction("result, chunkIds, fn", [

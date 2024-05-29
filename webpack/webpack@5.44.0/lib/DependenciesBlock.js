@@ -2,21 +2,12 @@
 
 const makeSerializable = require("./util/makeSerializable");
 
-/** @typedef {import("./AsyncDependenciesBlock")} AsyncDependenciesBlock */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./ChunkGroup")} ChunkGroup */
-/** @typedef {import("./Dependency")} Dependency */
-/** @typedef {import("./Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("./util/Hash")} Hash */
-
-/** @typedef {(d: Dependency) => boolean} DependencyFilterFunction */
-
+// 模块基类
 class DependenciesBlock {
 	constructor() {
 		// 依赖
 		this.dependencies = [];
-		// 分组块
-		/** @type {AsyncDependenciesBlock[]} */
+		// 当前模块中包含的子模块(异步模块)
 		this.blocks = [];
 	}
 
@@ -45,11 +36,7 @@ class DependenciesBlock {
 		this.blocks.length = 0;
 	}
 
-	/**
-	 * @param {Hash} hash the hash used to track dependencies
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
+	// 更新hash
 	updateHash(hash, context) {
 		for (const dep of this.dependencies) {
 			dep.updateHash(hash, context);

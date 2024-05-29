@@ -2395,6 +2395,7 @@ var VueRouter = (function (exports, vue) {
    * Component to render a link that triggers a navigation on click.
    */
   const RouterLink = RouterLinkImpl;
+  
   function guardEvent(e) {
     // don't redirect with control keys
     if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) return;

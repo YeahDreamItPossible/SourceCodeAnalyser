@@ -51,54 +51,60 @@ const ChunkFilesSet = createArrayToSetDeprecationSet("chunk.files");
 
 let debugId = 1000;
 
-/**
- * A Chunk is a unit of encapsulation for Modules.
- * Chunks are "rendered" into bundles that get emitted when the build completes.
- */
+// 块(Chunk): 是对 Module 使用的描述
+// Chunk 是 Module 的封装单元 当 构建完成 时 Chunk 被渲染成 Bundle 
 class Chunk {
 	constructor(name) {
-		//
+		// this.id = this.name
 		this.id = null;
+		// [ this.id ]
+		// Array<String>
 		this.ids = null;
-		// 调试debug 唯一标识符
+		// 调试debug(唯一标识符)
 		this.debugId = debugId++;
 		// 标识: chunk名
 		this.name = name;
-		/** @type {SortableSet<string>} */
+		// 
+		// Set<String>
 		this.idNameHints = new SortableSet();
+		// 标识: 标识当前 Chunk 能否被合并
 		// RuntimeChunk.preventIntegration = true
 		this.preventIntegration = false;
-		// 输出文件模板 output.filename
+		// 输出文件模板
 		// Webpack.Config.Entry.filename
 		this.filenameTemplate = undefined;
 		// ChunkGroup
 		// Set<ChunkGroup>
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
-		// Webpack.Config.Entry.dependOn 的keys + RuntimeChunk 的 key
+		// 运行时名称
+		// Webpack.Config.Entry.runtime
+		// Webpack.Config.Entry.dependOn 的keys + RuntimeChunk 的 key ???
 		this.runtime = undefined;
-		// 输出文件 如: app.67f6cda2.js
-		// Set<string>
+		// 输出文件名 
+		// 示例: app.67f6cda2.js
+		// Set<String>
 		this.files = new ChunkFilesSet();
-		// 保存的输出文件名 如: app.67f6cda2.js
+		// 保存的输出文件名 
+		// 示例: app.ef02ca859b.js
 		// Set<string>
 		this.auxiliaryFiles = new Set();
-		// 标识: 标识当前chunk是否已被输出(不确定)
+		// 标识: 标识当前chunk是否已被渲染输出
 		this.rendered = false;
-		// 当前Chunk完整hash
+		// 当前 Chunk 完整hash值
 		this.hash = undefined;
-		// Record<string, string>
+		// Record<String, String>
 		this.contentHash = Object.create(null);
-		/** @type {string=} */
+		// 当前 Chunk 渲染hash值(默认对this.hash截取前20位)
+		// String
 		this.renderedHash = undefined;
-		/** @type {string=} */
+		// 
+		// String
 		this.chunkReason = undefined;
-		/** @type {boolean} */
+		// 
 		this.extraAsync = false;
 	}
 
-	// 入口模块
-	// TODO remove in webpack 6
-	// BACKWARD-COMPAT START
+	// 返回 当前 Chunk 的入口模块(Entry Module)
 	get entryModule() {
 		const entryModules = Array.from(
 			ChunkGraph.getChunkGraphForChunk(
@@ -118,9 +124,7 @@ class Chunk {
 		}
 	}
 
-	/**
-	 * @returns {boolean} true, if the chunk contains an entry module
-	 */
+	// 返回 当前 Chunk 是否包含 Entry Module
 	hasEntryModule() {
 		return (
 			ChunkGraph.getChunkGraphForChunk(
@@ -131,24 +135,23 @@ class Chunk {
 		);
 	}
 
-	// 是否成功添加 Module
+	// 返回 ChunkGraphChunk 是否成功包含当前 Module
 	// ChunkGraphChunk.modules 是否包含当前 Module
 	addModule(module) {
+		// 根据 Module 找到对应的 ChunkGraph
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
 			"Chunk.addModule",
 			"DEP_WEBPACK_CHUNK_ADD_MODULE"
 		);
+		// 根据 Chunk 找到对应的 ChunkGraphChunk 然后判断 ChunkGraphChunk.modules 是否包含当前 Module
 		if (chunkGraph.isModuleInChunk(module, this)) return false;
+		// 绑定 Moduel 与 Chunk 的关联关系
 		chunkGraph.connectChunkAndModule(this, module);
 		return true;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {void}
-	 */
-	// 
+	// 解除 Module 与 Chunk 的关联关系
 	removeModule(module) {
 		ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -166,8 +169,7 @@ class Chunk {
 		).getNumberOfChunkModules(this);
 	}
 
-	// TODO：
-	// 目前看来应该是存储当前chunk所包含的modules
+	// 返回当前 Chunk 包含的所有 Module
 	get modulesIterable() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -180,10 +182,7 @@ class Chunk {
 		);
 	}
 
-	/**
-	 * @param {Chunk} otherChunk the chunk to compare with
-	 * @returns {-1|0|1} the comparison result
-	 */
+	// 比较两个 Chunk 的大小 返回 0 | 1 | -1
 	compareTo(otherChunk) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -202,7 +201,7 @@ class Chunk {
 		).isModuleInChunk(module, this);
 	}
 
-	// 返回当前Chunk包含的所有Module
+	//  以 Set 形式返回当前 Chunk 下的所有 Module
 	getModules() {
 		return ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -211,9 +210,7 @@ class Chunk {
 		).getChunkModules(this);
 	}
 
-	/**
-	 * @returns {void}
-	 */
+	// 移除当前 Chunk 与对应 Module 的关联关系
 	remove() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -224,11 +221,8 @@ class Chunk {
 		this.disconnectFromGroups();
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {Chunk} otherChunk the target chunk
-	 * @returns {void}
-	 */
+	// 移除当前 Chunk 与当前 Module 的关联关系
+	// 绑定另外一个 Chunk 与当前 Module 的关联关系
 	moveModule(module, otherChunk) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -239,10 +233,7 @@ class Chunk {
 		chunkGraph.connectChunkAndModule(otherChunk, module);
 	}
 
-	/**
-	 * @param {Chunk} otherChunk the other chunk
-	 * @returns {boolean} true, if the specified chunk has been integrated
-	 */
+	// 返回当前 Chunk 和另外一个 Chunk 是否已经被成功合并
 	integrate(otherChunk) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -257,10 +248,7 @@ class Chunk {
 		}
 	}
 
-	/**
-	 * @param {Chunk} otherChunk the other chunk
-	 * @returns {boolean} true, if chunks could be integrated
-	 */
+	// 返回当前 Chunk 能否与另一个 Chunk 进行合并
 	canBeIntegrated(otherChunk) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -270,9 +258,7 @@ class Chunk {
 		return chunkGraph.canChunksBeIntegrated(this, otherChunk);
 	}
 
-	/**
-	 * @returns {boolean} true, if this chunk contains no module
-	 */
+	// 当前 Chunk 是否包含 Module
 	isEmpty() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -282,9 +268,7 @@ class Chunk {
 		return chunkGraph.getNumberOfChunkModules(this) === 0;
 	}
 
-	/**
-	 * @returns {number} total size of all modules in this chunk
-	 */
+	// 返回当前 Chunk 下所有 Module 的大小之和
 	modulesSize() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -294,10 +278,7 @@ class Chunk {
 		return chunkGraph.getChunkModulesSize(this);
 	}
 
-	/**
-	 * @param {ChunkSizeOptions} options options object
-	 * @returns {number} total size of this chunk
-	 */
+	// 返回当前 Chunk 的大小
 	size(options = {}) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -307,11 +288,7 @@ class Chunk {
 		return chunkGraph.getChunkSize(this, options);
 	}
 
-	/**
-	 * @param {Chunk} otherChunk the other chunk
-	 * @param {ChunkSizeOptions} options options object
-	 * @returns {number} total size of the chunk or false if the chunk can't be integrated
-	 */
+	// 返回当前 Chunk 与另外一个 Chunk 合并后的 Chunk 大小
 	integratedSize(otherChunk, options) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -325,17 +302,18 @@ class Chunk {
 	 * @param {ModuleFilterPredicate} filterFn function used to filter modules
 	 * @returns {ChunkModuleMaps} module map information
 	 */
+	// TODO:
+	// 返回 Module 集合信息
 	getChunkModuleMaps(filterFn) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
 			"Chunk.getChunkModuleMaps",
 			"DEP_WEBPACK_CHUNK_GET_CHUNK_MODULE_MAPS"
 		);
-		/** @type {Record<string|number, (string|number)[]>} */
+		// Record<string|number, (string|number)[]>
 		const chunkModuleIdMap = Object.create(null);
-		/** @type {Record<string|number, string>} */
+		// Record<string|number, string>
 		const chunkModuleHashMap = Object.create(null);
-
 		for (const asyncChunk of this.getAllAsyncChunks()) {
 			/** @type {(string|number)[]} */
 			let array;
@@ -383,12 +361,13 @@ class Chunk {
 	 * @param {boolean} realHash whether the full hash or the rendered hash is to be used
 	 * @returns {ChunkMaps} the chunk map information
 	 */
+	// 返回 Chunk Map 信息
 	getChunkMaps(realHash) {
-		/** @type {Record<string|number, string>} */
+		// Record<string|number, string>
 		const chunkHashMap = Object.create(null);
-		/** @type {Record<string|number, Record<string, string>>} */
+		// Record<string|number, Record<string, string>>
 		const chunkContentHashMap = Object.create(null);
-		/** @type {Record<string|number, string>} */
+		// Record<string|number, string>
 		const chunkNameMap = Object.create(null);
 
 		for (const chunk of this.getAllAsyncChunks()) {
@@ -412,10 +391,9 @@ class Chunk {
 	}
 	// BACKWARD-COMPAT END
 
-	/**
-	 * @returns {boolean} whether or not the Chunk will have a runtime
-	 */
+	// 返回当前 Chunk 是否有运行时
 	hasRuntime() {
+		// 判断当前 Chunk 的 _groups 中 ChunkGrop.runtimeChunk === this
 		for (const chunkGroup of this._groups) {
 			if (
 				chunkGroup instanceof Entrypoint &&
@@ -427,11 +405,10 @@ class Chunk {
 		return false;
 	}
 
-	/**
-	 * @returns {boolean} whether or not this chunk can be an initial chunk
-	 */
+	// 返回 当前 Chunk 是否是初始快
 	canBeInitial() {
 		for (const chunkGroup of this._groups) {
+			// 当前 ChunkGroup 是否是异步
 			if (chunkGroup.isInitial()) return true;
 		}
 		return false;
@@ -440,6 +417,7 @@ class Chunk {
 	/**
 	 * @returns {boolean} whether this chunk can only be an initial chunk
 	 */
+	// 
 	isOnlyInitial() {
 		if (this._groups.size <= 0) return false;
 		for (const chunkGroup of this._groups) {
@@ -448,9 +426,7 @@ class Chunk {
 		return true;
 	}
 
-	/**
-	 * @returns {EntryOptions | undefined} the entry options for this chunk
-	 */
+	// 返回 Entrypoint.options
 	getEntryOptions() {
 		for (const chunkGroup of this._groups) {
 			if (chunkGroup instanceof Entrypoint) {
@@ -470,17 +446,12 @@ class Chunk {
 		this._groups.delete(chunkGroup);
 	}
 
-	/**
-	 * @param {ChunkGroup} chunkGroup the chunkGroup to check
-	 * @returns {boolean} returns true if chunk has chunkGroup reference and exists in chunkGroup
-	 */
+	// 返回 是否包含当前 ChunkGroup
 	isInGroup(chunkGroup) {
 		return this._groups.has(chunkGroup);
 	}
 
-	/**
-	 * @returns {number} the amount of groups that the said chunk is in
-	 */
+	// 返回当前 Chunk 的 ChunkGroup 大小
 	getNumberOfGroups() {
 		return this._groups.size;
 	}
@@ -491,9 +462,7 @@ class Chunk {
 		return this._groups;
 	}
 
-	/**
-	 * @returns {void}
-	 */
+	// 将当前 Chunk 从 ChunkGroup 移除
 	disconnectFromGroups() {
 		for (const chunkGroup of this._groups) {
 			chunkGroup.removeChunk(this);
@@ -515,11 +484,7 @@ class Chunk {
 		newChunk.runtime = mergeRuntime(newChunk.runtime, this.runtime);
 	}
 
-	/**
-	 * @param {Hash} hash hash (will be modified)
-	 * @param {ChunkGraph} chunkGraph the chunk graph
-	 * @returns {void}
-	 */
+	// 更新当前 Chunk hash
 	updateHash(hash, chunkGraph) {
 		hash.update(`${this.id} `);
 		hash.update(this.ids ? this.ids.join(",") : "");
@@ -538,13 +503,12 @@ class Chunk {
 		}
 	}
 
-	/**
-	 * @returns {Set<Chunk>} a set of all the async chunks
-	 */
+	// 以 Set 形式返回所有的异步 Chunk
 	getAllAsyncChunks() {
 		const queue = new Set();
 		const chunks = new Set();
 
+		// 返回当前 Chunk._groups 下的所有 Chunk
 		const initialChunks = intersect(
 			Array.from(this.groupsIterable, g => new Set(g.chunks))
 		);
@@ -578,6 +542,7 @@ class Chunk {
 	/**
 	 * @returns {Set<Chunk>} a set of all the initial chunks (including itself)
 	 */
+	// 以 Set 的形式返回所有的异步 ChunkGroup
 	getAllInitialChunks() {
 		const chunks = new Set();
 		const queue = new Set(this.groupsIterable);
@@ -590,9 +555,7 @@ class Chunk {
 		return chunks;
 	}
 
-	/**
-	 * @returns {Set<Chunk>} a set of all the referenced chunks (including itself)
-	 */
+	// 以 Set 的形式返回与当前 Chunk 相关的 Chunk 集合 
 	getAllReferencedChunks() {
 		const queue = new Set(this.groupsIterable);
 		const chunks = new Set();
@@ -609,9 +572,7 @@ class Chunk {
 		return chunks;
 	}
 
-	/**
-	 * @returns {Set<Entrypoint>} a set of all the referenced entrypoints
-	 */
+	// 以 Set 的形式返回与当前 Chunk 相关的异步 Entrypoint 集合
 	getAllReferencedAsyncEntrypoints() {
 		const queue = new Set(this.groupsIterable);
 		const entrypoints = new Set();

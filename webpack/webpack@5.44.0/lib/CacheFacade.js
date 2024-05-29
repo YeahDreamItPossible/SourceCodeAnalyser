@@ -4,45 +4,14 @@ const asyncLib = require("neo-async");
 const getLazyHashedEtag = require("./cache/getLazyHashedEtag");
 const mergeEtags = require("./cache/mergeEtags");
 
-/**
- * 装饰器模式
- */
-
-/** @typedef {import("./Cache")} Cache */
-/** @typedef {import("./Cache").Etag} Etag */
-/** @typedef {import("./WebpackError")} WebpackError */
-/** @typedef {import("./cache/getLazyHashedEtag").HashableObject} HashableObject */
-
-/**
- * @template T
- * @callback CallbackCache
- * @param {WebpackError=} err
- * @param {T=} result
- * @returns {void}
- */
-
-/**
- * @template T
- * @callback CallbackNormalErrorCache
- * @param {Error=} err
- * @param {T=} result
- * @returns {void}
- */
-
 class MultiItemCache {
-	/**
-	 * @param {ItemCacheFacade[]} items item caches
-	 */
 	constructor(items) {
+		// Array<ItemCacheFacade>
 		this._items = items;
 		if (items.length === 1) return /** @type {any} */ (items[0]);
 	}
 
-	/**
-	 * @template T
-	 * @param {CallbackCache<T>} callback signals when the value is retrieved
-	 * @returns {void}
-	 */
+	// 读取缓存
 	get(callback) {
 		const next = i => {
 			this._items[i].get((err, result) => {
@@ -55,10 +24,7 @@ class MultiItemCache {
 		next(0);
 	}
 
-	/**
-	 * @template T
-	 * @returns {Promise<T>} promise with the data
-	 */
+	// 
 	getPromise() {
 		const next = i => {
 			return this._items[i].getPromise().then(result => {
@@ -69,12 +35,6 @@ class MultiItemCache {
 		return next(0);
 	}
 
-	/**
-	 * @template T
-	 * @param {T} data the value to store
-	 * @param {CallbackCache<void>} callback signals when the value is stored
-	 * @returns {void}
-	 */
 	store(data, callback) {
 		asyncLib.each(
 			this._items,
@@ -83,11 +43,6 @@ class MultiItemCache {
 		);
 	}
 
-	/**
-	 * @template T
-	 * @param {T} data the value to store
-	 * @returns {Promise<void>} promise signals when the value is stored
-	 */
 	storePromise(data) {
 		return Promise.all(this._items.map(item => item.storePromise(data))).then(
 			() => {}
@@ -96,30 +51,21 @@ class MultiItemCache {
 }
 
 class ItemCacheFacade {
-	/**
-	 * @param {Cache} cache the root cache
-	 * @param {string} name the child cache item name
-	 * @param {Etag | null} etag the etag
-	 */
 	constructor(cache, name, etag) {
+		// Cache 实例
 		this._cache = cache;
+		// 
 		this._name = name;
+		// 
 		this._etag = etag;
 	}
 
-	/**
-	 * @template T
-	 * @param {CallbackCache<T>} callback signals when the value is retrieved
-	 * @returns {void}
-	 */
+	// 读取缓存
 	get(callback) {
 		this._cache.get(this._name, this._etag, callback);
 	}
 
-	/**
-	 * @template T
-	 * @returns {Promise<T>} promise with the data
-	 */
+	// 以返回Promise的方式读取缓存
 	getPromise() {
 		return new Promise((resolve, reject) => {
 			this._cache.get(this._name, this._etag, (err, data) => {
@@ -132,21 +78,12 @@ class ItemCacheFacade {
 		});
 	}
 
-	/**
-	 * @template T
-	 * @param {T} data the value to store
-	 * @param {CallbackCache<void>} callback signals when the value is stored
-	 * @returns {void}
-	 */
+	// 存储
 	store(data, callback) {
 		this._cache.store(this._name, this._etag, data, callback);
 	}
 
-	/**
-	 * @template T
-	 * @param {T} data the value to store
-	 * @returns {Promise<void>} promise signals when the value is stored
-	 */
+	// 以返回Promise的方式缓存
 	storePromise(data) {
 		return new Promise((resolve, reject) => {
 			this._cache.store(this._name, this._etag, data, err => {
@@ -159,12 +96,8 @@ class ItemCacheFacade {
 		});
 	}
 
-	/**
-	 * @template T
-	 * @param {function(CallbackNormalErrorCache<T>): void} computer function to compute the value if not cached
-	 * @param {CallbackNormalErrorCache<T>} callback signals when the value is retrieved
-	 * @returns {void}
-	 */
+	// 读取缓存 
+	// 如果当前缓存未被存储 当通过计算函数计算后 存储当前缓存
 	provide(computer, callback) {
 		this.get((err, cacheEntry) => {
 			if (err) return callback(err);
@@ -179,11 +112,8 @@ class ItemCacheFacade {
 		});
 	}
 
-	/**
-	 * @template T
-	 * @param {function(): Promise<T> | T} computer function to compute the value if not cached
-	 * @returns {Promise<T>} promise with the data
-	 */
+	// 以返回Promise的方式读取缓存
+	// 如果当前缓存未被存储 当通过计算函数计算后 存储当前缓存
 	async providePromise(computer) {
 		const cacheEntry = await this.getPromise();
 		if (cacheEntry !== undefined) return cacheEntry;
@@ -193,22 +123,21 @@ class ItemCacheFacade {
 	}
 }
 
+// 外观模式
 class CacheFacade {
 	constructor(cache, name) {
+		// 缓存
 		this._cache = cache;
+		// 缓存名称
 		this._name = name;
 	}
 
-	// 复制
+	// 克隆当前CacheFacade
 	getChildCache(name) {
 		return new CacheFacade(this._cache, `${this._name}|${name}`);
 	}
 
-	/**
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @returns {ItemCacheFacade} item cache
-	 */
+	// 返回 ItemCachFacade 的实例
 	getItemCache(identifier, etag) {
 		return new ItemCacheFacade(
 			this._cache,
@@ -217,19 +146,12 @@ class CacheFacade {
 		);
 	}
 
-	/**
-	 * @param {HashableObject} obj an hashable object
-	 * @returns {Etag} an etag that is lazy hashed
-	 */
+	// 返回Etag
 	getLazyHashedEtag(obj) {
 		return getLazyHashedEtag(obj);
 	}
 
-	/**
-	 * @param {Etag} a an etag
-	 * @param {Etag} b another etag
-	 * @returns {Etag} an etag that represents both
-	 */
+	// 合并Etag
 	mergeEtags(a, b) {
 		return mergeEtags(a, b);
 	}
@@ -252,7 +174,7 @@ class CacheFacade {
 		});
 	}
 
-	// 缓存
+	// 存储
 	store(identifier, etag, data, callback) {
 		this._cache.store(`${this._name}|${identifier}`, etag, data, callback);
 	}
@@ -269,19 +191,16 @@ class CacheFacade {
 			});
 		});
 	}
-
-	/**
-	 * @template T
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @param {function(CallbackNormalErrorCache<T>): void} computer function to compute the value if not cached
-	 * @param {CallbackNormalErrorCache<T>} callback signals when the value is retrieved
-	 * @returns {void}
-	 */
+	
+	// 读取缓存 
+	// 如果当前缓存未被存储 当通过计算函数计算后 存储当前缓存
 	provide(identifier, etag, computer, callback) {
+		// 读取缓存
 		this.get(identifier, etag, (err, cacheEntry) => {
 			if (err) return callback(err);
 			if (cacheEntry !== undefined) return cacheEntry;
+			// 如果当前缓存未被存储 通过计算函数计算后 存储当前缓存
+			// 计算函数: 计算当前未被缓存的值
 			computer((err, result) => {
 				if (err) return callback(err);
 				this.store(identifier, etag, result, err => {
@@ -292,13 +211,8 @@ class CacheFacade {
 		});
 	}
 
-	/**
-	 * @template T
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @param {function(): Promise<T> | T} computer function to compute the value if not cached
-	 * @returns {Promise<T>} promise with the data
-	 */
+	// 以返回Promise的方式读取缓存
+	// 如果当前缓存未被存储 当通过计算函数计算后 存储当前缓存
 	async providePromise(identifier, etag, computer) {
 		const cacheEntry = await this.getPromise(identifier, etag);
 		if (cacheEntry !== undefined) return cacheEntry;

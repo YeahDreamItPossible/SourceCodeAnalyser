@@ -2,10 +2,8 @@
 
 const Cache = require("../Cache");
 
-/**
- * 缓存策略Webpack.Config.Cache.type
- * 内存缓存
- */
+// 根据 Webpack.Config.cache.type = memory 使用该插件
+// 带有垃圾回收的内存缓存策略
 class MemoryWithGcCachePlugin {
 	constructor({ maxGenerations }) {
 		// 定义内存缓存中未使用的缓存项的生命周期
@@ -16,9 +14,9 @@ class MemoryWithGcCachePlugin {
 	
 	apply(compiler) {
 		const maxGenerations = this._maxGenerations;
-		/** @type {Map<string, { etag: Etag | null, data: any }>} */
+		// Map<string, { etag: Etag | null, data: any }>
 		const cache = new Map();
-		/** @type {Map<string, { entry: { etag: Etag | null, data: any }, until: number }>} */
+		// Map<string, { entry: { etag: Etag | null, data: any }, until: number }>
 		const oldCache = new Map();
 		let generation = 0;
 		let cachePosition = 0;
@@ -72,7 +70,7 @@ class MemoryWithGcCachePlugin {
 			}
 		});
 
-		// 缓存
+		// 存储
 		compiler.cache.hooks.store.tap(
 			{ name: "MemoryWithGcCachePlugin", stage: Cache.STAGE_MEMORY },
 			(identifier, etag, data) => {
@@ -104,6 +102,8 @@ class MemoryWithGcCachePlugin {
 						return cacheEntry.data;
 					}
 				}
+
+				// 重新存储
 				gotHandlers.push((result, callback) => {
 					if (result === undefined) {
 						cache.set(identifier, null);

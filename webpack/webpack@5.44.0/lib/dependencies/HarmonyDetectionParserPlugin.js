@@ -9,6 +9,8 @@ const DynamicExports = require("./DynamicExports");
 const HarmonyCompatibilityDependency = require("./HarmonyCompatibilityDependency");
 const HarmonyExports = require("./HarmonyExports");
 
+// TODO:
+// 代码分析器 插件
 module.exports = class HarmonyDetectionParserPlugin {
 	constructor(options) {
 		const { topLevelAwait = false } = options || {};

@@ -1,28 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const DependenciesBlock = require("./DependenciesBlock");
 const makeSerializable = require("./util/makeSerializable");
 
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./ChunkGroup")} ChunkGroup */
-/** @typedef {import("./ChunkGroup").ChunkGroupOptions} ChunkGroupOptions */
-/** @typedef {import("./Dependency").DependencyLocation} DependencyLocation */
-/** @typedef {import("./Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("./Entrypoint").EntryOptions} EntryOptions */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./util/Hash")} Hash */
-
+// 异步模块
 class AsyncDependenciesBlock extends DependenciesBlock {
-	/**
-	 * @param {ChunkGroupOptions & { entryOptions?: EntryOptions }} groupOptions options for the group
-	 * @param {DependencyLocation=} loc the line of code
-	 * @param {string=} request the request
-	 */
 	constructor(groupOptions, loc, request) {
 		super();
 		if (typeof groupOptions === "string") {
@@ -31,32 +13,27 @@ class AsyncDependenciesBlock extends DependenciesBlock {
 			groupOptions = { name: undefined };
 		}
 		this.groupOptions = groupOptions;
+		// 位置信息
 		this.loc = loc;
+		// 模块请求路径
 		this.request = request;
+		// TODO: 父模块
 		/** @type {DependenciesBlock} */
 		this.parent = undefined;
 	}
 
-	/**
-	 * @returns {string} The name of the chunk
-	 */
+	// 返回ChunkName
+	// 动态导入内敛注释中的 webpackChunkName 字段
 	get chunkName() {
 		return this.groupOptions.name;
 	}
 
-	/**
-	 * @param {string} value The new chunk name
-	 * @returns {void}
-	 */
+	// 设置ChunkName
 	set chunkName(value) {
 		this.groupOptions.name = value;
 	}
 
-	/**
-	 * @param {Hash} hash the hash used to track dependencies
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
+	// 更新hash
 	updateHash(hash, context) {
 		const { chunkGraph } = context;
 		hash.update(JSON.stringify(this.groupOptions));
@@ -84,6 +61,7 @@ class AsyncDependenciesBlock extends DependenciesBlock {
 
 makeSerializable(AsyncDependenciesBlock, "webpack/lib/AsyncDependenciesBlock");
 
+// AsyncDependencyBlock.prototype.module 属性被移除
 Object.defineProperty(AsyncDependenciesBlock.prototype, "module", {
 	get() {
 		throw new Error(

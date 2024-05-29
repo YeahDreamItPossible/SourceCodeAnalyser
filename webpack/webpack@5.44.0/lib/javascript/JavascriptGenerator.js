@@ -16,9 +16,6 @@ const HarmonyCompatibilityDependency = require("../dependencies/HarmonyCompatibi
 /** @typedef {import("../NormalModule")} NormalModule */
 /** @typedef {import("../RuntimeTemplate")} RuntimeTemplate */
 
-// TODO: clean up this file
-// replace with newer constructs
-
 const deprecatedGetInitFragments = util.deprecate(
 	(template, dependency, templateContext) =>
 		template.getInitFragments(dependency, templateContext),
@@ -28,14 +25,14 @@ const deprecatedGetInitFragments = util.deprecate(
 
 const TYPES = new Set(["javascript"]);
 
-// JS生成器
+// JS类型代码生成器
 class JavascriptGenerator extends Generator {
 	// 返回当前生成器类型
 	getTypes(module) {
 		return TYPES;
 	}
 
-	// 返回模块尺寸
+	// 返回模块大小
 	getSize(module, type) {
 		const originalSource = module.originalSource();
 		if (!originalSource) {

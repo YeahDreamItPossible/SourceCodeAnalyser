@@ -76,12 +76,17 @@ module.exports = class ResolverFactory {
 				() => new SyncHook(["resolver", "resolveOptions", "userResolveOptions"])
 			)
 		});
+		// Map<string, ResolverCache>
 		// Map<Type, Object<direct: WeakMap<ResolveOptions, Resolver>, stringified: Map<ResolveOptionsString, Resolver>>>
-		/** @type {Map<string, ResolverCache>} */
 		this.cache = new Map();
 	}
 
-	// 返回type对应的resolver 并缓存该resolver
+	/**
+	 * 根据 特定类型Type 返回对应的 resolver 并缓存该resolver
+	 * context type => ContextModuleFactory
+	 * normal type  => NormalModuleFactory
+	 * loader type  => 
+	 */ 
 	get(type, resolveOptions = EMPTY_RESOLVE_OPTIONS) {
 		let typedCaches = this.cache.get(type);
 		if (!typedCaches) {
@@ -108,7 +113,8 @@ module.exports = class ResolverFactory {
 	}
 
 	/**
-	 * 创建type对应的resolver(底层仍然是通过ResolverFactory.createResolver(resolveOptions))
+	 * 创建特定类型Type的resolver
+	 * 底层仍然是通过ResolverFactory.createResolver(resolveOptions)
 	 * normal || context || loader
 	 */
 	_create(type, resolveOptionsWithDepType) {

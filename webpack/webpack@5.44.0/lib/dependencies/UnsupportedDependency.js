@@ -12,6 +12,8 @@ const NullDependency = require("./NullDependency");
 /** @typedef {import("../Dependency")} Dependency */
 /** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
 
+// TODO:
+// AMD 相关
 class UnsupportedDependency extends NullDependency {
 	constructor(request, range) {
 		super();
@@ -47,12 +49,6 @@ makeSerializable(
 UnsupportedDependency.Template = class UnsupportedDependencyTemplate extends (
 	NullDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(dependency, source, { runtimeTemplate }) {
 		const dep = /** @type {UnsupportedDependency} */ (dependency);
 

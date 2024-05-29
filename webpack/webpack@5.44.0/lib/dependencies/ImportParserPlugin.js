@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const AsyncDependenciesBlock = require("../AsyncDependenciesBlock");
@@ -14,9 +9,7 @@ const ImportDependency = require("./ImportDependency");
 const ImportEagerDependency = require("./ImportEagerDependency");
 const ImportWeakDependency = require("./ImportWeakDependency");
 
-/** @typedef {import("../ChunkGroup").RawChunkGroupOptions} RawChunkGroupOptions */
-/** @typedef {import("../ContextModule").ContextMode} ContextMode */
-
+// ES模块 动态导入 语法分析器插件
 class ImportParserPlugin {
 	constructor(options) {
 		this.options = options;
@@ -27,13 +20,15 @@ class ImportParserPlugin {
 			const param = parser.evaluateExpression(expr.source);
 
 			let chunkName = null;
-			/** @type {ContextMode} */
+			//
 			let mode = "lazy";
+			//
 			let include = null;
+			//
 			let exclude = null;
 			/** @type {string[][] | null} */
 			let exports = null;
-			/** @type {RawChunkGroupOptions} */
+			//
 			const groupOptions = {};
 
 			const { options: importOptions, errors: commentErrors } =

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { ConcatSource, PrefixSource } = require("webpack-sources");
@@ -22,74 +17,39 @@ const { ConcatSource, PrefixSource } = require("webpack-sources");
 /** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
 /** @typedef {import("./javascript/JavascriptModulesPlugin").ChunkRenderContext} ChunkRenderContext */
 /** @typedef {import("./javascript/JavascriptModulesPlugin").RenderContext} RenderContext */
-
+// 'a' 字符码
 const START_LOWERCASE_ALPHABET_CODE = "a".charCodeAt(0);
+// 'A' 字符码
 const START_UPPERCASE_ALPHABET_CODE = "A".charCodeAt(0);
+// 小写字母数量和 26
 const DELTA_A_TO_Z = "z".charCodeAt(0) - START_LOWERCASE_ALPHABET_CODE + 1;
+// a-z A-Z _ $ 字符数量和 54
 const NUMBER_OF_IDENTIFIER_START_CHARS = DELTA_A_TO_Z * 2 + 2; // a-z A-Z _ $
-const NUMBER_OF_IDENTIFIER_CONTINUATION_CHARS =
-	NUMBER_OF_IDENTIFIER_START_CHARS + 10; // a-z A-Z _ $ 0-9
+// a-z A-Z _ $ 0-9 字符数量和64
+const NUMBER_OF_IDENTIFIER_CONTINUATION_CHARS = NUMBER_OF_IDENTIFIER_START_CHARS + 10; // a-z A-Z _ $ 0-9
+// 
 const FUNCTION_CONTENT_REGEX = /^function\s?\(\)\s?\{\r?\n?|\r?\n?\}$/g;
+// 
 const INDENT_MULTILINE_REGEX = /^\t/gm;
+// 
 const LINE_SEPARATOR_REGEX = /\r?\n/g;
+// 1. ^: 表示字符串的开始
+// 2. ( 和 ): 是一个捕获组，用于捕获匹配的子字符串
+// 3. [^a-zA-Z$_]: 是一个字符集（character set）。
+// 		^ 在这里表示“非”的意思，所以这个字符集匹配任何不是小写字母（a-z）、大写字母（A-Z）、$ 符号或 _（下划线）的字符
+// 所以: 匹配的是字符串开头的第一个字符，只要这个字符不是英文字母（无论大小写）、$ 或 _
 const IDENTIFIER_NAME_REPLACE_REGEX = /^([^a-zA-Z$_])/;
+// 全局匹配满足 非a-zA-Z0-9$_ 的字符
 const IDENTIFIER_ALPHA_NUMERIC_NAME_REPLACE_REGEX = /[^a-zA-Z0-9$]+/g;
+// 全局匹配满足 */ 的字符串
 const COMMENT_END_REGEX = /\*\//g;
+// 全局匹配满足 非a-zA-Z0-9_!§$()=\-^° 的字符
 const PATH_NAME_NORMALIZE_REPLACE_REGEX = /[^a-zA-Z0-9_!§$()=\-^°]+/g;
+// 全局匹配满足 以 - 开头 或者 以 - 结尾 的字符串
 const MATCH_PADDED_HYPHENS_REPLACE_REGEX = /^-|-$/g;
 
-/**
- * @typedef {Object} RenderManifestOptions
- * @property {Chunk} chunk the chunk used to render
- * @property {string} hash
- * @property {string} fullHash
- * @property {OutputOptions} outputOptions
- * @property {CodeGenerationResults} codeGenerationResults
- * @property {{javascript: ModuleTemplate}} moduleTemplates
- * @property {DependencyTemplates} dependencyTemplates
- * @property {RuntimeTemplate} runtimeTemplate
- * @property {ModuleGraph} moduleGraph
- * @property {ChunkGraph} chunkGraph
- */
-
-/** @typedef {RenderManifestEntryTemplated | RenderManifestEntryStatic} RenderManifestEntry */
-
-/**
- * @typedef {Object} RenderManifestEntryTemplated
- * @property {function(): Source} render
- * @property {string | function(PathData, AssetInfo=): string} filenameTemplate
- * @property {PathData=} pathOptions
- * @property {AssetInfo=} info
- * @property {string} identifier
- * @property {string=} hash
- * @property {boolean=} auxiliary
- */
-
-/**
- * @typedef {Object} RenderManifestEntryStatic
- * @property {function(): Source} render
- * @property {string} filename
- * @property {AssetInfo} info
- * @property {string} identifier
- * @property {string=} hash
- * @property {boolean=} auxiliary
- */
-
-/**
- * @typedef {Object} HasId
- * @property {number | string} id
- */
-
-/**
- * @typedef {function(Module, number): boolean} ModuleFilterPredicate
- */
-
 class Template {
-	/**
-	 *
-	 * @param {Function} fn a runtime function (.runtime.js) "template"
-	 * @returns {string} the updated and normalized function string
-	 */
+	// 返回 标准化的函数字符串
 	static getFunctionContent(fn) {
 		return fn
 			.toString()
@@ -98,53 +58,49 @@ class Template {
 			.replace(LINE_SEPARATOR_REGEX, "\n");
 	}
 
-	/**
-	 * @param {string} str the string converted to identifier
-	 * @returns {string} created identifier
-	 */
+	// 将 字符串 转换成 以_连接 的标识符
+	// 示例: '2hello\nworld!' => '_hello_world_'
 	static toIdentifier(str) {
 		if (typeof str !== "string") return "";
 		return str
+			// /^([^a-zA-Z$_])/ 将 字符串 中开头的第一个字符 只要不是a-zA-Z$_ 替换成 _字符
+			// 示例: '2h' => '_2h'
 			.replace(IDENTIFIER_NAME_REPLACE_REGEX, "_$1")
+			// /[^a-zA-Z0-9$]+/g 将 字符串 中不是[a-zA-Z0-9$_] 的字符 全部转换成 _
+			// 'hello\nworld!' => 'hello_world_'
 			.replace(IDENTIFIER_ALPHA_NUMERIC_NAME_REPLACE_REGEX, "_");
 	}
-	/**
-	 *
-	 * @param {string} str string to be converted to commented in bundle code
-	 * @returns {string} returns a commented version of string
-	 */
+
+	// 将 字符串 转换成 单行注释
+	// 示例: 'hello world' => /*! hello world */
 	static toComment(str) {
 		if (!str) return "";
 		return `/*! ${str.replace(COMMENT_END_REGEX, "* /")} */`;
 	}
 
-	/**
-	 *
-	 * @param {string} str string to be converted to "normal comment"
-	 * @returns {string} returns a commented version of string
-	 */
+	// 将 字符串 转换成 正常单行注释
+	// 示例: 'hello */ world' => /* hello * / world */
 	static toNormalComment(str) {
 		if (!str) return "";
 		return `/* ${str.replace(COMMENT_END_REGEX, "* /")} */`;
 	}
 
-	/**
-	 * @param {string} str string path to be normalized
-	 * @returns {string} normalized bundle-safe path
-	 */
+	// 将 字符串 转换成 路径
+	// 示例: './src/index.js#frame' => 'src-index-js-frame'
 	static toPath(str) {
 		if (typeof str !== "string") return "";
 		return str
+			// 全局匹配满足 非a-zA-Z0-9_!§$()=\-^° 的字符 替换成 -
 			.replace(PATH_NAME_NORMALIZE_REPLACE_REGEX, "-")
+			// 全局匹配满足 以 - 开头 或者 以 - 结尾 的字符串 转换成 ''
 			.replace(MATCH_PADDED_HYPHENS_REPLACE_REGEX, "");
 	}
 
-	// map number to a single character a-z, A-Z or multiple characters if number is too big
-	/**
-	 * @param {number} n number to convert to ident
-	 * @returns {string} returns single character ident
-	 */
+	// 将 Number 转换成 字符
+	// Number < 54 时 单个字符
+	// Number >= 54 时 多个字符
 	static numberToIdentifier(n) {
+		// n >= 54
 		if (n >= NUMBER_OF_IDENTIFIER_START_CHARS) {
 			// use multiple letters
 			return (
@@ -155,13 +111,15 @@ class Template {
 			);
 		}
 
-		// lower case
+		// 转换成小写字母
+		// n < 26
 		if (n < DELTA_A_TO_Z) {
 			return String.fromCharCode(START_LOWERCASE_ALPHABET_CODE + n);
 		}
 		n -= DELTA_A_TO_Z;
 
-		// upper case
+		// 转换成大写字母
+		// n < 26
 		if (n < DELTA_A_TO_Z) {
 			return String.fromCharCode(START_UPPERCASE_ALPHABET_CODE + n);
 		}
@@ -170,11 +128,11 @@ class Template {
 		return "$";
 	}
 
-	/**
-	 * @param {number} n number to convert to ident
-	 * @returns {string} returns single character ident
-	 */
+	// 将 Number 转换成 字符串
+	// Number < 64 时 单个字符
+	// Number >= 64 时 多个字符
 	static numberToIdentifierContinuation(n) {
+		// n >= 64
 		if (n >= NUMBER_OF_IDENTIFIER_CONTINUATION_CHARS) {
 			// use multiple letters
 			return (
@@ -187,19 +145,21 @@ class Template {
 			);
 		}
 
-		// lower case
+		// 转换成小写字母
+		// n < 26
 		if (n < DELTA_A_TO_Z) {
 			return String.fromCharCode(START_LOWERCASE_ALPHABET_CODE + n);
 		}
 		n -= DELTA_A_TO_Z;
 
 		// upper case
+		// n < 26
 		if (n < DELTA_A_TO_Z) {
 			return String.fromCharCode(START_UPPERCASE_ALPHABET_CODE + n);
 		}
 		n -= DELTA_A_TO_Z;
 
-		// numbers
+		// 转换成字符类型的数字0-9
 		if (n < 10) {
 			return `${n}`;
 		}
@@ -208,41 +168,36 @@ class Template {
 		return "$";
 	}
 
-	/**
-	 *
-	 * @param {string | string[]} s string to convert to identity
-	 * @returns {string} converted identity
-	 */
-	// 缩紧
+	// 将 字符串 中 换行符(\n)后非换行符(\n) 替换成 换行符 + 一个制表符
+	// 示例: 'hello\nworld' => 'hello\n\tworld'
 	static indent(s) {
 		if (Array.isArray(s)) {
 			return s.map(Template.indent).join("\n");
 		} else {
 			const str = s.trimRight();
 			if (!str) return "";
+			// 如果字符串首个字符是换行符 则该前缀为 空字符串
+			// 否则该前缀为 单个制表符
 			const ind = str[0] === "\n" ? "" : "\t";
+			// 将 字符串 中 换行符(\n)后非换行符(\n) 替换成 换行符 + 一个制表符
+			// 示例: 'hello\nworld' => 'hello\n\tworld'
 			return ind + str.replace(/\n([^\n])/g, "\n\t$1");
 		}
 	}
 
-	/**
-	 *
-	 * @param {string|string[]} s string to create prefix for
-	 * @param {string} prefix prefix to compose
-	 * @returns {string} returns new prefix string
-	 */
+	// 将 字符串 中 换行符(\n)后非换行符(\n) 替换成 换行符 + prefix
+	// 示例: 'hello\nworld' => 'hello\n' + prefix +'world'
 	static prefix(s, prefix) {
 		const str = Template.asString(s).trim();
 		if (!str) return "";
 		const ind = str[0] === "\n" ? "" : prefix;
+		// 将 字符串 中 换行符(\n)后非换行符(\n) 替换成 换行符 + prefix
+		// 示例: 'hello\nworld' => 'hello\n' + prefix +'world'
 		return ind + str.replace(/\n([^\n])/g, "\n" + prefix + "$1");
 	}
 
-	/**
-	 *
-	 * @param {string|string[]} str string or string collection
-	 * @returns {string} returns a single string from array
-	 */
+	// 返回(数组拼接后的)字符串
+	// 示例: ['hello', 'world'] => 'hello world'
 	static asString(str) {
 		if (Array.isArray(str)) {
 			return str.join("\n");
@@ -250,16 +205,8 @@ class Template {
 		return str;
 	}
 
-	/**
-	 * @typedef {Object} WithId
-	 * @property {string|number} id
-	 */
-
-	/**
-	 * @param {WithId[]} modules a collection of modules to get array bounds for
-	 * @returns {[number, number] | false} returns the upper and lower array bounds
-	 * or false if not every module has a number based id
-	 */
+	// 返回数组的上限和下线
+	// 如果某个模块Module.id 不是Number 则返回false
 	static getModulesArrayBounds(modules) {
 		let maxId = -Infinity;
 		let minId = Infinity;
@@ -284,13 +231,16 @@ class Template {
 		return arrayOverhead < objectOverhead ? [minId, maxId] : false;
 	}
 
-	/**
-	 * @param {ChunkRenderContext} renderContext render context
-	 * @param {Module[]} modules modules to render (should be ordered by identifier)
-	 * @param {function(Module): Source} renderModule function to render a module
-	 * @param {string=} prefix applying prefix strings
-	 * @returns {Source} rendered chunk modules in a Source object
-	 */
+	// 渲染 Source对象 中的块模块
+	// 具体内容是打包后 __webpack_modules__ 变量内容
+	// 示例: 
+	// {
+	// 		/***/ "./src/utils/math.js": 	
+	// 		/*!****************************!*\
+  // 		!*** ./src/imgs/cache.png ***!
+  // 		\****************************/
+	// 		/***/ ((module) => { ... })
+	// }
 	static renderChunkModules(renderContext, modules, renderModule, prefix = "") {
 		const { chunkGraph } = renderContext;
 		var source = new ConcatSource();
@@ -354,6 +304,7 @@ class Template {
 	 * @param {RenderContext & { codeGenerationResults?: CodeGenerationResults, useStrict?: boolean }} renderContext render context
 	 * @returns {Source} rendered runtime modules in a Source object
 	 */
+	// 渲染 Source对象 中的运行时模块
 	static renderRuntimeModules(runtimeModules, renderContext) {
 		const source = new ConcatSource();
 		for (const module of runtimeModules) {
@@ -402,6 +353,7 @@ class Template {
 	 * @param {RenderContext} renderContext render context
 	 * @returns {Source} rendered chunk runtime modules in a Source object
 	 */
+	// 
 	static renderChunkRuntimeModules(runtimeModules, renderContext) {
 		return new PrefixSource(
 			"/******/ ",

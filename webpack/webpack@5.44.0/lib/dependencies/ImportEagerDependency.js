@@ -8,18 +8,10 @@
 const makeSerializable = require("../util/makeSerializable");
 const ImportDependency = require("./ImportDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").ReferencedExport} ReferencedExport */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-
+// ES模块动态导入依赖
+// 1. 当代码片段中含有 import() 语法
+// 2. 动态导入内敛注释中 webpackMode = 'eager' 时 或者 Webpack.Config.module.parser.javascript.dynamicImportMode = 'eager' 时
 class ImportEagerDependency extends ImportDependency {
-	/**
-	 * @param {string} request the request
-	 * @param {[number, number]} range expression range
-	 * @param {string[][]=} referencedExports list of referenced exports
-	 */
 	constructor(request, range, referencedExports) {
 		super(request, range, referencedExports);
 	}
@@ -41,12 +33,6 @@ makeSerializable(
 ImportEagerDependency.Template = class ImportEagerDependencyTemplate extends (
 	ImportDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(
 		dependency,
 		source,

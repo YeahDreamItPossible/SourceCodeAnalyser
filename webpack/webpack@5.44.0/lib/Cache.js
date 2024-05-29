@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { AsyncParallelHook, AsyncSeriesBailHook, SyncHook } = require("tapable");
@@ -45,6 +40,7 @@ const needCalls = (times, callback) => {
 	};
 };
 
+// 缓存
 class Cache {
 	constructor() {
 		this.hooks = {
@@ -63,13 +59,7 @@ class Cache {
 		};
 	}
 
-	/**
-	 * @template T
-	 * @param {string} identifier the cache identifier
-	 * @param {Etag | null} etag the etag
-	 * @param {CallbackCache<T>} callback signals when the value is retrieved
-	 * @returns {void}
-	 */
+	// 读取缓存
 	get(identifier, etag, callback) {
 		const gotHandlers = [];
 		this.hooks.get.callAsync(identifier, etag, gotHandlers, (err, result) => {
@@ -80,6 +70,7 @@ class Cache {
 			if (result === null) {
 				result = undefined;
 			}
+			// 重新存储
 			if (gotHandlers.length > 1) {
 				const innerCallback = needCalls(gotHandlers.length, () =>
 					callback(null, result)
@@ -95,7 +86,7 @@ class Cache {
 		});
 	}
 
-	// 缓存
+	// 存储
 	store(identifier, etag, data, callback) {
 		this.hooks.store.callAsync(
 			identifier,
@@ -118,27 +109,18 @@ class Cache {
 		);
 	}
 
-	/**
-	 * @returns {void}
-	 */
+	
 	beginIdle() {
 		this.hooks.beginIdle.call();
 	}
 
-	/**
-	 * @param {CallbackCache<void>} callback signals when the call finishes
-	 * @returns {void}
-	 */
 	endIdle(callback) {
 		this.hooks.endIdle.callAsync(
 			makeWebpackErrorCallback(callback, "Cache.hooks.endIdle")
 		);
 	}
 
-	/**
-	 * @param {CallbackCache<void>} callback signals when the call finishes
-	 * @returns {void}
-	 */
+	// 关闭时 清除缓存
 	shutdown(callback) {
 		this.hooks.shutdown.callAsync(
 			makeWebpackErrorCallback(callback, "Cache.hooks.shutdown")

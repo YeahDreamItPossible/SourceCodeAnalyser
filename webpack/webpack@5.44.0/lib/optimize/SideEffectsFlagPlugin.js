@@ -6,47 +6,32 @@ const HarmonyExportImportedSpecifierDependency = require("../dependencies/Harmon
 const HarmonyImportSpecifierDependency = require("../dependencies/HarmonyImportSpecifierDependency");
 const formatLocation = require("../formatLocation");
 
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../javascript/JavascriptParser")} JavascriptParser */
-
-/**
- * @typedef {Object} ExportInModule
- * @property {Module} module the module
- * @property {string} exportName the name of the export
- * @property {boolean} checked if the export is conditional
- */
-
-/**
- * @typedef {Object} ReexportInfo
- * @property {Map<string, ExportInModule[]>} static
- * @property {Map<Module, Set<string>>} dynamic
- */
 
 // WeakMap<any, Map<string, RegExp>>
 const globToRegexpCache = new WeakMap();
 
-/**
- * @param {string} glob the pattern
- * @param {Map<string, RegExp>} cache the glob to RegExp cache
- * @returns {RegExp} a regular expression
- */
+// 返回 有路径创造的 正则表达式
 const globToRegexp = (glob, cache) => {
+	// glob: package.json 中 sideEffects 中匹配路径
+	// cache: Map<String, RegExp>
 	const cacheEntry = cache.get(glob);
 	if (cacheEntry !== undefined) return cacheEntry;
+	// 如果是单个文件 添加通配符路径
 	if (!glob.includes("/")) {
 		glob = `**/${glob}`;
 	}
 	const baseRegexp = glob2regexp(glob, { globstar: true, extended: true });
 	const regexpSource = baseRegexp.source;
+	// 添加相对路径
 	const regexp = new RegExp("^(\\./)?" + regexpSource.slice(1));
 	cache.set(glob, regexp);
 	return regexp;
 };
 
+// 根据 模块 是否具有副作用 绑定 ModuleGraph._metaMap
 class SideEffectsFlagPlugin {
 	constructor(analyseSource = true) {
+		// Webpack.Config.optimization.sideEffects
 		// 表示: 是否要分析源代码的副作用
 		this._analyseSource = analyseSource;
 	}
@@ -63,7 +48,7 @@ class SideEffectsFlagPlugin {
 				const moduleGraph = compilation.moduleGraph;
 
 				/**
-				 * 根据 package.json 中的 sideEffects 字段 判断该模块是否有副作用
+				 * 根据 package.json 中的 sideEffects 字段 判断该模块路径是否有副作用
 				 * 然后设置 Module.factoryMeta.sideEffectFree
 				 */
 				normalModuleFactory.hooks.module.tap(
@@ -97,7 +82,7 @@ class SideEffectsFlagPlugin {
 				);
 
 				/**
-				 * 根据 Webpack.Config.Module.Type 字段 判断该模块是否有副作用
+				 * 根据 路径解析器 对 模块 解析后返回的数据 判断该模块是否有副作用
 				 * 然后设置 Module.factoryMeta.sideEffectFree
 				 */
 				normalModuleFactory.hooks.module.tap(
@@ -113,11 +98,8 @@ class SideEffectsFlagPlugin {
 					}
 				);
 
+				// 分析源代码副作用
 				if (this._analyseSource) {
-					/**
-					 * @param {JavascriptParser} parser the parser
-					 * @returns {void}
-					 */
 					const parserHandler = parser => {
 						let sideEffectsStatement;
 						parser.hooks.program.tap("SideEffectsFlagPlugin", () => {
@@ -325,7 +307,7 @@ class SideEffectsFlagPlugin {
 		);
 	}
 
-	// 根据 package.json 中的 sideEffects 字段 判断该模块是否有副作用
+	// 根据 package.json 中的 sideEffects 字段 判断该模块路径是否有副作用
 	static moduleHasSideEffects(moduleName, flagValue, cache) {
 		switch (typeof flagValue) {
 			case "undefined":

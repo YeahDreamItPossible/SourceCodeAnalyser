@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Template = require("../Template");
@@ -15,6 +10,7 @@ const NullDependency = require("./NullDependency");
 /** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
 /** @typedef {import("./HarmonyAcceptImportDependency")} HarmonyAcceptImportDependency */
 
+// 热更新相关
 class HarmonyAcceptDependency extends NullDependency {
 	/**
 	 * @param {[number, number]} range expression range
