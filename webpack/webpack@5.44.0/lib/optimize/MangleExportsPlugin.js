@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { UsageState } = require("../ExportsInfo");
@@ -123,18 +118,15 @@ const mangleExportsInfo = (deterministic, exportsInfo) => {
 	}
 };
 
+// 控制 导出 信息
+// 根据 Webpack.Config.optimization.mangleExports 注册该插件
 class MangleExportsPlugin {
-	/**
-	 * @param {boolean} deterministic use deterministic names
-	 */
 	constructor(deterministic) {
+		// Boolean
+		// Webpack.Config.optimization.mangleExports === 'size'
 		this._deterministic = deterministic;
 	}
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+	
 	apply(compiler) {
 		const { _deterministic: deterministic } = this;
 		compiler.hooks.compilation.tap("MangleExportsPlugin", compilation => {

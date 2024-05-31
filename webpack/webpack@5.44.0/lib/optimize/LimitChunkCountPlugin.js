@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { STAGE_ADVANCED } = require("../OptimizationStages");
@@ -10,10 +5,7 @@ const LazyBucketSortedSet = require("../util/LazyBucketSortedSet");
 const { compareChunks } = require("../util/comparators");
 const createSchemaValidation = require("../util/create-schema-validation");
 
-/** @typedef {import("../../declarations/plugins/optimize/LimitChunkCountPlugin").LimitChunkCountPluginOptions} LimitChunkCountPluginOptions */
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
-
+// 验证 options 是否合法
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/optimize/LimitChunkCountPlugin.check.js"),
 	() => require("../../schemas/plugins/optimize/LimitChunkCountPlugin.json"),
@@ -23,19 +15,7 @@ const validate = createSchemaValidation(
 	}
 );
 
-/**
- * @typedef {Object} ChunkCombination
- * @property {boolean} deleted this is set to true when combination was removed
- * @property {number} sizeDiff
- * @property {number} integratedSize
- * @property {Chunk} a
- * @property {Chunk} b
- * @property {number} aIdx
- * @property {number} bIdx
- * @property {number} aSize
- * @property {number} bSize
- */
-
+// 更新 Map[key] = new Set([]).add(value)
 const addToSetMap = (map, key, value) => {
 	const set = map.get(key);
 	if (set === undefined) {
@@ -45,19 +25,13 @@ const addToSetMap = (map, key, value) => {
 	}
 };
 
+// 根据 Chunk 的数量限制 进行合并 Chunk
 class LimitChunkCountPlugin {
-	/**
-	 * @param {LimitChunkCountPluginOptions=} options options object
-	 */
 	constructor(options) {
 		validate(options);
 		this.options = options;
 	}
 
-	/**
-	 * @param {Compiler} compiler the webpack compiler
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const options = this.options;
 		compiler.hooks.compilation.tap("LimitChunkCountPlugin", compilation => {
@@ -100,7 +74,7 @@ class LimitChunkCountPlugin {
 					// we keep a mapping from chunk to all combinations
 					// but this mapping is not kept up-to-date with deletions
 					// so `deleted` flag need to be considered when iterating this
-					/** @type {Map<Chunk, Set<ChunkCombination>>} */
+					// Map<Chunk, Set<ChunkCombination>>
 					const combinationsByChunk = new Map();
 
 					orderedChunks.forEach((b, bIdx) => {
@@ -139,7 +113,7 @@ class LimitChunkCountPlugin {
 					// list of modified chunks during this run
 					// combinations affected by this change are skipped to allow
 					// further optimizations
-					/** @type {Set<Chunk>} */
+					// Set<Chunk>
 					const modifiedChunks = new Set();
 
 					let changed = false;

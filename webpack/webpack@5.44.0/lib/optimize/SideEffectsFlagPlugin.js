@@ -28,7 +28,10 @@ const globToRegexp = (glob, cache) => {
 	return regexp;
 };
 
+// 告诉 webpack 去辨识 package.json 中的 sideEffects 标记或规则，
+// 以跳过那些当导出不被使用且被标记为不包含副作用的模块。
 // 根据 模块 是否具有副作用 绑定 ModuleGraph._metaMap
+// 根据 Webpack.Config.optimization.sideEffects 注册该持剑
 class SideEffectsFlagPlugin {
 	constructor(analyseSource = true) {
 		// Webpack.Config.optimization.sideEffects

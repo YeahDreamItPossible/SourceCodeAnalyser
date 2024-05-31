@@ -5,11 +5,7 @@ const Parser = require("../Parser");
 const JsonExportsDependency = require("../dependencies/JsonExportsDependency");
 const JsonData = require("./JsonData");
 
-/** @typedef {import("../../declarations/plugins/JsonModulesPluginParser").JsonModulesPluginParserOptions} JsonModulesPluginParserOptions */
-/** @typedef {import("../Parser").ParserState} ParserState */
-/** @typedef {import("../Parser").PreparsedAst} PreparsedAst */
-
-// Json类型语法解析器
+// JSON类型 语法分析器
 class JsonParser extends Parser {
 	constructor(options) {
 		super();

@@ -1,16 +1,7 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { STAGE_ADVANCED } = require("../OptimizationStages");
 const createSchemaValidation = require("../util/create-schema-validation");
-
-/** @typedef {import("../../declarations/plugins/optimize/MinChunkSizePlugin").MinChunkSizePluginOptions} MinChunkSizePluginOptions */
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
 
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/optimize/MinChunkSizePlugin.check.js"),
@@ -21,20 +12,13 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 通过限制 Chunk 的最小大小 来合并 Chunk
 class MinChunkSizePlugin {
-	/**
-	 * @param {MinChunkSizePluginOptions} options options object
-	 */
 	constructor(options) {
 		validate(options);
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const options = this.options;
 		const minChunkSize = options.minChunkSize;
@@ -52,9 +36,9 @@ class MinChunkSizePlugin {
 					};
 
 					const chunkSizesMap = new Map();
-					/** @type {[Chunk, Chunk][]} */
+					// Array<[Chunk, Chunk]>
 					const combinations = [];
-					/** @type {Chunk[]} */
+					// Array<Chunk>
 					const smallChunks = [];
 					const visitedChunks = [];
 					for (const a of chunks) {

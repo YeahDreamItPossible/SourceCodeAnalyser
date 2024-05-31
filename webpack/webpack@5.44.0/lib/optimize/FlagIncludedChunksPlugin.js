@@ -1,20 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
+// 根据 Webpack.Config.optimization.flagIncludedChunks 注册该插件
+// 默认 production 模式下启用 
+// 添加 Chunk.prototype.ids 
 class FlagIncludedChunksPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("FlagIncludedChunksPlugin", compilation => {
 			compilation.hooks.optimizeChunkIds.tap(
@@ -33,7 +22,7 @@ class FlagIncludedChunksPlugin {
 					// so 1 / modulesCount == p^31
 					// <=> p = sqrt31(1 / modulesCount)
 					// so we use a modulo of 1 / sqrt31(1 / modulesCount)
-					/** @type {WeakMap<Module, number>} */
+					// WeakMap<Module, Number>
 					const moduleBits = new WeakMap();
 					const modulesCount = compilation.modules.size;
 
@@ -56,7 +45,7 @@ class FlagIncludedChunksPlugin {
 					}
 
 					// iterate all chunks to generate bitmaps
-					/** @type {WeakMap<Chunk, number>} */
+					// WeakMap<Chunk, number>
 					const chunkModulesHash = new WeakMap();
 					for (const chunk of chunks) {
 						let hash = 0;

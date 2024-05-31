@@ -1,12 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// 将 optimization.runtimeChunk 设置为 true 或 'multiple'，
+// 会为每个入口添加一个只含有 runtime 的额外 chunk。
+// 根据 Webpack.Config.optimization.runtimeChunk 注册该插件
 class RuntimeChunkPlugin {
 	constructor(options) {
 		this.options = {
@@ -15,11 +11,6 @@ class RuntimeChunkPlugin {
 		};
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap("RuntimeChunkPlugin", compilation => {
 			compilation.hooks.addEntry.tap(

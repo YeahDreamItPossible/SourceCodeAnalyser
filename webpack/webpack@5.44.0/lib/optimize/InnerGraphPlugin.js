@@ -1,32 +1,14 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const PureExpressionDependency = require("../dependencies/PureExpressionDependency");
 const InnerGraph = require("./InnerGraph");
 
-/** @typedef {import("estree").ClassDeclaration} ClassDeclarationNode */
-/** @typedef {import("estree").ClassExpression} ClassExpressionNode */
-/** @typedef {import("estree").Node} Node */
-/** @typedef {import("estree").VariableDeclarator} VariableDeclaratorNode */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../dependencies/HarmonyImportSpecifierDependency")} HarmonyImportSpecifierDependency */
-/** @typedef {import("../javascript/JavascriptParser")} JavascriptParser */
-/** @typedef {import("./InnerGraph").InnerGraph} InnerGraph */
-/** @typedef {import("./InnerGraph").TopLevelSymbol} TopLevelSymbol */
-
 const { topLevelSymbolTag } = InnerGraph;
 
+
+// 根据 Wepback.Config.optimaztion.innerGraph 注册该插件
+// 告诉 webpack 是否对未使用的导出内容实施内部图形分析
 class InnerGraphPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"InnerGraphPlugin",
@@ -38,11 +20,6 @@ class InnerGraphPlugin {
 					new PureExpressionDependency.Template()
 				);
 
-				/**
-				 * @param {JavascriptParser} parser the parser
-				 * @param {Object} parserOptions options
-				 * @returns {void}
-				 */
 				const handler = (parser, parserOptions) => {
 					const onUsageSuper = sup => {
 						InnerGraph.onUsage(parser.state, usedByExports => {

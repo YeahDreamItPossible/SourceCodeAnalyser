@@ -93,7 +93,7 @@ const createObjectForExportsInfo = (data, exportsInfo, runtime) => {
 
 const TYPES = new Set(["javascript"]);
 
-// JSON类型代码生成器
+// JSON类型 代码生成器
 class JsonGenerator extends Generator {
 	// 返回当前生成器类型
 	getTypes(module) {

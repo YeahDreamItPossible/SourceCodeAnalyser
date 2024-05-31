@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Chunk = require("../Chunk");
@@ -583,6 +578,7 @@ const createCacheGroupSource = (options, key, defaultSizeTypes) => {
 	};
 };
 
+// 根据 Webpack.Config.optimization.splitChunks 注册该插件
 module.exports = class SplitChunksPlugin {
 	/**
 	 * @param {OptimizationSplitChunksOptions=} options plugin options

@@ -164,6 +164,7 @@ const EMPTY_COMMENT_OPTIONS = {
 	errors: null
 };
 
+// JS类型 语法分析器
 class JavascriptParser extends Parser {
 	/**
 	 * @param {"module" | "script" | "auto"} sourceType default source type

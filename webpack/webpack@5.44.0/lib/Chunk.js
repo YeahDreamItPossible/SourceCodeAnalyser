@@ -391,7 +391,7 @@ class Chunk {
 	}
 	// BACKWARD-COMPAT END
 
-	// 返回当前 Chunk 是否有运行时
+	// 返回当前 Chunk 是否是运行时块
 	hasRuntime() {
 		// 判断当前 Chunk 的 _groups 中 ChunkGrop.runtimeChunk === this
 		for (const chunkGroup of this._groups) {

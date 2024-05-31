@@ -2,10 +2,12 @@
 
 const { register } = require("../util/serialization");
 
-// 存储Json数据
+// 存储JSON数据
 class JsonData {
 	constructor(data) {
+		// Buffer 类型
 		this._buffer = undefined;
+		// String 类型
 		this._data = undefined;
 		if (Buffer.isBuffer(data)) {
 			this._buffer = data;

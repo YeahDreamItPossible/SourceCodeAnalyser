@@ -511,9 +511,27 @@ DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule => AsyncModu
 //
 DependenciesBlock => Module => ContextModule
 DependenciesBlock => Module => DllModule
+// TODO:
 DependenciesBlock => Module => ExternalModule
+// TODO:
+DependenciesBlock => Module => FallbackModule
 // 异步模块
 DependenciesBlock => AsyncDependenciesBlock
 DependenciesBlock => AsyncDependenciesBlock => RequireEnsureDependenciesBlock
 DependenciesBlock => AsyncDependenciesBlock => AMDRequireDependenciesBlock
 
+// 
+ModuleFactory => NormalModuleFactory
+// 
+ModuleFactory => ContextModuleFactory
+// 
+ModuleFactory => DllModuleFactory
+// 
+ModuleFactory => FallbackModuleFactory
+// 
+ModuleFactory => IgnoreErrorModuleFactory
+// 
+ModuleFactory => ProvideSharedModuleFactory
+
+
+dependency module chunk assets bundle

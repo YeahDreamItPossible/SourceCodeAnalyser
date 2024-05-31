@@ -44,6 +44,10 @@ const formatBailoutReason = msg => {
 	return "ModuleConcatenation bailout: " + msg;
 };
 
+// 告诉 webpack 在模块图中查找可以安全连接到单个模块的片段。
+// 此优化首先需要 optimization.providedExports 与 optimization.usedExports 设置为启用。 
+// 默认情况下，optimization.concatenateModules 在 production 模式 下启用，而在其它情况下被禁用
+// 根据 Webpack.Config.optimization.concatenateModules 注册该插件
 class ModuleConcatenationPlugin {
 	constructor(options) {
 		if (typeof options !== "object") options = {};

@@ -18,13 +18,10 @@ const { compareRuntime } = require("./runtime");
 /** @template TArg @template T @typedef {function(TArg, T, T): -1|0|1} RawParameterizedComparator */
 /** @template TArg @template T @typedef {function(TArg): Comparator<T>} ParameterizedComparator */
 
-/**
- * @template T
- * @param {RawParameterizedComparator<any, T>} fn comparator with argument
- * @returns {ParameterizedComparator<any, T>} comparator
- */
+// 高阶函数
+// 用来缓存 函数执行后的结果
 const createCachedParameterizedComparator = fn => {
-	/** @type {WeakMap<object, Comparator<T>>} */
+	// WeakMap<object, Comparator<T>>
 	const map = new WeakMap();
 	return arg => {
 		const cachedResult = map.get(arg);
@@ -199,11 +196,7 @@ const compareIds = (a, b) => {
 
 exports.compareIds = compareIds;
 
-/**
- * @param {string} a first string
- * @param {string} b second string
- * @returns {-1|0|1} compare result
- */
+// 比较字符串
 const compareStrings = (a, b) => {
 	if (a < b) return -1;
 	if (a > b) return 1;

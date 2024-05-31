@@ -199,12 +199,12 @@ class ChunkGraphChunk {
 		// 当前 Chunk 所包含的Module
 		// Set<Module>
 		this.modules = new SortableSet();
-		// 入口Module 与 入口点
-		// Map<Module, Entrypoint>
-		this.entryModules = new Map();
 		// 当前 Chunk 所包含的 RuntimeModule
 		// Set<RuntimeModule>
 		this.runtimeModules = new SortableSet();
+		// 入口Module 与 入口点
+		// Map<EntryModule, Entrypoint>
+		this.entryModules = new Map();
 
 		// TODO:
 		/** @type {Set<RuntimeModule> | undefined} */
@@ -771,12 +771,14 @@ class ChunkGraph {
 		);
 	}
 
-	// 返回 两个 Chunk 能否被合成一体
+	// 返回 两个 Chunk 能否被合成一个
 	canChunksBeIntegrated(chunkA, chunkB) {
+		// 先判断 Chunk 是否是运行时块(运行时块不允许被合并)
 		if (chunkA.preventIntegration || chunkB.preventIntegration) {
 			return false;
 		}
 
+		// 当前 Chunk 是否是运行时块
 		const hasRuntimeA = chunkA.hasRuntime();
 		const hasRuntimeB = chunkB.hasRuntime();
 

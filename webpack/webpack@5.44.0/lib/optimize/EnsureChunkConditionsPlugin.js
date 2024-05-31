@@ -1,16 +1,13 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { STAGE_BASIC } = require("../OptimizationStages");
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../ChunkGroup")} ChunkGroup */
-/** @typedef {import("../Compiler")} Compiler */
-
+// TODO:
+// 1. 根据 Module 找到对应的 Chunk
+//    筛选 不包含 运行时模块(EntryModule) 的 Chunk 解除此 Chunk 与 Module 的关联关系
+// 2. 根据 Module 找到对应的 Chunk
+//    找到包含当前 Chunk 的所有 ChunkGroup 
+//    批量找到 ChunkGroup 下 运行时模块(EntryModule) 的 Chunk 绑定 Chunk 与 Module 的关联关系
 class EnsureChunkConditionsPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
@@ -20,14 +17,14 @@ class EnsureChunkConditionsPlugin {
 					const chunkGraph = compilation.chunkGraph;
 					// These sets are hoisted here to save memory
 					// They are cleared at the end of every loop
-					/** @type {Set<Chunk>} */
+					// Set<Chunk>
 					const sourceChunks = new Set();
-					/** @type {Set<ChunkGroup>} */
+					// Set<ChunkGroup>
 					const chunkGroups = new Set();
 					for (const module of compilation.modules) {
 						for (const chunk of chunkGraph.getModuleChunksIterable(module)) {
 							// 针对于ExternalModule FallbackModule模块
-							// 如果该模块所属于的chunk 不包含entry modules
+							// 如果该模块所属于的chunk 不包含运行时模块(EntryModule)
 							if (!module.chunkCondition(chunk, compilation)) {
 								sourceChunks.add(chunk);
 								for (const group of chunk.groupsIterable) {
@@ -36,7 +33,7 @@ class EnsureChunkConditionsPlugin {
 							}
 						}
 						if (sourceChunks.size === 0) continue;
-						/** @type {Set<Chunk>} */
+						// Set<Chunk>
 						const targetChunks = new Set();
 						chunkGroupLoop: for (const chunkGroup of chunkGroups) {
 							// Can module be placed in a chunk of this group?
