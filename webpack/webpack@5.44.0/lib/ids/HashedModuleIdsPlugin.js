@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const {
@@ -12,8 +7,7 @@ const createSchemaValidation = require("../util/create-schema-validation");
 const createHash = require("../util/createHash");
 const { getUsedModuleIds, getFullModuleName } = require("./IdHelpers");
 
-/** @typedef {import("../../declarations/plugins/HashedModuleIdsPlugin").HashedModuleIdsPluginOptions} HashedModuleIdsPluginOptions */
-
+// 验证选项
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/HashedModuleIdsPlugin.check.js"),
 	() => require("../../schemas/plugins/HashedModuleIdsPlugin.json"),
@@ -23,10 +17,10 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 给 Module 对应的 ChunkGraphModule 设置 id
+// 即： chunkGraphModule.id = 模块hash
+// 根据 Webpack.Config.optimization.moduleIds = 'hashed' 注册该插件
 class HashedModuleIdsPlugin {
-	/**
-	 * @param {HashedModuleIdsPluginOptions=} options options object
-	 */
 	constructor(options = {}) {
 		validate(options);
 

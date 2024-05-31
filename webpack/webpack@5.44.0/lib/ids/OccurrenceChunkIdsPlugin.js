@@ -1,18 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { compareChunksNatural } = require("../util/comparators");
 const createSchemaValidation = require("../util/create-schema-validation");
 const { assignAscendingChunkIds } = require("./IdHelpers");
-
-/** @typedef {import("../../declarations/plugins/ids/OccurrenceChunkIdsPlugin").OccurrenceChunkIdsPluginOptions} OccurrenceChunkIdsPluginOptions */
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
 
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/ids/OccurrenceChunkIdsPlugin.check.js"),
@@ -23,20 +13,14 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 给 chunk.id 设置 xx
+// 根据 Webpack.Config.optimization.chunkIds = ('size' || 'total-size') 注册该插件
 class OccurrenceChunkIdsPlugin {
-	/**
-	 * @param {OccurrenceChunkIdsPluginOptions=} options options object
-	 */
 	constructor(options = {}) {
 		validate(options);
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const prioritiseInitial = this.options.prioritiseInitial;
 		compiler.hooks.compilation.tap("OccurrenceChunkIdsPlugin", compilation => {

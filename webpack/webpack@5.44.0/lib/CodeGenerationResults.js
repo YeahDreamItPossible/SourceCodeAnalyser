@@ -17,7 +17,7 @@ const { runtimeToString, RuntimeSpecMap } = require("./util/runtime");
 
 class CodeGenerationResults {
 	constructor() {
-		/** @type {Map<Module, RuntimeSpecMap<CodeGenerationResult>>} */
+		// Map<Module, RuntimeSpecMap<CodeGenerationResult>>
 		this.map = new Map();
 	}
 

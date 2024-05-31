@@ -1,23 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { compareChunksNatural } = require("../util/comparators");
 const { assignAscendingChunkIds } = require("./IdHelpers");
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
+// 给 chunk.id 设置 按使用顺序的数字
+// 根据 Webpack.Config.optimization.chunkIds = natural 注册该插件
 class NaturalChunkIdsPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("NaturalChunkIdsPlugin", compilation => {
 			compilation.hooks.chunkIds.tap("NaturalChunkIdsPlugin", chunks => {

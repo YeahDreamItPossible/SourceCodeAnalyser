@@ -1,50 +1,20 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { compareNumbers } = require("./util/comparators");
 const identifierUtils = require("./util/identifier");
 
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./Module")} Module */
-
-/**
- * @typedef {Object} RecordsChunks
- * @property {Record<string, number>=} byName
- * @property {Record<string, number>=} bySource
- * @property {number[]=} usedIds
- */
-
-/**
- * @typedef {Object} RecordsModules
- * @property {Record<string, number>=} byIdentifier
- * @property {Record<string, number>=} bySource
- * @property {number[]=} usedIds
- */
-
-/**
- * @typedef {Object} Records
- * @property {RecordsChunks=} chunks
- * @property {RecordsModules=} modules
- */
-
+// TODO: 暂时不知道具体怎么使用
+// 告知 webpack 生成带有相对路径的记录(records)使得可以移动上下文目录。
+// 默认 optimization.portableRecords 被禁用
+// 如果下列至少一个选项在 webpack 中被设置
+// Wepback.Config.recordsPath || Webpack.Config.recordsInputPath || Webpack.Config.recordsOutputPath
+// 该选项也会自动启用
 class RecordIdsPlugin {
-	/**
-	 * @param {Object} options Options object
-	 * @param {boolean=} options.portableIds true, when ids need to be portable
-	 */
 	constructor(options) {
+		// Webpack.Config.optimization.portableRecords
 		this.options = options || {};
 	}
 
-	/**
-	 * @param {Compiler} compiler the Compiler
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const portableIds = this.options.portableIds;
 
@@ -54,26 +24,20 @@ class RecordIdsPlugin {
 				compiler.root
 			);
 
-		/**
-		 * @param {Module} module the module
-		 * @returns {string} the (portable) identifier
-		 */
 		// compilation.records.modules 路径是相对路径还是绝对路径
 		const getModuleIdentifier = module => {
+			// 相对路径
 			if (portableIds) {
 				return makePathsRelative(module.identifier());
 			}
+			// 绝对路径
 			return module.identifier();
 		};
 
 		compiler.hooks.compilation.tap("RecordIdsPlugin", compilation => {
+			// 设置 compilation.records.modules 属性
 			compilation.hooks.recordModules.tap(
 				"RecordIdsPlugin",
-				/**
-				 * @param {Module[]} modules the modules array
-				 * @param {Records} records the records object
-				 * @returns {void}
-				 */
 				(modules, records) => {
 					const chunkGraph = compilation.chunkGraph;
 					if (!records.modules) records.modules = {};
@@ -90,18 +54,16 @@ class RecordIdsPlugin {
 					records.modules.usedIds = Array.from(usedIds).sort(compareNumbers);
 				}
 			);
+
+			// 给 Module 对应的 ChunkGraphModule 设置id
+			// 即: chunkGraphModule.id = xx
 			compilation.hooks.reviveModules.tap(
 				"RecordIdsPlugin",
-				/**
-				 * @param {Module[]} modules the modules array
-				 * @param {Records} records the records object
-				 * @returns {void}
-				 */
 				(modules, records) => {
 					if (!records.modules) return;
 					if (records.modules.byIdentifier) {
 						const chunkGraph = compilation.chunkGraph;
-						/** @type {Set<number>} */
+						// Set<number>
 						const usedIds = new Set();
 						for (const module of modules) {
 							const moduleId = chunkGraph.getModuleId(module);
@@ -164,6 +126,7 @@ class RecordIdsPlugin {
 				return sources;
 			};
 
+			// 设置 compilation.records.chunks 属性
 			compilation.hooks.recordChunks.tap(
 				"RecordIdsPlugin",
 				/**
@@ -190,6 +153,7 @@ class RecordIdsPlugin {
 					records.chunks.usedIds = Array.from(usedIds).sort(compareNumbers);
 				}
 			);
+			// 设置 chunk.id
 			compilation.hooks.reviveChunks.tap(
 				"RecordIdsPlugin",
 				/**

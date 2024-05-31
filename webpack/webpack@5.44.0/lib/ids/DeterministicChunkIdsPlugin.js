@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Florent Cailhol @ooflorent
-*/
-
 "use strict";
 
 const { compareChunksNatural } = require("../util/comparators");
@@ -12,19 +7,13 @@ const {
 	assignDeterministicIds
 } = require("./IdHelpers");
 
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
+// 给 chunk.id 设置 xx
+// 根据 Webpack.Config.optimization.chunkIds = 'deterministic' 注册该插件
 class DeterministicChunkIdsPlugin {
 	constructor(options) {
 		this.options = options || {};
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"DeterministicChunkIdsPlugin",

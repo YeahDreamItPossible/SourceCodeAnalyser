@@ -2414,7 +2414,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			}
 		}
 
-		// TODO:
+		// 主要是构建 Chunk 与 Module 的关联关系
 		// 根据 ModuleGraph 和 Chunk 构建 ChunkGraph
 		buildChunkGraph(this, chunkGraphInit);
 
@@ -2560,6 +2560,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					this.hooks.beforeModuleHash.call();
 
 					// 模块Hash
+					// 设置 chunkGraphModule.hashes
 					this.createModuleHashes();
 
 					// 空调用
@@ -2749,14 +2750,11 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	/**
-	 * 获取 所有的代码生成任务
-	 * 运行代码生成任务
-	 */
+	// 获取所有的代码生成任务
 	codeGeneration(callback) {
 		const { chunkGraph } = this;
 		this.codeGenerationResults = new CodeGenerationResults();
-		/** @type {{module: Module, hash: string, runtime: RuntimeSpec, runtimes: RuntimeSpec[]}[]} */
+		// Array<{module: Module, hash: string, runtime: RuntimeSpec, runtimes: RuntimeSpec[]}>
 		const jobs = [];
 		for (const module of this.modules) {
 			const runtimes = chunkGraph.getModuleRuntimes(module);
@@ -2785,7 +2783,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		this._runCodeGenerationJobs(jobs, callback);
 	}
 
-	// 
+	// 执行所有的 代码生成任务
 	_runCodeGenerationJobs(jobs, callback) {
 		let statModulesFromCache = 0;
 		let statModulesGenerated = 0;
@@ -2913,8 +2911,9 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		});
 	}
 
+	// 以 Set 形式返回 Entrypoints 和 AsyncEntrypoint 包含的 RuntimeChunk
 	_getChunkGraphEntries() {
-		/** @type {Set<Chunk>} */
+		// Set<Chunk>
 		const treeEntries = new Set();
 		for (const ep of this.entrypoints.values()) {
 			const chunk = ep.getRuntimeChunk();
@@ -2936,6 +2935,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 	 * @param {Iterable<Chunk>=} options.chunkGraphEntries chunkGraphEntries
 	 * @returns {void}
 	 */
+	// 
 	processRuntimeRequirements({
 		chunkGraph = this.chunkGraph,
 		modules = this.modules,
@@ -3287,13 +3287,15 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// 给 每个Entrypoint 和 每个AsyncEntryponit中的RuntimeChunk 分配 chunk.id
-	// 设置 ChunkGraph._runtimeIds
+	// 给 每个Entrypoint 的 RuntimeChunk 分配 chunk.id
+	// 给 每个AsyncEntryponit 中的 RuntimeChunk 分配 chunk.id
+	// 设置 chunkGraph._runtimeIds
 	assignRuntimeIds() {
 		const { chunkGraph } = this;
 		const processEntrypoint = ep => {
 			const runtime = ep.options.runtime || ep.name;
 			const chunk = ep.getRuntimeChunk();
+			// chunkGraph._runtimeIds.set(runtime, chunk.id)
 			chunkGraph.setRuntimeId(runtime, chunk.id);
 		};
 		for (const ep of this.entrypoints.values()) {
@@ -3304,8 +3306,11 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// ChunkGroups.origins 排序
-	// errors warnings排序
+	// 排序
+	// chunkGroups.origins 排序
+	// compilation.errors 排序
+	// compilation.warnings 排序
+	// compilation.childaren 排序
 	sortItemsWithChunkIds() {
 		for (const chunkGroup of this.chunkGroups) {
 			chunkGroup.sortItems();
@@ -3316,6 +3321,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		this.children.sort(byNameOrHash);
 	}
 
+	// 
 	summarizeDependencies() {
 		for (
 			let indexChildren = 0;
@@ -3340,6 +3346,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
+	// 批量设置模块哈希
 	createModuleHashes() {
 		let statModulesHashed = 0;
 		const { chunkGraph, runtimeTemplate } = this;
@@ -3365,6 +3372,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		);
 	}
 
+	// 设置单个模块哈希
+	// 设置 chunkGraphModule.hashes
 	_createModuleHash(
 		module,
 		chunkGraph,
@@ -3392,6 +3401,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return moduleHashDigest;
 	}
 
+	// TODO:
 	createHash() {
 		this.logger.time("hashing: initialize hash");
 		const chunkGraph = this.chunkGraph;
@@ -3438,9 +3448,9 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		 * Chunks need to be in deterministic order since we add hashes to full chunk
 		 * during these hashing.
 		 */
-		/** @type {Chunk[]} */
+		// Array<RuntimeChunk>
 		const unorderedRuntimeChunks = [];
-		/** @type {Chunk[]} */
+		// Array<Chunk>
 		const otherChunks = [];
 		for (const c of this.chunks) {
 			if (c.hasRuntime()) {
@@ -3885,6 +3895,8 @@ This prevents using hashes of each other and should be avoided.`);
 	}
 
 	// 清除Chunk上次运行时生成的assets
+	// chunk.files
+	// chunk.auxiliaryFiles
 	clearAssets() {
 		for (const chunk of this.chunks) {
 			chunk.files.clear();

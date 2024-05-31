@@ -49,7 +49,9 @@ const compareModuleIterables = compareIterables(compareModulesByIdentifier);
 // 模块哈希信息
 class ModuleHashInfo {
 	constructor(hash, renderedHash) {
+		// 完整hash值
 		this.hash = hash;
+		// 截取长度后的hash值
 		this.renderedHash = renderedHash;
 	}
 }
@@ -61,10 +63,7 @@ const getArray = set => {
 	return Array.from(set);
 };
 
-/**
- * @param {SortableSet<Chunk>} chunks the chunks
- * @returns {RuntimeSpecSet} runtimes
- */
+// 返回 Set<chunk.runtime>
 const getModuleRuntimes = chunks => {
 	const runtimes = new RuntimeSpecSet();
 	for (const chunk of chunks) {
@@ -73,10 +72,7 @@ const getModuleRuntimes = chunks => {
 	return runtimes;
 };
 
-/**
- * @param {SortableSet<Module>} set the set
- * @returns {Map<string, SortableSet<Module>>} modules by source type
- */
+// 返回 Map<module.sourceType, Set<Module>>
 const modulesBySourceType = set => {
 	/** @type {Map<string, SortableSet<Module>>} */
 	const map = new Map();
@@ -501,6 +497,7 @@ class ChunkGraph {
 	 * @param {Module} module the module
 	 * @returns {RuntimeSpecSet} runtimes
 	 */
+	// 
 	getModuleRuntimes(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.chunks.getFromUnorderedCache(getModuleRuntimes);
@@ -1202,11 +1199,7 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 		return hashes && hashes.has(runtime);
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {RuntimeSpec} runtime the runtime
-	 * @returns {string} hash
-	 */
+	// 返回模块hash
 	getModuleHash(module, runtime) {
 		const cgm = this._getChunkGraphModule(module);
 		const hashes = cgm.hashes;
@@ -1245,6 +1238,7 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 	 * @param {Set<string>} items runtime requirements to be added (ownership of this Set is given to ChunkGraph)
 	 * @returns {void}
 	 */
+	// 
 	addModuleRuntimeRequirements(module, runtime, items) {
 		const cgm = this._getChunkGraphModule(module);
 		const runtimeRequirementsMap = cgm.runtimeRequirements;

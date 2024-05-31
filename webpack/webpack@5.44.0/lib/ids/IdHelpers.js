@@ -9,16 +9,7 @@ const createHash = require("../util/createHash");
 const { makePathsRelative } = require("../util/identifier");
 const numberHash = require("../util/numberHash");
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../Compilation")} Compilation */
-/** @typedef {import("../Module")} Module */
-
-/**
- * @param {string} str string to hash
- * @param {number} len max length of the hash
- * @returns {string} hash
- */
+// 返回 字符串 的固定长度hash值
 const getHash = (str, len) => {
 	const hash = createHash("md4");
 	hash.update(str);
@@ -30,6 +21,7 @@ const getHash = (str, len) => {
  * @param {string} str the string
  * @returns {string} string prefixed by an underscore if it is a number
  */
+// 
 const avoidNumber = str => {
 	// max length of a number is 21 chars, bigger numbers a written as "...e+xx"
 	if (str.length > 21) return str;
@@ -203,14 +195,7 @@ const getFullChunkName = (
 };
 exports.getFullChunkName = getFullChunkName;
 
-/**
- * @template K
- * @template V
- * @param {Map<K, V[]>} map a map from key to values
- * @param {K} key key
- * @param {V} value value
- * @returns {void}
- */
+// map[key] = [ value ]
 const addToMapOfItems = (map, key, value) => {
 	let array = map.get(key);
 	if (array === undefined) {

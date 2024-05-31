@@ -1265,6 +1265,7 @@ class NormalModule extends Module {
 	 * @param {UpdateHashContext} context context
 	 * @returns {void}
 	 */
+	// 
 	updateHash(hash, context) {
 		hash.update(this.buildInfo.hash);
 		this.generator.updateHash(hash, {

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Florent Cailhol @ooflorent
-*/
-
 "use strict";
 
 const {
@@ -10,15 +5,10 @@ const {
 } = require("../util/comparators");
 const { assignAscendingModuleIds } = require("./IdHelpers");
 
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
+// 给 Module 对应的 ChunkGraphModule 设置 id(按使用顺序的数字 id)
+// 即： chunkGraphModule.id = Number(从 0 开始)
+// 根据 Webpack.Config.optimization.moduleIds = 'natural' 注册该插件
 class NaturalModuleIdsPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("NaturalModuleIdsPlugin", compilation => {
 			compilation.hooks.moduleIds.tap("NaturalModuleIdsPlugin", modules => {

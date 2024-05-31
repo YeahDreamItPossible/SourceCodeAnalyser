@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const {
@@ -11,10 +6,6 @@ const {
 const createSchemaValidation = require("../util/create-schema-validation");
 const { assignAscendingModuleIds } = require("./IdHelpers");
 
-/** @typedef {import("../../declarations/plugins/ids/OccurrenceModuleIdsPlugin").OccurrenceModuleIdsPluginOptions} OccurrenceModuleIdsPluginOptions */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../ModuleGraphConnection")} ModuleGraphConnection */
 
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/ids/OccurrenceModuleIdsPlugin.check.js"),
@@ -25,20 +16,15 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 给 Module 对应的 ChunkGraphModule 设置 id
+// 即： chunkGraphModule.id = xx
+// 根据 Webpack.Config.optimization.moduleIds = 'size' 注册该插件
 class OccurrenceModuleIdsPlugin {
-	/**
-	 * @param {OccurrenceModuleIdsPluginOptions=} options options object
-	 */
 	constructor(options = {}) {
 		validate(options);
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const prioritiseInitial = this.options.prioritiseInitial;
 		compiler.hooks.compilation.tap("OccurrenceModuleIdsPlugin", compilation => {

@@ -1,13 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Florent Cailhol @ooflorent
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
-
+// Webpack.Config.xx 被废弃 抛出错误
 class WarnDeprecatedOptionPlugin {
 	/**
 	 * Create an instance of the plugin

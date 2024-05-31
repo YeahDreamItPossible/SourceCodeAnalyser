@@ -1,14 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
-/** @typedef {import("./Module")} Module */
-
+// 代码生成 错误
 class CodeGenerationError extends WebpackError {
 	/**
 	 * Create a new CodeGenerationError
