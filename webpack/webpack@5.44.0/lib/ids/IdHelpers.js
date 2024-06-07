@@ -373,11 +373,7 @@ const assignDeterministicIds = (
 };
 exports.assignDeterministicIds = assignDeterministicIds;
 
-/**
- * @param {Iterable<Module>} modules the modules
- * @param {Compilation} compilation the compilation
- * @returns {void}
- */
+// 给 moduleGraphModule.id 设置 Number 
 const assignAscendingModuleIds = (modules, compilation) => {
 	const chunkGraph = compilation.chunkGraph;
 
@@ -410,6 +406,7 @@ exports.assignAscendingModuleIds = assignAscendingModuleIds;
  * @param {Compilation} compilation the compilation
  * @returns {void}
  */
+// 给 chunk.id 设置 Number
 const assignAscendingChunkIds = (chunks, compilation) => {
 	const usedIds = getUsedChunkIds(compilation);
 

@@ -1,18 +1,7 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("../declarations/WebpackOptions").StatsOptions} StatsOptions */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./stats/DefaultStatsFactoryPlugin").StatsCompilation} StatsCompilation */
-
+// 统计构建信息
 class Stats {
-	/**
-	 * @param {Compilation} compilation webpack compilation
-	 */
 	constructor(compilation) {
 		this.compilation = compilation;
 	}
@@ -29,9 +18,6 @@ class Stats {
 		return this.compilation.endTime;
 	}
 
-	/**
-	 * @returns {boolean} true if the compilation had a warning
-	 */
 	hasWarnings() {
 		return (
 			this.compilation.warnings.length > 0 ||
@@ -39,9 +25,6 @@ class Stats {
 		);
 	}
 
-	/**
-	 * @returns {boolean} true if the compilation encountered an error
-	 */
 	hasErrors() {
 		return (
 			this.compilation.errors.length > 0 ||
@@ -49,10 +32,6 @@ class Stats {
 		);
 	}
 
-	/**
-	 * @param {(string|StatsOptions)=} options stats options
-	 * @returns {StatsCompilation} json output
-	 */
 	toJson(options) {
 		options = this.compilation.createStatsOptions(options, {
 			forToString: false

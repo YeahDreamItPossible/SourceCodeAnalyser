@@ -3771,6 +3771,7 @@ class JavascriptParser extends Parser {
 	 * @param {ParseOptions} options parsing options
 	 * @returns {ProgramNode} parsed ast
 	 */
+	// 运行 acorn.parse 返回 ast
 	static _parse(code, options) {
 		const type = options ? options.sourceType : "module";
 		/** @type {AcornOptions} */

@@ -23,18 +23,6 @@ const { intersectRuntime } = require("../util/runtime");
 const JavascriptGenerator = require("./JavascriptGenerator");
 const JavascriptParser = require("./JavascriptParser");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../CodeGenerationResults")} CodeGenerationResults */
-/** @typedef {import("../Compilation").ChunkHashContext} ChunkHashContext */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("../util/Hash")} Hash */
-
 /**
  * @param {Chunk} chunk a chunk
  * @param {ChunkGraph} chunkGraph the chunk graph
@@ -59,68 +47,7 @@ const printGeneratedCodeForStack = (module, code) => {
 		.join("\n")}`;
 };
 
-/**
- * @typedef {Object} RenderContext
- * @property {Chunk} chunk the chunk
- * @property {DependencyTemplates} dependencyTemplates the dependency templates
- * @property {RuntimeTemplate} runtimeTemplate the runtime template
- * @property {ModuleGraph} moduleGraph the module graph
- * @property {ChunkGraph} chunkGraph the chunk graph
- * @property {CodeGenerationResults} codeGenerationResults results of code generation
- */
-
-/**
- * @typedef {Object} MainRenderContext
- * @property {Chunk} chunk the chunk
- * @property {DependencyTemplates} dependencyTemplates the dependency templates
- * @property {RuntimeTemplate} runtimeTemplate the runtime template
- * @property {ModuleGraph} moduleGraph the module graph
- * @property {ChunkGraph} chunkGraph the chunk graph
- * @property {CodeGenerationResults} codeGenerationResults results of code generation
- * @property {string} hash hash to be used for render call
- */
-
-/**
- * @typedef {Object} ChunkRenderContext
- * @property {Chunk} chunk the chunk
- * @property {DependencyTemplates} dependencyTemplates the dependency templates
- * @property {RuntimeTemplate} runtimeTemplate the runtime template
- * @property {ModuleGraph} moduleGraph the module graph
- * @property {ChunkGraph} chunkGraph the chunk graph
- * @property {CodeGenerationResults} codeGenerationResults results of code generation
- * @property {InitFragment<ChunkRenderContext>[]} chunkInitFragments init fragments for the chunk
- */
-
-/**
- * @typedef {Object} RenderBootstrapContext
- * @property {Chunk} chunk the chunk
- * @property {RuntimeTemplate} runtimeTemplate the runtime template
- * @property {ModuleGraph} moduleGraph the module graph
- * @property {ChunkGraph} chunkGraph the chunk graph
- * @property {string} hash hash to be used for render call
- */
-
-/** @typedef {RenderContext & { inlined: boolean }} StartupRenderContext */
-
-/**
- * @typedef {Object} CompilationHooks
- * @property {SyncWaterfallHook<[Source, Module, ChunkRenderContext]>} renderModuleContent
- * @property {SyncWaterfallHook<[Source, Module, ChunkRenderContext]>} renderModuleContainer
- * @property {SyncWaterfallHook<[Source, Module, ChunkRenderContext]>} renderModulePackage
- * @property {SyncWaterfallHook<[Source, RenderContext]>} renderChunk
- * @property {SyncWaterfallHook<[Source, RenderContext]>} renderMain
- * @property {SyncWaterfallHook<[Source, RenderContext]>} renderContent
- * @property {SyncWaterfallHook<[Source, RenderContext]>} render
- * @property {SyncWaterfallHook<[Source, Module, StartupRenderContext]>} renderStartup
- * @property {SyncWaterfallHook<[string, RenderBootstrapContext]>} renderRequire
- * @property {SyncBailHook<[Module, RenderBootstrapContext], string>} inlineInRuntimeBailout
- * @property {SyncBailHook<[Module, RenderContext], string>} embedInRuntimeBailout
- * @property {SyncBailHook<[RenderContext], string>} strictRuntimeBailout
- * @property {SyncHook<[Chunk, Hash, ChunkHashContext]>} chunkHash
- * @property {SyncBailHook<[Chunk, RenderContext], boolean>} useSourceMap
- */
-
-/** @type {WeakMap<Compilation, CompilationHooks>} */
+// WeakMap<Compilation, CompilationHooks>
 const compilationHooksMap = new WeakMap();
 
 // 给 compiler.hooks.compilation 注册事件
@@ -128,10 +55,7 @@ const compilationHooksMap = new WeakMap();
 // 给 normalMOduleFactory.hooks.createGenerator 注册事件
 // ...
 class JavascriptModulesPlugin {
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @returns {CompilationHooks} the attached hooks
-	 */
+	// 获取 渲染 钩子
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
 			throw new TypeError(
@@ -179,7 +103,7 @@ class JavascriptModulesPlugin {
 
 	constructor(options = {}) {
 		this.options = options;
-		/** @type {WeakMap<Source, TODO>} */
+		// WeakMap<Source, TODO>
 		this._moduleFactoryCache = new WeakMap();
 	}
 
@@ -218,6 +142,8 @@ class JavascriptModulesPlugin {
 					.tap("JavascriptModulesPlugin", () => {
 						return new JavascriptGenerator();
 					});
+
+				// 渲染代码相关钩子
 				compilation.hooks.renderManifest.tap(
 					"JavascriptModulesPlugin",
 					(result, options) => {
@@ -456,6 +382,7 @@ class JavascriptModulesPlugin {
 		);
 	}
 
+	// 返回 chunk filenameTemplate
 	static getChunkFilenameTemplate(chunk, outputOptions) {
 		if (chunk.filenameTemplate) {
 			return chunk.filenameTemplate;
@@ -475,6 +402,7 @@ class JavascriptModulesPlugin {
 	 * @param {boolean | "strict"} factory true: renders as factory method, "strict": renders as factory method already in strict scope, false: pure module content
 	 * @returns {Source} the newly generated source from rendering
 	 */
+	// 渲染模块
 	renderModule(module, renderContext, hooks, factory) {
 		const { chunk, chunkGraph, runtimeTemplate, codeGenerationResults } =
 			renderContext;
@@ -585,6 +513,7 @@ class JavascriptModulesPlugin {
 	 * @param {CompilationHooks} hooks hooks
 	 * @returns {Source} the rendered source
 	 */
+	// 渲染块
 	renderChunk(renderContext, hooks) {
 		const { chunk, chunkGraph } = renderContext;
 		const modules = chunkGraph.getOrderedChunkModulesIterableBySourceType(
@@ -640,6 +569,7 @@ class JavascriptModulesPlugin {
 	 * @param {Compilation} compilation the compilation
 	 * @returns {Source} the newly generated source from rendering
 	 */
+	// 渲染代码包
 	renderMain(renderContext, hooks, compilation) {
 		const { chunk, chunkGraph, runtimeTemplate } = renderContext;
 
@@ -947,7 +877,7 @@ class JavascriptModulesPlugin {
 	 * @param {CompilationHooks} hooks hooks
 	 * @returns {{ header: string[], beforeStartup: string[], startup: string[], afterStartup: string[], allowInlineStartup: boolean }} the generated source of the bootstrap code
 	 */
-	// 生成 引导程序源代码
+	// 生成 引导程序代码
 	renderBootstrap(renderContext, hooks) {
 		const { chunkGraph, moduleGraph, chunk, runtimeTemplate } = renderContext;
 
@@ -1222,12 +1152,7 @@ class JavascriptModulesPlugin {
 		return result;
 	}
 
-	/**
-	 * @param {RenderBootstrapContext} renderContext options object
-	 * @param {CompilationHooks} hooks hooks
-	 * @returns {string} the generated source of the require function
-	 */
-	// 生成 __webpack_require__ 函数内容
+	// 生成 __webpack_require__ 函数体
 	renderRequire(renderContext, hooks) {
 		const {
 			chunk,
@@ -1235,6 +1160,7 @@ class JavascriptModulesPlugin {
 			runtimeTemplate: { outputOptions }
 		} = renderContext;
 		const runtimeRequirements = chunkGraph.getTreeRuntimeRequirements(chunk);
+		// 模块执行语句
 		const moduleExecution = runtimeRequirements.has(
 			RuntimeGlobals.interceptModuleExecution
 		)

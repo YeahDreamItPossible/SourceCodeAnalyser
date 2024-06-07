@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Sergey Melyukov @smelukov
-*/
-
 "use strict";
 
 const { RawSource } = require("webpack-sources");
@@ -15,6 +10,8 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 
 const TYPES = new Set(["javascript"]);
 
+// 导出资源的源代码 通过raw-loader实现
+// Webpack.Config.module.Rule.type = 'asset/source' 
 class AssetSourceGenerator extends Generator {
 	/**
 	 * @param {NormalModule} module module for which the code should be generated
@@ -43,19 +40,10 @@ class AssetSourceGenerator extends Generator {
 		);
 	}
 
-	/**
-	 * @param {NormalModule} module fresh module
-	 * @returns {Set<string>} available types (do not mutate)
-	 */
 	getTypes(module) {
 		return TYPES;
 	}
 
-	/**
-	 * @param {NormalModule} module the module
-	 * @param {string=} type source type
-	 * @returns {number} estimate size of the module
-	 */
 	getSize(module, type) {
 		const originalSource = module.originalSource();
 

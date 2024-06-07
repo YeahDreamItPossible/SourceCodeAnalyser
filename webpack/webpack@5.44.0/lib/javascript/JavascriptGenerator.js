@@ -6,15 +6,6 @@ const Generator = require("../Generator");
 const InitFragment = require("../InitFragment");
 const HarmonyCompatibilityDependency = require("../dependencies/HarmonyCompatibilityDependency");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../DependenciesBlock")} DependenciesBlock */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("../Generator").GenerateContext} GenerateContext */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../Module").ConcatenationBailoutReasonContext} ConcatenationBailoutReasonContext */
-/** @typedef {import("../NormalModule")} NormalModule */
-/** @typedef {import("../RuntimeTemplate")} RuntimeTemplate */
 
 const deprecatedGetInitFragments = util.deprecate(
 	(template, dependency, templateContext) =>
@@ -41,11 +32,8 @@ class JavascriptGenerator extends Generator {
 		return originalSource.size();
 	}
 
-	/**
-	 * @param {NormalModule} module module for which the bailout reason should be determined
-	 * @param {ConcatenationBailoutReasonContext} context context
-	 * @returns {string | undefined} reason why this module can't be concatenated, undefined when it can be concatenated
-	 */
+	// 返回此模块无法被链接的原因
+	// 当此模块可以被连接时 返回undefined
 	getConcatenationBailoutReason(module, context) {
 		// Only harmony modules are valid for optimization
 		if (
@@ -82,13 +70,9 @@ class JavascriptGenerator extends Generator {
 		return InitFragment.addToSource(source, initFragments, generateContext);
 	}
 
-	/**
-	 * @param {Module} module the module to generate
-	 * @param {InitFragment[]} initFragments mutable list of init fragments
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {GenerateContext} generateContext the generateContext
-	 * @returns {void}
-	 */
+	// 生成 模块代码
+	// 1. 先生成 依赖代码
+	// 2. 再生成 异步模块代码
 	sourceModule(module, initFragments, source, generateContext) {
 		for (const dependency of module.dependencies) {
 			this.sourceDependency(
@@ -123,14 +107,7 @@ class JavascriptGenerator extends Generator {
 		}
 	}
 
-	/**
-	 * @param {Module} module the module to generate
-	 * @param {DependenciesBlock} block the dependencies block which will be processed
-	 * @param {InitFragment[]} initFragments mutable list of init fragments
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {GenerateContext} generateContext the generateContext
-	 * @returns {void}
-	 */
+	// 生成 异步模块代码
 	sourceBlock(module, block, initFragments, source, generateContext) {
 		for (const dependency of block.dependencies) {
 			this.sourceDependency(
@@ -153,14 +130,7 @@ class JavascriptGenerator extends Generator {
 		}
 	}
 
-	/**
-	 * @param {Module} module the current module
-	 * @param {Dependency} dependency the dependency to generate
-	 * @param {InitFragment[]} initFragments mutable list of init fragments
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {GenerateContext} generateContext the render context
-	 * @returns {void}
-	 */
+	// 生成 依赖代码
 	sourceDependency(module, dependency, initFragments, source, generateContext) {
 		const constructor = /** @type {new (...args: any[]) => Dependency} */ (
 			dependency.constructor

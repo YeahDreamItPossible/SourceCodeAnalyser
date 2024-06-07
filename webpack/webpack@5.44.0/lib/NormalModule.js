@@ -647,7 +647,6 @@ class NormalModule extends Module {
 		}
 		return null;
 	}
-
 	
 	// 将 Loader 加载后的结果source 封装成 WebpackSource 的实例
 	// 原因: 为了快速获取该结果的特性
@@ -828,6 +827,7 @@ class NormalModule extends Module {
 		this.addError(error);
 	}
 
+	// 根据 Webpack.Config.module.noParse 字段值 判断当前资源路径是否满足匹配
 	applyNoParseRule(rule, content) {
 		// must start with "rule" if rule is a string
 		if (typeof rule === "string") {
@@ -841,12 +841,8 @@ class NormalModule extends Module {
 		return rule.test(content);
 	}
 
-	// check if module should not be parsed
-	// returns "true" if the module should !not! be parsed
-	// returns "false" if the module !must! be parsed
+	// 根据 Webpack.Config.module.noParse 字段来判断当前资源是否需要经过语法分析
 	shouldPreventParsing(noParseRule, request) {
-		// if no noParseRule exists, return false
-		// the module !must! be parsed.
 		if (!noParseRule) {
 			return false;
 		}
@@ -1129,6 +1125,7 @@ class NormalModule extends Module {
 
 		const sources = new Map();
 		for (const type of this.generator.getTypes(this)) {
+			// 返回 WebpackSource 的实例
 			const source = this.error
 				? new RawSource(
 						"throw new Error(" + JSON.stringify(this.error.message) + ");"

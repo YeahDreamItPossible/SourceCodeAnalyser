@@ -58,78 +58,75 @@ const includesHash = (filename, hashes) => {
 
 // 编译器
 class Compiler {
-	/**
-	 * @param {string} context the compilation path
-	 */
 	constructor(context) {
 		this.hooks = Object.freeze({
-			/** @type {SyncHook<[]>} */
+			// SyncHook<[]>
 			initialize: new SyncHook([]),
 
-			/** @type {SyncBailHook<[Compilation], boolean>} */
+			// SyncBailHook<[Compilation], boolean>
 			shouldEmit: new SyncBailHook(["compilation"]),
-			/** @type {AsyncSeriesHook<[Stats]>} */
+			// AsyncSeriesHook<[Stats]>
 			done: new AsyncSeriesHook(["stats"]),
-			/** @type {SyncHook<[Stats]>} */
+			// SyncHook<[Stats]>
 			afterDone: new SyncHook(["stats"]),
-			/** @type {AsyncSeriesHook<[]>} */
+			// AsyncSeriesHook<[]>
 			additionalPass: new AsyncSeriesHook([]),
-			/** @type {AsyncSeriesHook<[Compiler]>} */
+			// AsyncSeriesHook<[Compiler]>
 			beforeRun: new AsyncSeriesHook(["compiler"]),
-			/** @type {AsyncSeriesHook<[Compiler]>} */
+			// AsyncSeriesHook<[Compiler]>
 			run: new AsyncSeriesHook(["compiler"]),
-			/** @type {AsyncSeriesHook<[Compilation]>} */
+			// AsyncSeriesHook<[Compilation]>
 			emit: new AsyncSeriesHook(["compilation"]),
-			/** @type {AsyncSeriesHook<[string, AssetEmittedInfo]>} */
+			// AsyncSeriesHook<[string, AssetEmittedInfo]>
 			assetEmitted: new AsyncSeriesHook(["file", "info"]),
-			/** @type {AsyncSeriesHook<[Compilation]>} */
+			// AsyncSeriesHook<[Compilation]>
 			afterEmit: new AsyncSeriesHook(["compilation"]),
 
-			/** @type {SyncHook<[Compilation, CompilationParams]>} */
+			// SyncHook<[Compilation, CompilationParams]>
 			thisCompilation: new SyncHook(["compilation", "params"]),
-			/** @type {SyncHook<[Compilation, CompilationParams]>} */
+			// SyncHook<[Compilation, CompilationParams]>
 			compilation: new SyncHook(["compilation", "params"]),
-			/** @type {SyncHook<[NormalModuleFactory]>} */
+			// SyncHook<[NormalModuleFactory]>
 			normalModuleFactory: new SyncHook(["normalModuleFactory"]),
-			/** @type {SyncHook<[ContextModuleFactory]>}  */
+			// SyncHook<[ContextModuleFactory]>}  */
 			contextModuleFactory: new SyncHook(["contextModuleFactory"]),
 
-			/** @type {AsyncSeriesHook<[CompilationParams]>} */
+			// AsyncSeriesHook<[CompilationParams]>
 			beforeCompile: new AsyncSeriesHook(["params"]),
-			/** @type {SyncHook<[CompilationParams]>} */
+			// SyncHook<[CompilationParams]>
 			compile: new SyncHook(["params"]),
-			/** @type {AsyncParallelHook<[Compilation]>} */
+			// AsyncParallelHook<[Compilation]>
 			make: new AsyncParallelHook(["compilation"]),
-			/** @type {AsyncParallelHook<[Compilation]>} */
+			// AsyncParallelHook<[Compilation]>
 			finishMake: new AsyncSeriesHook(["compilation"]),
-			/** @type {AsyncSeriesHook<[Compilation]>} */
+			// AsyncSeriesHook<[Compilation]>
 			afterCompile: new AsyncSeriesHook(["compilation"]),
 
-			/** @type {AsyncSeriesHook<[Compiler]>} */
+			// AsyncSeriesHook<[Compiler]>
 			watchRun: new AsyncSeriesHook(["compiler"]),
-			/** @type {SyncHook<[Error]>} */
+			// SyncHook<[Error]>
 			failed: new SyncHook(["error"]),
-			/** @type {SyncHook<[string | null, number]>} */
+			// SyncHook<[string | null, number]>
 			invalid: new SyncHook(["filename", "changeTime"]),
-			/** @type {SyncHook<[]>} */
+			// SyncHook<[]>
 			watchClose: new SyncHook([]),
-			/** @type {AsyncSeriesHook<[]>} */
+			// AsyncSeriesHook<[]>
 			shutdown: new AsyncSeriesHook([]),
 
-			/** @type {SyncBailHook<[string, string, any[]], true>} */
+			// SyncBailHook<[string, string, any[]], true>
 			infrastructureLog: new SyncBailHook(["origin", "type", "args"]),
 
 			// TODO the following hooks are weirdly located here
 			// TODO move them for webpack 5
-			// NOTE: 空调用
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// SyncHook<[]>
 			environment: new SyncHook([]),
-			// NOTE: 空调用
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// SyncHook<[]>
 			afterEnvironment: new SyncHook([]),
-			/** @type {SyncHook<[Compiler]>} */
+			// SyncHook<[Compiler]>
 			afterPlugins: new SyncHook(["compiler"]),
-			/** @type {SyncHook<[Compiler]>} */
+			// SyncHook<[Compiler]>
 			afterResolvers: new SyncHook(["compiler"]),
 			// 主要是对 Webpack.Config.Entry 处理
 			// SyncBailHook<[string, Entry], boolean>
@@ -147,7 +144,7 @@ class Compiler {
 
 		// 输出路径(绝对路径)
 		// 示例: /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
-		/** @type {string} */
+		// string
 		this.outputPath = "";
 		// 监听器
 		this.watching = undefined;
@@ -167,25 +164,25 @@ class Compiler {
 		this.watchFileSystem = null;
 
 		// 记录
-		/** @type {string|null} */
+		// string|null
 		this.recordsInputPath = null;
-		/** @type {string|null} */
+		// string|null
 		this.recordsOutputPath = null;
 		this.records = {};
-		/** @type {Set<string>} */
+		// Set<string>
 		this.managedPaths = new Set();
-		/** @type {Set<string>} */
+		// Set<string>
 		this.immutablePaths = new Set();
 
-		/** @type {Set<string>} */
+		// Set<string>
 		this.modifiedFiles = undefined;
-		/** @type {Set<string>} */
+		// Set<string>
 		this.removedFiles = undefined;
-		/** @type {Map<string, FileSystemInfoEntry | "ignore" | null>} */
+		// Map<string, FileSystemInfoEntry | "ignore" | null>
 		this.fileTimestamps = undefined;
-		/** @type {Map<string, FileSystemInfoEntry | "ignore" | null>} */
+		// Map<string, FileSystemInfoEntry | "ignore" | null>
 		this.contextTimestamps = undefined;
-		/** @type {number} */
+		// number
 		this.fsStartTime = undefined;
 
 		// 路径解析器
@@ -196,7 +193,7 @@ class Compiler {
 		this.infrastructureLogger = undefined;
 
 		// Webpack.Config
-		this.options = /** @type {WebpackOptions} */ ({});
+		this.options = // WebpackOptions ({});
 
 		// 上下文
 		// 默认使用 Node.js 进程的当前工作目录 __dirname
@@ -213,7 +210,7 @@ class Compiler {
 		this.compilerPath = "";
 
 		// 标识: 标识compiler是否正在运行
-		/** @type {boolean} */
+		// boolean
 		// 当前编译器是否正在运行
 		this.running = false;
 		// 当前编译器是否闲置
@@ -226,26 +223,20 @@ class Compiler {
 		// 上一个模块工厂 NormalModuleFactory
 		this._lastNormalModuleFactory = undefined;
 
-		/** @private @type {WeakMap<Source, { sizeOnlySource: SizeOnlySource, writtenTo: Map<string, number> }>} */
+		// WeakMap<Source, { sizeOnlySource: SizeOnlySource, writtenTo: Map<string, number> }>
 		this._assetEmittingSourceCache = new WeakMap();
-		/** @private @type {Map<string, number>} */
+		// Map<string, number>
 		this._assetEmittingWrittenFiles = new Map();
-		/** @private @type {Set<string>} */
+		// Set<string>
 		this._assetEmittingPreviousFiles = new Set();
 	}
 
-	/**
-	 * @param {string} name cache name
-	 * @returns {CacheFacade} the cache facade instance
-	 */
+	// 根据 name 返回创建的 CacheFacade 的实例
 	getCache(name) {
 		return new CacheFacade(this.cache, `${this.compilerPath}${name}`);
 	}
 
-	/**
-	 * @param {string | (function(): string)} name name of the logger, or function called once to get the logger name
-	 * @returns {Logger} a logger with that name
-	 */
+	// 创建 给定name的 logger
 	getInfrastructureLogger(name) {
 		if (!name) {
 			throw new TypeError(
@@ -352,11 +343,6 @@ class Compiler {
 	}
 
 	// 开启监听模式 如果检测文件发生变化 会再次自动构建
-	/**
-	 * @param {WatchOptions} watchOptions the watcher's options
-	 * @param {Callback<Stats>} handler signals when the call finishes
-	 * @returns {Watching} a compiler watcher
-	 */
 	watch(watchOptions, handler) {
 		if (this.running) {
 			return handler(new ConcurrentCompilationError());
@@ -368,10 +354,7 @@ class Compiler {
 		return this.watching;
 	}
 
-	/**
-	 * @param {Callback<Stats>} callback signals when the call finishes
-	 * @returns {void}
-	 */
+	// 运行编译器
 	run(callback) {
 		if (this.running) {
 			return callback(new ConcurrentCompilationError());
@@ -497,10 +480,7 @@ class Compiler {
 		}
 	}
 
-	/**
-	 * @param {RunAsChildCallback} callback signals when the call finishes
-	 * @returns {void}
-	 */
+	// 作为子编译器运行
 	runAsChild(callback) {
 		const startTime = Date.now();
 		this.compile((err, compilation) => {
@@ -538,9 +518,9 @@ class Compiler {
 
 			const assets = compilation.getAssets();
 			compilation.assets = { ...compilation.assets };
-			/** @type {Map<string, { path: string, source: Source, size: number, waiting: { cacheEntry: any, file: string }[] }>} */
+			// Map<string, { path: string, source: Source, size: number, waiting: { cacheEntry: any, file: string }[] }>
 			const caseInsensitiveMap = new Map();
-			/** @type {Set<string>} */
+			// Set<string>
 			const allTargetPaths = new Set();
 			asyncLib.forEachLimit(
 				assets,
@@ -548,7 +528,7 @@ class Compiler {
 				({ name: file, source, info }, callback) => {
 					let targetFile = file;
 					let immutable = info.immutable;
-					// NOTE: 输出目录上带有参数
+					// 输出目录上带有参数
 					const queryStringIdx = targetFile.indexOf("?");
 					if (queryStringIdx >= 0) {
 						targetFile = targetFile.substr(0, queryStringIdx);
@@ -734,7 +714,7 @@ class Compiler {
 									(err, existingContent) => {
 										if (
 											err ||
-											!content.equals(/** @type {Buffer} */ (existingContent))
+											!content.equals(// Buffer (existingContent))
 										) {
 											return doWrite(content);
 										} else {
@@ -820,7 +800,7 @@ class Compiler {
 
 					this._assetEmittingPreviousFiles = allTargetPaths;
 
-					// NOTE: 直接执行回调
+					// 直接执行回调
 					this.hooks.afterEmit.callAsync(compilation, err => {
 						if (err) return callback(err);
 
@@ -909,14 +889,7 @@ class Compiler {
 		});
 	}
 
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @param {string} compilerName the compiler's name
-	 * @param {number} compilerIndex the compiler's index
-	 * @param {OutputOptions=} outputOptions the output options
-	 * @param {WebpackPluginInstance[]=} plugins the plugins to apply
-	 * @returns {Compiler} a child compiler
-	 */
+	// 创建 子编译器
 	createChildCompiler(
 		compilation,
 		compilerName,
@@ -993,6 +966,7 @@ class Compiler {
 		return childCompiler;
 	}
 
+	// 当前编译器是否是 子编译器
 	isChild() {
 		return !!this.parentCompilation;
 	}
@@ -1117,7 +1091,7 @@ class Compiler {
 		return params;
 	}
 
-	// 开始编译
+	// 开始compilation编译
 	compile(callback) {
 		const params = this.newCompilationParams();
 		// 直接执行回调

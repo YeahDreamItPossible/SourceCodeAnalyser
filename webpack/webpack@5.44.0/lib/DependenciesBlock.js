@@ -11,7 +11,7 @@ class DependenciesBlock {
 		this.blocks = [];
 	}
 
-	// 添加块
+	// 添加异步模块
 	addBlock(block) {
 		this.blocks.push(block);
 		block.parent = this;
@@ -46,11 +46,13 @@ class DependenciesBlock {
 		}
 	}
 
+	// 序列化
 	serialize({ write }) {
 		write(this.dependencies);
 		write(this.blocks);
 	}
 
+	// 反序列化
 	deserialize({ read }) {
 		this.dependencies = read();
 		this.blocks = read();

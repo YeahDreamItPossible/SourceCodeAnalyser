@@ -2,6 +2,9 @@
 
 const Parser = require("../Parser");
 
+// Webpack.Config.module.Rule.type = 'asset'
+// Webpack.Config.module.Rule.type = 'asset/resource'
+// Webpack.Config.module.Rule.type = 'asset/inline'
 class AssetParser extends Parser {
 	constructor(dataUrlCondition) {
 		super();
@@ -12,6 +15,7 @@ class AssetParser extends Parser {
 		if (typeof source === "object" && !Buffer.isBuffer(source)) {
 			throw new Error("AssetParser doesn't accept preparsed AST");
 		}
+		// 
 		state.module.buildInfo.strict = true;
 		state.module.buildMeta.exportsType = "default";
 

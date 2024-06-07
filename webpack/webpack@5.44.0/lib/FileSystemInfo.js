@@ -163,6 +163,7 @@ class SnapshotIterable {
 	}
 }
 
+// 快照
 class Snapshot {
 	constructor() {
 		this._flags = 0;

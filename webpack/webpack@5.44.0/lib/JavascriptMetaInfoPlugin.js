@@ -1,29 +1,13 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Sergey Melyukov @smelukov
-*/
-
 "use strict";
 
 const InnerGraph = require("./optimize/InnerGraph");
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./javascript/JavascriptParser")} JavascriptParser */
-
+// 设置 normalModule.buildInfo
 class JavascriptMetaInfoPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"JavascriptMetaInfoPlugin",
 			(compilation, { normalModuleFactory }) => {
-				/**
-				 * @param {JavascriptParser} parser the parser
-				 * @returns {void}
-				 */
 				const handler = parser => {
 					parser.hooks.call.for("eval").tap("JavascriptMetaInfoPlugin", () => {
 						parser.state.module.buildInfo.moduleConcatenationBailout = "eval()";

@@ -534,4 +534,10 @@ ModuleFactory => IgnoreErrorModuleFactory
 ModuleFactory => ProvideSharedModuleFactory
 
 
-dependency module chunk assets bundle
+dependency module chunk assets bundle stats
+
+
+总结:
+1. source map 整个流程 和 debug 时能定位对应的行列 是什么原理
+2. webpack-dev-server 与 webpack-dev-middleware 区别
+3. optimization.moduleIds 与 optimization.chunkIds 到底对hash有什么作用

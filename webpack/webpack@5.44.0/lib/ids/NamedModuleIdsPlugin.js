@@ -10,7 +10,7 @@ const {
 } = require("./IdHelpers");
 
 // 给 Module 对应的 ChunkGraphModule 设置 id
-// 即： chunkGraphModule.id = 模块引入路劲(相对路径)
+// 即： chunkGraphModule.id = 模块短路劲(相对路径)
 // 根据 Webpack.Config.optimization.moduleIds = 'named' 注册该插件
 class NamedModuleIdsPlugin {
 	constructor(options) {

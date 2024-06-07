@@ -26,8 +26,10 @@ class JsonParser extends Parser {
 				? source
 				: parseFn(source[0] === "\ufeff" ? source.slice(1) : source);
 
+		// 
 		state.module.buildInfo.jsonData = new JsonData(data);
 		state.module.buildInfo.strict = true;
+		// 
 		state.module.buildMeta.exportsType = "default";
 		state.module.buildMeta.defaultObject =
 			typeof data === "object" ? "redirect-warn" : false;

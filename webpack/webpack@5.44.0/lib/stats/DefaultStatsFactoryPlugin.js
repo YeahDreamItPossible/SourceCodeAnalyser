@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
@@ -23,297 +18,6 @@ const {
 } = require("../util/comparators");
 const { makePathsRelative, parseResource } = require("../util/identifier");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../ChunkGroup")} ChunkGroup */
-/** @typedef {import("../ChunkGroup").OriginRecord} OriginRecord */
-/** @typedef {import("../Compilation")} Compilation */
-/** @typedef {import("../Compilation").Asset} Asset */
-/** @typedef {import("../Compilation").AssetInfo} AssetInfo */
-/** @typedef {import("../Compilation").NormalizedStatsOptions} NormalizedStatsOptions */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").DependencyLocation} DependencyLocation */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../ModuleGraphConnection")} ModuleGraphConnection */
-/** @typedef {import("../ModuleProfile")} ModuleProfile */
-/** @typedef {import("../RequestShortener")} RequestShortener */
-/** @typedef {import("../WebpackError")} WebpackError */
-/** @template T @typedef {import("../util/comparators").Comparator<T>} Comparator<T> */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
-/** @typedef {import("../util/smartGrouping").GroupConfig<any, object>} GroupConfig */
-/** @typedef {import("./StatsFactory")} StatsFactory */
-/** @typedef {import("./StatsFactory").StatsFactoryContext} StatsFactoryContext */
-
-/** @typedef {KnownStatsCompilation & Record<string, any>} StatsCompilation */
-/**
- * @typedef {Object} KnownStatsCompilation
- * @property {any=} env
- * @property {string=} name
- * @property {string=} hash
- * @property {string=} version
- * @property {number=} time
- * @property {number=} builtAt
- * @property {boolean=} needAdditionalPass
- * @property {string=} publicPath
- * @property {string=} outputPath
- * @property {Record<string, string[]>=} assetsByChunkName
- * @property {StatsAsset[]=} assets
- * @property {number=} filteredAssets
- * @property {StatsChunk[]=} chunks
- * @property {StatsModule[]=} modules
- * @property {number=} filteredModules
- * @property {Record<string, StatsChunkGroup>=} entrypoints
- * @property {Record<string, StatsChunkGroup>=} namedChunkGroups
- * @property {StatsError[]=} errors
- * @property {number=} errorsCount
- * @property {StatsError[]=} warnings
- * @property {number=} warningsCount
- * @property {StatsCompilation[]=} children
- * @property {Record<string, StatsLogging>=} logging
- */
-
-/** @typedef {KnownStatsLogging & Record<string, any>} StatsLogging */
-/**
- * @typedef {Object} KnownStatsLogging
- * @property {StatsLoggingEntry[]} entries
- * @property {number} filteredEntries
- * @property {boolean} debug
- */
-
-/** @typedef {KnownStatsLoggingEntry & Record<string, any>} StatsLoggingEntry */
-/**
- * @typedef {Object} KnownStatsLoggingEntry
- * @property {string} type
- * @property {string} message
- * @property {string[]=} trace
- * @property {StatsLoggingEntry[]=} children
- * @property {any[]=} args
- * @property {number=} time
- */
-
-/** @typedef {KnownStatsAsset & Record<string, any>} StatsAsset */
-/**
- * @typedef {Object} KnownStatsAsset
- * @property {string} type
- * @property {string} name
- * @property {AssetInfo} info
- * @property {number} size
- * @property {boolean} emitted
- * @property {boolean} comparedForEmit
- * @property {boolean} cached
- * @property {StatsAsset[]=} related
- * @property {(string|number)[]=} chunkNames
- * @property {(string|number)[]=} chunkIdHints
- * @property {(string|number)[]=} chunks
- * @property {(string|number)[]=} auxiliaryChunkNames
- * @property {(string|number)[]=} auxiliaryChunks
- * @property {(string|number)[]=} auxiliaryChunkIdHints
- * @property {number=} filteredRelated
- * @property {boolean=} isOverSizeLimit
- */
-
-/** @typedef {KnownStatsChunkGroup & Record<string, any>} StatsChunkGroup */
-/**
- * @typedef {Object} KnownStatsChunkGroup
- * @property {string=} name
- * @property {(string|number)[]=} chunks
- * @property {({ name: string, size?: number })[]=} assets
- * @property {number=} filteredAssets
- * @property {number=} assetsSize
- * @property {({ name: string, size?: number })[]=} auxiliaryAssets
- * @property {number=} filteredAuxiliaryAssets
- * @property {number=} auxiliaryAssetsSize
- * @property {{ [x: string]: StatsChunkGroup[] }=} children
- * @property {{ [x: string]: string[] }=} childAssets
- * @property {boolean=} isOverSizeLimit
- */
-
-/** @typedef {KnownStatsModule & Record<string, any>} StatsModule */
-/**
- * @typedef {Object} KnownStatsModule
- * @property {string=} type
- * @property {string=} moduleType
- * @property {string=} layer
- * @property {string=} identifier
- * @property {string=} name
- * @property {string=} nameForCondition
- * @property {number=} index
- * @property {number=} preOrderIndex
- * @property {number=} index2
- * @property {number=} postOrderIndex
- * @property {number=} size
- * @property {{[x: string]: number}=} sizes
- * @property {boolean=} cacheable
- * @property {boolean=} built
- * @property {boolean=} codeGenerated
- * @property {boolean=} buildTimeExecuted
- * @property {boolean=} cached
- * @property {boolean=} optional
- * @property {boolean=} orphan
- * @property {string|number=} id
- * @property {string|number=} issuerId
- * @property {(string|number)[]=} chunks
- * @property {(string|number)[]=} assets
- * @property {boolean=} dependent
- * @property {string=} issuer
- * @property {string=} issuerName
- * @property {StatsModuleIssuer[]=} issuerPath
- * @property {boolean=} failed
- * @property {number=} errors
- * @property {number=} warnings
- * @property {StatsProfile=} profile
- * @property {StatsModuleReason[]=} reasons
- * @property {(boolean | string[])=} usedExports
- * @property {string[]=} providedExports
- * @property {string[]=} optimizationBailout
- * @property {number=} depth
- * @property {StatsModule[]=} modules
- * @property {number=} filteredModules
- * @property {ReturnType<Source["source"]>=} source
- */
-
-/** @typedef {KnownStatsProfile & Record<string, any>} StatsProfile */
-/**
- * @typedef {Object} KnownStatsProfile
- * @property {number} total
- * @property {number} resolving
- * @property {number} restoring
- * @property {number} building
- * @property {number} integration
- * @property {number} storing
- * @property {number} additionalResolving
- * @property {number} additionalIntegration
- * @property {number} factory
- * @property {number} dependencies
- */
-
-/** @typedef {KnownStatsModuleIssuer & Record<string, any>} StatsModuleIssuer */
-/**
- * @typedef {Object} KnownStatsModuleIssuer
- * @property {string=} identifier
- * @property {string=} name
- * @property {(string|number)=} id
- * @property {StatsProfile=} profile
- */
-
-/** @typedef {KnownStatsModuleReason & Record<string, any>} StatsModuleReason */
-/**
- * @typedef {Object} KnownStatsModuleReason
- * @property {string=} moduleIdentifier
- * @property {string=} module
- * @property {string=} moduleName
- * @property {string=} resolvedModuleIdentifier
- * @property {string=} resolvedModule
- * @property {string=} type
- * @property {boolean} active
- * @property {string=} explanation
- * @property {string=} userRequest
- * @property {string=} loc
- * @property {(string|number)=} moduleId
- * @property {(string|number)=} resolvedModuleId
- */
-
-/** @typedef {KnownStatsChunk & Record<string, any>} StatsChunk */
-/**
- * @typedef {Object} KnownStatsChunk
- * @property {boolean} rendered
- * @property {boolean} initial
- * @property {boolean} entry
- * @property {boolean} recorded
- * @property {string=} reason
- * @property {number} size
- * @property {Record<string, number>=} sizes
- * @property {string[]=} names
- * @property {string[]=} idHints
- * @property {string[]=} runtime
- * @property {string[]=} files
- * @property {string[]=} auxiliaryFiles
- * @property {string} hash
- * @property {Record<string, (string|number)[]>=} childrenByOrder
- * @property {(string|number)=} id
- * @property {(string|number)[]=} siblings
- * @property {(string|number)[]=} parents
- * @property {(string|number)[]=} children
- * @property {StatsModule[]=} modules
- * @property {number=} filteredModules
- * @property {StatsChunkOrigin[]=} origins
- */
-
-/** @typedef {KnownStatsChunkOrigin & Record<string, any>} StatsChunkOrigin */
-/**
- * @typedef {Object} KnownStatsChunkOrigin
- * @property {string=} module
- * @property {string=} moduleIdentifier
- * @property {string=} moduleName
- * @property {string=} loc
- * @property {string=} request
- * @property {(string|number)=} moduleId
- */
-
-/** @typedef {KnownStatsModuleTraceItem & Record<string, any>} StatsModuleTraceItem */
-/**
- * @typedef {Object} KnownStatsModuleTraceItem
- * @property {string=} originIdentifier
- * @property {string=} originName
- * @property {string=} moduleIdentifier
- * @property {string=} moduleName
- * @property {StatsModuleTraceDependency[]=} dependencies
- * @property {(string|number)=} originId
- * @property {(string|number)=} moduleId
- */
-
-/** @typedef {KnownStatsModuleTraceDependency & Record<string, any>} StatsModuleTraceDependency */
-/**
- * @typedef {Object} KnownStatsModuleTraceDependency
- * @property {string=} loc
- */
-
-/** @typedef {KnownStatsError & Record<string, any>} StatsError */
-/**
- * @typedef {Object} KnownStatsError
- * @property {string} message
- * @property {string=} chunkName
- * @property {boolean=} chunkEntry
- * @property {boolean=} chunkInitial
- * @property {string=} file
- * @property {string=} moduleIdentifier
- * @property {string=} moduleName
- * @property {string=} loc
- * @property {string|number=} chunkId
- * @property {string|number=} moduleId
- * @property {StatsModuleTraceItem[]=} moduleTrace
- * @property {any=} details
- * @property {string=} stack
- */
-
-/** @typedef {Asset & { type: string, related: PreprocessedAsset[] }} PreprocessedAsset */
-
-/**
- * @template T
- * @template O
- * @typedef {Record<string, (object: O, data: T, context: StatsFactoryContext, options: NormalizedStatsOptions, factory: StatsFactory) => void>} ExtractorsByOption
- */
-
-/**
- * @typedef {Object} SimpleExtractors
- * @property {ExtractorsByOption<Compilation, StatsCompilation>} compilation
- * @property {ExtractorsByOption<PreprocessedAsset, StatsAsset>} asset
- * @property {ExtractorsByOption<PreprocessedAsset, StatsAsset>} asset$visible
- * @property {ExtractorsByOption<{ name: string, chunkGroup: ChunkGroup }, StatsChunkGroup>} chunkGroup
- * @property {ExtractorsByOption<Module, StatsModule>} module
- * @property {ExtractorsByOption<Module, StatsModule>} module$visible
- * @property {ExtractorsByOption<Module, StatsModuleIssuer>} moduleIssuer
- * @property {ExtractorsByOption<ModuleProfile, StatsProfile>} profile
- * @property {ExtractorsByOption<ModuleGraphConnection, StatsModuleReason>} moduleReason
- * @property {ExtractorsByOption<Chunk, StatsChunk>} chunk
- * @property {ExtractorsByOption<OriginRecord, StatsChunkOrigin>} chunkOrigin
- * @property {ExtractorsByOption<WebpackError, StatsError>} error
- * @property {ExtractorsByOption<WebpackError, StatsError>} warning
- * @property {ExtractorsByOption<{ origin: Module, module: Module }, StatsModuleTraceItem>} moduleTraceItem
- * @property {ExtractorsByOption<Dependency, StatsModuleTraceDependency>} moduleTraceDependency
- */
-
 /**
  * @template T
  * @template I
@@ -322,7 +26,7 @@ const { makePathsRelative, parseResource } = require("../util/identifier");
  * @returns {I[]} array of values
  */
 const uniqueArray = (items, selector) => {
-	/** @type {Set<I>} */
+	// Set<I>
 	const set = new Set();
 	for (const item of items) {
 		for (const i of selector(item)) {
@@ -356,7 +60,7 @@ const uniqueOrderedArray = (items, selector, comparator) => {
 const mapObject = (obj, fn) => {
 	const newObj = Object.create(null);
 	for (const key of Object.keys(obj)) {
-		newObj[key] = fn(obj[key], /** @type {keyof T} */ (key));
+		newObj[key] = fn(obj[key], // keyof T (key));
 	}
 	return newObj;
 };
@@ -376,7 +80,7 @@ const countWithChildren = (compilation, getItems) => {
 	return count;
 };
 
-/** @type {ExtractorsByOption<WebpackError | string, StatsError>} */
+// ExtractorsByOption<WebpackError | string, StatsError>
 const EXTRACT_ERROR = {
 	_: (object, error, context, { requestShortener }) => {
 		// TODO webpack 6 disallow strings in the errors/warnings list
@@ -417,7 +121,7 @@ const EXTRACT_ERROR = {
 				type,
 				compilation: { moduleGraph }
 			} = context;
-			/** @type {Set<Module>} */
+			// Set<Module>
 			const visitedModules = new Set();
 			const moduleTrace = [];
 			let current = error.module;
@@ -457,9 +161,12 @@ const EXTRACT_ERROR = {
 	}
 };
 
-/** @type {SimpleExtractors} */
+// 提取器
+// 根据 特定的属性路径 提取对应的值
+// 示例: compilation.assets[].asset
 const SIMPLE_EXTRACTORS = {
 	compilation: {
+		// context 扩展api 及 输出日志
 		_: (object, compilation, context, options) => {
 			if (!context.makePathsRelative) {
 				context.makePathsRelative = makePathsRelative.bindContextCache(
@@ -557,9 +264,9 @@ const SIMPLE_EXTRACTORS = {
 				for (const [origin, logEntries] of compilation.logging) {
 					const debugMode = loggingDebug.some(fn => fn(origin));
 					if (logging === false && !debugMode) continue;
-					/** @type {KnownStatsLoggingEntry[]} */
+					// KnownStatsLoggingEntry[]
 					const groupStack = [];
-					/** @type {KnownStatsLoggingEntry[]} */
+					// KnownStatsLoggingEntry[]
 					const rootList = [];
 					let currentList = rootList;
 					let processedLogEntries = 0;
@@ -596,7 +303,7 @@ const SIMPLE_EXTRACTORS = {
 						} else if (entry.args && entry.args.length > 0) {
 							message = util.format(entry.args[0], ...entry.args.slice(1));
 						}
-						/** @type {KnownStatsLoggingEntry} */
+						// KnownStatsLoggingEntry
 						const newEntry = {
 							...entry,
 							type,
@@ -659,9 +366,9 @@ const SIMPLE_EXTRACTORS = {
 		},
 		assets: (object, compilation, context, options, factory) => {
 			const { type } = context;
-			/** @type {Map<string, Chunk[]>} */
+			// Map<string, Chunk[]>
 			const compilationFileToChunks = new Map();
-			/** @type {Map<string, Chunk[]>} */
+			// Map<string, Chunk[]>
 			const compilationAuxiliaryFileToChunks = new Map();
 			for (const chunk of compilation.chunks) {
 				for (const file of chunk.files) {
@@ -681,12 +388,12 @@ const SIMPLE_EXTRACTORS = {
 					array.push(chunk);
 				}
 			}
-			/** @type {Map<string, PreprocessedAsset>} */
+			// Map<string, PreprocessedAsset>
 			const assetMap = new Map();
-			/** @type {Set<PreprocessedAsset>} */
+			// Set<PreprocessedAsset>
 			const assets = new Set();
 			for (const asset of compilation.getAssets()) {
-				/** @type {PreprocessedAsset} */
+				// PreprocessedAsset
 				const item = {
 					...asset,
 					type: "asset",
@@ -988,7 +695,7 @@ const SIMPLE_EXTRACTORS = {
 					size: asset ? asset.info.size : -1
 				};
 			};
-			/** @type {(total: number, asset: { size: number }) => number} */
+			// (total: number, asset: { size: number }) => number
 			const sizeReducer = (total, { size }) => total + size;
 			const assets = uniqueArray(chunkGroup.chunks, c => c.files).map(toAsset);
 			const auxiliaryAssets = uniqueOrderedArray(
@@ -998,7 +705,7 @@ const SIMPLE_EXTRACTORS = {
 			).map(toAsset);
 			const assetsSize = assets.reduce(sizeReducer, 0);
 			const auxiliaryAssetsSize = auxiliaryAssets.reduce(sizeReducer, 0);
-			/** @type {KnownStatsChunkGroup} */
+			// KnownStatsChunkGroup
 			const statsChunkGroup = {
 				name,
 				chunks: ids ? chunkGroup.chunks.map(c => c.id) : undefined,
@@ -1027,7 +734,7 @@ const SIMPLE_EXTRACTORS = {
 									compareIds
 								).map(toAsset);
 
-								/** @type {KnownStatsChunkGroup} */
+								// KnownStatsChunkGroup
 								const childStatsChunkGroup = {
 									name: group.name,
 									chunks: ids ? group.chunks.map(c => c.id) : undefined,
@@ -1053,7 +760,7 @@ const SIMPLE_EXTRACTORS = {
 					: undefined,
 				childAssets: children
 					? mapObject(children, groups => {
-							/** @type {Set<string>} */
+							// Set<string>
 							const set = new Set();
 							for (const group of groups) {
 								for (const chunk of group.chunks) {
@@ -1079,12 +786,12 @@ const SIMPLE_EXTRACTORS = {
 			const codeGenerated = compilation.codeGeneratedModules.has(module);
 			const buildTimeExecuted =
 				compilation.buildTimeExecutedModules.has(module);
-			/** @type {{[x: string]: number}} */
+			// {[x: string]: number}
 			const sizes = {};
 			for (const sourceType of module.getSourceTypes()) {
 				sizes[sourceType] = module.size(sourceType);
 			}
-			/** @type {KnownStatsModule} */
+			// KnownStatsModule
 			const statsModule = {
 				type: "module",
 				moduleType: module.type,
@@ -1110,7 +817,7 @@ const SIMPLE_EXTRACTORS = {
 		_: (object, module, context, { requestShortener }, factory) => {
 			const { compilation, type, rootModules } = context;
 			const { moduleGraph } = compilation;
-			/** @type {Module[]} */
+			// Module[]
 			const path = [];
 			const issuer = moduleGraph.getIssuer(module);
 			let current = issuer;
@@ -1125,12 +832,12 @@ const SIMPLE_EXTRACTORS = {
 			const warnings = module.getWarnings();
 			const warningsCount =
 				warnings !== undefined ? countIterable(warnings) : 0;
-			/** @type {{[x: string]: number}} */
+			// {[x: string]: number}
 			const sizes = {};
 			for (const sourceType of module.getSourceTypes()) {
 				sizes[sourceType] = module.size(sourceType);
 			}
-			/** @type {KnownStatsModule} */
+			// KnownStatsModule
 			const statsModule = {
 				identifier: module.identifier(),
 				name: module.readableIdentifier(requestShortener),
@@ -1226,7 +933,8 @@ const SIMPLE_EXTRACTORS = {
 		},
 		nestedModules: (object, module, context, options, factory) => {
 			const { type } = context;
-			const innerModules = /** @type {Module & { modules?: Module[] }} */ (
+			// Module & { modules?: Module[] } 
+			const innerModules = (
 				module
 			).modules;
 			if (Array.isArray(innerModules)) {
@@ -1252,7 +960,7 @@ const SIMPLE_EXTRACTORS = {
 	},
 	profile: {
 		_: (object, profile) => {
-			/** @type {KnownStatsProfile} */
+			// KnownStatsProfile
 			const statsProfile = {
 				total:
 					profile.factory +
@@ -1280,7 +988,7 @@ const SIMPLE_EXTRACTORS = {
 			const { compilation, type } = context;
 			const { moduleGraph } = compilation;
 			const profile = moduleGraph.getProfile(module);
-			/** @type {KnownStatsModuleIssuer} */
+			// KnownStatsModuleIssuer
 			const statsModuleIssuer = {
 				identifier: module.identifier(),
 				name: module.readableIdentifier(requestShortener)
@@ -1299,7 +1007,7 @@ const SIMPLE_EXTRACTORS = {
 			const dep = reason.dependency;
 			const moduleDep =
 				dep && dep instanceof ModuleDependency ? dep : undefined;
-			/** @type {KnownStatsModuleReason} */
+			// KnownStatsModuleReason
 			const statsModuleReason = {
 				moduleIdentifier: reason.originModule
 					? reason.originModule.identifier()
@@ -1342,7 +1050,7 @@ const SIMPLE_EXTRACTORS = {
 		_: (object, chunk, { makePathsRelative, compilation: { chunkGraph } }) => {
 			const childIdByOrder = chunk.getChildIdsByOrders(chunkGraph);
 
-			/** @type {KnownStatsChunk} */
+			// KnownStatsChunk
 			const statsChunk = {
 				rendered: chunk.rendered,
 				initial: chunk.canBeInitial(),
@@ -1370,11 +1078,11 @@ const SIMPLE_EXTRACTORS = {
 			object.id = chunk.id;
 		},
 		chunkRelations: (object, chunk, { compilation: { chunkGraph } }) => {
-			/** @type {Set<string|number>} */
+			// Set<string|number>
 			const parents = new Set();
-			/** @type {Set<string|number>} */
+			// Set<string|number>
 			const children = new Set();
-			/** @type {Set<string|number>} */
+			// Set<string|number>
 			const siblings = new Set();
 
 			for (const chunkGroup of chunk.groupsIterable) {
@@ -1416,7 +1124,7 @@ const SIMPLE_EXTRACTORS = {
 				type,
 				compilation: { chunkGraph }
 			} = context;
-			/** @type {Set<string>} */
+			// Set<string>
 			const originsKeySet = new Set();
 			const origins = [];
 			for (const g of chunk.groupsIterable) {
@@ -1437,7 +1145,7 @@ const SIMPLE_EXTRACTORS = {
 	},
 	chunkOrigin: {
 		_: (object, origin, context, { requestShortener }) => {
-			/** @type {KnownStatsChunkOrigin} */
+			// KnownStatsChunkOrigin
 			const statsChunkOrigin = {
 				module: origin.module ? origin.module.identifier() : "",
 				moduleIdentifier: origin.module ? origin.module.identifier() : "",
@@ -1490,7 +1198,8 @@ const SIMPLE_EXTRACTORS = {
 	}
 };
 
-/** @type {Record<string, Record<string, (thing: any, context: StatsFactoryContext, options: NormalizedStatsOptions) => boolean | undefined>>} */
+// 过滤器
+// Record<string, Record<string, (thing: any, context: StatsFactoryContext, options: NormalizedStatsOptions) => boolean | undefined>>
 const FILTER = {
 	"module.reasons": {
 		"!orphanModules": (reason, { compilation: { chunkGraph } }) => {
@@ -1504,7 +1213,8 @@ const FILTER = {
 	}
 };
 
-/** @type {Record<string, Record<string, (thing: Object, context: StatsFactoryContext, options: NormalizedStatsOptions) => boolean | undefined>>} */
+// 废弃
+// Record<string, Record<string, (thing: Object, context: StatsFactoryContext, options: NormalizedStatsOptions) => boolean | undefined>>
 const FILTER_RESULTS = {
 	"compilation.warnings": {
 		warningsFilter: util.deprecate(
@@ -1520,7 +1230,7 @@ const FILTER_RESULTS = {
 	}
 };
 
-/** @type {Record<string, (comparators: Function[], context: StatsFactoryContext) => void>} */
+// Record<string, (comparators: Function[], context: StatsFactoryContext) => void>
 const MODULES_SORTER = {
 	_: (comparators, { compilation: { moduleGraph } }) => {
 		comparators.push(
@@ -1552,7 +1262,7 @@ const MODULES_SORTER = {
 	}
 };
 
-/** @type {Record<string, Record<string, (comparators: Function[], context: StatsFactoryContext) => void>>} */
+// Record<string, Record<string, (comparators: Function[], context: StatsFactoryContext) => void>>
 const SORTERS = {
 	"compilation.chunks": {
 		_: comparators => {
@@ -1656,9 +1366,9 @@ const collapse = children => {
 };
 
 const spaceLimited = (itemsAndGroups, max) => {
-	/** @type {any[] | undefined} */
+	// any[] | undefined
 	let children = undefined;
-	/** @type {number | undefined} */
+	// number | undefined
 	let filteredChildren = undefined;
 	// This are the groups, which take 1+ lines each
 	const groups = itemsAndGroups.filter(c => c.children || c.filteredChildren);
@@ -1764,7 +1474,7 @@ const moduleGroup = (children, modules) => {
 	};
 };
 
-/** @type {Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>} */
+// Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>
 const ASSETS_GROUPERS = {
 	_: (groupConfigs, context, options) => {
 		const groupByFlag = (name, exclude) => {
@@ -1909,7 +1619,7 @@ const ASSETS_GROUPERS = {
 	}
 };
 
-/** @type {function("module" | "chunk" | "root-of-chunk" | "nested"): Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>} */
+// function("module" | "chunk" | "root-of-chunk" | "nested"): Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>
 const MODULES_GROUPERS = type => ({
 	_: (groupConfigs, context, options) => {
 		const groupByFlag = (name, type, exclude) => {
@@ -2067,7 +1777,7 @@ const MODULES_GROUPERS = type => ({
 	}
 });
 
-/** @type {Record<string, Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>>} */
+// Record<string, Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>>
 const RESULT_GROUPERS = {
 	"compilation.assets": ASSETS_GROUPERS,
 	"asset.related": ASSETS_GROUPERS,
@@ -2124,7 +1834,7 @@ const sortByField = field => {
 };
 
 const ASSET_SORTERS = {
-	/** @type {(comparators: Function[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void} */
+	// (comparators: Function[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void
 	assetsSort: (comparators, context, { assetsSort }) => {
 		comparators.push(sortByField(assetsSort));
 	},
@@ -2133,7 +1843,7 @@ const ASSET_SORTERS = {
 	}
 };
 
-/** @type {Record<string, Record<string, (comparators: Function[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>>} */
+// Record<string, Record<string, (comparators: Function[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>>
 const RESULT_SORTERS = {
 	"compilation.chunks": {
 		chunksSort: (comparators, context, { chunksSort }) => {
@@ -2187,7 +1897,8 @@ const iterateConfig = (config, options, fn) => {
 	}
 };
 
-/** @type {Record<string, string>} */
+// 
+// Record<string, string>
 const ITEM_NAMES = {
 	"compilation.children[]": "compilation",
 	"compilation.modules[]": "module",
@@ -2209,10 +1920,7 @@ const ITEM_NAMES = {
 	"moduleTraceItem.dependencies[]": "moduleTraceDependency"
 };
 
-/**
- * @param {Object[]} items items to be merged
- * @returns {Object} an object
- */
+// 将 数组 转换成 对象
 const mergeToObject = items => {
 	const obj = Object.create(null);
 	for (const item of items) {
@@ -2221,23 +1929,23 @@ const mergeToObject = items => {
 	return obj;
 };
 
-/** @type {Record<string, (items: Object[]) => any>} */
+// 
+// Record<string, (items: Object[]) => any>
 const MERGER = {
 	"compilation.entrypoints": mergeToObject,
 	"compilation.namedChunkGroups": mergeToObject
 };
 
+// 对 Webpack.Config.stats 字段 注册插件
 class DefaultStatsFactoryPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("DefaultStatsFactoryPlugin", compilation => {
 			compilation.hooks.statsFactory.tap(
 				"DefaultStatsFactoryPlugin",
 				(stats, options, context) => {
+					// options: Webpack.Config.stats.[xx]
+
+					// 提取器
 					iterateConfig(SIMPLE_EXTRACTORS, options, (hookFor, fn) => {
 						stats.hooks.extract
 							.for(hookFor)
@@ -2245,6 +1953,8 @@ class DefaultStatsFactoryPlugin {
 								fn(obj, data, ctx, options, stats)
 							);
 					});
+
+					// 过滤器
 					iterateConfig(FILTER, options, (hookFor, fn) => {
 						stats.hooks.filter
 							.for(hookFor)
@@ -2252,6 +1962,8 @@ class DefaultStatsFactoryPlugin {
 								fn(item, ctx, options, idx, i)
 							);
 					});
+
+					// 废弃
 					iterateConfig(FILTER_RESULTS, options, (hookFor, fn) => {
 						stats.hooks.filterResults
 							.for(hookFor)
@@ -2259,6 +1971,8 @@ class DefaultStatsFactoryPlugin {
 								fn(item, ctx, options, idx, i)
 							);
 					});
+
+					// 排序队列中添加排序方法
 					iterateConfig(SORTERS, options, (hookFor, fn) => {
 						stats.hooks.sort
 							.for(hookFor)
@@ -2266,6 +1980,8 @@ class DefaultStatsFactoryPlugin {
 								fn(comparators, ctx, options)
 							);
 					});
+
+					// 排序队列中添加排序方法
 					iterateConfig(RESULT_SORTERS, options, (hookFor, fn) => {
 						stats.hooks.sortResults
 							.for(hookFor)
@@ -2273,6 +1989,8 @@ class DefaultStatsFactoryPlugin {
 								fn(comparators, ctx, options)
 							);
 					});
+
+					// 结果分组
 					iterateConfig(RESULT_GROUPERS, options, (hookFor, fn) => {
 						stats.hooks.groupResults
 							.for(hookFor)
@@ -2280,16 +1998,22 @@ class DefaultStatsFactoryPlugin {
 								fn(groupConfigs, ctx, options)
 							);
 					});
+					
+					// 获取项名
 					for (const key of Object.keys(ITEM_NAMES)) {
 						const itemName = ITEM_NAMES[key];
 						stats.hooks.getItemName
 							.for(key)
 							.tap("DefaultStatsFactoryPlugin", () => itemName);
 					}
+
+					// 合并
 					for (const key of Object.keys(MERGER)) {
 						const merger = MERGER[key];
 						stats.hooks.merge.for(key).tap("DefaultStatsFactoryPlugin", merger);
 					}
+
+					// Webpack.Config.stats.children
 					if (options.children) {
 						if (Array.isArray(options.children)) {
 							stats.hooks.getItemFactory

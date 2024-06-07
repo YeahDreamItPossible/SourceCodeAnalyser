@@ -5,11 +5,6 @@ const { compareModulesByIdentifier } = require("../util/comparators");
 const createSchemaValidation = require("../util/create-schema-validation");
 const memoize = require("../util/memoize");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
 const getSchema = name => {
 	const { definitions } = require("../../schemas/WebpackOptions.json");
 	return {

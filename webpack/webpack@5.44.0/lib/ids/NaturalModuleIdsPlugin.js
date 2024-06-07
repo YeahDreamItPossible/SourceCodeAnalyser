@@ -13,6 +13,7 @@ class NaturalModuleIdsPlugin {
 		compiler.hooks.compilation.tap("NaturalModuleIdsPlugin", compilation => {
 			compilation.hooks.moduleIds.tap("NaturalModuleIdsPlugin", modules => {
 				const chunkGraph = compilation.chunkGraph;
+				// 过滤 并排序
 				const modulesInNaturalOrder = Array.from(modules)
 					.filter(
 						m =>

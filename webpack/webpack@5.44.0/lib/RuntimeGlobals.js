@@ -1,5 +1,7 @@
 "use strict";
 
+// 运行时变量对象
+
 /**
  * the internal require function
  */

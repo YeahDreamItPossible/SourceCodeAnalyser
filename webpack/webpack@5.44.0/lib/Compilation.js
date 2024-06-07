@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
@@ -1071,49 +1066,47 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this._codeGenerationCache = this.getCache("Compilation/codeGeneration");
 	}
 
+	// 返回 Stats 实例
 	getStats() {
 		return new Stats(this);
 	}
 
-	/**
-	 * @param {StatsOptions | string} optionsOrPreset stats option value
-	 * @param {CreateStatsOptionsContext} context context
-	 * @returns {NormalizedStatsOptions} normalized options
-	 */
+	// 标准化 Webpack.Config.stats 属性
 	createStatsOptions(optionsOrPreset, context = {}) {
+		// Webpack.Config.stats = 'String' || 'Boolean'
 		if (
 			typeof optionsOrPreset === "boolean" ||
 			typeof optionsOrPreset === "string"
 		) {
 			optionsOrPreset = { preset: optionsOrPreset };
 		}
+		// Webpack.Config.stats = 'Object'
 		if (typeof optionsOrPreset === "object" && optionsOrPreset !== null) {
-			// We use this method of shallow cloning this object to include
-			// properties in the prototype chain
-			/** @type {Partial<NormalizedStatsOptions>} */
 			const options = {};
 			for (const key in optionsOrPreset) {
 				options[key] = optionsOrPreset[key];
 			}
 			if (options.preset !== undefined) {
+				// 
 				this.hooks.statsPreset.for(options.preset).call(options, context);
 			}
 			this.hooks.statsNormalize.call(options, context);
-			return /** @type {NormalizedStatsOptions} */ (options);
+			return (options);
 		} else {
-			/** @type {Partial<NormalizedStatsOptions>} */
 			const options = {};
 			this.hooks.statsNormalize.call(options, context);
-			return /** @type {NormalizedStatsOptions} */ (options);
+			return (options);
 		}
 	}
 
+	// 返回 StatsFactory 实例
 	createStatsFactory(options) {
 		const statsFactory = new StatsFactory();
 		this.hooks.statsFactory.call(statsFactory, options);
 		return statsFactory;
 	}
 
+	// 返回 StatsPrinter 实例
 	createStatsPrinter(options) {
 		const statsPrinter = new StatsPrinter();
 		this.hooks.statsPrinter.call(statsPrinter, options);
@@ -2642,6 +2635,10 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 								this.logger.time("process assets");
 
 								// asset 处理
+								// BannerPlugin
+								// HotModuleReplacementPlugin
+								// SourceMapDevToolPlugin
+								// RealContentHashPlugin
 								this.hooks.processAssets.callAsync(this.assets, err => {
 									if (err) {
 										return finalCallback(
@@ -3401,7 +3398,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return moduleHashDigest;
 	}
 
-	// TODO:
+	// 返回运行时模块 代码生成任务
 	createHash() {
 		this.logger.time("hashing: initialize hash");
 		const chunkGraph = this.chunkGraph;
@@ -3659,6 +3656,8 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {AssetInfo} assetInfo extra asset information
 	 * @returns {void}
 	 */
+	// 存储 资源文件(构建产物)
+	// 设置 compilation.assets
 	emitAsset(file, source, assetInfo = {}) {
 		if (this.assets[file]) {
 			if (!isSourceEqual(this.assets[file], source)) {
@@ -3680,6 +3679,7 @@ This prevents using hashes of each other and should be avoided.`);
 		this._setAssetInfo(file, assetInfo, undefined);
 	}
 
+	// 设置 compilation.assetsInfo
 	_setAssetInfo(file, newInfo, oldInfo = this.assetsInfo.get(file)) {
 		if (newInfo === undefined) {
 			this.assetsInfo.delete(file);
@@ -3731,12 +3731,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	/**
-	 * @param {string} file file name
-	 * @param {Source | function(Source): Source} newSourceOrFunction new asset source or function converting old to new
-	 * @param {AssetInfo | function(AssetInfo | undefined): AssetInfo} assetInfoUpdateOrFunction new asset info or function converting old to new
-	 */
-	// 更新Asset
+	// 更新资源文件(构建产物)
 	updateAsset(
 		file,
 		newSourceOrFunction,
@@ -3766,6 +3761,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
+	// 重命名资源文件(构建产物)
 	renameAsset(file, newFile) {
 		const source = this.assets[file];
 		if (!source) {
@@ -3831,9 +3827,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	/**
-	 * @param {string} file file name
-	 */
+	// 根据 标识 删除对应的资源文件(构建产物)
 	deleteAsset(file) {
 		if (!this.assets[file]) {
 			return;
@@ -3865,8 +3859,8 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
+	// 返回所有的资源文件(构建产物)
 	getAssets() {
-		/** @type {Readonly<Asset>[]} */
 		const array = [];
 		for (const assetName of Object.keys(this.assets)) {
 			if (Object.prototype.hasOwnProperty.call(this.assets, assetName)) {
@@ -3880,10 +3874,7 @@ This prevents using hashes of each other and should be avoided.`);
 		return array;
 	}
 
-	/**
-	 * @param {string} name the name of the asset
-	 * @returns {Readonly<Asset> | undefined} the asset or undefined when not found
-	 */
+	// 根据 标识 返回对应的资源文件(构建产物)
 	getAsset(name) {
 		if (!Object.prototype.hasOwnProperty.call(this.assets, name))
 			return undefined;
@@ -4104,7 +4095,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {PathData} data context data
 	 * @returns {string} interpolated path
 	 */
-	// 
+	// 返回 资源路径信息
 	getPath(filename, data = {}) {
 		if (!data.hash) {
 			data = {
@@ -4150,9 +4141,11 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {PathData} data context data
 	 * @returns {{ path: string, info: AssetInfo }} interpolated path and asset info
 	 */
+	// 返回 资源路径信息
 	getAssetPathWithInfo(filename, data) {
 		const assetInfo = {};
 		// TODO webpack 5: refactor assetPath hook to receive { path, info } object
+		// TemplatedPathPlugin
 		const newPath = this.hooks.assetPath.call(
 			typeof filename === "function" ? filename(data, assetInfo) : filename,
 			data,

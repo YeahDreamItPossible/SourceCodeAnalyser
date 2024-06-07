@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 /** @typedef {import("../Compiler")} Compiler */
@@ -1171,11 +1166,6 @@ const createOrder = (array, preferredOrder) => {
 };
 
 class DefaultStatsPrinterPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("DefaultStatsPrinterPlugin", compilation => {
 			compilation.hooks.statsPrinter.tap(

@@ -305,6 +305,7 @@ const replacePathVariables = (path, data, assetInfo) => {
 
 const plugin = "TemplatedPathPlugin";
 
+// 模板路径插件
 class TemplatedPathPlugin {
 	/**
 	 * Apply the plugin

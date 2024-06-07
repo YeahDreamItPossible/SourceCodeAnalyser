@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { HookMap, SyncBailHook, SyncWaterfallHook } = require("tapable");
@@ -32,53 +27,60 @@ const smartGrouping = require("../util/smartGrouping");
 
 /** @typedef {KnownStatsFactoryContext & Record<string, any>} StatsFactoryContext */
 
+// 统计工厂()
 class StatsFactory {
 	constructor() {
 		this.hooks = Object.freeze({
-			/** @type {HookMap<SyncBailHook<[Object, any, StatsFactoryContext]>>} */
+			// {HookMap<SyncBailHook<[Object, any, StatsFactoryContext]>>
 			extract: new HookMap(
 				() => new SyncBailHook(["object", "data", "context"])
 			),
-			/** @type {HookMap<SyncBailHook<[any, StatsFactoryContext, number, number]>>} */
+			// {HookMap<SyncBailHook<[any, StatsFactoryContext, number, number]>>
 			filter: new HookMap(
 				() => new SyncBailHook(["item", "context", "index", "unfilteredIndex"])
 			),
-			/** @type {HookMap<SyncBailHook<[(function(any, any): number)[], StatsFactoryContext]>>} */
+			// {HookMap<SyncBailHook<[(function(any, any): number)[], StatsFactoryContext]>>
 			sort: new HookMap(() => new SyncBailHook(["comparators", "context"])),
-			/** @type {HookMap<SyncBailHook<[any, StatsFactoryContext, number, number]>>} */
+			// {HookMap<SyncBailHook<[any, StatsFactoryContext, number, number]>>
 			filterSorted: new HookMap(
 				() => new SyncBailHook(["item", "context", "index", "unfilteredIndex"])
 			),
-			/** @type {HookMap<SyncBailHook<[GroupConfig[], StatsFactoryContext]>>} */
+			// {HookMap<SyncBailHook<[GroupConfig[], StatsFactoryContext]>>
 			groupResults: new HookMap(
 				() => new SyncBailHook(["groupConfigs", "context"])
 			),
-			/** @type {HookMap<SyncBailHook<[(function(any, any): number)[], StatsFactoryContext]>>} */
+			// {HookMap<SyncBailHook<[(function(any, any): number)[], StatsFactoryContext]>>
 			sortResults: new HookMap(
 				() => new SyncBailHook(["comparators", "context"])
 			),
-			/** @type {HookMap<SyncBailHook<[any, StatsFactoryContext, number, number]>>} */
+			// {HookMap<SyncBailHook<[any, StatsFactoryContext, number, number]>>
 			filterResults: new HookMap(
 				() => new SyncBailHook(["item", "context", "index", "unfilteredIndex"])
 			),
-			/** @type {HookMap<SyncBailHook<[any[], StatsFactoryContext]>>} */
+			// 合并
+			// {HookMap<SyncBailHook<[any[], StatsFactoryContext]>>
 			merge: new HookMap(() => new SyncBailHook(["items", "context"])),
-			/** @type {HookMap<SyncBailHook<[any[], StatsFactoryContext]>>} */
+			// {HookMap<SyncBailHook<[any[], StatsFactoryContext]>>
 			result: new HookMap(() => new SyncWaterfallHook(["result", "context"])),
-			/** @type {HookMap<SyncBailHook<[any, StatsFactoryContext]>>} */
+			// 
+			// {HookMap<SyncBailHook<[any, StatsFactoryContext]>>
 			getItemName: new HookMap(() => new SyncBailHook(["item", "context"])),
-			/** @type {HookMap<SyncBailHook<[any, StatsFactoryContext]>>} */
+			// {HookMap<SyncBailHook<[any, StatsFactoryContext]>>
 			getItemFactory: new HookMap(() => new SyncBailHook(["item", "context"]))
 		});
 		const hooks = this.hooks;
-		this._caches =
-			/** @type {Record<keyof typeof hooks, Map<string, SyncBailHook<[any[], StatsFactoryContext]>[]>>} */ ({});
+		// Object<String, Map>
+		this._caches = ({});
 		for (const key of Object.keys(hooks)) {
 			this._caches[key] = new Map();
 		}
+		// 标识: 标识当前正在统计中
 		this._inCreate = false;
 	}
 
+	// 返回 statsFactory.hooks 中 特定类型 所有匹配的的hooks
+	// 该特定类型值得是 属性路径
+	// 示例: compilation.assets[].asset
 	_getAllLevelHooks(hookMap, cache, type) {
 		const cacheEntry = cache.get(type);
 		if (cacheEntry !== undefined) {
@@ -96,6 +98,7 @@ class StatsFactory {
 		return hooks;
 	}
 
+	// 执行 属性路径中所匹配的hooks
 	_forEachLevel(hookMap, cache, type, fn) {
 		for (const hook of this._getAllLevelHooks(hookMap, cache, type)) {
 			const result = fn(hook);
@@ -103,6 +106,8 @@ class StatsFactory {
 		}
 	}
 
+	// 执行 属性路径中所匹配的hooks
+	// 并将 返回值 作为下个hook的参数
 	_forEachLevelWaterfall(hookMap, cache, type, data, fn) {
 		for (const hook of this._getAllLevelHooks(hookMap, cache, type)) {
 			data = fn(hook, data);
@@ -110,6 +115,7 @@ class StatsFactory {
 		return data;
 	}
 
+	// 过滤
 	_forEachLevelFilter(hookMap, cache, type, items, fn, forceClone) {
 		const hooks = this._getAllLevelHooks(hookMap, cache, type);
 		if (hooks.length === 0) return forceClone ? items.slice() : items;
@@ -133,6 +139,7 @@ class StatsFactory {
 	 * @param {Omit<StatsFactoryContext, "type">} baseContext context used as base
 	 * @returns {any} created object
 	 */
+	// 开始构建
 	create(type, data, baseContext) {
 		if (this._inCreate) {
 			return this._create(type, data, baseContext);
@@ -147,6 +154,7 @@ class StatsFactory {
 		}
 	}
 
+	// 构建
 	_create(type, data, baseContext) {
 		const context = {
 			...baseContext,
@@ -273,12 +281,13 @@ class StatsFactory {
 		} else {
 			const object = {};
 
-			// run extract on value
+			// 调用 this.hooks.extract 钩子
 			this._forEachLevel(this.hooks.extract, this._caches.extract, type, h =>
 				h.call(object, data, context)
 			);
 
-			// run result on extracted object
+			// 空调用  直接返回object
+			// 调用 this.hooks.result 钩子
 			return this._forEachLevelWaterfall(
 				this.hooks.result,
 				this._caches.result,

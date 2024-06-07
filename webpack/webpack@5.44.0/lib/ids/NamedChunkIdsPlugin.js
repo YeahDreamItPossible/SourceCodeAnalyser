@@ -9,7 +9,7 @@ const {
 	assignAscendingChunkIds
 } = require("./IdHelpers");
 
-// 给 chunk.id 设置 模块引入路劲(相对路径)
+// 给 chunk.id 设置 模块短路劲(相对路径)
 // 根据 Webpack.Config.optimization.chunkIds = 'named' 注册该插件
 class NamedChunkIdsPlugin {
 	constructor(options) {

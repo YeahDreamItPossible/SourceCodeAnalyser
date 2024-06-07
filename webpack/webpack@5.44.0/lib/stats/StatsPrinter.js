@@ -1,80 +1,37 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { HookMap, SyncWaterfallHook, SyncBailHook } = require("tapable");
 
-/** @template T @typedef {import("tapable").AsArray<T>} AsArray<T> */
-/** @typedef {import("tapable").Hook} Hook */
-/** @typedef {import("./DefaultStatsFactoryPlugin").StatsAsset} StatsAsset */
-/** @typedef {import("./DefaultStatsFactoryPlugin").StatsChunk} StatsChunk */
-/** @typedef {import("./DefaultStatsFactoryPlugin").StatsChunkGroup} StatsChunkGroup */
-/** @typedef {import("./DefaultStatsFactoryPlugin").StatsCompilation} StatsCompilation */
-/** @typedef {import("./DefaultStatsFactoryPlugin").StatsModule} StatsModule */
-/** @typedef {import("./DefaultStatsFactoryPlugin").StatsModuleReason} StatsModuleReason */
-
-/**
- * @typedef {Object} PrintedElement
- * @property {string} element
- * @property {string} content
- */
-
-/**
- * @typedef {Object} KnownStatsPrinterContext
- * @property {string=} type
- * @property {StatsCompilation=} compilation
- * @property {StatsChunkGroup=} chunkGroup
- * @property {StatsAsset=} asset
- * @property {StatsModule=} module
- * @property {StatsChunk=} chunk
- * @property {StatsModuleReason=} moduleReason
- * @property {(str: string) => string=} bold
- * @property {(str: string) => string=} yellow
- * @property {(str: string) => string=} red
- * @property {(str: string) => string=} green
- * @property {(str: string) => string=} magenta
- * @property {(str: string) => string=} cyan
- * @property {(file: string, oversize?: boolean) => string=} formatFilename
- * @property {(id: string) => string=} formatModuleId
- * @property {(id: string, direction?: "parent"|"child"|"sibling") => string=} formatChunkId
- * @property {(size: number) => string=} formatSize
- * @property {(dateTime: number) => string=} formatDateTime
- * @property {(flag: string) => string=} formatFlag
- * @property {(time: number, boldQuantity?: boolean) => string=} formatTime
- * @property {string=} chunkGroupKind
- */
-
-/** @typedef {KnownStatsPrinterContext & Record<string, any>} StatsPrinterContext */
-
+// TODO:
+// 统计打印 ??
+// 将 统计信息 按照类别 打印出来 ??
 class StatsPrinter {
 	constructor() {
 		this.hooks = Object.freeze({
-			/** @type {HookMap<SyncBailHook<[string[], StatsPrinterContext], true>>} */
+			// HookMap<SyncBailHook<[string[], StatsPrinterContext], true>>
 			sortElements: new HookMap(
 				() => new SyncBailHook(["elements", "context"])
 			),
-			/** @type {HookMap<SyncBailHook<[PrintedElement[], StatsPrinterContext], string>>} */
+			// HookMap<SyncBailHook<[PrintedElement[], StatsPrinterContext], string>>
 			printElements: new HookMap(
 				() => new SyncBailHook(["printedElements", "context"])
 			),
-			/** @type {HookMap<SyncBailHook<[any[], StatsPrinterContext], true>>} */
+			// HookMap<SyncBailHook<[any[], StatsPrinterContext], true>>
 			sortItems: new HookMap(() => new SyncBailHook(["items", "context"])),
-			/** @type {HookMap<SyncBailHook<[any, StatsPrinterContext], string>>} */
+			// HookMap<SyncBailHook<[any, StatsPrinterContext], string>>
 			getItemName: new HookMap(() => new SyncBailHook(["item", "context"])),
-			/** @type {HookMap<SyncBailHook<[string[], StatsPrinterContext], string>>} */
+			// HookMap<SyncBailHook<[string[], StatsPrinterContext], string>>
 			printItems: new HookMap(
 				() => new SyncBailHook(["printedItems", "context"])
 			),
-			/** @type {HookMap<SyncBailHook<[{}, StatsPrinterContext], string>>} */
+			// HookMap<SyncBailHook<[{}, StatsPrinterContext], string>>
 			print: new HookMap(() => new SyncBailHook(["object", "context"])),
-			/** @type {HookMap<SyncWaterfallHook<[string, StatsPrinterContext]>>} */
+			// HookMap<SyncWaterfallHook<[string, StatsPrinterContext]>>
 			result: new HookMap(() => new SyncWaterfallHook(["result", "context"]))
 		});
-		/** @type {Map<HookMap<Hook>, Map<string, Hook[]>>} */
+		// Map<HookMap<Hook>, Map<string, Hook[]>>
 		this._levelHookCache = new Map();
+		// 标识: 
 		this._inPrint = false;
 	}
 
@@ -87,7 +44,7 @@ class StatsPrinter {
 	 * @returns {T[]} hooks
 	 */
 	_getAllLevelHooks(hookMap, type) {
-		let cache = /** @type {Map<string, T[]>} */ (
+		let cache = // Map<string, T[]> (
 			this._levelHookCache.get(hookMap)
 		);
 		if (cache === undefined) {
@@ -98,7 +55,7 @@ class StatsPrinter {
 		if (cacheEntry !== undefined) {
 			return cacheEntry;
 		}
-		/** @type {T[]} */
+		// T[]
 		const hooks = [];
 		const typeParts = type.split(".");
 		for (let i = 0; i < typeParts.length; i++) {
@@ -151,6 +108,7 @@ class StatsPrinter {
 	 * @param {Object=} baseContext The base context
 	 * @returns {string} printed result
 	 */
+	// 开始打印
 	print(type, object, baseContext) {
 		if (this._inPrint) {
 			return this._print(type, object, baseContext);
@@ -172,6 +130,7 @@ class StatsPrinter {
 	 * @param {Object=} baseContext context
 	 * @returns {string} printed result
 	 */
+	// 打印
 	_print(type, object, baseContext) {
 		const context = {
 			...baseContext,

@@ -2,6 +2,8 @@
 
 const Parser = require("../Parser");
 
+// 导出资源的源代码 通过raw-loader实现
+// Webpack.Config.module.Rule.type = 'asset/source' 
 class AssetSourceParser extends Parser {
 	parse(source, state) {
 		if (typeof source === "object" && !Buffer.isBuffer(source)) {

@@ -324,6 +324,7 @@ class WebpackOptionsApply extends OptionsApply {
 			options.output.module
 		).apply(compiler);
 
+		// Webpack.Config.stats
 		new DefaultStatsFactoryPlugin().apply(compiler);
 		new DefaultStatsPresetPlugin().apply(compiler);
 		new DefaultStatsPrinterPlugin().apply(compiler);

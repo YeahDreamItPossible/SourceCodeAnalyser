@@ -1,17 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RequestShortener = require("../RequestShortener");
 
-/** @typedef {import("../../declarations/WebpackOptions").StatsOptions} StatsOptions */
-/** @typedef {import("../Compilation")} Compilation */
-/** @typedef {import("../Compilation").CreateStatsOptionsContext} CreateStatsOptionsContext */
-/** @typedef {import("../Compiler")} Compiler */
-
+// 将 默认配置 合并到 用户自定义配置中
+// 即: 将 default 合并到 options 中
 const applyDefaults = (options, defaults) => {
 	for (const key of Object.keys(defaults)) {
 		if (typeof options[key] === "undefined") {
@@ -20,6 +12,7 @@ const applyDefaults = (options, defaults) => {
 	}
 };
 
+// 默认预设 即 默认预设对应的配置信息
 const NAMED_PRESETS = {
 	verbose: {
 		hash: true,
@@ -115,6 +108,7 @@ const NAMED_PRESETS = {
 	}
 };
 
+// 规则
 const NORMAL_ON = ({ all }) => all !== false;
 const NORMAL_OFF = ({ all }) => all === true;
 const ON_FOR_TO_STRING = ({ all }, { forToString }) =>
@@ -128,7 +122,7 @@ const AUTO_FOR_TO_STRING = ({ all }, { forToString }) => {
 	return true;
 };
 
-/** @type {Record<string, (options: StatsOptions, context: CreateStatsOptionsContext, compilation: Compilation) => any>} */
+// 默认配置
 const DEFAULTS = {
 	context: (options, context, compilation) => compilation.compiler.context,
 	requestShortener: (options, context, compilation) =>
@@ -244,6 +238,7 @@ const normalizeFilter = item => {
 	}
 };
 
+// 默认配置
 const NORMALIZER = {
 	excludeModules: value => {
 		if (!Array.isArray(value)) {
@@ -288,25 +283,35 @@ const NORMALIZER = {
 	}
 };
 
+/**
+ * 对 Webpack.Config.stats 值 进行加工处理
+ * 1. 如果 Webpack.Config.stats = 'String' 表示预设(preset)
+ * 		每种预设(preset) 都对应着某种默认详细配置
+ * 2. 如果 Webpack.Config.stats = 'Object' 表示用户自定义详细配置
+ */
+// 针对 Webpack.Config.stats 字段注册插件
+// 将 默认配置 合并到 用户自定义配置中
+// 1. 先将 默认预设中的默认配置 合并到 用户自定义配置中
+// 2. 再将 特殊的默认配置 合并到 用户自定义配置中
 class DefaultStatsPresetPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("DefaultStatsPresetPlugin", compilation => {
 			for (const key of Object.keys(NAMED_PRESETS)) {
 				const defaults = NAMED_PRESETS[key];
+				// 应用各种预设 并将各种预设对应的配置 合并到用户自定义配置中
 				compilation.hooks.statsPreset
 					.for(key)
 					.tap("DefaultStatsPresetPlugin", (options, context) => {
+						// 将默认预设 defaults 合并到用户自定义预设 options 中
 						applyDefaults(options, defaults);
 					});
 			}
+
+			// 将默认配种 合并到 用户自定义配置中
 			compilation.hooks.statsNormalize.tap(
 				"DefaultStatsPresetPlugin",
 				(options, context) => {
+					// 将默认配置 DEFAULTS 和 NORMALIZER 合并到用足自定义配置 options 中
 					for (const key of Object.keys(DEFAULTS)) {
 						if (options[key] === undefined)
 							options[key] = DEFAULTS[key](options, context, compilation);
