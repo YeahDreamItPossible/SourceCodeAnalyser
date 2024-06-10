@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const Hook = require("./Hook");
@@ -23,6 +19,13 @@ const COMPILE = function(options) {
 	return factory.create(options);
 };
 
+/**
+ * 异步并行钩子
+ * 按照注册事件队列 并行执行(不需要等待前一个事件执行完毕)
+ * 与 异步串行钩子(AsyncSeriesHook) 区别：
+ * 1. 允许所注册的异步事件同步执行 不需要等待前一个事件的执行结果
+ * 2. 每个异步事件都是独立运行 不存在依赖关系
+ */
 function AsyncParallelHook(args = [], name = undefined) {
 	const hook = new Hook(args, name);
 	hook.constructor = AsyncParallelHook;

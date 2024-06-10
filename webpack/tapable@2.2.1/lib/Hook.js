@@ -32,13 +32,13 @@ const PROMISE_DELEGATE = function(...args) {
  * tap => 注册
  * call => 调用
  * interceptor => 拦截器
- * TapOption => 注册事件选项
- * InterceptOption => 拦截器选项
- * TapItem => 注册事件项(由TapOption 和 InterceptorOption 决定)
+ * TapOptions => 注册事件选项
+ * InterceptorOptions => 拦截器选项
+ * TapItem => 注册事件项(由TapOptions 和 InterceptorOptions 决定)
  */
 
 /**
- * 注册事件选项 TapOption: 
+ * 注册事件选项 TapOptions: 
  * {
  * 		name: String, // 可以用于调整 taps 优先列队项优先级
  * 		stage: Number, // 优先级
@@ -48,7 +48,7 @@ const PROMISE_DELEGATE = function(...args) {
  */
 
 /**
- * 拦截器选项 InterceptOption:
+ * 拦截器选项 InterceptorOptions:
  * {
  * 		context: Object,
  * 		call: Function,
@@ -64,6 +64,7 @@ const PROMISE_DELEGATE = function(...args) {
  * 注册事件项 TapItem:
  * {
  * 		name: String,
+ * 		// 事件类型: sync || async || promise
  * 		type: String,
  * 		fn: Function,
  * 		stage: Number, // 优先级
@@ -71,21 +72,25 @@ const PROMISE_DELEGATE = function(...args) {
  * }
  */
 
+/**
+ * 钩子功能
+ * 1. 注册事件
+ * 2. 拦截事件
+ * 3. 调用事件
+ */
 // 基类
 class Hook {
 	constructor(args = [], name = undefined) {
 		// 注册事件的形参
 		this._args = args;
-		// 标识: 区分当前hook
+		// 标识: 当前hook名
 		this.name = name;
-
-		// 注册事件项
+		// 注册的事件队列
 		// 优先队列 Array<TapItem>
 		this.taps = [];
-		// 拦截器选项
-		// 队列 Array<InterceptorItem>
+		// 拦截器队列
+		// 队列 Array<InterceptorOptions>
 		this.interceptors = [];
-
 		// 绑定函数体
 		this._call = CALL_DELEGATE;
 		this.call = CALL_DELEGATE;
@@ -93,10 +98,8 @@ class Hook {
 		this.callAsync = CALL_ASYNC_DELEGATE;
 		this._promise = PROMISE_DELEGATE;
 		this.promise = PROMISE_DELEGATE;
-
 		// 事件队列(call)
 		this._x = undefined;
-
 		// 绑定this
 		this.compile = this.compile;
 		this.tap = this.tap;
@@ -121,7 +124,7 @@ class Hook {
 		});
 	}
 
-	// 注册事件内部实现
+	// 注册事件
 	// 主要对注册事件选项正常化
 	_tap(type, options, fn) {
 		// 正常化options(normalize options)
@@ -155,7 +158,7 @@ class Hook {
 
 	// 1. 注册同步事件
 	// 同步事件fn的参数为this.args(即: Hook构造函数中传入的参数)
-	// options: { name: String, stage: Number, before: String || Array<String> }
+	// options: TapOptions
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
@@ -173,7 +176,7 @@ class Hook {
 	}
 
 	// 调用拦截器 
-	// 主要是调用拦截器选项中register属性 对注册事件选项进行加工处理 并得到最终的options
+	// 主要是调用拦截器选项中register属性 对注册事件选项(TapItem)进行加工处理 并得到最终的options
 	// 即: 调用interceptor.register(tap.option)
 	_runRegisterInterceptors(options) {
 		for (const interceptor of this.interceptors) {
@@ -187,7 +190,7 @@ class Hook {
 		return options;
 	}
 
-	// 包装hook: 将options作为TapOption的默认options
+	// 包装Hook: 将options作为TapOptions的默认options
 	withOptions(options) {
 		const mergeOptions = opt =>
 			Object.assign({}, options, typeof opt === "string" ? { name: opt } : opt);
@@ -209,7 +212,7 @@ class Hook {
 	}
 
 	// 注册拦截器
-	// InterceptorOption: {context: Object, register: fn, call: fn, tap: fn, result: fn, error: fn, done: fn}
+	// interceptor: InterceptorOptions
 	intercept(interceptor) {
 		this._resetCompilation();
 		this.interceptors.push(Object.assign({}, interceptor));
@@ -228,7 +231,7 @@ class Hook {
 		this.promise = this._promise;
 	}
 
-	// 注册事件到 taps 队列 中 并调整每一项优先级
+	// 注册事件 到 事件队列中 并调整注册事件优先级
 	_insert(item) {
 		this._resetCompilation();
 		let before;
@@ -267,7 +270,7 @@ class Hook {
 	}
 }
 
-// 原型
+// 手动绑定原型对象
 Object.setPrototypeOf(Hook.prototype, null);
 
 module.exports = Hook;

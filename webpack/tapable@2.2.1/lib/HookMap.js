@@ -1,18 +1,18 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
-
 const util = require("util");
 
 const defaultFactory = (key, hook) => hook;
 
+// 钩子映射
 class HookMap {
 	constructor(factory, name = undefined) {
+		// Map<String, Hook>
 		this._map = new Map();
+		// 标识: HookMap名
 		this.name = name;
+		// 工厂(返回 Hook 实例)
 		this._factory = factory;
+		// 拦截器队列
 		this._interceptors = [];
 	}
 
@@ -46,14 +46,15 @@ class HookMap {
 	}
 }
 
+// hookMap.tap方法已经被 hookMap.for 替代
 HookMap.prototype.tap = util.deprecate(function(key, options, fn) {
 	return this.for(key).tap(options, fn);
 }, "HookMap#tap(key,…) is deprecated. Use HookMap#for(key).tap(…) instead.");
-
+// hookMap.tapAsync方法已经被 hookMap.for 替代
 HookMap.prototype.tapAsync = util.deprecate(function(key, options, fn) {
 	return this.for(key).tapAsync(options, fn);
 }, "HookMap#tapAsync(key,…) is deprecated. Use HookMap#for(key).tapAsync(…) instead.");
-
+// hookMap.tapPromise方法已经被 hookMap.for 替代
 HookMap.prototype.tapPromise = util.deprecate(function(key, options, fn) {
 	return this.for(key).tapPromise(options, fn);
 }, "HookMap#tapPromise(key,…) is deprecated. Use HookMap#for(key).tapPromise(…) instead.");

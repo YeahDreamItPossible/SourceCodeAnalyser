@@ -91,7 +91,7 @@ class HookCodeFactory {
 		return fn;
 	}
 
-	// _x 为 事件队列
+	// 设置this._x(事件队列)
 	setup(instance, options) {
 		instance._x = options.taps.map(t => t.fn);
 	}

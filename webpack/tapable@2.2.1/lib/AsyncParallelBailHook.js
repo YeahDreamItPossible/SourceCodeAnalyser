@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const Hook = require("./Hook");
@@ -71,6 +67,12 @@ const COMPILE = function(options) {
 	return factory.create(options);
 };
 
+/**
+ * 异步并行拦截钩子
+ * 当并行执行注册事件队列时 如果某个事件返回值不是 undefined 时
+ * 直接退出当前注册事件队列 并将当前事件返回值作为回调函数的第二个参数
+ * 当执行某个事件出错时 则直接退出当前注册事件队列
+ */
 function AsyncParallelBailHook(args = [], name = undefined) {
 	const hook = new Hook(args, name);
 	hook.constructor = AsyncParallelBailHook;

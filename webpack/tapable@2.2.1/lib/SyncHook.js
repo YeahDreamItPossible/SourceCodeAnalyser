@@ -1,8 +1,3 @@
-// @ts-nocheck
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const Hook = require("./Hook");
@@ -35,15 +30,19 @@ const COMPILE = function(options) {
 	return factory.create(options);
 };
 
-// 创建同步钩子的实例
+/**
+ * 同步钩子
+ * 按照注册事件队列 依次执行
+ */
 function SyncHook(args = [], name = undefined) {
 	const hook = new Hook(args, name);
-	// 绑定实例的构造函数属性
+	// 手动绑定constructor属性
 	hook.constructor = SyncHook;
 
 	/**
-	 * 子类通过重载父类方法来保证该类型的子类无法调用该方法
-	 * 即: SyncHook 不可通过tapAsync tapPromise注册事件
+	 * 方法重写
+	 * 子类通过重写父类方法 来实现子类特殊功能
+	 * 同步钩子不可通过 tapAsync tapPromise 注册事件
 	 */
 	hook.tapAsync = TAP_ASYNC;
 	hook.tapPromise = TAP_PROMISE;

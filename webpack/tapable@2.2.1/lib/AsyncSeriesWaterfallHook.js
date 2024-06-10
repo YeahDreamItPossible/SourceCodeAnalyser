@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
 "use strict";
 
 const Hook = require("./Hook");
@@ -31,6 +27,12 @@ const COMPILE = function(options) {
 	return factory.create(options);
 };
 
+/**
+ * 异步串行瀑布钩子
+ * 当串行执行注册事件队列时 如果某个事件返回值不是 undefined 时
+ * 则将该返回值作为下一个事件的参数 继续执行(不会退出当前注册事件队列)
+ * 当执行某个事件出错时 则直接退出当前注册事件队列
+ */
 function AsyncSeriesWaterfallHook(args = [], name = undefined) {
 	if (args.length < 1)
 		throw new Error("Waterfall hooks must have at least one argument");
