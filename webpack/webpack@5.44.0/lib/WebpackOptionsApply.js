@@ -61,9 +61,10 @@ class WebpackOptionsApply extends OptionsApply {
 		compiler.recordsOutputPath = options.recordsOutputPath || null;
 		compiler.name = options.name;
 
+
 		// 排除依赖(以cdn方式引入的)
+		// Webpack.Config.externals
 		if (options.externals) {
-			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ExternalsPlugin = require("./ExternalsPlugin");
 			new ExternalsPlugin(options.externalsType, options.externals).apply(
 				compiler
@@ -71,20 +72,23 @@ class WebpackOptionsApply extends OptionsApply {
 		}
 
 		// externals presets
+		// 为特定的 target 启用 externals 的 preset
+		// Webpack.Config.externalsPresets.node
 		if (options.externalsPresets.node) {
 			const NodeTargetPlugin = require("./node/NodeTargetPlugin");
 			new NodeTargetPlugin().apply(compiler);
 		}
+		// Webpack.Config.externalsPresets.electronMain
 		if (options.externalsPresets.electronMain) {
-			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ElectronTargetPlugin = require("./electron/ElectronTargetPlugin");
 			new ElectronTargetPlugin("main").apply(compiler);
 		}
+		// Webpack.Config.externalsPresets.electronPreload
 		if (options.externalsPresets.electronPreload) {
-			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ElectronTargetPlugin = require("./electron/ElectronTargetPlugin");
 			new ElectronTargetPlugin("preload").apply(compiler);
 		}
+		// Webpack.Config.externalsPresets.electronRenderer
 		if (options.externalsPresets.electronRenderer) {
 			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ElectronTargetPlugin = require("./electron/ElectronTargetPlugin");
@@ -96,20 +100,21 @@ class WebpackOptionsApply extends OptionsApply {
 			!options.externalsPresets.electronPreload &&
 			!options.externalsPresets.electronRenderer
 		) {
-			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ElectronTargetPlugin = require("./electron/ElectronTargetPlugin");
 			new ElectronTargetPlugin().apply(compiler);
 		}
+		// Webpack.Config.externalsPresets.nwjs
 		if (options.externalsPresets.nwjs) {
-			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ExternalsPlugin = require("./ExternalsPlugin");
 			new ExternalsPlugin("node-commonjs", "nw.gui").apply(compiler);
 		}
+		// Webpack.Config.externalsPresets.webAsync
 		if (options.externalsPresets.webAsync) {
-			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ExternalsPlugin = require("./ExternalsPlugin");
 			new ExternalsPlugin("import", /^(https?:\/\/|std:)/).apply(compiler);
-		} else if (options.externalsPresets.web) {
+		} 
+		// Webpack.Config.externalsPresets.web
+		else if (options.externalsPresets.web) {
 			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ExternalsPlugin = require("./ExternalsPlugin");
 			new ExternalsPlugin("module", /^(https?:\/\/|std:)/).apply(compiler);
@@ -118,6 +123,8 @@ class WebpackOptionsApply extends OptionsApply {
 		//
 		new ChunkPrefetchPreloadPlugin().apply(compiler);
 
+		// 非运行时Chunk 的格式
+		// Webpack.Config.output.chunkFormat
 		if (typeof options.output.chunkFormat === "string") {
 			switch (options.output.chunkFormat) {
 				case "array-push": {
@@ -142,6 +149,8 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
+		// Chunk 加载类型
+		// Webpack.Config.output.enabledChunkLoadingTypes
 		if (options.output.enabledChunkLoadingTypes.length > 0) {
 			for (const type of options.output.enabledChunkLoadingTypes) {
 				const EnableChunkLoadingPlugin = require("./javascript/EnableChunkLoadingPlugin");
@@ -149,6 +158,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
+		// Webpack.Config.output.enabledWasmLoadingTypes
 		if (options.output.enabledWasmLoadingTypes.length > 0) {
 			for (const type of options.output.enabledWasmLoadingTypes) {
 				const EnableWasmLoadingPlugin = require("./wasm/EnableWasmLoadingPlugin");
@@ -156,6 +166,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
+		// Webpack.Config.output.enabledLibraryTypes
 		if (options.output.enabledLibraryTypes.length > 0) {
 			for (const type of options.output.enabledLibraryTypes) {
 				const EnableLibraryPlugin = require("./library/EnableLibraryPlugin");
@@ -163,6 +174,8 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
+		// Webpack.Config.output.pathinfo
+		// 告知 webpack 在 bundle 中引入「所包含模块信息」的相关注释
 		if (options.output.pathinfo) {
 			const ModuleInfoHeaderPlugin = require("./ModuleInfoHeaderPlugin");
 			new ModuleInfoHeaderPlugin(options.output.pathinfo !== true).apply(
@@ -170,6 +183,7 @@ class WebpackOptionsApply extends OptionsApply {
 			);
 		}
 
+		// Webpack.Config.output.clean
 		if (options.output.clean) {
 			const CleanPlugin = require("./CleanPlugin");
 			new CleanPlugin(
@@ -240,6 +254,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
+		// Webpack.Config.experiments
 		if (options.experiments.syncWebAssembly) {
 			const WebAssemblyModulesPlugin = require("./wasm-sync/WebAssemblyModulesPlugin");
 			new WebAssemblyModulesPlugin({
@@ -281,41 +296,58 @@ class WebpackOptionsApply extends OptionsApply {
 		new EntryOptionPlugin().apply(compiler);
 		compiler.hooks.entryOption.call(options.context, options.entry);
 
+		// 运行时插件
 		new RuntimePlugin().apply(compiler);
-
+		// 异步模块插件
 		new InferAsyncModulesPlugin().apply(compiler);
 
 		new DataUriPlugin().apply(compiler);
 		new FileUriPlugin().apply(compiler);
 
 		new CompatibilityPlugin().apply(compiler);
+		// ES模块
 		new HarmonyModulesPlugin({
 			topLevelAwait: options.experiments.topLevelAwait
 		}).apply(compiler);
+		// AMD模块
 		if (options.amd !== false) {
 			const AMDPlugin = require("./dependencies/AMDPlugin");
 			const RequireJsStuffPlugin = require("./RequireJsStuffPlugin");
 			new AMDPlugin(options.amd || {}).apply(compiler);
 			new RequireJsStuffPlugin().apply(compiler);
 		}
+		// CommonJS 模块
 		new CommonJsPlugin().apply(compiler);
+		//
 		new LoaderPlugin({
 			enableExecuteModule: options.experiments.executeModule
 		}).apply(compiler);
+		//
 		if (options.node !== false) {
 			const NodeStuffPlugin = require("./NodeStuffPlugin");
 			new NodeStuffPlugin(options.node).apply(compiler);
 		}
+		//
 		new APIPlugin().apply(compiler);
+		//
 		new ExportsInfoApiPlugin().apply(compiler);
+		//
 		new WebpackIsIncludedPlugin().apply(compiler);
+		//
 		new ConstPlugin().apply(compiler);
+		// 使用严格模式
 		new UseStrictPlugin().apply(compiler);
+		// 
 		new RequireIncludePlugin().apply(compiler);
+		// 
 		new RequireEnsurePlugin().apply(compiler);
+		// 
 		new RequireContextPlugin().apply(compiler);
+		// 
 		new ImportPlugin().apply(compiler);
+		//
 		new SystemPlugin().apply(compiler);
+		// 
 		new ImportMetaPlugin().apply(compiler);
 		new URLPlugin().apply(compiler);
 		new WorkerPlugin(
@@ -331,17 +363,22 @@ class WebpackOptionsApply extends OptionsApply {
 
 		new JavascriptMetaInfoPlugin().apply(compiler);
 
+		// Webpack.Config.mode
 		if (typeof options.mode !== "string") {
 			const WarnNoModeSetPlugin = require("./WarnNoModeSetPlugin");
 			new WarnNoModeSetPlugin().apply(compiler);
 		}
 
+		// 
 		const EnsureChunkConditionsPlugin = require("./optimize/EnsureChunkConditionsPlugin");
 		new EnsureChunkConditionsPlugin().apply(compiler);
+		// Webpack.Config.optimization.removeAvailableModules
 		if (options.optimization.removeAvailableModules) {
 			const RemoveParentModulesPlugin = require("./optimize/RemoveParentModulesPlugin");
 			new RemoveParentModulesPlugin().apply(compiler);
 		}
+		// Webpack.Config.optimization.removeEmptyChunks
+		// 移除空块
 		if (options.optimization.removeEmptyChunks) {
 			const RemoveEmptyChunksPlugin = require("./optimize/RemoveEmptyChunksPlugin");
 			new RemoveEmptyChunksPlugin().apply(compiler);
@@ -518,6 +555,7 @@ class WebpackOptionsApply extends OptionsApply {
 
 		new WarnCaseSensitiveModulesPlugin().apply(compiler);
 
+		// 
 		const AddManagedPathsPlugin = require("./cache/AddManagedPathsPlugin");
 		new AddManagedPathsPlugin(
 			options.snapshot.managedPaths,

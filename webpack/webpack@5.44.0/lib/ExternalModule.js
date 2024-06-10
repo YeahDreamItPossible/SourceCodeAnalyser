@@ -359,6 +359,7 @@ const getSourceForDefaultCase = (optional, request, runtimeTemplate) => {
 	};
 };
 
+// 外部模块
 class ExternalModule extends Module {
 	constructor(request, type, userRequest) {
 		super("javascript/dynamic", null);
@@ -372,9 +373,6 @@ class ExternalModule extends Module {
 		this.userRequest = userRequest;
 	}
 
-	/**
-	 * @returns {Set<string>} types available (do not mutate)
-	 */
 	getSourceTypes() {
 		return TYPES;
 	}
@@ -396,9 +394,6 @@ class ExternalModule extends Module {
 		return chunkGraph.getNumberOfEntryModules(chunk) > 0;
 	}
 
-	/**
-	 * @returns {string} a unique identifier of the module
-	 */
 	identifier() {
 		return "external " + JSON.stringify(this.request);
 	}
@@ -411,11 +406,6 @@ class ExternalModule extends Module {
 		return "external " + JSON.stringify(this.request);
 	}
 
-	/**
-	 * @param {NeedBuildContext} context context info
-	 * @param {function(WebpackError=, boolean=): void} callback callback function, returns true, if the module needs a rebuild
-	 * @returns {void}
-	 */
 	needBuild(context, callback) {
 		return callback(null, !this.buildMeta);
 	}
@@ -646,19 +636,10 @@ class ExternalModule extends Module {
 		};
 	}
 
-	/**
-	 * @param {string=} type the source type for which the size should be estimated
-	 * @returns {number} the estimated size of the module (must be non-zero)
-	 */
 	size(type) {
 		return 42;
 	}
 
-	/**
-	 * @param {Hash} hash the hash used to track dependencies
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
 	updateHash(hash, context) {
 		const { chunkGraph } = context;
 		hash.update(this.externalType);

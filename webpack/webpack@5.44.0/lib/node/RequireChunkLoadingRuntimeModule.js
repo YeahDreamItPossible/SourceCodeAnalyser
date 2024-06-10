@@ -15,15 +15,13 @@ const { getInitialChunkIds } = require("../javascript/StartupHelpers");
 const compileBooleanMatcher = require("../util/compileBooleanMatcher");
 const { getUndoPath } = require("../util/identifier");
 
+// TODO:
 class RequireChunkLoadingRuntimeModule extends RuntimeModule {
 	constructor(runtimeRequirements) {
 		super("require chunk loading", RuntimeModule.STAGE_ATTACH);
 		this.runtimeRequirements = runtimeRequirements;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { chunkGraph, chunk } = this;
 		const { runtimeTemplate } = this.compilation;

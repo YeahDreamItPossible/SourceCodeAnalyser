@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const { SyncWaterfallHook } = require("tapable");
@@ -13,22 +9,12 @@ const chunkHasJs = require("../javascript/JavascriptModulesPlugin").chunkHasJs;
 const { getInitialChunkIds } = require("../javascript/StartupHelpers");
 const compileBooleanMatcher = require("../util/compileBooleanMatcher");
 
-/** @typedef {import("../Chunk")} Chunk */
-
-/**
- * @typedef {Object} JsonpCompilationPluginHooks
- * @property {SyncWaterfallHook<[string, Chunk]>} linkPreload
- * @property {SyncWaterfallHook<[string, Chunk]>} linkPrefetch
- */
-
-/** @type {WeakMap<Compilation, JsonpCompilationPluginHooks>} */
+// WeakMap<Compilation, Hooks>
 const compilationHooksMap = new WeakMap();
 
+// TODO:
+// 以 jsonp 的方式 加载 Chunk
 class JsonpChunkLoadingRuntimeModule extends RuntimeModule {
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @returns {JsonpCompilationPluginHooks} hooks
-	 */
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
 			throw new TypeError(
@@ -51,9 +37,6 @@ class JsonpChunkLoadingRuntimeModule extends RuntimeModule {
 		this._runtimeRequirements = runtimeRequirements;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { chunkGraph, compilation, chunk } = this;
 		const {

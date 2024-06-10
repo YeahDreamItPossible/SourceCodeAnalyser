@@ -1,21 +1,15 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
+// TODO:
 class CreateScriptUrlRuntimeModule extends HelperRuntimeModule {
 	constructor() {
 		super("trusted types");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { compilation } = this;
 		const { runtimeTemplate, outputOptions } = compilation;

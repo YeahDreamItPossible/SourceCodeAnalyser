@@ -18,15 +18,8 @@ const {
 } = require("../util/comparators");
 const { makePathsRelative, parseResource } = require("../util/identifier");
 
-/**
- * @template T
- * @template I
- * @param {Iterable<T>} items items to select from
- * @param {function(T): Iterable<I>} selector selector function to select values from item
- * @returns {I[]} array of values
- */
+// 数组元素唯一
 const uniqueArray = (items, selector) => {
-	// Set<I>
 	const set = new Set();
 	for (const item of items) {
 		for (const i of selector(item)) {
@@ -36,40 +29,21 @@ const uniqueArray = (items, selector) => {
 	return Array.from(set);
 };
 
-/**
- * @template T
- * @template I
- * @param {Iterable<T>} items items to select from
- * @param {function(T): Iterable<I>} selector selector function to select values from item
- * @param {Comparator<I>} comparator comparator function
- * @returns {I[]} array of values
- */
+// 将 元素唯一 的数组排序
 const uniqueOrderedArray = (items, selector, comparator) => {
 	return uniqueArray(items, selector).sort(comparator);
 };
 
-/** @template T @template R @typedef {{ [P in keyof T]: R }} MappedValues<T, R> */
-
-/**
- * @template T
- * @template R
- * @param {T} obj object to be mapped
- * @param {function(T[keyof T], keyof T): R} fn mapping function
- * @returns {MappedValues<T, R>} mapped object
- */
+// 对 键值对 中 值进行处理 并返回新的键值对
 const mapObject = (obj, fn) => {
 	const newObj = Object.create(null);
 	for (const key of Object.keys(obj)) {
-		newObj[key] = fn(obj[key], // keyof T (key));
+		newObj[key] = fn(obj[key], (key));
 	}
 	return newObj;
 };
 
-/**
- * @param {Compilation} compilation the compilation
- * @param {function(Compilation, string): any[]} getItems get items
- * @returns {number} total number
- */
+// 返回总和
 const countWithChildren = (compilation, getItems) => {
 	let count = getItems(compilation, "").length;
 	for (const child of compilation.children) {
@@ -80,7 +54,8 @@ const countWithChildren = (compilation, getItems) => {
 	return count;
 };
 
-// ExtractorsByOption<WebpackError | string, StatsError>
+// 提取器
+// 提取错误信息
 const EXTRACT_ERROR = {
 	_: (object, error, context, { requestShortener }) => {
 		// TODO webpack 6 disallow strings in the errors/warnings list
@@ -1199,7 +1174,6 @@ const SIMPLE_EXTRACTORS = {
 };
 
 // 过滤器
-// Record<string, Record<string, (thing: any, context: StatsFactoryContext, options: NormalizedStatsOptions) => boolean | undefined>>
 const FILTER = {
 	"module.reasons": {
 		"!orphanModules": (reason, { compilation: { chunkGraph } }) => {
@@ -1262,6 +1236,7 @@ const MODULES_SORTER = {
 	}
 };
 
+// 排序
 // Record<string, Record<string, (comparators: Function[], context: StatsFactoryContext) => void>>
 const SORTERS = {
 	"compilation.chunks": {
@@ -1474,7 +1449,7 @@ const moduleGroup = (children, modules) => {
 	};
 };
 
-// Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>
+// 资源分组
 const ASSETS_GROUPERS = {
 	_: (groupConfigs, context, options) => {
 		const groupByFlag = (name, exclude) => {
@@ -1619,7 +1594,7 @@ const ASSETS_GROUPERS = {
 	}
 };
 
-// function("module" | "chunk" | "root-of-chunk" | "nested"): Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>
+// 模块分组
 const MODULES_GROUPERS = type => ({
 	_: (groupConfigs, context, options) => {
 		const groupByFlag = (name, type, exclude) => {
@@ -1777,7 +1752,7 @@ const MODULES_GROUPERS = type => ({
 	}
 });
 
-// Record<string, Record<string, (groupConfigs: GroupConfig[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>>
+// 结果分组
 const RESULT_GROUPERS = {
 	"compilation.assets": ASSETS_GROUPERS,
 	"asset.related": ASSETS_GROUPERS,
@@ -1843,7 +1818,7 @@ const ASSET_SORTERS = {
 	}
 };
 
-// Record<string, Record<string, (comparators: Function[], context: StatsFactoryContext, options: NormalizedStatsOptions) => void>>
+// 结果排序
 const RESULT_SORTERS = {
 	"compilation.chunks": {
 		chunksSort: (comparators, context, { chunksSort }) => {
@@ -1869,12 +1844,7 @@ const RESULT_SORTERS = {
 	"asset.related": ASSET_SORTERS
 };
 
-/**
- * @param {Record<string, Record<string, Function>>} config the config see above
- * @param {NormalizedStatsOptions} options stats options
- * @param {function(string, Function): void} fn handler function called for every active line in config
- * @returns {void}
- */
+// 对 配置 中 进行迭代处理
 const iterateConfig = (config, options, fn) => {
 	for (const hookFor of Object.keys(config)) {
 		const subConfig = config[hookFor];
@@ -1897,7 +1867,7 @@ const iterateConfig = (config, options, fn) => {
 	}
 };
 
-// 
+// 别名映射
 // Record<string, string>
 const ITEM_NAMES = {
 	"compilation.children[]": "compilation",
@@ -1929,7 +1899,7 @@ const mergeToObject = items => {
 	return obj;
 };
 
-// 
+// 合并
 // Record<string, (items: Object[]) => any>
 const MERGER = {
 	"compilation.entrypoints": mergeToObject,

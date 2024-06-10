@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -11,13 +6,8 @@ const ChunkPrefetchStartupRuntimeModule = require("./ChunkPrefetchStartupRuntime
 const ChunkPrefetchTriggerRuntimeModule = require("./ChunkPrefetchTriggerRuntimeModule");
 const ChunkPreloadTriggerRuntimeModule = require("./ChunkPreloadTriggerRuntimeModule");
 
-/** @typedef {import("../Compiler")} Compiler */
-
 class ChunkPrefetchPreloadPlugin {
-	/**
-	 * @param {Compiler} compiler the compiler
-	 * @returns {void}
-	 */
+	
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"ChunkPrefetchPreloadPlugin",

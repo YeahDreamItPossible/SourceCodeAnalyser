@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { ConcatSource, RawSource } = require("webpack-sources");
@@ -10,10 +5,7 @@ const ExternalModule = require("./ExternalModule");
 const ModuleFilenameHelpers = require("./ModuleFilenameHelpers");
 const JavascriptModulesPlugin = require("./javascript/JavascriptModulesPlugin");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("./Compiler")} Compiler */
-
-/** @type {WeakMap<Source, Source>} */
+// WeakMap<Source, Source>
 const cache = new WeakMap();
 
 const devtoolWarning = new RawSource(`/*
@@ -26,20 +18,18 @@ const devtoolWarning = new RawSource(`/*
  */
 `);
 
+// SourceMap 
 class EvalDevToolModulePlugin {
 	constructor(options) {
+		// Webpack.Config.output.namespace
 		this.namespace = options.namespace || "";
 		this.sourceUrlComment = options.sourceUrlComment || "\n//# sourceURL=[url]";
+		// Webpack.Config.output.devtoolModuleFilenameTemplate
 		this.moduleFilenameTemplate =
 			options.moduleFilenameTemplate ||
 			"webpack://[namespace]/[resourcePath]?[loaders]";
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("EvalDevToolModulePlugin", compilation => {
 			const hooks = JavascriptModulesPlugin.getCompilationHooks(compilation);

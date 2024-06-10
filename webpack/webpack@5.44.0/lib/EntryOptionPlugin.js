@@ -1,10 +1,5 @@
 "use strict";
 
-/** @typedef {import("../declarations/WebpackOptions").EntryDescriptionNormalized} EntryDescription */
-/** @typedef {import("../declarations/WebpackOptions").EntryNormalized} Entry */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./Entrypoint").EntryOptions} EntryOptions */
-
 // 根据 Webpack.Config.Entry 注册插件
 class EntryOptionPlugin {
 	apply(compiler) {

@@ -1,25 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("../declarations/WebpackOptions").IgnoreWarningsNormalized} IgnoreWarningsNormalized */
-/** @typedef {import("./Compiler")} Compiler */
-
+// 根据 特定的匹配规则 来忽视webpack警告
 class IgnoreWarningsPlugin {
-	/**
-	 * @param {IgnoreWarningsNormalized} ignoreWarnings conditions to ignore warnings
-	 */
 	constructor(ignoreWarnings) {
+		// Webpack.Config.ignoreWarnings
 		this._ignoreWarnings = ignoreWarnings;
 	}
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+
 	apply(compiler) {
 		// 筛选warnings 并返回warnings
 		compiler.hooks.compilation.tap("IgnoreWarningsPlugin", compilation => {

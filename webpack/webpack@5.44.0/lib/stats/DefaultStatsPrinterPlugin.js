@@ -1,9 +1,5 @@
 "use strict";
 
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("./StatsPrinter")} StatsPrinter */
-/** @typedef {import("./StatsPrinter").StatsPrinterContext} StatsPrinterContext */
-
 const plural = (n, singular, plural) => (n === 1 ? singular : plural);
 
 /**
@@ -23,17 +19,14 @@ const printSizes = (sizes, { formatSize = n => `${n}` }) => {
 
 const mapLines = (str, fn) => str.split("\n").map(fn).join("\n");
 
-/**
- * @param {number} n a number
- * @returns {string} number as two digit string, leading 0
- */
+// 数字补零
 const twoDigit = n => (n >= 10 ? `${n}` : `0${n}`);
 
 const isValidId = id => {
 	return typeof id === "number" || id;
 };
 
-/** @type {Record<string, (thing: any, context: StatsPrinterContext, printer: StatsPrinter) => string | void>} */
+// 打印
 const SIMPLE_PRINTERS = {
 	"compilation.summary!": (
 		_,
@@ -557,7 +550,8 @@ const SIMPLE_PRINTERS = {
 	"moduleTraceDependency.loc": loc => loc
 };
 
-/** @type {Record<string, string | Function>} */
+// 
+// Record<string, string | Function>
 const ITEM_NAMES = {
 	"compilation.assets[]": "asset",
 	"compilation.modules[]": "module",
@@ -617,7 +611,7 @@ const ERROR_PREFERRED_ORDER = [
 	"moduleTrace"
 ];
 
-/** @type {Record<string, string[]>} */
+// Record<string, string[]>
 const PREFERRED_ORDERS = {
 	compilation: [
 		"name",
@@ -792,7 +786,8 @@ const itemsJoinCommaBracketsWithName = name => items =>
 		? `(${name}: ${items.filter(Boolean).join(", ")})`
 		: undefined;
 
-/** @type {Record<string, (items: string[]) => string>} */
+// 
+// Record<string, (items: string[]) => string>
 const SIMPLE_ITEMS_JOINER = {
 	"chunk.parents": itemsJoinOneLine,
 	"chunk.siblings": itemsJoinOneLine,
@@ -914,7 +909,8 @@ const joinError =
 			""
 		)}`;
 
-/** @type {Record<string, (items: ({ element: string, content: string })[], context: StatsPrinterContext) => string>} */
+// 
+// Record<string, (items: ({ element: string, content: string })[], context: StatsPrinterContext) => string>
 const SIMPLE_ELEMENT_JOINERS = {
 	compilation: items => {
 		const result = [];
@@ -1046,6 +1042,7 @@ const SIMPLE_ELEMENT_JOINERS = {
 	moduleTraceDependency: joinOneLine
 };
 
+// console
 const AVAILABLE_COLORS = {
 	bold: "\u001b[1m",
 	yellow: "\u001b[1m\u001b[33m",
@@ -1055,6 +1052,7 @@ const AVAILABLE_COLORS = {
 	magenta: "\u001b[1m\u001b[35m"
 };
 
+// 针对 某些字段 数据格式化
 const AVAILABLE_FORMATS = {
 	formatChunkId: (id, { yellow }, direction) => {
 		switch (direction) {
@@ -1140,6 +1138,7 @@ const AVAILABLE_FORMATS = {
 	}
 };
 
+// 
 const RESULT_MODIFIER = {
 	"module.modules": result => {
 		return indent(result, "| ");
@@ -1171,6 +1170,7 @@ class DefaultStatsPrinterPlugin {
 			compilation.hooks.statsPrinter.tap(
 				"DefaultStatsPrinterPlugin",
 				(stats, options, context) => {
+					// 打印
 					// Put colors into context
 					stats.hooks.print
 						.for("compilation")
@@ -1208,6 +1208,7 @@ class DefaultStatsPrinterPlugin {
 							context.timeReference = compilation.time;
 						});
 
+					// 打印
 					for (const key of Object.keys(SIMPLE_PRINTERS)) {
 						stats.hooks.print
 							.for(key)
@@ -1216,6 +1217,7 @@ class DefaultStatsPrinterPlugin {
 							);
 					}
 
+					// 排序
 					for (const key of Object.keys(PREFERRED_ORDERS)) {
 						const preferredOrder = PREFERRED_ORDERS[key];
 						stats.hooks.sortElements
@@ -1225,6 +1227,7 @@ class DefaultStatsPrinterPlugin {
 							});
 					}
 
+					// 
 					for (const key of Object.keys(ITEM_NAMES)) {
 						const itemName = ITEM_NAMES[key];
 						stats.hooks.getItemName
@@ -1235,6 +1238,7 @@ class DefaultStatsPrinterPlugin {
 							);
 					}
 
+					// 打印项
 					for (const key of Object.keys(SIMPLE_ITEMS_JOINER)) {
 						const joiner = SIMPLE_ITEMS_JOINER[key];
 						stats.hooks.printItems
@@ -1242,6 +1246,7 @@ class DefaultStatsPrinterPlugin {
 							.tap("DefaultStatsPrinterPlugin", joiner);
 					}
 
+					// 打印元素
 					for (const key of Object.keys(SIMPLE_ELEMENT_JOINERS)) {
 						const joiner = SIMPLE_ELEMENT_JOINERS[key];
 						stats.hooks.printElements
@@ -1249,6 +1254,7 @@ class DefaultStatsPrinterPlugin {
 							.tap("DefaultStatsPrinterPlugin", joiner);
 					}
 
+					// 结果
 					for (const key of Object.keys(RESULT_MODIFIER)) {
 						const modifier = RESULT_MODIFIER[key];
 						stats.hooks.result

@@ -1,36 +1,29 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-// 日志级别
+// 输出类型
 const LogType = Object.freeze({
-	error: /** @type {"error"} */ ("error"), // message, c style arguments
-	warn: /** @type {"warn"} */ ("warn"), // message, c style arguments
-	info: /** @type {"info"} */ ("info"), // message, c style arguments
-	log: /** @type {"log"} */ ("log"), // message, c style arguments
-	debug: /** @type {"debug"} */ ("debug"), // message, c style arguments
+	error: ("error"), // message, c style arguments
+	warn: ("warn"), // message, c style arguments
+	info: ("info"), // message, c style arguments
+	log: ("log"), // message, c style arguments
+	debug:("debug"), // message, c style arguments
 
-	trace: /** @type {"trace"} */ ("trace"), // no arguments
+	trace: ("trace"), // no arguments
 
-	group: /** @type {"group"} */ ("group"), // [label]
-	groupCollapsed: /** @type {"groupCollapsed"} */ ("groupCollapsed"), // [label]
-	groupEnd: /** @type {"groupEnd"} */ ("groupEnd"), // [label]
+	group: ("group"), // [label]
+	groupCollapsed: ("groupCollapsed"), // [label]
+	groupEnd: ("groupEnd"), // [label]
 
-	profile: /** @type {"profile"} */ ("profile"), // [profileName]
-	profileEnd: /** @type {"profileEnd"} */ ("profileEnd"), // [profileName]
+	profile: ("profile"), // [profileName]
+	profileEnd: ("profileEnd"), // [profileName]
 
-	time: /** @type {"time"} */ ("time"), // name, time as [seconds, nanoseconds]
+	time: ("time"), // name, time as [seconds, nanoseconds]
 
-	clear: /** @type {"clear"} */ ("clear"), // no arguments
-	status: /** @type {"status"} */ ("status") // message, arguments
+	clear: ("clear"), // no arguments
+	status: ("status") // message, arguments
 });
 
 exports.LogType = LogType;
-
-/** @typedef {typeof LogType[keyof typeof LogType]} LogTypeEnum */
 
 // 标识符
 const LOG_SYMBOL = Symbol("webpack logger raw log method");
@@ -38,10 +31,6 @@ const TIMERS_SYMBOL = Symbol("webpack logger times");
 const TIMERS_AGGREGATES_SYMBOL = Symbol("webpack logger aggregated times");
 
 class WebpackLogger {
-	/**
-	 * @param {function(LogTypeEnum, any[]=): void} log log function
-	 * @param {function(string | function(): string): WebpackLogger} getChildLogger function to create child logger
-	 */
 	constructor(log, getChildLogger) {
 		this[LOG_SYMBOL] = log;
 		this.getChildLogger = getChildLogger;

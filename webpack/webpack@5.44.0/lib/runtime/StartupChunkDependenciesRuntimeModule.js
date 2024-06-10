@@ -4,6 +4,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
+// TODO:
 class StartupChunkDependenciesRuntimeModule extends RuntimeModule {
 	constructor(asyncChunkLoading) {
 		super("startup chunk dependencies", RuntimeModule.STAGE_TRIGGER);

@@ -20,6 +20,7 @@ const decodeDataURI = uri => {
 		: Buffer.from(decodeURIComponent(body), "ascii");
 };
 
+// 将资源 编译成 数据URI
 class DataUriPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

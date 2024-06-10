@@ -1152,6 +1152,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					args,
 					trace
 				};
+				// 空调用
 				if (this.hooks.log.call(name, logEntry) === undefined) {
 					if (logEntry.type === LogType.profileEnd) {
 						// eslint-disable-next-line node/no-unsupported-features/node-builtins

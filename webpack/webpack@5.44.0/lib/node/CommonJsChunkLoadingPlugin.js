@@ -1,14 +1,7 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const StartupChunkDependenciesPlugin = require("../runtime/StartupChunkDependenciesPlugin");
-
-/** @typedef {import("../Compiler")} Compiler */
 
 class CommonJsChunkLoadingPlugin {
 	constructor(options) {
@@ -16,11 +9,6 @@ class CommonJsChunkLoadingPlugin {
 		this._asyncChunkLoading = options.asyncChunkLoading;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const ChunkLoadingRuntimeModule = this._asyncChunkLoading
 			? require("./ReadFileChunkLoadingRuntimeModule")

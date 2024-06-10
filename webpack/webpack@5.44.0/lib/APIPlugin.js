@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("./RuntimeGlobals");
@@ -16,8 +11,6 @@ const {
 const ChunkNameRuntimeModule = require("./runtime/ChunkNameRuntimeModule");
 const GetFullHashRuntimeModule = require("./runtime/GetFullHashRuntimeModule");
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./javascript/JavascriptParser")} JavascriptParser */
 
 /* eslint-disable camelcase */
 const REPLACEMENTS = {
@@ -113,12 +106,8 @@ const REPLACEMENTS = {
 };
 /* eslint-enable camelcase */
 
+// TODO:
 class APIPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"APIPlugin",

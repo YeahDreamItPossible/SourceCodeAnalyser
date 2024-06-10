@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { cachedSetProperty } = require("../util/cleverMerge");
@@ -10,18 +5,11 @@ const ContextElementDependency = require("./ContextElementDependency");
 const RequireContextDependency = require("./RequireContextDependency");
 const RequireContextDependencyParserPlugin = require("./RequireContextDependencyParserPlugin");
 
-/** @typedef {import("../../declarations/WebpackOptions").ResolveOptions} ResolveOptions */
-/** @typedef {import("../Compiler")} Compiler */
-
-/** @type {ResolveOptions} */
+// 
 const EMPTY_RESOLVE_OPTIONS = {};
 
+// TODO:
 class RequireContextPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"RequireContextPlugin",

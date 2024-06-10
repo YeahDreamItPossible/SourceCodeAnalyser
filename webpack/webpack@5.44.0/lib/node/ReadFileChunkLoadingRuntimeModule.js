@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -15,15 +11,13 @@ const { getInitialChunkIds } = require("../javascript/StartupHelpers");
 const compileBooleanMatcher = require("../util/compileBooleanMatcher");
 const { getUndoPath } = require("../util/identifier");
 
+// TODO:
 class ReadFileChunkLoadingRuntimeModule extends RuntimeModule {
 	constructor(runtimeRequirements) {
 		super("readFile chunk loading", RuntimeModule.STAGE_ATTACH);
 		this.runtimeRequirements = runtimeRequirements;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { chunkGraph, chunk } = this;
 		const { runtimeTemplate } = this.compilation;

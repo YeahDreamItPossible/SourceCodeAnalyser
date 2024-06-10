@@ -4,8 +4,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const StartupChunkDependenciesRuntimeModule = require("./StartupChunkDependenciesRuntimeModule");
 const StartupEntrypointRuntimeModule = require("./StartupEntrypointRuntimeModule");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// TODO:
 class StartupChunkDependenciesPlugin {
 	constructor(options) {
 		this.chunkLoading = options.chunkLoading;

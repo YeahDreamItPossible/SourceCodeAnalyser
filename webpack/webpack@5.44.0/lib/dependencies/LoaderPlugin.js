@@ -10,43 +10,13 @@ const LazySet = require("../util/LazySet");
 const LoaderDependency = require("./LoaderDependency");
 const LoaderImportDependency = require("./LoaderImportDependency");
 
-/** @typedef {import("../Compilation").DepConstructor} DepConstructor */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
-/**
- * @callback LoadModuleCallback
- * @param {Error=} err error object
- * @param {string | Buffer=} source source code
- * @param {object=} map source map
- * @param {Module=} module loaded module if successful
- */
-
-/**
- * @callback ImportModuleCallback
- * @param {Error=} err error object
- * @param {any=} exports exports of the evaluated module
- */
-
-/**
- * @typedef {Object} ImportModuleOptions
- * @property {string=} layer the target layer
- * @property {string=} publicPath the target public path
- */
-
+// TODO:
 class LoaderPlugin {
-	/**
-	 * @param {Object} options options
-	 * @param {boolean=} options.enableExecuteModule execute module enabled
-	 */
 	constructor(options = {}) {
+		// Webpack.Config.experiments.executeModule
 		this._enableExecuteModule = !!options.enableExecuteModule;
 	}
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"LoaderPlugin",

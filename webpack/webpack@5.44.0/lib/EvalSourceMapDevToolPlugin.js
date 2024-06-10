@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { ConcatSource, RawSource } = require("webpack-sources");
@@ -31,6 +26,7 @@ const devtoolWarning = new RawSource(`/*
  */
 `);
 
+// SourceMap
 class EvalSourceMapDevToolPlugin {
 	/**
 	 * @param {SourceMapDevToolPluginOptions|string} inputOptions Options object
@@ -54,11 +50,6 @@ class EvalSourceMapDevToolPlugin {
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const options = this.options;
 		compiler.hooks.compilation.tap(

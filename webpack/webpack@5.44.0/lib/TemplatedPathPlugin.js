@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Jason Anderson @diurnalist
-*/
-
 "use strict";
 
 const { basename, extname } = require("path");
@@ -15,6 +10,7 @@ const { parseResource } = require("./util/identifier");
 /** @typedef {import("./Compilation").PathData} PathData */
 /** @typedef {import("./Compiler")} Compiler */
 
+// \*\*\
 const REGEXP = /\[\\*([\w:]+)\\*\]/gi;
 
 const prepareId = id => {
@@ -101,7 +97,7 @@ const deprecated = (fn, message, code) => {
 const replacePathVariables = (path, data, assetInfo) => {
 	const chunkGraph = data.chunkGraph;
 
-	/** @type {Map<string, Function>} */
+	// Map<string, Function>
 	const replacements = new Map();
 
 	// Filename context
@@ -116,12 +112,24 @@ const replacePathVariables = (path, data, assetInfo) => {
 	// [path] - /some/path/
 	// [name] - file
 	// [ext] - .js
+	/**
+	 * 对于 资源路径path： /home/user/documents/file.txt
+	 * dir => 目录  /home/user/documents/
+	 * root => 根目录 Unix 路径是 /， 对于 Windows 路径是 C:\
+	 * base => 基本路径(包括文件名和扩展名) file.txt
+	 * ext => 扩展名 .txt
+	 * name => 文件名 file
+	 */
 	if (typeof data.filename === "string") {
+		// 根据 文件名 返回资源路径 参数 片段
 		const { path: file, query, fragment } = parseResource(data.filename);
-
+		// 扩展名
 		const ext = extname(file);
+		// 基本路径
 		const base = basename(file);
+		// 文件名
 		const name = base.slice(0, base.length - ext.length);
+		// 资源路径
 		const path = file.slice(0, file.length - base.length);
 
 		replacements.set("file", replacer(file));
@@ -307,11 +315,6 @@ const plugin = "TemplatedPathPlugin";
 
 // 模板路径插件
 class TemplatedPathPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(plugin, compilation => {
 			compilation.hooks.assetPath.tap(plugin, replacePathVariables);

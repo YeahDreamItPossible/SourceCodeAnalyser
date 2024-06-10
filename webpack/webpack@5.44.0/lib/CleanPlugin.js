@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Sergey Melyukov @smelukov
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
@@ -236,14 +231,11 @@ const applyDiff = (fs, outputPath, dry, logger, diff, isKept, callback) => {
 	);
 };
 
-/** @type {WeakMap<Compilation, CleanPluginCompilationHooks>} */
+// WeakMap<Compilation, Hooks>
 const compilationHooksMap = new WeakMap();
 
+// 在生成文件之前 清空 output 目录
 class CleanPlugin {
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @returns {CleanPluginCompilationHooks} the attached hooks
-	 */
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
 			throw new TypeError(
@@ -253,7 +245,7 @@ class CleanPlugin {
 		let hooks = compilationHooksMap.get(compilation);
 		if (hooks === undefined) {
 			hooks = {
-				/** @type {SyncBailHook<[string], boolean>} */
+				// SyncBailHook<[string], boolean>}
 				keep: new SyncBailHook(["ignore"])
 			};
 			compilationHooksMap.set(compilation, hooks);
@@ -261,17 +253,12 @@ class CleanPlugin {
 		return hooks;
 	}
 
-	/** @param {CleanOptions} options options */
+	// Webpack.Config.output.clean
 	constructor(options = {}) {
 		validate(options);
 		this.options = { dry: false, ...options };
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { dry, keep } = this.options;
 

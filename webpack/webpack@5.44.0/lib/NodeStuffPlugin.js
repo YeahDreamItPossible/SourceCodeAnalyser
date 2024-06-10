@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("./RuntimeGlobals");
@@ -15,22 +10,12 @@ const {
 const { relative } = require("./util/fs");
 const { parseResource } = require("./util/identifier");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./Dependency")} Dependency */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-
+// TODO:
 class NodeStuffPlugin {
 	constructor(options) {
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const options = this.options;
 		compiler.hooks.compilation.tap(

@@ -1,23 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ConstDependency = require("./dependencies/ConstDependency");
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./javascript/JavascriptParser")} JavascriptParser */
-
 const nestedWebpackRequireTag = Symbol("nested __webpack_require__");
 
+// TODO:
+// 兼容性
 class CompatibilityPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"CompatibilityPlugin",

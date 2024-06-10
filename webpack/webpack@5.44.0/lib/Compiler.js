@@ -75,6 +75,7 @@ class Compiler {
 			beforeRun: new AsyncSeriesHook(["compiler"]),
 			// AsyncSeriesHook<[Compiler]>
 			run: new AsyncSeriesHook(["compiler"]),
+			// 输出 asset 到 output 目录之前执行
 			// AsyncSeriesHook<[Compilation]>
 			emit: new AsyncSeriesHook(["compilation"]),
 			// AsyncSeriesHook<[string, AssetEmittedInfo]>

@@ -3,9 +3,7 @@
 const ConstDependency = require("./dependencies/ConstDependency");
 const ExportsInfoDependency = require("./dependencies/ExportsInfoDependency");
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./javascript/JavascriptParser")} JavascriptParser */
-
+// TODO:
 class ExportsInfoApiPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

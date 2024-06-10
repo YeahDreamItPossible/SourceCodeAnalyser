@@ -4,29 +4,6 @@ const { HookMap, SyncBailHook, SyncWaterfallHook } = require("tapable");
 const { concatComparators, keepOriginalOrder } = require("../util/comparators");
 const smartGrouping = require("../util/smartGrouping");
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compilation")} Compilation */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../WebpackError")} WebpackError */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
-
-/** @typedef {import("../util/smartGrouping").GroupConfig<any, object>} GroupConfig */
-
-/**
- * @typedef {Object} KnownStatsFactoryContext
- * @property {string} type
- * @property {function(string): string=} makePathsRelative
- * @property {Compilation=} compilation
- * @property {Set<Module>=} rootModules
- * @property {Map<string,Chunk[]>=} compilationFileToChunks
- * @property {Map<string,Chunk[]>=} compilationAuxiliaryFileToChunks
- * @property {RuntimeSpec=} runtime
- * @property {function(Compilation): WebpackError[]=} cachedGetErrors
- * @property {function(Compilation): WebpackError[]=} cachedGetWarnings
- */
-
-/** @typedef {KnownStatsFactoryContext & Record<string, any>} StatsFactoryContext */
-
 // 统计工厂()
 class StatsFactory {
 	constructor() {
@@ -133,12 +110,6 @@ class StatsFactory {
 		});
 	}
 
-	/**
-	 * @param {string} type type
-	 * @param {any} data factory data
-	 * @param {Omit<StatsFactoryContext, "type">} baseContext context used as base
-	 * @returns {any} created object
-	 */
 	// 开始构建
 	create(type, data, baseContext) {
 		if (this._inCreate) {
@@ -162,7 +133,7 @@ class StatsFactory {
 			[type]: data
 		};
 		if (Array.isArray(data)) {
-			// run filter on unsorted items
+			// this.hooks.filter
 			const items = this._forEachLevelFilter(
 				this.hooks.filter,
 				this._caches.filter,
@@ -174,6 +145,7 @@ class StatsFactory {
 
 			// sort items
 			const comparators = [];
+			// this.hooks.sort
 			this._forEachLevel(this.hooks.sort, this._caches.sort, type, h =>
 				h.call(comparators, context)
 			);
@@ -184,7 +156,7 @@ class StatsFactory {
 				);
 			}
 
-			// run filter on sorted items
+			// this.hooks.filterSorted
 			const items2 = this._forEachLevelFilter(
 				this.hooks.filterSorted,
 				this._caches.filterSorted,
@@ -224,7 +196,7 @@ class StatsFactory {
 				return itemFactory.create(innerType, item, itemContext);
 			});
 
-			// sort result items
+			// this.hooks.sortResults
 			const comparators2 = [];
 			this._forEachLevel(
 				this.hooks.sortResults,
@@ -239,7 +211,7 @@ class StatsFactory {
 				);
 			}
 
-			// group result items
+			// this.hooks.groupResults
 			const groupConfigs = [];
 			this._forEachLevel(
 				this.hooks.groupResults,
@@ -251,7 +223,7 @@ class StatsFactory {
 				resultItems = smartGrouping(resultItems, groupConfigs);
 			}
 
-			// run filter on sorted result items
+			// this.hooks.filterResults
 			const finalResultItems = this._forEachLevelFilter(
 				this.hooks.filterResults,
 				this._caches.filterResults,
@@ -261,7 +233,7 @@ class StatsFactory {
 				false
 			);
 
-			// run merge on mapped items
+			// this.hooks.merge
 			let result = this._forEachLevel(
 				this.hooks.merge,
 				this._caches.merge,
@@ -270,7 +242,7 @@ class StatsFactory {
 			);
 			if (result === undefined) result = finalResultItems;
 
-			// run result on merged items
+			// this.hooks.result
 			return this._forEachLevelWaterfall(
 				this.hooks.result,
 				this._caches.result,

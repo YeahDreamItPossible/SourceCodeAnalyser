@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { ConcatSource, RawSource, CachedSource } = require("webpack-sources");
@@ -143,16 +138,10 @@ const printExportsInfoToSource = (
 const caches = new WeakMap();
 
 class ModuleInfoHeaderPlugin {
-	/**
-	 * @param {boolean=} verbose add more information like exports, runtime requirements and bailouts
-	 */
 	constructor(verbose = true) {
 		this._verbose = verbose;
 	}
-	/**
-	 * @param {Compiler} compiler the compiler
-	 * @returns {void}
-	 */
+	
 	apply(compiler) {
 		const { _verbose: verbose } = this;
 		compiler.hooks.compilation.tap("ModuleInfoHeaderPlugin", compilation => {

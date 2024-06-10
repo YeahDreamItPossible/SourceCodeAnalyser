@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const { SyncWaterfallHook } = require("tapable");
@@ -17,22 +13,10 @@ const { getInitialChunkIds } = require("../javascript/StartupHelpers");
 const compileBooleanMatcher = require("../util/compileBooleanMatcher");
 const { getUndoPath } = require("../util/identifier");
 
-/** @typedef {import("../Chunk")} Chunk */
-
-/**
- * @typedef {Object} JsonpCompilationPluginHooks
- * @property {SyncWaterfallHook<[string, Chunk]>} linkPreload
- * @property {SyncWaterfallHook<[string, Chunk]>} linkPrefetch
- */
-
-/** @type {WeakMap<Compilation, JsonpCompilationPluginHooks>} */
+// WeakMap<Compilation, Hooks>
 const compilationHooksMap = new WeakMap();
 
 class ModuleChunkLoadingRuntimeModule extends RuntimeModule {
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @returns {JsonpCompilationPluginHooks} hooks
-	 */
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
 			throw new TypeError(
@@ -55,9 +39,6 @@ class ModuleChunkLoadingRuntimeModule extends RuntimeModule {
 		this._runtimeRequirements = runtimeRequirements;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { compilation, chunk } = this;
 		const {

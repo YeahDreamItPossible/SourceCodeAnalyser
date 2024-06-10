@@ -1,21 +1,13 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
 const ExternalModule = require("./ExternalModule");
 const { resolveByProperty, cachedSetProperty } = require("./util/cleverMerge");
 
-/** @typedef {import("../declarations/WebpackOptions").Externals} Externals */
-/** @typedef {import("./NormalModuleFactory")} NormalModuleFactory */
-
 const UNSPECIFIED_EXTERNAL_TYPE_REGEXP = /^[a-z0-9-]+ /;
 const EMPTY_RESOLVE_OPTIONS = {};
 
-// TODO webpack 6 remove this
+// webpack 6 将会移除
 const callDeprecatedExternals = util.deprecate(
 	(externalsFunction, context, request, cb) => {
 		externalsFunction.call(null, context, request, cb);
@@ -25,7 +17,6 @@ const callDeprecatedExternals = util.deprecate(
 );
 
 const cache = new WeakMap();
-
 const resolveLayer = (obj, layer) => {
 	let map = cache.get(obj);
 	if (map === undefined) {
@@ -41,19 +32,13 @@ const resolveLayer = (obj, layer) => {
 };
 
 class ExternalModuleFactoryPlugin {
-	/**
-	 * @param {string | undefined} type default external type
-	 * @param {Externals} externals externals config
-	 */
 	constructor(type, externals) {
+		// Webpack.Config.externalsType
 		this.type = type;
+		// Webpack.Config.externals
 		this.externals = externals;
 	}
 
-	/**
-	 * @param {NormalModuleFactory} normalModuleFactory the normal module factory
-	 * @returns {void}
-	 */
 	apply(normalModuleFactory) {
 		const globalType = this.type;
 		normalModuleFactory.hooks.factorize.tapAsync(
@@ -114,17 +99,15 @@ class ExternalModuleFactoryPlugin {
 					);
 				};
 
-				/**
-				 * @param {Externals} externals externals config
-				 * @param {function(Error=, ExternalModule=): void} callback callback
-				 * @returns {void}
-				 */
 				const handleExternals = (externals, callback) => {
+					// Webpack.Config.externals = 'String'
 					if (typeof externals === "string") {
 						if (externals === dependency.request) {
 							return handleExternal(dependency.request, undefined, callback);
 						}
-					} else if (Array.isArray(externals)) {
+					} 
+					// Webpack.Config.externals = 'Array'
+					else if (Array.isArray(externals)) {
 						let i = 0;
 						const next = () => {
 							let asyncFlag;
@@ -150,11 +133,15 @@ class ExternalModuleFactoryPlugin {
 
 						next();
 						return;
-					} else if (externals instanceof RegExp) {
+					} 
+					// Webpack.Config.externals = 'RegExp'
+					else if (externals instanceof RegExp) {
 						if (externals.test(dependency.request)) {
 							return handleExternal(dependency.request, undefined, callback);
 						}
-					} else if (typeof externals === "function") {
+					} 
+					// Webpack.Config.externals = 'Function'
+					else if (typeof externals === "function") {
 						const cb = (err, value, type) => {
 							if (err) return callback(err);
 							if (value !== undefined) {
@@ -225,7 +212,9 @@ class ExternalModuleFactoryPlugin {
 							if (promise && promise.then) promise.then(r => cb(null, r), cb);
 						}
 						return;
-					} else if (typeof externals === "object") {
+					} 
+					// Webpack.Config.externals = 'Object'
+					else if (typeof externals === "object") {
 						const resolvedExternals = resolveLayer(
 							externals,
 							contextInfo.issuerLayer

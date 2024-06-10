@@ -1,14 +1,6 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("../../declarations/WebpackOptions").ChunkLoadingType} ChunkLoadingType */
-/** @typedef {import("../Compiler")} Compiler */
-
-/** @type {WeakMap<Compiler, Set<ChunkLoadingType>>} */
+// WeakMap<Compiler, Set<ChunkLoadingType>>
 const enabledTypes = new WeakMap();
 
 const getEnabledTypes = compiler => {
@@ -20,28 +12,17 @@ const getEnabledTypes = compiler => {
 	return set;
 };
 
+// 根据 Webpack.Config.output.enabledChunkLoadingTypes 值注册不同的插件
 class EnableChunkLoadingPlugin {
-	/**
-	 * @param {ChunkLoadingType} type library type that should be available
-	 */
 	constructor(type) {
+		// Webpack.Config.output.enabledChunkLoadingTypes
 		this.type = type;
 	}
 
-	/**
-	 * @param {Compiler} compiler the compiler instance
-	 * @param {ChunkLoadingType} type type of library
-	 * @returns {void}
-	 */
 	static setEnabled(compiler, type) {
 		getEnabledTypes(compiler).add(type);
 	}
 
-	/**
-	 * @param {Compiler} compiler the compiler instance
-	 * @param {ChunkLoadingType} type type of library
-	 * @returns {void}
-	 */
 	static checkEnabled(compiler, type) {
 		if (!getEnabledTypes(compiler).has(type)) {
 			throw new Error(
@@ -55,11 +36,6 @@ class EnableChunkLoadingPlugin {
 		}
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { type } = this;
 
@@ -81,7 +57,6 @@ class EnableChunkLoadingPlugin {
 					break;
 				}
 				case "require": {
-					//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 					const CommonJsChunkLoadingPlugin = require("../node/CommonJsChunkLoadingPlugin");
 					new CommonJsChunkLoadingPlugin({
 						asyncChunkLoading: false
@@ -89,7 +64,6 @@ class EnableChunkLoadingPlugin {
 					break;
 				}
 				case "async-node": {
-					//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 					const CommonJsChunkLoadingPlugin = require("../node/CommonJsChunkLoadingPlugin");
 					new CommonJsChunkLoadingPlugin({
 						asyncChunkLoading: true
@@ -102,7 +76,6 @@ class EnableChunkLoadingPlugin {
 					break;
 				}
 				case "universal":
-					// TODO implement universal chunk loading
 					throw new Error("Universal Chunk Loading is not implemented yet");
 				default:
 					throw new Error(`Unsupported chunk loading type ${type}.

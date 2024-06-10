@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 /** @typedef {import("../../declarations/WebpackOptions").LibraryOptions} LibraryOptions */
@@ -21,6 +16,7 @@ const getEnabledTypes = compiler => {
 	return set;
 };
 
+// TODO:
 class EnableLibraryPlugin {
 	/**
 	 * @param {LibraryType} type library type that should be available
@@ -56,11 +52,6 @@ class EnableLibraryPlugin {
 		}
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { type } = this;
 

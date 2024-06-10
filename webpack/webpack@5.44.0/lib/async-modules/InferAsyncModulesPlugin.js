@@ -1,28 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const HarmonyImportDependency = require("../dependencies/HarmonyImportDependency");
 
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Module")} Module */
-
+// 异步模块插件
 class InferAsyncModulesPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("InferAsyncModulesPlugin", compilation => {
 			const { moduleGraph } = compilation;
 			compilation.hooks.finishModules.tap(
 				"InferAsyncModulesPlugin",
 				modules => {
-					/** @type {Set<Module>} */
+					// Set<Module>
 					const queue = new Set();
 					for (const module of modules) {
 						if (module.buildMeta && module.buildMeta.async) {

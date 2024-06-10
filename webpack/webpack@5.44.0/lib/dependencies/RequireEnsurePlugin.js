@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RequireEnsureDependency = require("./RequireEnsureDependency");
@@ -15,6 +10,7 @@ const {
 	toConstantDependency
 } = require("../javascript/JavascriptParserHelpers");
 
+// TODO:
 class RequireEnsurePlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const makeSerializable = require("../util/makeSerializable");
@@ -15,6 +10,7 @@ const NullDependency = require("./NullDependency");
 /** @typedef {import("../ModuleGraph")} ModuleGraph */
 /** @typedef {import("../util/Hash")} Hash */
 
+// TODO: 与 ExternalModule 相关
 class StaticExportsDependency extends NullDependency {
 	/**
 	 * @param {string[] | true} exports export names

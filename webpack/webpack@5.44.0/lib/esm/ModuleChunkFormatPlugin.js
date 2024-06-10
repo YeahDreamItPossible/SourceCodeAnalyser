@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { ConcatSource, RawSource } = require("webpack-sources");
@@ -18,14 +13,9 @@ const {
 	updateHashForEntryStartup
 } = require("../javascript/StartupHelpers");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// 非运行时Chunk格式
+// Webpack.Config.output.chunkFormat = 'module'
 class ModuleChunkFormatPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(
 			"ModuleChunkFormatPlugin",

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const CachedInputFileSystem = require("enhanced-resolve/lib/CachedInputFileSystem");
@@ -11,27 +6,16 @@ const createConsoleLogger = require("../logging/createConsoleLogger");
 const NodeWatchFileSystem = require("./NodeWatchFileSystem");
 const nodeConsole = require("./nodeConsole");
 
-/** @typedef {import("../../declarations/WebpackOptions").InfrastructureLogging} InfrastructureLogging */
-/** @typedef {import("../Compiler")} Compiler */
-/**
- * 绑定compiler文件系统api
- */
+// 绑定compiler文件系统api
 class NodeEnvironmentPlugin {
-	/**
-	 * @param {Object} options options
-	 * @param {InfrastructureLogging} options.infrastructureLogging infrastructure logging options
-	 */
+	// Webpack.Config.infrastructureLogger
 	constructor(options) {
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { infrastructureLogging } = this.options;
+		// 初始化 用于基础设施水平的日志
 		compiler.infrastructureLogger = createConsoleLogger({
 			level: infrastructureLogging.level || "info",
 			debug: infrastructureLogging.debug || false,
@@ -43,6 +27,8 @@ class NodeEnvironmentPlugin {
 					stream: infrastructureLogging.stream
 				})
 		});
+
+		// 输入文件系统
 		compiler.inputFileSystem = new CachedInputFileSystem(fs, 60000);
 		const inputFileSystem = compiler.inputFileSystem;
 		compiler.outputFileSystem = fs;

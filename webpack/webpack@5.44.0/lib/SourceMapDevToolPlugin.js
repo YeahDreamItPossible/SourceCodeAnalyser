@@ -105,6 +105,8 @@ const getTaskForFile = (
 	};
 };
 
+// TODO:
+// SourceMap 
 class SourceMapDevToolPlugin {
 	/**
 	 * @param {SourceMapDevToolPluginOptions} [options] options object
@@ -133,11 +135,6 @@ class SourceMapDevToolPlugin {
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const outputFs = compiler.outputFileSystem;
 		const sourceMapFilename = this.sourceMapFilename;

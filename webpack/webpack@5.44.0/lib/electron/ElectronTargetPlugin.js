@@ -1,26 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ExternalsPlugin = require("../ExternalsPlugin");
 
-/** @typedef {import("../Compiler")} Compiler */
 
+// Webpack.Config.externalsPresets.electronMain
+// Webpack.Config.externalsPresets.electronPreload
+// Webpack.Config.externalsPresets.electronRenderer
 class ElectronTargetPlugin {
-	/**
-	 * @param {"main" | "preload" | "renderer"=} context in main, preload or renderer context?
-	 */
 	constructor(context) {
 		this._context = context;
 	}
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+	
 	apply(compiler) {
 		new ExternalsPlugin("node-commonjs", [
 			"clipboard",

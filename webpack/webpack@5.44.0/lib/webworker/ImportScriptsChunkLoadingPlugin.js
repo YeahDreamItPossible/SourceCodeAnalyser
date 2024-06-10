@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -10,14 +5,9 @@ const CreateScriptUrlRuntimeModule = require("../runtime/CreateScriptUrlRuntimeM
 const StartupChunkDependenciesPlugin = require("../runtime/StartupChunkDependenciesPlugin");
 const ImportScriptsChunkLoadingRuntimeModule = require("./ImportScriptsChunkLoadingRuntimeModule");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// 根据 Webpack.Config.output.chunkLoading = 'import-scripts' 注册该插件
+// 利用 Worker importScripts 属性
 class ImportScriptsChunkLoadingPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		new StartupChunkDependenciesPlugin({
 			chunkLoading: "import-scripts",

@@ -3,6 +3,7 @@
 const RequireIncludeDependency = require("./RequireIncludeDependency");
 const RequireIncludeDependencyParserPlugin = require("./RequireIncludeDependencyParserPlugin");
 
+// TODO:
 class RequireIncludePlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -15,6 +11,7 @@ const { getInitialChunkIds } = require("../javascript/StartupHelpers");
 const compileBooleanMatcher = require("../util/compileBooleanMatcher");
 const { getUndoPath } = require("../util/identifier");
 
+// TODO:
 class ImportScriptsChunkLoadingRuntimeModule extends RuntimeModule {
 	constructor(runtimeRequirements, withCreateScriptUrl) {
 		super("importScripts chunk loading", RuntimeModule.STAGE_ATTACH);
@@ -22,9 +19,6 @@ class ImportScriptsChunkLoadingRuntimeModule extends RuntimeModule {
 		this._withCreateScriptUrl = withCreateScriptUrl;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const {
 			chunk,

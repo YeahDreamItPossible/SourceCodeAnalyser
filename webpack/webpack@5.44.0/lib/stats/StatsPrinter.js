@@ -35,16 +35,9 @@ class StatsPrinter {
 		this._inPrint = false;
 	}
 
-	/**
-	 * get all level hooks
-	 * @private
-	 * @template {Hook} T
-	 * @param {HookMap<T>} hookMap HookMap
-	 * @param {string} type type
-	 * @returns {T[]} hooks
-	 */
+	// 返回 statsPrinter.hooks 中 特定类型 所有匹配的的hooks
 	_getAllLevelHooks(hookMap, type) {
-		let cache = // Map<string, T[]> (
+		let cache = (
 			this._levelHookCache.get(hookMap)
 		);
 		if (cache === undefined) {
@@ -68,16 +61,7 @@ class StatsPrinter {
 		return hooks;
 	}
 
-	/**
-	 * Run `fn` for each level
-	 * @private
-	 * @template T
-	 * @template R
-	 * @param {HookMap<SyncBailHook<T, R>>} hookMap HookMap
-	 * @param {string} type type
-	 * @param {(hook: SyncBailHook<T, R>) => R} fn function
-	 * @returns {R} result of `fn`
-	 */
+	// 运行
 	_forEachLevel(hookMap, type, fn) {
 		for (const hook of this._getAllLevelHooks(hookMap, type)) {
 			const result = fn(hook);
@@ -85,16 +69,8 @@ class StatsPrinter {
 		}
 	}
 
-	/**
-	 * Run `fn` for each level
-	 * @private
-	 * @template T
-	 * @param {HookMap<SyncWaterfallHook<T>>} hookMap HookMap
-	 * @param {string} type type
-	 * @param {AsArray<T>[0]} data data
-	 * @param {(hook: SyncWaterfallHook<T>, data: AsArray<T>[0]) => AsArray<T>[0]} fn function
-	 * @returns {AsArray<T>[0]} result of `fn`
-	 */
+	// 执行 属性路径中所匹配的hooks
+	// 并将 返回值 作为下个hook的参数
 	_forEachLevelWaterfall(hookMap, type, data, fn) {
 		for (const hook of this._getAllLevelHooks(hookMap, type)) {
 			data = fn(hook, data);
@@ -102,12 +78,7 @@ class StatsPrinter {
 		return data;
 	}
 
-	/**
-	 * @param {string} type The type
-	 * @param {Object} object Object to print
-	 * @param {Object=} baseContext The base context
-	 * @returns {string} printed result
-	 */
+	
 	// 开始打印
 	print(type, object, baseContext) {
 		if (this._inPrint) {
@@ -123,13 +94,6 @@ class StatsPrinter {
 		}
 	}
 
-	/**
-	 * @private
-	 * @param {string} type type
-	 * @param {Object} object object
-	 * @param {Object=} baseContext context
-	 * @returns {string} printed result
-	 */
 	// 打印
 	_print(type, object, baseContext) {
 		const context = {

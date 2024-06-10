@@ -1,20 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ConstDependency = require("./dependencies/ConstDependency");
 
-/** @typedef {import("./Compiler")} Compiler */
-
+// 使用 严格模式
 class UseStrictPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"UseStrictPlugin",

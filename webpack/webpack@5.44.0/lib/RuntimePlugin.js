@@ -25,10 +25,6 @@ const SystemContextRuntimeModule = require("./runtime/SystemContextRuntimeModule
 const ShareRuntimeModule = require("./sharing/ShareRuntimeModule");
 const StringXor = require("./util/StringXor");
 
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./Module")} Module */
-
 const GLOBALS_ON_REQUIRE = [
 	RuntimeGlobals.chunkName,
 	RuntimeGlobals.runtimeId,

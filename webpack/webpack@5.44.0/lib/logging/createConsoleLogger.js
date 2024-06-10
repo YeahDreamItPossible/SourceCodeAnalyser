@@ -1,47 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { LogType } = require("./Logger");
 
-/** @typedef {import("../../declarations/WebpackOptions").FilterItemTypes} FilterItemTypes */
-/** @typedef {import("../../declarations/WebpackOptions").FilterTypes} FilterTypes */
-/** @typedef {import("./Logger").LogTypeEnum} LogTypeEnum */
-
-/** @typedef {function(string): boolean} FilterFunction */
-
-/**
- * @typedef {Object} LoggerConsole
- * @property {function(): void} clear
- * @property {function(): void} trace
- * @property {(...args: any[]) => void} info
- * @property {(...args: any[]) => void} log
- * @property {(...args: any[]) => void} warn
- * @property {(...args: any[]) => void} error
- * @property {(...args: any[]) => void=} debug
- * @property {(...args: any[]) => void=} group
- * @property {(...args: any[]) => void=} groupCollapsed
- * @property {(...args: any[]) => void=} groupEnd
- * @property {(...args: any[]) => void=} status
- * @property {(...args: any[]) => void=} profile
- * @property {(...args: any[]) => void=} profileEnd
- * @property {(...args: any[]) => void=} logTime
- */
-
-/**
- * @typedef {Object} LoggerOptions
- * @property {false|true|"none"|"error"|"warn"|"info"|"log"|"verbose"} level loglevel
- * @property {FilterTypes|boolean} debug filter for debug logging
- * @property {LoggerConsole} console the console to log to
- */
-
-/**
- * @param {FilterItemTypes} item an input item
- * @returns {FilterFunction} filter function
- */
+// 返回 过滤函数
 const filterToFunction = item => {
 	if (typeof item === "string") {
 		const regExp = new RegExp(
@@ -64,9 +25,6 @@ const filterToFunction = item => {
 	}
 };
 
-/**
- * @enum {number}
- */
 // 日志级别
 const LogLevel = {
 	none: 6,
@@ -79,26 +37,15 @@ const LogLevel = {
 	verbose: 1
 };
 
-/**
- * @param {LoggerOptions} options options object
- * @returns {function(string, LogTypeEnum, any[]): void} logging function
- */
 module.exports = ({ level = "info", debug = false, console }) => {
 	const debugFilters =
 		typeof debug === "boolean"
 			? [() => debug]
-			: /** @type {FilterItemTypes[]} */ ([])
+			: ([])
 					.concat(debug)
 					.map(filterToFunction);
-	/** @type {number} */
 	const loglevel = LogLevel[`${level}`] || 0;
 
-	/**
-	 * @param {string} name name of the logger
-	 * @param {LogTypeEnum} type type of the log entry
-	 * @param {any[]} args arguments of the log entry
-	 * @returns {void}
-	 */
 	const logger = (name, type, args) => {
 		const labeledArgs = () => {
 			if (Array.isArray(args)) {

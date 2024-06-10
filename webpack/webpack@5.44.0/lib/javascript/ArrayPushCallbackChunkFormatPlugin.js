@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { ConcatSource, PrefixSource, RawSource } = require("webpack-sources");
@@ -15,14 +10,9 @@ const {
 	updateHashForEntryStartup
 } = require("./StartupHelpers");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// 非运行时Chunk格式
+// Webpack.Config.output.chunkFormat = 'array-push'
 class ArrayPushCallbackChunkFormatPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(
 			"ArrayPushCallbackChunkFormatPlugin",

@@ -2,9 +2,7 @@
 
 // 运行时变量对象
 
-/**
- * the internal require function
- */
+// 内部 require 函数
 exports.require = "__webpack_require__";
 
 /**
@@ -12,9 +10,8 @@ exports.require = "__webpack_require__";
  */
 exports.requireScope = "__webpack_require__.*";
 
-/**
- * the internal exports object
- */
+// 导出对象
+// (__unused_webpack_module, __webpack_exports__, __webpack_require__) => { // 内部代码 }
 exports.exports = "__webpack_exports__";
 
 /**

@@ -1,22 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const ExportWebpackRequireRuntimeModule = require("./ExportWebpackRequireRuntimeModule");
 const ModuleChunkLoadingRuntimeModule = require("./ModuleChunkLoadingRuntimeModule");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// 根据 Webpack.Config.output.chunkLoading = 'import' 注册该插件
 class ModuleChunkLoadingPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(
 			"ModuleChunkLoadingPlugin",
