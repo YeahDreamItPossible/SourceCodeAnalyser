@@ -20,11 +20,6 @@ const Queue = require("./util/Queue");
 // 默认 optimization.providedExports 会被启用。
 // 根据 Webpack.Config.optimization.providedExports 注册该插件
 class FlagDependencyExportsPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"FlagDependencyExportsPlugin",

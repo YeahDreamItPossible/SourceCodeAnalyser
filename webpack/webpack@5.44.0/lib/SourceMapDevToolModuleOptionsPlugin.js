@@ -2,7 +2,10 @@
 
 const JavascriptModulesPlugin = require("./javascript/JavascriptModulesPlugin");
 
-// 根据 Webpack.Config.devtool 字段是否包含 'module' 来标识 module.useSourceMap || module.useSimpleSourceMap
+// 根据 Webpack.Config.devtool 字段是否包含 'module' 
+// 或者 使用自定义 EvalSourceMapDevToolPlugin 插件时 根据 插件选项
+// 来标识 模块是否需要源代码映射
+// 即: module.useSourceMap || module.useSimpleSourceMap
 class SourceMapDevToolModuleOptionsPlugin {
 	constructor(options) {
 		this.options = options;

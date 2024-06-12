@@ -18,9 +18,13 @@ const MAX_SOURCE_POSITION = 0x20000000;
 // 支持 替换 和 插入 来装饰源代码的 Source
 class Replacement {
 	constructor(start, end, content, name) {
+		// 起始位置
 		this.start = start;
+		// 结束位置
 		this.end = end;
+		// 要插入的内容
 		this.content = content;
+		// 
 		this.name = name;
 		if (!hasStableSort) {
 			this.index = -1;
@@ -28,7 +32,7 @@ class Replacement {
 	}
 }
 
-// 
+// 替换源代码
 class ReplaceSource extends Source {
 	constructor(source, name) {
 		super();
@@ -43,11 +47,13 @@ class ReplaceSource extends Source {
 		return this._name;
 	}
 
+	// 返回 排序后的 要替换的数据
 	getReplacements() {
 		this._sortReplacements();
 		return this._replacements;
 	}
 
+	// 在特定位置 替换替换语句
 	replace(start, end, newValue, name) {
 		if (typeof newValue !== "string")
 			throw new Error(
@@ -57,6 +63,7 @@ class ReplaceSource extends Source {
 		this._isSorted = false;
 	}
 
+	// 在特定位置 插入替换语句
 	insert(pos, newValue, name) {
 		if (typeof newValue !== "string")
 			throw new Error(
@@ -116,6 +123,7 @@ class ReplaceSource extends Source {
 		return this._source;
 	}
 
+	// 对 替换的数据 进行排序
 	_sortReplacements() {
 		if (this._isSorted) return;
 		if (hasStableSort) {

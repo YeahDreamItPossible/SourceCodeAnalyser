@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const createMappingsSerializer = require("./createMappingsSerializer");
@@ -55,7 +50,7 @@ exports.getSourceAndMap = (inputSource, options) => {
 		}
 	);
 	return {
-		source: source !== undefined ? source : code,
+		source: source !== undefined ? source : code, // 加工后的源代码(经过 Source.streamChunks 加工的源代码)
 		map:
 			mappings.length > 0
 				? {
@@ -64,7 +59,7 @@ exports.getSourceAndMap = (inputSource, options) => {
 						mappings,
 						sources,
 						sourcesContent:
-							sourcesContent.length > 0 ? sourcesContent : undefined,
+							sourcesContent.length > 0 ? sourcesContent : undefined, // 源代码(创建 Source 实例的源代码)
 						names
 				  }
 				: null

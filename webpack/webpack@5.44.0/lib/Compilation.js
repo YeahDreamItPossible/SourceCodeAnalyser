@@ -398,8 +398,6 @@ const compareErrors = concatComparators(byModule, byLocation, byMessage);
 class Compilation {
 	constructor(compiler) {
 		const getNormalModuleLoader = () => deprecatedNormalModuleLoaderHook(this);
-		/** @typedef {{ additionalAssets?: true | Function }} ProcessAssetsAdditionalOptions */
-		// AsyncSeriesHook<[CompilationAssets], ProcessAssetsAdditionalOptions>
 		const processAssetsHook = new AsyncSeriesHook(["assets"]);
 
 		let savedAssets = new Set();
@@ -515,7 +513,6 @@ class Compilation {
 			}
 		});
 
-		// SyncHook<[CompilationAssets]>
 		const afterProcessAssetsHook = new SyncHook(["assets"]);
 
 		/**
@@ -568,241 +565,257 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			);
 		};
 		this.hooks = Object.freeze({
-			/** @type {SyncHook<[Module]>} */
+			// 空调用
+			// 在单个模块构建开始之前
 			buildModule: new SyncHook(["module"]),
-			/** @type {SyncHook<[Module]>} */
+			// 在重新单个模块构建开始之前
 			rebuildModule: new SyncHook(["module"]),
-			/** @type {SyncHook<[Module, WebpackError]>} */
+			// 当单个模块构建失败后
 			failedModule: new SyncHook(["module", "error"]),
-			/** @type {SyncHook<[Module]>} */
+			// 当单个模块构建成功后
 			succeedModule: new SyncHook(["module"]),
-			/** @type {SyncHook<[Module]>} */
+			// 空调用
+			// 
 			stillValidModule: new SyncHook(["module"]),
-
-			/** @type {SyncHook<[Dependency, EntryOptions]>} */
+			// 当添加完单项入口后
 			addEntry: new SyncHook(["entry", "options"]),
-			/** @type {SyncHook<[Dependency, EntryOptions, Error]>} */
+			// 当在构建单项入口的模块树的过程中出错时
 			failedEntry: new SyncHook(["entry", "options", "error"]),
-			/** @type {SyncHook<[Dependency, EntryOptions, Module]>} */
+			// 当成功构建完单项入口的模块树后
 			succeedEntry: new SyncHook(["entry", "options", "module"]),
-
-			/** @type {SyncWaterfallHook<[(string[] | ReferencedExport)[], Dependency, RuntimeSpec]>} */
+			// 
 			dependencyReferencedExports: new SyncWaterfallHook([
 				"referencedExports",
 				"dependency",
 				"runtime"
 			]),
-
-			/** @type {SyncHook<[ExecuteModuleArgument, ExecuteModuleContext]>} */
+			// 
 			executeModule: new SyncHook(["options", "context"]),
-			/** @type {AsyncParallelHook<[ExecuteModuleArgument, ExecuteModuleContext]>} */
+			// 
 			prepareModuleExecution: new AsyncParallelHook(["options", "context"]),
-
-			/** @type {AsyncSeriesHook<[Iterable<Module>]>} */
+			// 当所有的模块都构建完成时
+			// 所有的入口都已构建完成 ??
 			finishModules: new AsyncSeriesHook(["modules"]),
-			/** @type {AsyncSeriesHook<[Module]>} */
+			// 
 			finishRebuildingModule: new AsyncSeriesHook(["module"]),
-			/** @type {SyncHook<[]>} */
+			// 
 			unseal: new SyncHook([]),
-			/** @type {SyncHook<[]>} */
+			// 
 			seal: new SyncHook([]),
-
-			/** @type {SyncHook<[]>} */
+			// 在分块之前
 			beforeChunks: new SyncHook([]),
-			/** @type {SyncHook<[Iterable<Chunk>]>} */
+			// 在分块后
 			afterChunks: new SyncHook(["chunks"]),
-
-			/** @type {SyncBailHook<[Iterable<Module>]>} */
+			// 依赖优化开始时触发
 			optimizeDependencies: new SyncBailHook(["modules"]),
-			/** @type {SyncHook<[Iterable<Module>]>} */
+			// 空调用
+			// 依赖优化之后触发
 			afterOptimizeDependencies: new SyncHook(["modules"]),
-
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 在所有的优化开始前
 			optimize: new SyncHook([]),
-			/** @type {SyncBailHook<[Iterable<Module>]>} */
+			// 空调用
+			// 当优化模块前
+			// 在执行完 compilation.hooks.optimize 后立即执行
 			optimizeModules: new SyncBailHook(["modules"]),
-			/** @type {SyncHook<[Iterable<Module>]>} */
+			// 空调用
+			// 在优化完所有的模块后
+			// 在执行完 compilation.hooks.optimizeModules 后立即执行
 			afterOptimizeModules: new SyncHook(["modules"]),
 
-			/** @type {SyncBailHook<[Iterable<Chunk>, ChunkGroup[]]>} */
+			// 当优化块时
+			// 在执行完 compilation.hooks.afterOptimizeModules 后立即执行
 			optimizeChunks: new SyncBailHook(["chunks", "chunkGroups"]),
-			/** @type {SyncHook<[Iterable<Chunk>, ChunkGroup[]]>} */
+			// 空调用
+			// 当优化玩所有的块后
+			// 在执行完 compilation.hooks.optimizeChunks 后立即执行
 			afterOptimizeChunks: new SyncHook(["chunks", "chunkGroups"]),
 
-			/** @type {AsyncSeriesHook<[Iterable<Chunk>, Iterable<Module>]>} */
+			// 执行执行回调
+			// 当优化依赖树时
+			// 在执行完 compilation.hooks.afterOptimizeChunks 后立即执行
 			optimizeTree: new AsyncSeriesHook(["chunks", "modules"]),
-			/** @type {SyncHook<[Iterable<Chunk>, Iterable<Module>]>} */
+			// 当优化完依赖树后
+			// 在执行完 compilation.hooks.optimizeTree 后立即执行
 			afterOptimizeTree: new SyncHook(["chunks", "modules"]),
 
-			/** @type {AsyncSeriesBailHook<[Iterable<Chunk>, Iterable<Module>]>} */
+			// 直接执行回调
+			// 在树优化之后，chunk 模块优化开始时
+			// 在执行完 compilation.hooks.afterOptimizeTree 后立即执行
 			optimizeChunkModules: new AsyncSeriesBailHook(["chunks", "modules"]),
-			/** @type {SyncHook<[Iterable<Chunk>, Iterable<Module>]>} */
+			// 空调用
+			// 在 chunk 模块优化成功完成之后调用
+			// 在执行完 compilation.hooks.optimizeChunkModules 后立即执行
 			afterOptimizeChunkModules: new SyncHook(["chunks", "modules"]),
-			/** @type {SyncBailHook<[], boolean>} */
+			// 空调用
+			// 用来决定是否存储 record
+			// 在执行完 compilation.hooks.afterOptimizeChunkModules 后立即执行
 			shouldRecord: new SyncBailHook([]),
-
-			/** @type {SyncHook<[Chunk, Set<string>, RuntimeRequirementsContext]>} */
+			// 
 			additionalChunkRuntimeRequirements: new SyncHook([
 				"chunk",
 				"runtimeRequirements",
 				"context"
 			]),
-			/** @type {HookMap<SyncBailHook<[Chunk, Set<string>, RuntimeRequirementsContext]>>} */
+			// 
 			runtimeRequirementInChunk: new HookMap(
 				() => new SyncBailHook(["chunk", "runtimeRequirements", "context"])
 			),
-			/** @type {SyncHook<[Module, Set<string>, RuntimeRequirementsContext]>} */
+			// 
 			additionalModuleRuntimeRequirements: new SyncHook([
 				"module",
 				"runtimeRequirements",
 				"context"
 			]),
-			/** @type {HookMap<SyncBailHook<[Module, Set<string>, RuntimeRequirementsContext]>>} */
+			// 
 			runtimeRequirementInModule: new HookMap(
 				() => new SyncBailHook(["module", "runtimeRequirements", "context"])
 			),
-			/** @type {SyncHook<[Chunk, Set<string>, RuntimeRequirementsContext]>} */
+			// 
 			additionalTreeRuntimeRequirements: new SyncHook([
 				"chunk",
 				"runtimeRequirements",
 				"context"
 			]),
-			/** @type {HookMap<SyncBailHook<[Chunk, Set<string>, RuntimeRequirementsContext]>>} */
+			// 
 			runtimeRequirementInTree: new HookMap(
 				() => new SyncBailHook(["chunk", "runtimeRequirements", "context"])
 			),
-
-			/** @type {SyncHook<[RuntimeModule, Chunk]>} */
+			// 
 			runtimeModule: new SyncHook(["module", "chunk"]),
-
-			/** @type {SyncHook<[Iterable<Module>, any]>} */
+			// 从 record 中恢复模块信息
 			reviveModules: new SyncHook(["modules", "records"]),
-			/** @type {SyncHook<[Iterable<Module>]>} */
+			// 空调用
+			// 在为每个模块分配 id 之前执行
 			beforeModuleIds: new SyncHook(["modules"]),
-			/** @type {SyncHook<[Iterable<Module>]>} */
+			// 当给每个模块分配 id 时
+			// 设置 Module 对应的 ChunkGraphModule.id
 			moduleIds: new SyncHook(["modules"]),
-			/** @type {SyncHook<[Iterable<Module>]>} */
+			// 在模块 id 优化开始时调用
 			optimizeModuleIds: new SyncHook(["modules"]),
-			/** @type {SyncHook<[Iterable<Module>]>} */
+			// 在模块 id 优化完成时调用
 			afterOptimizeModuleIds: new SyncHook(["modules"]),
-
-			/** @type {SyncHook<[Iterable<Chunk>, any]>} */
+			// 从 record 中恢复 chunk 信息
 			reviveChunks: new SyncHook(["chunks", "records"]),
-			/** @type {SyncHook<[Iterable<Chunk>]>} */
+			// 空调用
+			// 在为每个 chunk 分配 id 之前执行
 			beforeChunkIds: new SyncHook(["chunks"]),
-			/** @type {SyncHook<[Iterable<Chunk>]>} */
+			// 当给每个 chunk 分配一个 id时
+			// 设置 Chunk.id
 			chunkIds: new SyncHook(["chunks"]),
-			/** @type {SyncHook<[Iterable<Chunk>]>} */
+			// 空调用
+			// 在 chunk id 优化阶段开始时调用
 			optimizeChunkIds: new SyncHook(["chunks"]),
-			/** @type {SyncHook<[Iterable<Chunk>]>} */
+			// 空调用
+			// 当chunk id 优化结束之后调用
 			afterOptimizeChunkIds: new SyncHook(["chunks"]),
-
-			/** @type {SyncHook<[Iterable<Module>, any]>} */
+			// 将模块信息存储到 record 中
 			recordModules: new SyncHook(["modules", "records"]),
-			/** @type {SyncHook<[Iterable<Chunk>, any]>} */
+			// 将 chunk 存储到 record 中
 			recordChunks: new SyncHook(["chunks", "records"]),
-
-			/** @type {SyncHook<[Iterable<Module>]>} */
+			// 空调用
 			optimizeCodeGeneration: new SyncHook(["modules"]),
-
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 在创建模块哈希（hash）之前
 			beforeModuleHash: new SyncHook([]),
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 在创建模块哈希（hash）之后
 			afterModuleHash: new SyncHook([]),
-
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 
 			beforeCodeGeneration: new SyncHook([]),
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			//
 			afterCodeGeneration: new SyncHook([]),
-
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 
 			beforeRuntimeRequirements: new SyncHook([]),
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 
 			afterRuntimeRequirements: new SyncHook([]),
-
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 在 compilation 添加哈希（hash）之前
 			beforeHash: new SyncHook([]),
-			/** @type {SyncHook<[Chunk]>} */
+			// 
 			contentHash: new SyncHook(["chunk"]),
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 在 compilation 添加哈希（hash）之后
 			afterHash: new SyncHook([]),
-			/** @type {SyncHook<[any]>} */
+			// 
+			// 将有关 record 的信息存储到 records 中
 			recordHash: new SyncHook(["records"]),
-			/** @type {SyncHook<[Compilation, any]>} */
+			// 
+			// 将 compilation 相关信息存储到 record 中
 			record: new SyncHook(["compilation", "records"]),
-
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 在创建模块 asset 之前执行
 			beforeModuleAssets: new SyncHook([]),
-			/** @type {SyncBailHook<[], boolean>} */
+			// 空调用
+			// 用来确定是否生成 chunk asset
 			shouldGenerateChunkAssets: new SyncBailHook([]),
-			/** @type {SyncHook<[]>} */
+			// 空调用
+			// 在创建 chunk asset 之前
 			beforeChunkAssets: new SyncHook([]),
-			// TODO webpack 6 remove
-			/** @deprecated */
+			// 废弃
+			// compilation.hooks.additionalChunkAssets 已被 compilation.hooks.processAssets 替代
 			additionalChunkAssets: createProcessAssetsHook(
 				"additionalChunkAssets",
 				Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
 				() => [this.chunks],
 				"DEP_WEBPACK_COMPILATION_ADDITIONAL_CHUNK_ASSETS"
 			),
-
-			// TODO webpack 6 deprecate
-			/** @deprecated */
+			// 为 compilation 创建额外 asset
+			// webpack 6 将会移除
 			additionalAssets: createProcessAssetsHook(
 				"additionalAssets",
 				Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
 				() => []
 			),
-			// TODO webpack 6 remove
-			/** @deprecated */
+			// webpack 6 将会移除
 			optimizeChunkAssets: createProcessAssetsHook(
 				"optimizeChunkAssets",
 				Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE,
 				() => [this.chunks],
 				"DEP_WEBPACK_COMPILATION_OPTIMIZE_CHUNK_ASSETS"
 			),
-			// TODO webpack 6 remove
-			/** @deprecated */
+			// webpack 6 将会移除
 			afterOptimizeChunkAssets: createProcessAssetsHook(
 				"afterOptimizeChunkAssets",
 				Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE + 1,
 				() => [this.chunks],
 				"DEP_WEBPACK_COMPILATION_AFTER_OPTIMIZE_CHUNK_ASSETS"
 			),
-			// TODO webpack 6 deprecate
-			/** @deprecated */
+			// webpack 6 将会移除
 			optimizeAssets: processAssetsHook,
-			// TODO webpack 6 deprecate
-			/** @deprecated */
+			// webpack 6 将会移除
 			afterOptimizeAssets: afterProcessAssetsHook,
-
+			// 对 assets 进行加工处理
 			processAssets: processAssetsHook,
+			// 空调用
+			// 对 assets 加工处理无报错后立即调用
 			afterProcessAssets: afterProcessAssetsHook,
-			/** @type {AsyncSeriesHook<[CompilationAssets]>} */
+			// 
 			processAdditionalAssets: new AsyncSeriesHook(["assets"]),
-
-			/** @type {SyncBailHook<[], boolean>} */
+			// 调用来决定 compilation 是否需要解除 seal 以引入其他文件
 			needAdditionalSeal: new SyncBailHook([]),
-			/** @type {AsyncSeriesHook<[]>} */
+			// 
 			afterSeal: new AsyncSeriesHook([]),
-
-			/** @type {SyncWaterfallHook<[RenderManifestEntry[], RenderManifestOptions]>} */
+			// 当获取 chunk render 时
 			renderManifest: new SyncWaterfallHook(["result", "options"]),
-
-			/** @type {SyncHook<[Hash]>} */
+			// 
 			fullHash: new SyncHook(["hash"]),
-			/** @type {SyncHook<[Chunk, Hash, ChunkHashContext]>} */
+			// 当给每个 chunk 生成 hash时
 			chunkHash: new SyncHook(["chunk", "chunkHash", "ChunkHashContext"]),
-
-			/** @type {SyncHook<[Module, string]>} */
+			// 空调用
+			// 当一个模块中的一个 asset 被添加到 compilation 时调用
 			moduleAsset: new SyncHook(["module", "filename"]),
-			/** @type {SyncHook<[Chunk, string]>} */
+			// 空调用
+			// 当一个 chunk 中的一个 asset 被添加到 compilation 时调用
 			chunkAsset: new SyncHook(["chunk", "filename"]),
-
-			/** @type {SyncWaterfallHook<[string, object, AssetInfo]>} */
+			// 调用以决定 asset 的路径
 			assetPath: new SyncWaterfallHook(["path", "options", "assetInfo"]),
-
-			/** @type {SyncBailHook<[], boolean>} */
+			// 空调用
+			// 当 compiler 输出 assets 后是否需要进一步处理
 			needAdditionalPass: new SyncBailHook([]),
 
 			/** @type {SyncHook<[Compiler, string, number]>} */
@@ -811,22 +824,21 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				"compilerName",
 				"compilerIndex"
 			]),
-
-			/** @type {SyncBailHook<[string, LogEntry], true>} */
+			// 在每次日志输出前
 			log: new SyncBailHook(["origin", "logEntry"]),
-
-			/** @type {SyncWaterfallHook<[WebpackError[]]>} */
+			// 当获取 compilation.warnings 时
+			// 当调用 compilation.getWarnings 时
 			processWarnings: new SyncWaterfallHook(["warnings"]),
-			/** @type {SyncWaterfallHook<[WebpackError[]]>} */
+			// 当获取 compilation.errors 时
+			// 当调用 compilation.errors 时
 			processErrors: new SyncWaterfallHook(["errors"]),
-
-			/** @type {HookMap<SyncHook<[Partial<NormalizedStatsOptions>, CreateStatsOptionsContext]>>} */
+			// 对 Webpack.Config.stats.preset 属性进行加工处理
 			statsPreset: new HookMap(() => new SyncHook(["options", "context"])),
-			/** @type {SyncHook<[Partial<NormalizedStatsOptions>, CreateStatsOptionsContext]>} */
+			// 对 Webpack.Config.stats 属性进行加工处理
 			statsNormalize: new SyncHook(["options", "context"]),
-			/** @type {SyncHook<[StatsFactory, NormalizedStatsOptions]>} */
+			// 当创建完 StatsFactory 的实例后
 			statsFactory: new SyncHook(["statsFactory", "options"]),
-			/** @type {SyncHook<[StatsPrinter, NormalizedStatsOptions]>} */
+			// 当创建完 StatsPrinter 的实例后
 			statsPrinter: new SyncHook(["statsPrinter", "options"]),
 
 			get normalModuleLoader() {
@@ -835,6 +847,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 
 		// 编译过程名称
+		// Webpack.Config.name
 		this.name = undefined;
 		// 编译过程开始时间(时间戳 以ms为单位)
 		this.startTime = undefined;
@@ -892,11 +905,13 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.moduleTemplates = {
 			javascript: new ModuleTemplate(this.runtimeTemplate, this)
 		};
+		// this.moduleTemplates.asset 属性废弃
+		// this.moduleTemplates.webassembly 属性废弃
 		defineRemovedModuleTemplates(this.moduleTemplates);
 
 		// 模块图
 		this.moduleGraph = new ModuleGraph();
-		// chunk图
+		// 块图
 		this.chunkGraph = undefined;
 
 		// 缓存 Module生成的代码结果
@@ -1839,7 +1854,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	// 添加入口
+	// 为编译添加入口
 	addEntry(context, entry, optionsOrName, callback) {
 		const options =
 			typeof optionsOrName === "object"
@@ -2204,6 +2219,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 	}
 
+	// 解除冻结
 	unseal() {
 		this.hooks.unseal.call();
 		this.chunks.clear();
@@ -2667,6 +2683,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 									}
 
 									// 空调用
+									// AggressiveSplittingPlugin
 									// 调用来决定 compilation 是否需要解除 seal 以引入其他文件
 									if (this.hooks.needAdditionalSeal.call()) {
 										this.unseal();
@@ -2715,6 +2732,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		});
 	}
 
+	// 将给定模块的错误和警告添加到编译的错误和警告中
 	// 递归收集 Module 中的 dependencies 中的 warnings 和 errors
 	reportDependencyErrorsAndWarnings(module, blocks) {
 		for (let indexBlock = 0; indexBlock < blocks.length; indexBlock++) {
@@ -4610,85 +4628,36 @@ Object.defineProperty(compilationPrototype, "cache", {
 	)
 });
 
-/**
- * Add additional assets to the compilation.
- */
+// dui compilation.assets 进行加工处理的注册事件默认阶段
+// 在编译中添加额外的 asset
 Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL = -2000;
-
-/**
- * Basic preprocessing of assets.
- */
+// 对 asset 进行了基础预处理
 Compilation.PROCESS_ASSETS_STAGE_PRE_PROCESS = -1000;
-
-/**
- * Derive new assets from existing assets.
- * Existing assets should not be treated as complete.
- */
+// 从已有 asset 中获取新的 asset
 Compilation.PROCESS_ASSETS_STAGE_DERIVED = -200;
-
-/**
- * Add additional sections to existing assets, like a banner or initialization code.
- */
+// 为现有的 asset 添加额外的内容，例如 banner 或初始代码
 Compilation.PROCESS_ASSETS_STAGE_ADDITIONS = -100;
-
-/**
- * Optimize existing assets in a general way.
- */
+// 以通用的方式优化已有 asset
 Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE = 100;
-
-/**
- * Optimize the count of existing assets, e. g. by merging them.
- * Only assets of the same type should be merged.
- * For assets of different types see PROCESS_ASSETS_STAGE_OPTIMIZE_INLINE.
- */
+// 优化现有资产的数量，例如，进行合并操作
 Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_COUNT = 200;
-
-/**
- * Optimize the compatibility of existing assets, e. g. add polyfills or vendor-prefixes.
- */
+// 优化现有 asset 兼容性，例如添加 polyfills 或者 vendor prefixes
 Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_COMPATIBILITY = 300;
-
-/**
- * Optimize the size of existing assets, e. g. by minimizing or omitting whitespace.
- */
+// 优化现有 asset 大小，例如进行压缩或者删除空格
 Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_SIZE = 400;
-
-/**
- * Add development tooling to assets, e. g. by extracting a SourceMap.
- */
+// 为 asset 添加开发者工具，例如，提取 source map
 Compilation.PROCESS_ASSETS_STAGE_DEV_TOOLING = 500;
-
-/**
- * Optimize the count of existing assets, e. g. by inlining assets of into other assets.
- * Only assets of different types should be inlined.
- * For assets of the same type see PROCESS_ASSETS_STAGE_OPTIMIZE_COUNT.
- */
+// 优化已有 asset 数量，例如，通过将 asset 内联到其他 asset 中
 Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_INLINE = 700;
-
-/**
- * Summarize the list of existing assets
- * e. g. creating an assets manifest of Service Workers.
- */
+// 整理现有 asset 列表
 Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE = 1000;
-
-/**
- * Optimize the hashes of the assets, e. g. by generating real hashes of the asset content.
- */
+// 优化 asset 的 hash 值，例如，生成 asset 内容的真实 hash 值
 Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_HASH = 2500;
-
-/**
- * Optimize the transfer of existing assets, e. g. by preparing a compressed (gzip) file as separate asset.
- */
+// 优化已有 asset 的转换操作，例如对 asset 进行压缩，并作为独立的 asset
 Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER = 3000;
-
-/**
- * Analyse existing assets.
- */
+// 分析已有 asset
 Compilation.PROCESS_ASSETS_STAGE_ANALYSE = 4000;
-
-/**
- * Creating assets for reporting purposes.
- */
+// 创建用于上报的 asset
 Compilation.PROCESS_ASSETS_STAGE_REPORT = 5000;
 
 module.exports = Compilation;

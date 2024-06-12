@@ -6,6 +6,8 @@
 // \r = 13
 // \t = 9
 
+// 将 字符串 分割成 字符片段数组
+// 字符片段结尾必须是换行符
 const splitIntoPotentialTokens = str => {
 	const len = str.length;
 	if (len === 0) return null;
@@ -15,10 +17,12 @@ const splitIntoPotentialTokens = str => {
 		const s = i;
 		block: {
 			let cc = str.charCodeAt(i);
+			// \n ; { }
 			while (cc !== 10 && cc !== 59 && cc !== 123 && cc !== 125) {
 				if (++i >= len) break block;
 				cc = str.charCodeAt(i);
 			}
+			// ; <space> { } \r \t
 			while (
 				cc === 59 ||
 				cc === 32 ||

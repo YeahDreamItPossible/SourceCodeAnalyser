@@ -1,14 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const createHash = require("./util/createHash");
 const memoize = require("./util/memoize");
 
 const ModuleFilenameHelpers = exports;
+
+// TODO:
+// 对 source map 中 sourceURL 中 模板字符串 替换
 
 // TODO webpack 6: consider removing these
 ModuleFilenameHelpers.ALL_LOADERS_RESOURCE = "[all-loaders][resource]";
@@ -62,6 +60,7 @@ const getHash = strFn => {
 	};
 };
 
+// 返回 RegExp
 const asRegExp = test => {
 	if (typeof test === "string") {
 		test = new RegExp("^" + test.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"));
@@ -229,6 +228,7 @@ ModuleFilenameHelpers.replaceDuplicates = (array, fn, comparator) => {
 	});
 };
 
+// 匹配
 ModuleFilenameHelpers.matchPart = (str, test) => {
 	if (!test) return true;
 	test = asRegExp(test);
@@ -239,6 +239,7 @@ ModuleFilenameHelpers.matchPart = (str, test) => {
 	}
 };
 
+// 判断 某路径 是否满足匹配规则
 ModuleFilenameHelpers.matchObject = (obj, str) => {
 	if (obj.test) {
 		if (!ModuleFilenameHelpers.matchPart(str, obj.test)) {

@@ -1,22 +1,15 @@
 "use strict";
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// TODO:
+// 
 class AddManagedPathsPlugin {
-	/**
-	 * @param {Iterable<string>} managedPaths list of managed paths
-	 * @param {Iterable<string>} immutablePaths list of immutable paths
-	 */
 	constructor(managedPaths, immutablePaths) {
+		// Webpack.Config.snap.managedPaths
 		this.managedPaths = new Set(managedPaths);
+		// Webpack.Config.snap.immutablePaths
 		this.immutablePaths = new Set(immutablePaths);
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		for (const managedPath of this.managedPaths) {
 			compiler.managedPaths.add(managedPath);

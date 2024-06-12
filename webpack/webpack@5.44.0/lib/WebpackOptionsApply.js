@@ -192,12 +192,24 @@ class WebpackOptionsApply extends OptionsApply {
 		}
 
 		// Webpack.Config.devtool
+		// [inline-|hidden-|eval-][nosources-][cheap-[module-]]source-map || eval
+		// Wepack.Config.devtool 字段值 只要包含 source-map 表示要生成 source-map JSON文件
+		// module cheap nosources 是用来对 source-map 文件内容进行筛选
+		// nosources 表示 source-map 文件不需要包含 sourceContent 字段
+		// cheap 表示 source-map 文件 mappings 字段 是否需要列映射
+		// module 表示 source-map 文件 是否为 loaders 添加 source map
+		// inline hidden eval 表示source-map 文件位置
+		// eval 表示将 source-map 文件追加到每个模块后面
+		// inline 表示将 source-map 文件追加到每个输出文件后面
+		// hidden 表示将 source-map 文件单独放到映射文件中
 		if (options.devtool) {
 			if (options.devtool.includes("source-map")) {
 				const hidden = options.devtool.includes("hidden");
 				const inline = options.devtool.includes("inline");
 				const evalWrapped = options.devtool.includes("eval");
+				// 当 devtool 值 包含 cheap 时 表示不需要 列映射 默认需要
 				const cheap = options.devtool.includes("cheap");
+				// 
 				const moduleMaps = options.devtool.includes("module");
 				const noSources = options.devtool.includes("nosources");
 				const Plugin = evalWrapped
@@ -206,16 +218,15 @@ class WebpackOptionsApply extends OptionsApply {
 				new Plugin({
 					// 定义生成的 SourceMap 的名称(不设置将默认置为 inlined)
 					filename: inline ? null : options.output.sourceMapFilename,
-					// 
+					// 开发工具模块文件名模板
 					moduleFilenameTemplate: options.output.devtoolModuleFilenameTemplate,
-					// 
-					fallbackModuleFilenameTemplate:
-						options.output.devtoolFallbackModuleFilenameTemplate,
+					// 回退的开发工具模块文件名模板
+					fallbackModuleFilenameTemplate: options.output.devtoolFallbackModuleFilenameTemplate,
 					// 在原始资源后追加给定值。通常是 #sourceMappingURL 注释。
 					append: hidden ? false : undefined,
-					// 表示 loader 是否生成 source map
+					// 表示是否为 loaders 添加 source map
 					module: moduleMaps ? true : cheap ? false : true,
-					// 表示是否应该使用 column mapping
+					// 表示是否使用列映射(column mapping)
 					columns: cheap ? false : true,
 					// 防止源文件的内容被包含在 source map 中
 					noSources: noSources,
@@ -383,30 +394,44 @@ class WebpackOptionsApply extends OptionsApply {
 			const RemoveEmptyChunksPlugin = require("./optimize/RemoveEmptyChunksPlugin");
 			new RemoveEmptyChunksPlugin().apply(compiler);
 		}
+		// Webpack.Config.optimization.mergeDuplicateChunks
+		// 合并重复块
 		if (options.optimization.mergeDuplicateChunks) {
 			const MergeDuplicateChunksPlugin = require("./optimize/MergeDuplicateChunksPlugin");
 			new MergeDuplicateChunksPlugin().apply(compiler);
 		}
+		// Webpack.Config.optimization.flagIncludedChunks
+		// 
 		if (options.optimization.flagIncludedChunks) {
 			const FlagIncludedChunksPlugin = require("./optimize/FlagIncludedChunksPlugin");
 			new FlagIncludedChunksPlugin().apply(compiler);
 		}
+		// Webpack.Config.optimization.sideEffects
+		// 告诉 webpack 去辨识 package.json 中的 sideEffects 标记或规则，
+		// 以跳过那些当导出不被使用且被标记为不包含副作用的模块
 		if (options.optimization.sideEffects) {
 			const SideEffectsFlagPlugin = require("./optimize/SideEffectsFlagPlugin");
 			new SideEffectsFlagPlugin(
 				options.optimization.sideEffects === true
 			).apply(compiler);
 		}
+		// Webpack.Config.optimization.providedExports
+		// 告知 webpack 去确定那些由模块提供的导出内容，为 export * from ... 生成更多高效的代码。
 		if (options.optimization.providedExports) {
 			const FlagDependencyExportsPlugin = require("./FlagDependencyExportsPlugin");
 			new FlagDependencyExportsPlugin().apply(compiler);
 		}
+		// Webpack.Config.optimization.usedExports
+		// 告诉 webpack 去决定每个模块的到处内容是否被使用
+		// 这首先取决于 optimization.providedExports 选项是否被启用
 		if (options.optimization.usedExports) {
 			const FlagDependencyUsagePlugin = require("./FlagDependencyUsagePlugin");
 			new FlagDependencyUsagePlugin(
 				options.optimization.usedExports === "global"
 			).apply(compiler);
 		}
+		// 根据 Wepback.Config.optimaztion.innerGraph 注册该插件
+		// 告诉 webpack 是否对未使用的导出内容实施内部图形分析
 		if (options.optimization.innerGraph) {
 			const InnerGraphPlugin = require("./optimize/InnerGraphPlugin");
 			new InnerGraphPlugin().apply(compiler);
@@ -553,6 +578,7 @@ class WebpackOptionsApply extends OptionsApply {
 			portableIds: options.optimization.portableRecords
 		}).apply(compiler);
 
+		// 当 Module.identifier 有重复时 抛出错误
 		new WarnCaseSensitiveModulesPlugin().apply(compiler);
 
 		// 
@@ -644,6 +670,9 @@ class WebpackOptionsApply extends OptionsApply {
 		if (!compiler.inputFileSystem) {
 			throw new Error("No input filesystem provided");
 		}
+
+		// 内置的路径解析器
+		// normal: 通过绝对或相对路径解析模块
 		compiler.resolverFactory.hooks.resolveOptions
 			.for("normal")
 			.tap("WebpackOptionsApply", resolveOptions => {
@@ -651,6 +680,7 @@ class WebpackOptionsApply extends OptionsApply {
 				resolveOptions.fileSystem = compiler.inputFileSystem;
 				return resolveOptions;
 			});
+		// context: 在给定的上下文中解析模块
 		compiler.resolverFactory.hooks.resolveOptions
 			.for("context")
 			.tap("WebpackOptionsApply", resolveOptions => {
@@ -659,6 +689,7 @@ class WebpackOptionsApply extends OptionsApply {
 				resolveOptions.resolveToContext = true;
 				return resolveOptions;
 			});
+		// loader: 解析 webpack loader
 		compiler.resolverFactory.hooks.resolveOptions
 			.for("loader")
 			.tap("WebpackOptionsApply", resolveOptions => {

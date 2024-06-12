@@ -60,47 +60,54 @@ const includesHash = (filename, hashes) => {
 class Compiler {
 	constructor(context) {
 		this.hooks = Object.freeze({
-			// SyncHook<[]>
+			// 当根据选项 注册完不同的内置插件后
 			initialize: new SyncHook([]),
 
-			// SyncBailHook<[Compilation], boolean>
+			// 当要把 asset 输出到 output 目录前 返回 Boolean 告知是否要输出
 			shouldEmit: new SyncBailHook(["compilation"]),
-			// AsyncSeriesHook<[Stats]>
+			// 当compilation完成时
+			// 主要用于输出stats
 			done: new AsyncSeriesHook(["stats"]),
-			// SyncHook<[Stats]>
+			// 空调用
+			// 
 			afterDone: new SyncHook(["stats"]),
-			// AsyncSeriesHook<[]>
+			// 
+			// 当调用完 compiler.hooks.done 后立即调用
 			additionalPass: new AsyncSeriesHook([]),
-			// AsyncSeriesHook<[Compiler]>
+			// 当开始执行一次构建之前调用
+			// compiler.run 方法开始执行后立刻进行调用
 			beforeRun: new AsyncSeriesHook(["compiler"]),
-			// AsyncSeriesHook<[Compiler]>
+			// 当开始执行构建时
 			run: new AsyncSeriesHook(["compiler"]),
-			// 输出 asset 到 output 目录之前执行
-			// AsyncSeriesHook<[Compilation]>
+			// 当要把 asset 输出到 output 目录之前执行
 			emit: new AsyncSeriesHook(["compilation"]),
-			// AsyncSeriesHook<[string, AssetEmittedInfo]>
+			// 当把每个 asset 输出到 output 目录后执行
 			assetEmitted: new AsyncSeriesHook(["file", "info"]),
-			// AsyncSeriesHook<[Compilation]>
+			// 当把所有的 asset 输出到 output 目录后执行
 			afterEmit: new AsyncSeriesHook(["compilation"]),
 
-			// SyncHook<[Compilation, CompilationParams]>
+			// 当创建完 Compilation 的实例后
+			// 这个钩子不会被复制到子编译器中
 			thisCompilation: new SyncHook(["compilation", "params"]),
-			// SyncHook<[Compilation, CompilationParams]>
+			// 当创建完 Compilation 的实例后
+			// 注册完 compiler.hooks.thisCompilation 后立即注册 compiler.hooks.compilation
 			compilation: new SyncHook(["compilation", "params"]),
-			// SyncHook<[NormalModuleFactory]>
+			// 当创建完 NormalModuleFactory 的实例后
 			normalModuleFactory: new SyncHook(["normalModuleFactory"]),
-			// SyncHook<[ContextModuleFactory]>}  */
+			// 当创建完 ContextModuleFactory 的实例后
 			contextModuleFactory: new SyncHook(["contextModuleFactory"]),
 
-			// AsyncSeriesHook<[CompilationParams]>
+			// 直接执行回调
+			// 当创建完 compilation params 后
 			beforeCompile: new AsyncSeriesHook(["params"]),
-			// SyncHook<[CompilationParams]>
+			// 当调用 compiler.hooks.beforeCompile 后 
 			compile: new SyncHook(["params"]),
-			// AsyncParallelHook<[Compilation]>
+			// 当创建 Compilation 的实例后
+			// 
 			make: new AsyncParallelHook(["compilation"]),
-			// AsyncParallelHook<[Compilation]>
+			// 
 			finishMake: new AsyncSeriesHook(["compilation"]),
-			// AsyncSeriesHook<[Compilation]>
+			// 当完成一次构建过程(Compilation)后
 			afterCompile: new AsyncSeriesHook(["compilation"]),
 
 			// AsyncSeriesHook<[Compiler]>
@@ -114,20 +121,19 @@ class Compiler {
 			// AsyncSeriesHook<[]>
 			shutdown: new AsyncSeriesHook([]),
 
-			// SyncBailHook<[string, string, any[]], true>
+			// 空调用 ??
+			// 在每一次基础日志输出前
 			infrastructureLog: new SyncBailHook(["origin", "type", "args"]),
 
-			// TODO the following hooks are weirdly located here
-			// TODO move them for webpack 5
 			// 空调用
-			// SyncHook<[]>
+			// 在编译器准备环境时调用，就在配置文件中注册完用户自定义插件之后
 			environment: new SyncHook([]),
 			// 空调用
-			// SyncHook<[]>
+			// 当编译器环境设置完成后，在 environment hook 后直接调用
 			afterEnvironment: new SyncHook([]),
-			// SyncHook<[Compiler]>
+			// 当根据选项 注册完不同的内置插件后
 			afterPlugins: new SyncHook(["compiler"]),
-			// SyncHook<[Compiler]>
+			// 当设置完 resolverFactory.hooks.resolveOptions 后
 			afterResolvers: new SyncHook(["compiler"]),
 			// 主要是对 Webpack.Config.Entry 处理
 			// SyncBailHook<[string, Entry], boolean>
@@ -137,6 +143,7 @@ class Compiler {
 		this.webpack = webpack;
 
 		// 编译器名称
+		// Webpack.Config.name
 		this.name = undefined;
 		// 父编译器名称
 		this.parentCompilation = undefined;
@@ -145,7 +152,6 @@ class Compiler {
 
 		// 输出路径(绝对路径)
 		// 示例: /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
-		// string
 		this.outputPath = "";
 		// 监听器
 		this.watching = undefined;
@@ -165,14 +171,14 @@ class Compiler {
 		this.watchFileSystem = null;
 
 		// 记录
-		// string|null
+		// 指定读取最后一条记录的文件路径
 		this.recordsInputPath = null;
-		// string|null
+		// 指定写入最后一条记录的文件路径
 		this.recordsOutputPath = null;
 		this.records = {};
-		// Set<string>
+		// Webpack.Config.snap.managedPaths
 		this.managedPaths = new Set();
-		// Set<string>
+		// Webpack.Config.snap.immutablePaths
 		this.immutablePaths = new Set();
 
 		// Set<string>
@@ -186,15 +192,16 @@ class Compiler {
 		// number
 		this.fsStartTime = undefined;
 
-		// 路径解析器
-		// 路径解析 根据上下文 和 扩展名 将相对路径 通过同步 or 异步的方式解析成 绝对路径
+		// 路径解析器工厂
+		// 根据 不同的类型 返回对应的 路径解析器
+		// 路径解析器: 根据上下文 和 扩展名 将相对路径 通过同步 or 异步的方式解析成 绝对路径
 		this.resolverFactory = new ResolverFactory();
 
 		// 日志
 		this.infrastructureLogger = undefined;
 
 		// Webpack.Config
-		this.options = // WebpackOptions ({});
+		this.options = ({});
 
 		// 上下文
 		// 默认使用 Node.js 进程的当前工作目录 __dirname

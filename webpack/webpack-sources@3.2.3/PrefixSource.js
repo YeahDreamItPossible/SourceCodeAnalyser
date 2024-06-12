@@ -7,8 +7,9 @@ const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
 
 const REPLACE_REGEX = /\n(?=.|\s)/g;
 
+// 前缀源代码
 // 在源代码的每一个行前加上特定前缀
-// 示例: 'Hello\nWorld\nOver' => 'Hello\nLeeWorld\nLeeOver'
+// 示例: 'Hello\nWorld\nOver' => 'LeeHello\nLeeWorld\nLeeOver'
 class PrefixSource extends Source {
 	constructor(prefix, source) {
 		super();

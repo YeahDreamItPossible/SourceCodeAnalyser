@@ -196,22 +196,37 @@ class NormalModuleFactory extends ModuleFactory {
 	}) {
 		super();
 		this.hooks = Object.freeze({
-			// 获取创建 NormalModule 所需要的参数
+			// 在解析之前
+			// 可以通过返回 false 来忽略依赖项
+			// 否则 返回 undefined 以继续
+			// 作用: 获取创建 NormalModule 所需要的参数
 			resolve: new AsyncSeriesBailHook(["resolveData"]),
+			// 在解析符合统一资源标志符方案(URI)的请求之前调用
 			resolveForScheme: new HookMap(
 				() => new AsyncSeriesBailHook(["resourceData", "resolveData"])
 			),
+			// 当初始化解析之前
+			// 应该返回 undefined 以继续
 			factorize: new AsyncSeriesBailHook(["resolveData"]),
+			// 直接执行回调
+			// 当遇到新的依赖项请求时调用 可以通过返回 false 来忽略依赖项
+			// 否则 返回 undefined 以继续
 			beforeResolve: new AsyncSeriesBailHook(["resolveData"]),
+			// 当请求解析后
 			afterResolve: new AsyncSeriesBailHook(["resolveData"]),
-			// 创建 NormalModule 的实例
+			// 在创建 NormalModule 的实例前
 			createModule: new AsyncSeriesBailHook(["createData", "resolveData"]),
+			// 在创建 NormalModule 的实例后
 			module: new SyncWaterfallHook(["module", "createData", "resolveData"]),
+			// 在创建 Parser 的实例前
 			createParser: new HookMap(() => new SyncBailHook(["parserOptions"])),
+			// 在创建 Parser 的实例后
 			parser: new HookMap(() => new SyncHook(["parser", "parserOptions"])),
+			// 在创建 Generator 的实例前
 			createGenerator: new HookMap(
 				() => new SyncBailHook(["generatorOptions"])
 			),
+			// 在创建 Generator 的实例后
 			generator: new HookMap(
 				() => new SyncHook(["generator", "generatorOptions"])
 			)
@@ -1061,9 +1076,9 @@ If changing the source code is not an option there is also a resolve options cal
 
 	/**
 	 * 根据 特定类型(type) 返回对应的内置 语法分析器(parser)
+	 * javascript/auto || javascript/dynamic || javascript/esm
 	 * asset || asset/inline || asset/resource || asset/source
 	 * webassembly/async || webassembly/sync
-	 * javascript/auto || javascript/dynamic || javascript/esm
 	 * json
 	 */
 	createParser(type, parserOptions = {}) {

@@ -93,13 +93,8 @@ function createSync(options) {
 	};
 }
 
-/**
- * @template A
- * @template B
- * @param {A} obj input a
- * @param {B} exports input b
- * @returns {A & B} merged
- */
+// 将 对象B属性 合并到 对象A 上
+// 即: 将 exports 属性合并到 obj 上
 const mergeExports = (obj, exports) => {
 	const descriptors = Object.getOwnPropertyDescriptors(exports);
 	Object.defineProperties(obj, descriptors);

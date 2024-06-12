@@ -2,6 +2,7 @@
 
 const Source = require("./Source");
 
+// 缓存源代码
 // 将类似 Source 的对象转换为实际的 Source 对象
 class CompatSource extends Source {
 	static from(sourceLike) {

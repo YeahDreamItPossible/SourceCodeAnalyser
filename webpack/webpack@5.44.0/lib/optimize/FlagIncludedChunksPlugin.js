@@ -3,6 +3,9 @@
 // 根据 Webpack.Config.optimization.flagIncludedChunks 注册该插件
 // 默认 production 模式下启用 
 // 添加 Chunk.prototype.ids 
+// 告知 webpack 确定和标记出作为其他 chunk 子集的那些 chunk，
+// 其方式是在已经加载过较大的 chunk 之后，
+// 就不再去加载这些 chunk 子集
 class FlagIncludedChunksPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap("FlagIncludedChunksPlugin", compilation => {

@@ -5,7 +5,7 @@ const streamChunksOfSourceMap = require("./helpers/streamChunksOfSourceMap");
 const streamChunksOfCombinedSourceMap = require("./helpers/streamChunksOfCombinedSourceMap");
 const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
 
-// 
+// 源代码映射源代码
 class SourceMapSource extends Source {
 	constructor(
 		value,

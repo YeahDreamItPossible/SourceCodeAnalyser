@@ -7,6 +7,7 @@ const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
 
 const stringsAsRawSources = new WeakSet();
 
+// 拼接源代码
 // 将 多个Source 拼接到 源Source
 class ConcatSource extends Source {
 	constructor() {
@@ -30,6 +31,7 @@ class ConcatSource extends Source {
 		return this._children;
 	}
 
+	// 添加
 	add(item) {
 		if (item instanceof ConcatSource) {
 			for (const child of item._children) {

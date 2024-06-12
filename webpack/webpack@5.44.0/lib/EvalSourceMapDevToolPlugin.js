@@ -8,12 +8,7 @@ const JavascriptModulesPlugin = require("./javascript/JavascriptModulesPlugin");
 const ConcatenatedModule = require("./optimize/ConcatenatedModule");
 const { absolutify } = require("./util/identifier");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/WebpackOptions").DevTool} DevToolOptions */
-/** @typedef {import("../declarations/plugins/SourceMapDevToolPlugin").SourceMapDevToolPluginOptions} SourceMapDevToolPluginOptions */
-/** @typedef {import("./Compiler")} Compiler */
-
-/** @type {WeakMap<Source, Source>} */
+// WeakMap<Source, Source>
 const cache = new WeakMap();
 
 const devtoolWarning = new RawSource(`/*
@@ -26,13 +21,9 @@ const devtoolWarning = new RawSource(`/*
  */
 `);
 
-// SourceMap
+// Webpack.Config.devtool = `eval-[nosources-][cheap-[module]]-source-map`
 class EvalSourceMapDevToolPlugin {
-	/**
-	 * @param {SourceMapDevToolPluginOptions|string} inputOptions Options object
-	 */
 	constructor(inputOptions) {
-		/** @type {SourceMapDevToolPluginOptions} */
 		let options;
 		if (typeof inputOptions === "string") {
 			options = {
@@ -41,11 +32,8 @@ class EvalSourceMapDevToolPlugin {
 		} else {
 			options = inputOptions;
 		}
-		this.sourceMapComment =
-			options.append || "//# sourceURL=[module]\n//# sourceMappingURL=[url]";
-		this.moduleFilenameTemplate =
-			options.moduleFilenameTemplate ||
-			"webpack://[namespace]/[resource-path]?[hash]";
+		this.sourceMapComment = options.append || "//# sourceURL=[module]\n//# sourceMappingURL=[url]";
+		this.moduleFilenameTemplate = options.moduleFilenameTemplate || "webpack://[namespace]/[resource-path]?[hash]";
 		this.namespace = options.namespace || "";
 		this.options = options;
 	}
@@ -145,6 +133,7 @@ class EvalSourceMapDevToolPlugin {
 						const moduleId = chunkGraph.getModuleId(m);
 						sourceMap.file = `${moduleId}.js`;
 
+						// 添加 source-map 文件信息
 						const footer =
 							this.sourceMapComment.replace(
 								/\[url\]/g,
@@ -154,6 +143,7 @@ class EvalSourceMapDevToolPlugin {
 								).toString("base64")}`
 							) + `\n//# sourceURL=webpack-internal:///${moduleId}\n`; // workaround for chrome bug
 
+						// 追加到 每个模块内容后
 						return result(
 							new RawSource(`eval(${JSON.stringify(content + footer)});`)
 						);

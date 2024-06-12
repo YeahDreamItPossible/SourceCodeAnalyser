@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { Parser: AcornParser } = require("acorn");
@@ -99,25 +94,50 @@ class VariableInfo {
 /**
  * Expression 表达式分类
  * ArrowFunctionExpression 箭头函数表达式
- * AssignmentExpression
- * AwaitExpression
- * BinaryExpression
- * CallExpression
- * ClassExpression
- * ConditionalExpression
- * FunctionExpression
- * Identifier
- * LogicalExpression
- * MemberExpression
- * NewExpression
- * ObjectExpression
- * SequenceExpression
- * SpreadElement
- * TaggedTemplateExpression
- * TemplateLiteral
- * ThisExpression
- * UnaryExpression
- * UpdateExpression
+ * AssignmentExpression 赋值表达式
+ * AwaitExpression 等待表达式(用于 await 关键字)
+ * BinaryExpression 二元表达式(例如 a + b)
+ * CallExpression 调用表达式(用于函数调用)
+ * ClassExpression 类表达式(用于定义 class)
+ * ConditionalExpression 条件表达式(例如: a ? b : c)
+ * FunctionExpression 函数表达式(用于定义匿名函数)
+ * Identifier 标识符(例如 变量名 函数名)
+ * LogicalExpression 逻辑表达式(例如 || && !)
+ * MemberExpression 成员表达式(例如: obj.property obj[key])
+ * NewExpression 新建表达式(用于 new 关键字)
+ * ObjectExpression 对象表达式(用于定义字面量对象)
+ * SequenceExpression 序列表达式(逗号分隔的表达式列表)
+ * SpreadElement 扩展元素(使用到扩展运算符...)
+ * TaggedTemplateExpression  标签模板表达式(与模板字符串和函数标签一起使用)
+ * TemplateLiteral 模板字面量(用于多行字符串和嵌入表达式 `hello${name}`)
+ * ThisExpression this 表达式
+ * UnaryExpression 一元表达式(例如: !b)
+ * UpdateExpression 更新表达式(例如: a++ --b)
+ */
+
+/**
+ * 语句分类
+ * BlockStatement 块语句(通常用于表示代码块，如函数体或控制流语句的主体)
+ * VariableDeclaration 变量声明(声明一个或多个变量)
+ * FunctionDeclaration 函数声明(声明一个命名的函数)
+ * ReturnStatement 返回语句(用于从函数中返回值)
+ * ClassDeclaration：类声明（声明一个命名的类）
+ * ExpressionStatement：表达式语句（一个表达式后跟分号，用于执行表达式并忽略其结果）
+ * ImportDeclaration：导入声明（用于导入模块中的导出）
+ * ExportAllDeclaration：导出全部声明（用于导出另一个模块的所有导出 export * from '...'）
+ * ExportDefaultDeclaration：默认导出声明（声明一个默认导出）
+ * ExportNamedDeclaration：命名导出声明（声明一个或多个命名导出）
+ * IfStatement：条件语句（条件语句）
+ * SwitchStatement：分支语句（多分支条件语句）
+ * ForInStatement：for-in 语句（用于遍历对象的属性）
+ * ForOfStatement：for-of 语句（用于遍历可迭代对象）
+ * ForStatement：for 语句（传统的 for 循环）
+ * WhileStatement：循环语句（while 循环）
+ * DoWhileStatement：做当语句（do-while 循环）
+ * ThrowStatement：抛出语句（用于抛出一个错误或异常）
+ * TryStatement：尝试语句（用于捕获异常）
+ * LabeledStatement：标签语句（给语句一个标签，以便与 break 或 continue 一起使用）
+ * WithStatement：with 语句（注意：在现代 JavaScript 中很少使用，并且可能在未来的规范中被移除）
  */
 
 const joinRanges = (startRange, endRange) => {
@@ -166,22 +186,24 @@ const EMPTY_COMMENT_OPTIONS = {
 
 // JS类型 语法分析器
 class JavascriptParser extends Parser {
-	/**
-	 * @param {"module" | "script" | "auto"} sourceType default source type
-	 */
+	// sourceTyp: module | script | auto
 	constructor(sourceType = "auto") {
 		super();
 		this.hooks = Object.freeze({
+			// 评估 typeof
 			// 当代码片段中有有计算 typeof 自由变量 表达式时
-			// HookMap<SyncBailHook<[UnaryExpressionNode], BasicEvaluatedExpression | undefined | null>>
+			// 自由变量: 在 A 中作用域要用到的变量 x.并没有在 A 中声明,要到别的作用域中找到他,这个变量 x 就是自由变量
 			evaluateTypeof: new HookMap(() => new SyncBailHook(["expression"])),
-			// 当代码片段中有计算表达式时
-			// HookMap<SyncBailHook<[ExpressionNode], BasicEvaluatedExpression | undefined | null>>
+			// 评估 表达式
+			// 当代码片段中有 表达式 时
+			// 
 			evaluate: new HookMap(() => new SyncBailHook(["expression"])),
-			// 当代码片段中有有计算 自由变量 标识符时
+			// 评估 标识符
+			// 当代码片段中有有 自由变量 标识符时
 			// HookMap<SyncBailHook<[IdentifierNode | ThisExpressionNode | MemberExpressionNode | MetaPropertyNode], BasicEvaluatedExpression | undefined | null>>
 			evaluateIdentifier: new HookMap(() => new SyncBailHook(["expression"])),
-			// 当代码片段中有有计算 已有定义 标识符时
+			// 评估 定义标识符
+			// 当代码片段中有有 已有定义 标识符时
 			// HookMap<SyncBailHook<[IdentifierNode | ThisExpressionNode | MemberExpressionNode], BasicEvaluatedExpression | undefined | null>>
 			evaluateDefinedIdentifier: new HookMap(
 				() => new SyncBailHook(["expression"])

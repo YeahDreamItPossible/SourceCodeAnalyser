@@ -7,19 +7,13 @@ const makeSerializable = require("./util/makeSerializable");
 const TYPES = new Set(["javascript"]);
 
 class RawModule extends Module {
-	/**
-	 * @param {string} source source code
-	 * @param {string} identifier unique identifier
-	 * @param {string=} readableIdentifier readable identifier
-	 * @param {ReadonlySet<string>=} runtimeRequirements runtime requirements needed for the source code
-	 */
 	constructor(source, identifier, readableIdentifier, runtimeRequirements) {
 		super("javascript/dynamic", null);
-		// 
+		// 源代码
 		this.sourceStr = source;
-		//
+		// 唯一标识符
 		this.identifierStr = identifier || this.sourceStr;
-		// 
+		// 可读的标识符
 		this.readableIdentifierStr = readableIdentifier || this.identifierStr;
 		// 
 		this.runtimeRequirements = runtimeRequirements || null;

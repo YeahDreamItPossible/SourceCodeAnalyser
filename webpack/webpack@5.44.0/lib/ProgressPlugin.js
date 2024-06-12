@@ -6,10 +6,7 @@ const NormalModule = require("./NormalModule");
 const createSchemaValidation = require("./util/create-schema-validation");
 const { contextify } = require("./util/identifier");
 
-/** @typedef {import("../declarations/plugins/ProgressPlugin").HandlerFunction} HandlerFunction */
-/** @typedef {import("../declarations/plugins/ProgressPlugin").ProgressPluginArgument} ProgressPluginArgument */
-/** @typedef {import("../declarations/plugins/ProgressPlugin").ProgressPluginOptions} ProgressPluginOptions */
-
+// 验证 ProgressPlugin options
 const validate = createSchemaValidation(
 	require("../schemas/plugins/ProgressPlugin.check.js"),
 	() => require("../schemas/plugins/ProgressPlugin.json"),
@@ -22,6 +19,7 @@ const median3 = (a, b, c) => {
 	return a + b + c - Math.max(a, b, c) - Math.min(a, b, c);
 };
 
+// 
 const createDefaultHandler = (profile, logger) => {
 	/** @type {{ value: string, time: number }[]} */
 	const lastStateInfo = [];
@@ -88,14 +86,7 @@ const createDefaultHandler = (profile, logger) => {
 	return defaultHandler;
 };
 
-/**
- * @callback ReportProgress
- * @param {number} p
- * @param {...string[]} [args]
- * @returns {void}
- */
-
-/** @type {WeakMap<Compiler,ReportProgress>} */
+// WeakMap<Compiler,ReportProgress>
 const progressReporters = new WeakMap();
 
 /**
@@ -103,17 +94,10 @@ const progressReporters = new WeakMap();
  * 自定义报告当前编译进度
  */
 class ProgressPlugin {
-	/**
-	 * @param {Compiler} compiler the current compiler
-	 * @returns {ReportProgress} a progress reporter, if any
-	 */
 	static getReporter(compiler) {
 		return progressReporters.get(compiler);
 	}
 
-	/**
-	 * @param {ProgressPluginArgument} options options
-	 */
 	constructor(options = {}) {
 		if (typeof options === "function") {
 			options = {
@@ -149,11 +133,6 @@ class ProgressPlugin {
 		}
 	}
 
-	/**
-	 * @param {MultiCompiler} compiler webpack multi-compiler
-	 * @param {HandlerFunction} handler function that executes for every progress step
-	 * @returns {void}
-	 */
 	_applyOnMultiCompiler(compiler, handler) {
 		const states = compiler.compilers.map(
 			() => /** @type {[number, ...string[]]} */ ([0])
@@ -168,11 +147,7 @@ class ProgressPlugin {
 		});
 	}
 
-	/**
-	 * @param {Compiler} compiler webpack compiler
-	 * @param {HandlerFunction} handler function that executes for every progress step
-	 * @returns {void}
-	 */
+	// 对于
 	_applyOnCompiler(compiler, handler) {
 		const showEntries = this.showEntries;
 		const showModules = this.showModules;

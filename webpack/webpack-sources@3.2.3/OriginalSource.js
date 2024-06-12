@@ -6,13 +6,14 @@ const getGeneratedSourceInfo = require("./helpers/getGeneratedSourceInfo");
 const Source = require("./Source");
 const splitIntoPotentialTokens = require("./helpers/splitIntoPotentialTokens");
 
-// 
+// 原始源代码
+// 返回的 SourceMap 对 源代码 不做任何的转换或修改
 class OriginalSource extends Source {
 	constructor(value, name) {
 		super();
 		// 标识: 是否是Buffer类型
 		const isBuffer = Buffer.isBuffer(value);
-		// 
+		// 原始值
 		this._value = isBuffer ? undefined : value;
 		// Buffer类型的源代码
 		this._valueAsBuffer = isBuffer ? value : undefined;
@@ -42,6 +43,7 @@ class OriginalSource extends Source {
 		return getMap(this, options);
 	}
 
+	// 返回 源代码 和 映射信息
 	sourceAndMap(options) {
 		return getSourceAndMap(this, options);
 	}
@@ -53,6 +55,7 @@ class OriginalSource extends Source {
 	 * @param {function(number, string)} onName called for each name
 	 * @returns {void}
 	 */
+	// 返回 源代码 和 行数 和 最后一行的列数
 	streamChunks(options, onChunk, onSource, onName) {
 		if (this._value === undefined) {
 			this._value = this._valueAsBuffer.toString("utf-8");
@@ -123,6 +126,7 @@ class OriginalSource extends Source {
 		}
 	}
 
+	// 更新hash
 	updateHash(hash) {
 		if (this._valueAsBuffer === undefined) {
 			this._valueAsBuffer = Buffer.from(this._value, "utf-8");

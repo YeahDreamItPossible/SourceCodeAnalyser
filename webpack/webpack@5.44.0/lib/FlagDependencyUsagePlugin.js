@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Dependency = require("./Dependency");
@@ -13,30 +8,17 @@ const ArrayQueue = require("./util/ArrayQueue");
 const TupleQueue = require("./util/TupleQueue");
 const { getEntryRuntime, mergeRuntimeOwned } = require("./util/runtime");
 
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./ChunkGroup")} ChunkGroup */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./DependenciesBlock")} DependenciesBlock */
-/** @typedef {import("./Dependency").ReferencedExport} ReferencedExport */
-/** @typedef {import("./ExportsInfo")} ExportsInfo */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
 
 const { NO_EXPORTS_REFERENCED, EXPORTS_OBJECT_REFERENCED } = Dependency;
 
+// Webpack.Config.optimization.usedExports
+// 告诉 webpack 去决定每个模块的到处内容是否被使用
+// 这首先取决于 optimization.providedExports 选项是否被启用
 class FlagDependencyUsagePlugin {
-	/**
-	 * @param {boolean} global do a global analysis instead of per runtime
-	 */
 	constructor(global) {
 		this.global = global;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("FlagDependencyUsagePlugin", compilation => {
 			const moduleGraph = compilation.moduleGraph;

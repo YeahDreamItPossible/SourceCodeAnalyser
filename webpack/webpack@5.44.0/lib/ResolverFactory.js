@@ -8,36 +8,17 @@ const {
 	resolveByProperty
 } = require("./util/cleverMerge");
 
-/** @typedef {import("enhanced-resolve").ResolveOptions} ResolveOptions */
-/** @typedef {import("enhanced-resolve").Resolver} Resolver */
-/** @typedef {import("../declarations/WebpackOptions").ResolveOptions} WebpackResolveOptions */
-/** @typedef {import("../declarations/WebpackOptions").ResolvePluginInstance} ResolvePluginInstance */
-
-/** @typedef {WebpackResolveOptions & {dependencyType?: string, resolveToContext?: boolean }} ResolveOptionsWithDependencyType */
-/**
- * @typedef {Object} WithOptions
- * @property {function(Partial<ResolveOptionsWithDependencyType>): ResolverWithOptions} withOptions create a resolver with additional/different options
- */
-
-/** @typedef {Resolver & WithOptions} ResolverWithOptions */
-
-// need to be hoisted on module level for caching identity
 const EMPTY_RESOLVE_OPTIONS = {};
 
-/**
- * @param {ResolveOptionsWithDependencyType} resolveOptionsWithDepType enhanced options
- * @returns {ResolveOptions} merged options
- */
 const convertToResolveOptions = resolveOptionsWithDepType => {
 	const { dependencyType, plugins, ...remaining } = resolveOptionsWithDepType;
 
 	// check type compat
-	/** @type {Partial<ResolveOptions>} */
+	// Partial<ResolveOptions>
 	const partialOptions = {
 		...remaining,
 		plugins:
-			plugins &&
-			/** @type {ResolvePluginInstance[]} */ (
+			plugins && (
 				plugins.filter(item => item !== "...")
 			)
 	};
@@ -48,44 +29,35 @@ const convertToResolveOptions = resolveOptionsWithDepType => {
 		);
 	}
 	// These weird types validate that we checked all non-optional properties
-	const options =
-		/** @type {Partial<ResolveOptions> & Pick<ResolveOptions, "fileSystem">} */ (
-			partialOptions
-		);
+	// Partial<ResolveOptions> & Pick<ResolveOptions, "fileSystem"> 
+	const options = (partialOptions);
 
 	return removeOperations(
 		resolveByProperty(options, "byDependency", dependencyType)
 	);
 };
 
-/**
- * @typedef {Object} ResolverCache
- * @property {WeakMap<Object, ResolverWithOptions>} direct
- * @property {Map<string, ResolverWithOptions>} stringified
- */
-
+// 解析器工厂
 module.exports = class ResolverFactory {
 	constructor() {
 		this.hooks = Object.freeze({
-			/** @type {HookMap<SyncWaterfallHook<[ResolveOptionsWithDependencyType]>>} */
+			// HookMap<SyncWaterfallHook<[ResolveOptionsWithDependencyType]>>
 			resolveOptions: new HookMap(
 				() => new SyncWaterfallHook(["resolveOptions"])
 			),
-			/** @type {HookMap<SyncHook<[Resolver, ResolveOptions, ResolveOptionsWithDependencyType]>>} */
+			// HookMap<SyncHook<[Resolver, ResolveOptions, ResolveOptionsWithDependencyType]>>
 			resolver: new HookMap(
 				() => new SyncHook(["resolver", "resolveOptions", "userResolveOptions"])
 			)
 		});
-		// Map<string, ResolverCache>
-		// Map<Type, Object<direct: WeakMap<ResolveOptions, Resolver>, stringified: Map<ResolveOptionsString, Resolver>>>
+		// 存储 不同类型的 不同 ResolveOptions 的 Resovler
+		// Map<String, Object>
 		this.cache = new Map();
 	}
 
 	/**
-	 * 根据 特定类型Type 返回对应的 resolver 并缓存该resolver
-	 * context type => ContextModuleFactory
-	 * normal type  => NormalModuleFactory
-	 * loader type  => 
+	 * 根据 类型Type 返回对应的 Resovler Resovler
+	 * type: context || normal || loader
 	 */ 
 	get(type, resolveOptions = EMPTY_RESOLVE_OPTIONS) {
 		let typedCaches = this.cache.get(type);
@@ -96,16 +68,20 @@ module.exports = class ResolverFactory {
 			};
 			this.cache.set(type, typedCaches);
 		}
+		// 先根据 ResovleOptions 来返回对应的 Resolver
 		const cachedResolver = typedCaches.direct.get(resolveOptions);
 		if (cachedResolver) {
 			return cachedResolver;
 		}
+		// 序列化 ResolveOptions
 		const ident = JSON.stringify(resolveOptions);
+		// 再根据 序列化后的 ResolveOptions 来返回对应的 Resolver
 		const resolver = typedCaches.stringified.get(ident);
 		if (resolver) {
 			typedCaches.direct.set(resolveOptions, resolver);
 			return resolver;
 		}
+		// ResolveOptions 和 序列化后的 ResolveOptions 指向同一个 Resolver
 		const newResolver = this._create(type, resolveOptions);
 		typedCaches.direct.set(resolveOptions, newResolver);
 		typedCaches.stringified.set(ident, newResolver);
@@ -113,25 +89,25 @@ module.exports = class ResolverFactory {
 	}
 
 	/**
-	 * 创建特定类型Type的resolver
+	 * 创建 特定类型Type 的 Resolver
 	 * 底层仍然是通过ResolverFactory.createResolver(resolveOptions)
 	 * normal || context || loader
 	 */
 	_create(type, resolveOptionsWithDepType) {
-		/** @type {ResolveOptionsWithDependencyType} */
+		// ResolveOptionsWithDependencyType
 		const originalResolveOptions = { ...resolveOptionsWithDepType };
 
+		// 对于 normal 和 context 类型 将 resolveOptionsWithDepType 和 Webpack.Config.resolve 属性合并
+		// 对于 loader 类型 将 resolveOptionsWithDepType 和 Webpack.Config.resolveLoader 属性合并
 		const resolveOptions = convertToResolveOptions(
-			// 将 resolveOptionsWithDepType 和 Webpack.Config.resolve 属性合并
 			this.hooks.resolveOptions.for(type).call(resolveOptionsWithDepType)
 		);
-		const resolver = /** @type {ResolverWithOptions} */ (
-			Factory.createResolver(resolveOptions)
-		);
+		// ResolverWithOptions 
+		const resolver = ( Factory.createResolver(resolveOptions) );
 		if (!resolver) {
 			throw new Error("No resolver created");
 		}
-		/** @type {WeakMap<Partial<ResolveOptionsWithDependencyType>, ResolverWithOptions>} */
+		// WeakMap<Partial<ResolveOptionsWithDependencyType>, ResolverWithOptions>
 		const childCache = new WeakMap();
 		resolver.withOptions = options => {
 			const cacheEntry = childCache.get(options);

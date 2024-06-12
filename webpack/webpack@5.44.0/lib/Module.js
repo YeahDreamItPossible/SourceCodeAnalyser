@@ -94,6 +94,43 @@ const makeSerializable = require("./util/makeSerializable");
 
 /** @typedef {KnownBuildMeta & Record<string, any>} BuildMeta */
 
+/**
+ * BuildMeta(打包元信息)
+ * moduleArgument:
+ * exportsArgument:
+ * strict: 是否使用严格模式
+ * moduleConcatenationBailout:
+ * exportsType: 导出类型( default | namespace | flagged | dynamic)
+ * defaultObject: 导出对象( false | redirect | redirect-warn )
+ * strictHarmonyModule:
+ * async: 是否时异步模块
+ * sideEffectFree: 是否具有副作用
+ */
+
+/**
+ * BuildInfo(打包信息)
+ * strict: 是否使用严格模式
+ * topLevelDeclarations:
+ * module: Webpack.Config.output.module
+ * cacheable: false, // 表示当前 Module 能否被缓存
+ * parsed: true, // 表示当前 Module 已经被语法分析过
+ * fileDependencies: undefined, // 
+ * contextDependencies: undefined, // 
+ * missingDependencies: undefined, //
+ * buildDependencies: undefined, //
+ * valueDependencies: undefined, //
+ * hash: undefined, // 对 source 进行hash
+ * assets: undefined, // 
+ * assetsInfo: undefined //
+ * snapshot: 快照
+ * active: 
+ */
+
+/**
+ * FactoryMeta(工厂元信息)
+ * sideEffectFree:
+ */
+
 const EMPTY_RESOLVE_OPTIONS = {};
 
 let debugId = 1000;
@@ -101,6 +138,7 @@ let debugId = 1000;
 const DEFAULT_TYPES_UNKNOWN = new Set(["unknown"]);
 const DEFAULT_TYPES_JS = new Set(["javascript"]);
 
+// Module.prototype.needRebuild 已被 Module.prototype.needBuild 替代
 const deprecatedNeedRebuild = util.deprecate(
 	(module, context) => {
 		return module.needRebuild(
@@ -114,6 +152,7 @@ const deprecatedNeedRebuild = util.deprecate(
 
 /** @typedef {(requestShortener: RequestShortener) => string} OptimizationBailoutFunction */
 
+// 模块
 class Module extends DependenciesBlock {
 	constructor(type, context = null, layer = null) {
 		super();
@@ -123,44 +162,40 @@ class Module extends DependenciesBlock {
 		// 示例: /path/myProject/src
 		this.context = context;
 		// 图层
+		// 必须得 Webpack.Config.experiments.layers = true 时
+		// Webpack.Config.Entry.layer 或者 Webpack.Config.module.Rule.layer 配置
 		this.layer = layer;
 		// 标识: 标识当前module是否需要Id
 		this.needId = true;
 		// 模块唯一标识符
 		this.debugId = debugId++;
 
-		// Info from Factory
-		/** @type {ResolveOptions} */
+		// 由 ModuleFactory 创建 Module 实例时 传递参数
+		// ResolveOptions
 		this.resolveOptions = EMPTY_RESOLVE_OPTIONS;
-		// 
-		/** @type {object | undefined} */
+		// 工厂元信息
 		this.factoryMeta = undefined;
-		// TODO refactor this -> options object filled from Factory
-		// TODO webpack 6: use an enum
 		// 标识: 是否使用SourceMap
 		this.useSourceMap = false;
 		// 标识: 是否使用SourceMap
 		this.useSimpleSourceMap = false;
 
 		// 警告
-		// WebpackError[]
+		// Array<WebpackError>
 		this._warnings = undefined;
 		// 错误
-		// WebpackError[]
+		// Array<WebpackError>
 		this._errors = undefined;
 		// 构建元信息
-		// Record<string, any>
 		this.buildMeta = undefined;
 		// 构建信息
-		// Record<string, any>
 		this.buildInfo = undefined;
-		/** @type {Dependency[] | undefined} */
+		// TODO:
 		// 这个依赖 暂时不知道是什么
 		this.presentationalDependencies = undefined;
 	}
 
-	// TODO remove in webpack 6
-	// BACKWARD-COMPAT START
+	// 返回 chunkGraphModule.id
 	get id() {
 		return ChunkGraph.getChunkGraphForModule(
 			this,
@@ -169,6 +204,7 @@ class Module extends DependenciesBlock {
 		).getModuleId(this);
 	}
 
+	// 设置 chunkGraphModule.id
 	set id(value) {
 		if (value === "") {
 			this.needId = false;
@@ -181,9 +217,7 @@ class Module extends DependenciesBlock {
 		).setModuleId(this, value);
 	}
 
-	/**
-	 * @returns {string} the hash of the module
-	 */
+	// 返回 chunkGraphModule.hashes
 	get hash() {
 		return ChunkGraph.getChunkGraphForModule(
 			this,
@@ -639,18 +673,12 @@ class Module extends DependenciesBlock {
 		return false;
 	}
 
-	/**
-	 * @returns {string} for debugging
-	 */
+	// debug
 	toString() {
 		return `Module[${this.debugId}: ${this.identifier()}]`;
 	}
 
-	/**
-	 * @param {NeedBuildContext} context context info
-	 * @param {function(WebpackError=, boolean=): void} callback callback function, returns true, if the module needs a rebuild
-	 * @returns {void}
-	 */
+	// 是否需要构建
 	needBuild(context, callback) {
 		callback(
 			null,
@@ -660,21 +688,12 @@ class Module extends DependenciesBlock {
 		);
 	}
 
-	/**
-	 * @deprecated Use needBuild instead
-	 * @param {Map<string, number|null>} fileTimestamps timestamps of files
-	 * @param {Map<string, number|null>} contextTimestamps timestamps of directories
-	 * @returns {boolean} true, if the module needs a rebuild
-	 */
+	// 是否需要重新构建
 	needRebuild(fileTimestamps, contextTimestamps) {
 		return true;
 	}
 
-	/**
-	 * @param {Hash} hash the hash used to track dependencies
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
+	// 更新hash值
 	updateHash(
 		hash,
 		context = {
@@ -704,6 +723,7 @@ class Module extends DependenciesBlock {
 	}
 
 	// 抽象方法
+	// 返回 标识符
 	identifier() {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
@@ -716,6 +736,7 @@ class Module extends DependenciesBlock {
 	}
 
 	// 抽象方法
+	// 构建
 	build(options, compilation, resolver, fs, callback) {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();
@@ -954,6 +975,7 @@ class Module extends DependenciesBlock {
 
 makeSerializable(Module, "webpack/lib/Module");
 
+// 以下属性已被移除
 // Module.prototype.hasEqualsChunks 属性被移除
 Object.defineProperty(Module.prototype, "hasEqualsChunks", {
 	get() {
@@ -962,7 +984,6 @@ Object.defineProperty(Module.prototype, "hasEqualsChunks", {
 		);
 	}
 });
-
 // Module.prototype.isUsed 属性被移除
 Object.defineProperty(Module.prototype, "isUsed", {
 	get() {
@@ -971,13 +992,12 @@ Object.defineProperty(Module.prototype, "isUsed", {
 		);
 	}
 });
-
 // Module.prototype.errors 属性被移除
 Object.defineProperty(Module.prototype, "errors", {
 	get: util.deprecate(
 		/**
 		 * @this {Module}
-		 * @returns {WebpackError[]} array
+		 * @returns {Array<WebpackError>} array
 		 */
 		function () {
 			if (this._errors === undefined) {
@@ -989,13 +1009,12 @@ Object.defineProperty(Module.prototype, "errors", {
 		"DEP_WEBPACK_MODULE_ERRORS"
 	)
 });
-
 // Module.prototype.warnings 属性被移除
 Object.defineProperty(Module.prototype, "warnings", {
 	get: util.deprecate(
 		/**
 		 * @this {Module}
-		 * @returns {WebpackError[]} array
+		 * @returns {Array<WebpackError>} array
 		 */
 		function () {
 			if (this._warnings === undefined) {
@@ -1007,7 +1026,6 @@ Object.defineProperty(Module.prototype, "warnings", {
 		"DEP_WEBPACK_MODULE_WARNINGS"
 	)
 });
-
 // Module.prototype.used 属性被移除
 // ModuleGraph.getUsedExports 替代
 Object.defineProperty(Module.prototype, "used", {

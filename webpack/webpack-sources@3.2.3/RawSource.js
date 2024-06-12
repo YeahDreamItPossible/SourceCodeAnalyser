@@ -3,17 +3,19 @@
 const streamChunksOfRawSource = require("./helpers/streamChunksOfRawSource");
 const Source = require("./Source");
 
-// 没有SourceMap的源代码
+// 原始源代码
+// 该源代码没有SourceMap
 class RawSource extends Source {
+	// convertToString: 表示是否要强制将值转换成 String 类型
 	constructor(value, convertToString = false) {
 		super();
 		const isBuffer = Buffer.isBuffer(value);
 		if (!isBuffer && typeof value !== "string") {
 			throw new TypeError("argument 'value' must be either string of Buffer");
 		}
-		// 标识: 是否是Buffer类型
+		// 标识: 原始值是否是Buffer类型
 		this._valueIsBuffer = !convertToString && isBuffer;
-		// 
+		// 原始值
 		this._value = convertToString && isBuffer ? undefined : value;
 		// Buffer类型的源代码
 		this._valueAsBuffer = isBuffer ? value : undefined;
@@ -54,6 +56,7 @@ class RawSource extends Source {
 	 * @param {function(number, string)} onName called for each name
 	 * @returns {void}
 	 */
+	// 
 	streamChunks(options, onChunk, onSource, onName) {
 		if (this._value === undefined) {
 			this._value = Buffer.from(this._valueAsBuffer, "utf-8");

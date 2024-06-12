@@ -18,16 +18,16 @@ const devtoolWarning = new RawSource(`/*
  */
 `);
 
-// SourceMap 
+// 当 Webpack.Config.devtool = 'eval' 时
+// 每个模块编译后 添加 //# sourceURL=webpack://...
+// 并使用 eval 来读取模块字符串
 class EvalDevToolModulePlugin {
 	constructor(options) {
 		// Webpack.Config.output.namespace
 		this.namespace = options.namespace || "";
 		this.sourceUrlComment = options.sourceUrlComment || "\n//# sourceURL=[url]";
 		// Webpack.Config.output.devtoolModuleFilenameTemplate
-		this.moduleFilenameTemplate =
-			options.moduleFilenameTemplate ||
-			"webpack://[namespace]/[resourcePath]?[loaders]";
+		this.moduleFilenameTemplate = options.moduleFilenameTemplate || "webpack://[namespace]/[resourcePath]?[loaders]";
 	}
 
 	apply(compiler) {
@@ -65,6 +65,8 @@ class EvalDevToolModulePlugin {
 								.replace(/%5C/g, "\\")
 								.replace(/^\//, "")
 						);
+					// 每个模块编译后 添加 //# sourceURL=webpack://...
+					// 并使用 eval 来读取模块字符串
 					const result = new RawSource(
 						`eval(${JSON.stringify(content + footer)});`
 					);

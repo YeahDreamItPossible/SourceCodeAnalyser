@@ -31,13 +31,16 @@ module.exports = class ContextModuleFactory extends ModuleFactory {
 			"options"
 		]);
 		this.hooks = Object.freeze({
-			/** @type {AsyncSeriesWaterfallHook<[TODO]>} */
+			// 在解析请求的目录之前调用
+			// 请求可以通过返回 false 来忽略
 			beforeResolve: new AsyncSeriesWaterfallHook(["data"]),
-			/** @type {AsyncSeriesWaterfallHook<[TODO]>} */
+			// 在请求的目录解析后调用
 			afterResolve: new AsyncSeriesWaterfallHook(["data"]),
-			/** @type {SyncWaterfallHook<[string[]]>} */
+			// 读取目录内容后调用。
+			// 在递归模式下，也会读取每个子目录。
+			// 回调参数是一个包含每个目录中所有文件和文件夹名称的数组
 			contextModuleFiles: new SyncWaterfallHook(["files"]),
-			/** @type {FakeHook<Pick<AsyncSeriesWaterfallHook<[TODO[]]>, "tap" | "tapAsync" | "tapPromise" | "name">>} */
+			// 在创建请求之后但依据 regExp 进行过滤之前，为每个文件调用
 			alternatives: createFakeHook(
 				{
 					name: "alternatives",

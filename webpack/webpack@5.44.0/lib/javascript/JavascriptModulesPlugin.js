@@ -65,29 +65,37 @@ class JavascriptModulesPlugin {
 		let hooks = compilationHooksMap.get(compilation);
 		if (hooks === undefined) {
 			hooks = {
+				// 渲染模块内容
 				renderModuleContent: new SyncWaterfallHook([
 					"source",
 					"module",
 					"renderContext"
 				]),
+				// 渲染模块容器
 				renderModuleContainer: new SyncWaterfallHook([
 					"source",
 					"module",
 					"renderContext"
 				]),
+				// 渲染模块包
 				renderModulePackage: new SyncWaterfallHook([
 					"source",
 					"module",
 					"renderContext"
 				]),
+				// 
 				render: new SyncWaterfallHook(["source", "renderContext"]),
+				// 
 				renderContent: new SyncWaterfallHook(["source", "renderContext"]),
+				// 
 				renderStartup: new SyncWaterfallHook([
 					"source",
 					"module",
 					"startupRenderContext"
 				]),
+				// 
 				renderChunk: new SyncWaterfallHook(["source", "renderContext"]),
+				// 
 				renderMain: new SyncWaterfallHook(["source", "renderContext"]),
 				renderRequire: new SyncWaterfallHook(["code", "renderContext"]),
 				inlineInRuntimeBailout: new SyncBailHook(["module", "renderContext"]),

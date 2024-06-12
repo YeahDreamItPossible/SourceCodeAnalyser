@@ -1,4 +1,5 @@
-// 将 字符串 分割成 以换行符结果的字符片段数组
+// 将 字符串 分割成 字符片段数组
+// 字符片段结尾必须是换行符
 // 示例: 'hello \n world \n\n\n over' => ['hello \n', ' world \n', '\n', '\n', ' over']
 const splitIntoLines = str => {
 	const results = [];
