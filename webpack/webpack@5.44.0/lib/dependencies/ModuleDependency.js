@@ -14,10 +14,11 @@ const getRawModule = memoize(() => require("../RawModule"));
 class ModuleDependency extends Dependency {
 	constructor(request) {
 		super();
+		// 内部请求
 		// 模块引入路径
 		// '../plugins/loaders/first.js?auth=lee!../plugins/loaders/second.js?use=wang!./utils/math.js?ts=12345'
 		this.request = request;
-		// 
+		// 用户请求
 		this.userRequest = request;
 		// 范围 [Number, Number]
 		this.range = undefined;

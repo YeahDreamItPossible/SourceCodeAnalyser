@@ -23,11 +23,7 @@ const { intersectRuntime } = require("../util/runtime");
 const JavascriptGenerator = require("./JavascriptGenerator");
 const JavascriptParser = require("./JavascriptParser");
 
-/**
- * @param {Chunk} chunk a chunk
- * @param {ChunkGraph} chunkGraph the chunk graph
- * @returns {boolean} true, when a JS file is needed for this chunk
- */
+// 判断 某个JS 文件 对于chunk 是否是必须的
 const chunkHasJs = (chunk, chunkGraph) => {
 	if (chunkGraph.getNumberOfEntryModules(chunk) > 0) return true;
 
@@ -49,6 +45,17 @@ const printGeneratedCodeForStack = (module, code) => {
 
 // WeakMap<Compilation, CompilationHooks>
 const compilationHooksMap = new WeakMap();
+
+/**
+ * 最终代码生成
+ * 1. 主入口块代码
+ * 2. 异步块代码
+ * 
+ * 块代码生成流程:
+ * 1. 分块中 模块的代码生成
+ * 2. 分块中 运行时模块的代码生成
+ * 3. 分块中 引导程序的代码生成
+ */
 
 // 给 compiler.hooks.compilation 注册事件
 // 给 normalModuleFactory.hooks.createParser 注册事件
@@ -243,6 +250,7 @@ class JavascriptModulesPlugin {
 						return result;
 					}
 				);
+				// 更新 chunk chunkHash
 				compilation.hooks.chunkHash.tap(
 					"JavascriptModulesPlugin",
 					(chunk, hash, context) => {
@@ -262,6 +270,7 @@ class JavascriptModulesPlugin {
 						}
 					}
 				);
+				// 更新 chunk contentHash
 				compilation.hooks.contentHash.tap("JavascriptModulesPlugin", chunk => {
 					const {
 						chunkGraph,
@@ -403,13 +412,6 @@ class JavascriptModulesPlugin {
 		}
 	}
 
-	/**
-	 * @param {Module} module the rendered module
-	 * @param {ChunkRenderContext} renderContext options object
-	 * @param {CompilationHooks} hooks hooks
-	 * @param {boolean | "strict"} factory true: renders as factory method, "strict": renders as factory method already in strict scope, false: pure module content
-	 * @returns {Source} the newly generated source from rendering
-	 */
 	// 渲染模块
 	renderModule(module, renderContext, hooks, factory) {
 		const { chunk, chunkGraph, runtimeTemplate, codeGenerationResults } =
@@ -516,12 +518,7 @@ class JavascriptModulesPlugin {
 		}
 	}
 
-	/**
-	 * @param {RenderContext} renderContext the render context
-	 * @param {CompilationHooks} hooks hooks
-	 * @returns {Source} the rendered source
-	 */
-	// 渲染块
+	// 渲染 异步分块
 	renderChunk(renderContext, hooks) {
 		const { chunk, chunkGraph } = renderContext;
 		const modules = chunkGraph.getOrderedChunkModulesIterableBySourceType(
@@ -571,13 +568,7 @@ class JavascriptModulesPlugin {
 		return new ConcatSource(source, ";");
 	}
 
-	/**
-	 * @param {MainRenderContext} renderContext options object
-	 * @param {CompilationHooks} hooks hooks
-	 * @param {Compilation} compilation the compilation
-	 * @returns {Source} the newly generated source from rendering
-	 */
-	// 渲染代码包
+	// 渲染 主入口块
 	renderMain(renderContext, hooks, compilation) {
 		const { chunk, chunkGraph, runtimeTemplate } = renderContext;
 
@@ -662,6 +653,7 @@ class JavascriptModulesPlugin {
 			);
 		}
 
+		// 渲染 
 		if (bootstrap.header.length > 0) {
 			const header = Template.asString(bootstrap.header) + "\n";
 			source.add(
@@ -677,9 +669,9 @@ class JavascriptModulesPlugin {
 			);
 		}
 
+		// 渲染 运行时模块
 		const runtimeModules =
 			renderContext.chunkGraph.getChunkRuntimeModulesInOrder(chunk);
-
 		if (runtimeModules.length > 0) {
 			source.add(
 				new PrefixSource(
@@ -695,6 +687,7 @@ class JavascriptModulesPlugin {
 				compilation.codeGeneratedModules.add(module);
 			}
 		}
+
 		if (inlinedModules) {
 			if (bootstrap.beforeStartup.length > 0) {
 				const beforeStartup = Template.asString(bootstrap.beforeStartup) + "\n";
@@ -861,11 +854,7 @@ class JavascriptModulesPlugin {
 		return iife ? new ConcatSource(finalSource, ";") : finalSource;
 	}
 
-	/**
-	 * @param {Hash} hash the hash to be updated
-	 * @param {RenderBootstrapContext} renderContext options object
-	 * @param {CompilationHooks} hooks hooks
-	 */
+	// 更新hash(引导程序代码)
 	updateHashWithBootstrap(hash, renderContext, hooks) {
 		const bootstrap = this.renderBootstrap(renderContext, hooks);
 		for (const key of Object.keys(bootstrap)) {
@@ -880,11 +869,6 @@ class JavascriptModulesPlugin {
 		}
 	}
 
-	/**
-	 * @param {RenderBootstrapContext} renderContext options object
-	 * @param {CompilationHooks} hooks hooks
-	 * @returns {{ header: string[], beforeStartup: string[], startup: string[], afterStartup: string[], allowInlineStartup: boolean }} the generated source of the bootstrap code
-	 */
 	// 生成 引导程序代码
 	renderBootstrap(renderContext, hooks) {
 		const { chunkGraph, moduleGraph, chunk, runtimeTemplate } = renderContext;

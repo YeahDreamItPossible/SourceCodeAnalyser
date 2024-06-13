@@ -120,11 +120,8 @@ class Compiler {
 			watchClose: new SyncHook([]),
 			// AsyncSeriesHook<[]>
 			shutdown: new AsyncSeriesHook([]),
-
-			// 空调用 ??
 			// 在每一次基础日志输出前
 			infrastructureLog: new SyncBailHook(["origin", "type", "args"]),
-
 			// 空调用
 			// 在编译器准备环境时调用，就在配置文件中注册完用户自定义插件之后
 			environment: new SyncHook([]),
@@ -139,9 +136,8 @@ class Compiler {
 			// SyncBailHook<[string, Entry], boolean>
 			entryOption: new SyncBailHook(["context", "entry"])
 		});
-
+		// 
 		this.webpack = webpack;
-
 		// 编译器名称
 		// Webpack.Config.name
 		this.name = undefined;
@@ -149,13 +145,11 @@ class Compiler {
 		this.parentCompilation = undefined;
 		// 当前实例
 		this.root = this;
-
 		// 输出路径(绝对路径)
 		// 示例: /Users/newstar_lee/Desktop/AllProject/SourceCode/webpack-5.44.0/demo/dist
 		this.outputPath = "";
-		// 监听器
+		// 监听器(Watching 的实例)
 		this.watching = undefined;
-
 		// 文件系统
 		// 输出文件系统
 		// OutputFileSystem
@@ -169,18 +163,19 @@ class Compiler {
 		// 监听文件系统
 		// WatchFileSystem
 		this.watchFileSystem = null;
-
 		// 记录
 		// 指定读取最后一条记录的文件路径
 		this.recordsInputPath = null;
 		// 指定写入最后一条记录的文件路径
 		this.recordsOutputPath = null;
+		// 文件记录
 		this.records = {};
+		// 
 		// Webpack.Config.snap.managedPaths
 		this.managedPaths = new Set();
+		// 
 		// Webpack.Config.snap.immutablePaths
 		this.immutablePaths = new Set();
-
 		// Set<string>
 		this.modifiedFiles = undefined;
 		// Set<string>
@@ -218,7 +213,6 @@ class Compiler {
 		this.compilerPath = "";
 
 		// 标识: 标识compiler是否正在运行
-		// boolean
 		// 当前编译器是否正在运行
 		this.running = false;
 		// 当前编译器是否闲置

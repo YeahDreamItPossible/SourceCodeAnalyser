@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const parseJson = require("json-parse-better-errors");
@@ -17,6 +12,7 @@ const makePathsRelative = require("./util/identifier").makePathsRelative;
 /** @typedef {import("../declarations/plugins/DllReferencePlugin").DllReferencePluginOptions} DllReferencePluginOptions */
 /** @typedef {import("../declarations/plugins/DllReferencePlugin").DllReferencePluginOptionsManifest} DllReferencePluginOptionsManifest */
 
+// 验证选项
 const validate = createSchemaValidation(
 	require("../schemas/plugins/DllReferencePlugin.check.js"),
 	() => require("../schemas/plugins/DllReferencePlugin.json"),

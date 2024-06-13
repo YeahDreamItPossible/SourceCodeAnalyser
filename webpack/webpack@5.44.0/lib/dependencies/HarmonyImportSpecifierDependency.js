@@ -183,10 +183,7 @@ class HarmonyImportSpecifierDependency extends HarmonyImportDependency {
 		);
 	}
 
-	/**
-	 * implement this method to allow the occurrence order plugin to count correctly
-	 * @returns {number} count how often the id is used in this dependency
-	 */
+	// 
 	getNumberOfIdOccurrences() {
 		return 0;
 	}

@@ -48,6 +48,7 @@ const PATH_NAME_NORMALIZE_REPLACE_REGEX = /[^a-zA-Z0-9_!§$()=\-^°]+/g;
 // 全局匹配满足 以 - 开头 或者 以 - 结尾 的字符串
 const MATCH_PADDED_HYPHENS_REPLACE_REGEX = /^-|-$/g;
 
+// 模板
 class Template {
 	// 返回 标准化的函数字符串
 	static getFunctionContent(fn) {
@@ -58,8 +59,8 @@ class Template {
 			.replace(LINE_SEPARATOR_REGEX, "\n");
 	}
 
-	// 将 字符串 转换成 以_连接 的标识符
-	// 示例: '2hello\nworld!' => '_hello_world_'
+	// 将 字符串 转换成 以 _ 连接 的标识符
+	// 示例: './src/math' => '_src_math_'
 	static toIdentifier(str) {
 		if (typeof str !== "string") return "";
 		return str
@@ -168,7 +169,9 @@ class Template {
 		return "$";
 	}
 
+	// 缩进
 	// 将 字符串 中 换行符(\n)后非换行符(\n) 替换成 换行符 + 一个制表符
+	// \t 是一个转义字符,代表一个制表符(Tab),就是空格
 	// 示例: 'hello\nworld' => 'hello\n\tworld'
 	static indent(s) {
 		if (Array.isArray(s)) {
@@ -231,7 +234,8 @@ class Template {
 		return arrayOverhead < objectOverhead ? [minId, maxId] : false;
 	}
 
-	// 渲染 Source对象 中的块模块
+	// 返回 Source 的实例
+	// 渲染 分块中的模块
 	// 具体内容是打包后 __webpack_modules__ 变量内容
 	// 示例: 
 	// {
@@ -247,14 +251,17 @@ class Template {
 		if (modules.length === 0) {
 			return null;
 		}
-		/** @type {{id: string|number, source: Source|string}[]} */
 		const allModules = modules.map(module => {
 			return {
 				id: chunkGraph.getModuleId(module),
 				source: renderModule(module) || "false"
 			};
 		});
+		// 当 Webpack.Config.optimization.moduleIds = 'natural' 时
+		// 或 Webpack.Config.optimization.chunkIds = 'natural' 时
+		// module.id 是 number
 		const bounds = Template.getModulesArrayBounds(allModules);
+		// 生成数组的形式
 		if (bounds) {
 			// Render a spare array
 			const minId = bounds[0];
@@ -283,7 +290,9 @@ class Template {
 			if (minId !== 0) {
 				source.add(")");
 			}
-		} else {
+		} 
+		// 生成对象的形式
+		else {
 			// Render an object
 			source.add("{\n");
 			for (let i = 0; i < allModules.length; i++) {
@@ -299,12 +308,8 @@ class Template {
 		return source;
 	}
 
-	/**
-	 * @param {RuntimeModule[]} runtimeModules array of runtime modules in order
-	 * @param {RenderContext & { codeGenerationResults?: CodeGenerationResults, useStrict?: boolean }} renderContext render context
-	 * @returns {Source} rendered runtime modules in a Source object
-	 */
-	// 渲染 Source对象 中的运行时模块
+	// 返回 Source 的实例
+	// 渲染 运行时模块
 	static renderRuntimeModules(runtimeModules, renderContext) {
 		const source = new ConcatSource();
 		for (const module of runtimeModules) {
@@ -348,12 +353,7 @@ class Template {
 		return source;
 	}
 
-	/**
-	 * @param {RuntimeModule[]} runtimeModules array of runtime modules in order
-	 * @param {RenderContext} renderContext render context
-	 * @returns {Source} rendered chunk runtime modules in a Source object
-	 */
-	// 
+	// 渲染 异步块中的运行时模块
 	static renderChunkRuntimeModules(runtimeModules, renderContext) {
 		return new PrefixSource(
 			"/******/ ",
@@ -368,7 +368,5 @@ class Template {
 }
 
 module.exports = Template;
-module.exports.NUMBER_OF_IDENTIFIER_START_CHARS =
-	NUMBER_OF_IDENTIFIER_START_CHARS;
-module.exports.NUMBER_OF_IDENTIFIER_CONTINUATION_CHARS =
-	NUMBER_OF_IDENTIFIER_CONTINUATION_CHARS;
+module.exports.NUMBER_OF_IDENTIFIER_START_CHARS = NUMBER_OF_IDENTIFIER_START_CHARS;
+module.exports.NUMBER_OF_IDENTIFIER_CONTINUATION_CHARS = NUMBER_OF_IDENTIFIER_CONTINUATION_CHARS;

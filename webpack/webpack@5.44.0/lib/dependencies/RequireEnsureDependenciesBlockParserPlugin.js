@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RequireEnsureDependenciesBlock = require("./RequireEnsureDependenciesBlock");
@@ -10,6 +5,7 @@ const RequireEnsureDependency = require("./RequireEnsureDependency");
 const RequireEnsureItemDependency = require("./RequireEnsureItemDependency");
 const getFunctionExpression = require("./getFunctionExpression");
 
+// 解析 require.sure 语句
 module.exports = class RequireEnsureDependenciesBlockParserPlugin {
 	apply(parser) {
 		parser.hooks.call

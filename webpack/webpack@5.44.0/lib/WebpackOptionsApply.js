@@ -350,7 +350,7 @@ class WebpackOptionsApply extends OptionsApply {
 		new UseStrictPlugin().apply(compiler);
 		// 
 		new RequireIncludePlugin().apply(compiler);
-		// 
+		// 解析 require.sure 语句
 		new RequireEnsurePlugin().apply(compiler);
 		// 
 		new RequireContextPlugin().apply(compiler);

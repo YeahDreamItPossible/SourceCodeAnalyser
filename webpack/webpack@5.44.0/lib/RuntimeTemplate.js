@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use strict";
 
 const InitFragment = require("./InitFragment");
@@ -30,15 +31,17 @@ Module has these incoming connections: ${Array.from(
 	).join("")}`;
 };
 
+// 运行时模板
 class RuntimeTemplate {
 	constructor(compilation, outputOptions, requestShortener) {
 		this.compilation = compilation;
 		// Webpack.Config.output
 		this.outputOptions = outputOptions || {};
+		// 路径缩短器
 		this.requestShortener = requestShortener;
 	}
 
-	// 是否对代码添加 IIFE 外层包囊
+	// 是否支持 IIFE
 	isIIFE() {
 		return this.outputOptions.iife;
 	}
@@ -63,55 +66,63 @@ class RuntimeTemplate {
 		return this.outputOptions.environment.forOf;
 	}
 
-	// 断言:
+	// 是否支持 解构赋值 语句
 	supportsDestructuring() {
 		return this.outputOptions.environment.destructuring;
 	}
 
-	// 
+	// 是否支持 BigInt 字面量
 	supportsBigIntLiteral() {
 		return this.outputOptions.environment.bigIntLiteral;
 	}
 
+	// 是否支持 es6 动态导入(import()) 语句
 	supportsDynamicImport() {
 		return this.outputOptions.environment.dynamicImport;
 	}
 
+	// 是否支持 ECMAScript Module syntax(import * from '...')
 	supportsEcmaScriptModuleSyntax() {
 		return this.outputOptions.environment.module;
 	}
 
+	// 是否支持 模板字面量
 	supportTemplateLiteral() {
 		// TODO
 		return false;
 	}
 
-	// 返回带有返回值的函数代码(如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数)
+	// 返回带有返回值的函数代码
+	// 如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数
 	returningFunction(returnValue, args = "") {
 		return this.supportsArrowFunction()
 			? `(${args}) => (${returnValue})`
 			: `function(${args}) { return ${returnValue}; }`;
 	}
 
-	// 返回函数代码(如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数)
+	// 返回基础函数代码(没有返回值)
+	// 如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数
 	basicFunction(args, body) {
 		return this.supportsArrowFunction()
 			? `(${args}) => {\n${Template.indent(body)}\n}`
 			: `function(${args}) {\n${Template.indent(body)}\n}`;
 	}
 
-	// 返回函数代码(如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数)
+	// 返回表达式函数代码
+	// 如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数
 	expressionFunction(expression, args = "") {
 		return this.supportsArrowFunction()
 			? `(${args}) => (${expression})`
 			: `function(${args}) { ${expression}; }`;
 	}
 
-	// 返回空函数代码(如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数)
+	// 返回空函数代码
+	// 如果当前运行环境支持箭头函数 则返回箭头函数 否则返回普通函数
 	emptyFunction() {
 		return this.supportsArrowFunction() ? "x => {}" : "function() {}";
 	}
 
+	// 返回 数组解构赋值 语句
 	destructureArray(items, value) {
 		return this.supportsDestructuring()
 			? `var [${items.join(", ")}] = ${value};`
@@ -120,6 +131,7 @@ class RuntimeTemplate {
 			  );
 	}
 
+	// 返回 对象解构赋值 语句
 	destructureObject(items, value) {
 		return this.supportsDestructuring()
 			? `var {${items.join(", ")}} = ${value};`
@@ -128,7 +140,7 @@ class RuntimeTemplate {
 			  );
 	}
 
-	// 对代码外层用 IIFE 代码包囊
+	// 返回 IIFE 代码块
 	iife(args, body) {
 		return `(${this.basicFunction(args, body)})()`;
 	}
@@ -142,16 +154,6 @@ class RuntimeTemplate {
 			  )}\n});`;
 	}
 
-	/**
-	 * Add a comment
-	 * @param {object} options Information content of the comment
-	 * @param {string=} options.request request string used originally
-	 * @param {string=} options.chunkName name of the chunk referenced
-	 * @param {string=} options.chunkReason reason information of the chunk
-	 * @param {string=} options.message additional message
-	 * @param {string=} options.exportName name of the export
-	 * @returns {string} comment
-	 */
 	// 返回 注释代码
 	comment({ request, chunkName, chunkReason, message, exportName }) {
 		let content;
@@ -182,47 +184,31 @@ class RuntimeTemplate {
 		)}); e.code = 'MODULE_NOT_FOUND'; throw e;`;
 	}
 
-	// 返回 错误函数
+	// 返回 缺失模块错误函数
 	throwMissingModuleErrorFunction({ request }) {
 		return `function webpackMissingModule() { ${this.throwMissingModuleErrorBlock(
 			{ request }
 		)} }`;
 	}
 
-	// 生成 错误的 IIFE
+	// 返回 缺失模块自调用函数
 	missingModule({ request }) {
 		return `Object(${this.throwMissingModuleErrorFunction({ request })}())`;
 	}
 
-	/**
-	 * @param {object} options generation options
-	 * @param {string=} options.request request string used originally
-	 * @returns {string} generated error statement
-	 */
+	// 返回 缺失模块自调用函数 语句
 	missingModuleStatement({ request }) {
 		return `${this.missingModule({ request })};\n`;
 	}
 
-	/**
-	 * @param {object} options generation options
-	 * @param {string=} options.request request string used originally
-	 * @returns {string} generated error code
-	 */
+	// 返回 缺失模块自调用函数 Promise
 	missingModulePromise({ request }) {
 		return `Promise.resolve().then(${this.throwMissingModuleErrorFunction({
 			request
 		})})`;
 	}
 
-	/**
-	 * @param {Object} options options object
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {Module} options.module the module
-	 * @param {string} options.request the request that should be printed as comment
-	 * @param {string=} options.idExpr expression to use as id expression
-	 * @param {"expression" | "promise" | "statements"} options.type which kind of code should be returned
-	 * @returns {string} the code
-	 */
+	// 返回 模块不可用 代码
 	weakError({ module, chunkGraph, request, idExpr, type }) {
 		const moduleId = chunkGraph.getModuleId(module);
 		const errorMessage =
@@ -252,7 +238,8 @@ class RuntimeTemplate {
 	}
 
 	// 返回 带注释 的 序列化后的模块路径字符串
-	// 示例: /*! ./imgs/cache.png */ \"./src/imgs/cache.png\"
+	// 示例: /*! ./imgs/cache.png */ "./src/imgs/cache.png"
+	// 用于 __webpack_require__(/*! ./imgs/cache.png */ "./src/imgs/cache.png")
 	moduleId({ module, chunkGraph, request, weak }) {
 		if (!module) {
 			return this.missingModule({
@@ -310,15 +297,7 @@ class RuntimeTemplate {
 		})})`;
 	}
 
-	/**
-	 * @param {Object} options options object
-	 * @param {Module} options.module the module
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {string} options.request the request that should be printed as comment
-	 * @param {boolean=} options.weak if the dependency is weak (will create a nice error message)
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {string} the expression
-	 */
+	// 返回 模块加载字符串
 	moduleExports({ module, chunkGraph, request, weak, runtimeRequirements }) {
 		return this.moduleRaw({
 			module,
@@ -329,16 +308,7 @@ class RuntimeTemplate {
 		});
 	}
 
-	/**
-	 * @param {Object} options options object
-	 * @param {Module} options.module the module
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {string} options.request the request that should be printed as comment
-	 * @param {boolean=} options.strict if the current module is in strict esm mode
-	 * @param {boolean=} options.weak if the dependency is weak (will create a nice error message)
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {string} the expression
-	 */
+	// 返回 不同类型的 模块加载字符串
 	moduleNamespace({
 		module,
 		chunkGraph,
@@ -398,18 +368,8 @@ class RuntimeTemplate {
 		}
 	}
 
-	/**
-	 * @param {Object} options options object
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {AsyncDependenciesBlock=} options.block the current dependencies block
-	 * @param {Module} options.module the module
-	 * @param {string} options.request the request that should be printed as comment
-	 * @param {string} options.message a message for the comment
-	 * @param {boolean=} options.strict if the current module is in strict esm mode
-	 * @param {boolean=} options.weak if the dependency is weak (will create a nice error message)
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {string} the promise expression
-	 */
+	// TODO:
+	// 
 	moduleNamespacePromise({
 		chunkGraph,
 		block,
@@ -548,14 +508,8 @@ class RuntimeTemplate {
 		return `${promise || "Promise.resolve()"}${appending}`;
 	}
 
-	/**
-	 * @param {Object} options options object
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {RuntimeSpec=} options.runtime runtime for which this code will be generated
-	 * @param {RuntimeSpec | boolean=} options.runtimeCondition only execute the statement in some runtimes
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {string} expression
-	 */
+	// TODO:
+	// 
 	runtimeConditionExpression({
 		chunkGraph,
 		runtimeCondition,
@@ -581,23 +535,9 @@ class RuntimeTemplate {
 		)(RuntimeGlobals.runtimeId);
 	}
 
-	/**
-	 *
-	 * @param {Object} options options object
-	 * @param {boolean=} options.update whether a new variable should be created or the existing one updated
-	 * @param {Module} options.module the module
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {string} options.request the request that should be printed as comment
-	 * @param {string} options.importVar name of the import variable
-	 * @param {Module} options.originModule module in which the statement is emitted
-	 * @param {boolean=} options.weak true, if this is a weak dependency
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {[string, string]} the import statement and the compat statement
-	 */
-	// 返回 加工后的import语句
+	// 返回 处理后的import语句
 	// 示例:
-	// 
-	// var _utils_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils/math */ \"./src/utils/math.js\");
+	// var _utils_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils/math */ "./src/utils/math.js");
 	importStatement({
 		update,
 		module,
@@ -662,23 +602,8 @@ class RuntimeTemplate {
 		return [importContent, ""];
 	}
 
-	/**
-	 * @param {Object} options options
-	 * @param {ModuleGraph} options.moduleGraph the module graph
-	 * @param {Module} options.module the module
-	 * @param {string} options.request the request
-	 * @param {string | string[]} options.exportName the export name
-	 * @param {Module} options.originModule the origin module
-	 * @param {boolean|undefined} options.asiSafe true, if location is safe for ASI, a bracket can be emitted
-	 * @param {boolean} options.isCall true, if expression will be called
-	 * @param {boolean} options.callContext when false, call context will not be preserved
-	 * @param {boolean} options.defaultInterop when true and accessing the default exports, interop code will be generated
-	 * @param {string} options.importVar the identifier name of the import variable
-	 * @param {InitFragment[]} options.initFragments init fragments will be added here
-	 * @param {RuntimeSpec} options.runtime runtime for which this code will be generated
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {string} expression
-	 */
+	// TODO:
+	//
 	exportFromImport({
 		moduleGraph,
 		module,
@@ -784,14 +709,8 @@ class RuntimeTemplate {
 		}
 	}
 
-	/**
-	 * @param {Object} options options
-	 * @param {AsyncDependenciesBlock} options.block the async block
-	 * @param {string} options.message the message
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {string} expression
-	 */
+	// TODO:
+	// 
 	blockPromise({ block, message, chunkGraph, runtimeRequirements }) {
 		if (!block) {
 			const comment = this.comment({
@@ -829,14 +748,8 @@ class RuntimeTemplate {
 		}
 	}
 
-	/**
-	 * @param {Object} options options
-	 * @param {AsyncDependenciesBlock} options.block the async block
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @param {string=} options.request request string used originally
-	 * @returns {string} expression
-	 */
+	// TODO:
+	// 异步模块工厂
 	asyncModuleFactory({ block, chunkGraph, runtimeRequirements, request }) {
 		const dep = block.dependencies[0];
 		const module = chunkGraph.moduleGraph.getModule(dep);
@@ -861,14 +774,8 @@ class RuntimeTemplate {
 		);
 	}
 
-	/**
-	 * @param {Object} options options
-	 * @param {Dependency} options.dependency the dependency
-	 * @param {ChunkGraph} options.chunkGraph the chunk graph
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @param {string=} options.request request string used originally
-	 * @returns {string} expression
-	 */
+	// TODO:
+	// 同步模块工厂
 	syncModuleFactory({ dependency, chunkGraph, runtimeRequirements, request }) {
 		const module = chunkGraph.moduleGraph.getModule(dependency);
 		const factory = this.returningFunction(
@@ -882,12 +789,8 @@ class RuntimeTemplate {
 		return this.returningFunction(factory);
 	}
 
-	/**
-	 * @param {Object} options options
-	 * @param {string} options.exportsArgument the name of the exports object
-	 * @param {Set<string>} options.runtimeRequirements if set, will be filled with runtime requirements
-	 * @returns {string} statement
-	 */
+	// TODO:
+	// 定义 ES模块标记语句
 	defineEsModuleFlagStatement({ exportsArgument, runtimeRequirements }) {
 		runtimeRequirements.add(RuntimeGlobals.makeNamespaceObject);
 		runtimeRequirements.add(RuntimeGlobals.exports);

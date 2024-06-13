@@ -9,91 +9,6 @@ const { first } = require("./util/SetHelpers");
 const { compareChunksById } = require("./util/comparators");
 const makeSerializable = require("./util/makeSerializable");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/WebpackOptions").ResolveOptions} ResolveOptions */
-/** @typedef {import("../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./ChunkGroup")} ChunkGroup */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./ConcatenationScope")} ConcatenationScope */
-/** @typedef {import("./Dependency")} Dependency */
-/** @typedef {import("./Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("./ExportsInfo").UsageStateType} UsageStateType */
-/** @typedef {import("./FileSystemInfo")} FileSystemInfo */
-/** @typedef {import("./ModuleGraphConnection").ConnectionState} ConnectionState */
-/** @typedef {import("./NormalModuleFactory")} NormalModuleFactory */
-/** @typedef {import("./RequestShortener")} RequestShortener */
-/** @typedef {import("./ResolverFactory").ResolverWithOptions} ResolverWithOptions */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("./WebpackError")} WebpackError */
-/** @typedef {import("./util/Hash")} Hash */
-/** @template T @typedef {import("./util/LazySet")<T>} LazySet<T> */
-/** @template T @typedef {import("./util/SortableSet")<T>} SortableSet<T> */
-/** @typedef {import("./util/fs").InputFileSystem} InputFileSystem */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
-/**
- * @typedef {Object} SourceContext
- * @property {DependencyTemplates} dependencyTemplates the dependency templates
- * @property {RuntimeTemplate} runtimeTemplate the runtime template
- * @property {ModuleGraph} moduleGraph the module graph
- * @property {ChunkGraph} chunkGraph the chunk graph
- * @property {RuntimeSpec} runtime the runtimes code should be generated for
- * @property {string=} type the type of source that should be generated
- */
-
-/**
- * @typedef {Object} CodeGenerationContext
- * @property {DependencyTemplates} dependencyTemplates the dependency templates
- * @property {RuntimeTemplate} runtimeTemplate the runtime template
- * @property {ModuleGraph} moduleGraph the module graph
- * @property {ChunkGraph} chunkGraph the chunk graph
- * @property {RuntimeSpec} runtime the runtimes code should be generated for
- * @property {ConcatenationScope=} concatenationScope when in concatenated module, information about other concatenated modules
- */
-
-/**
- * @typedef {Object} ConcatenationBailoutReasonContext
- * @property {ModuleGraph} moduleGraph the module graph
- * @property {ChunkGraph} chunkGraph the chunk graph
- */
-
-/**
- * @typedef {Object} CodeGenerationResult
- * @property {Map<string, Source>} sources the resulting sources for all source types
- * @property {Map<string, any>=} data the resulting data for all source types
- * @property {ReadonlySet<string>} runtimeRequirements the runtime requirements
- * @property {string=} hash a hash of the code generation result (will be automatically calculated from sources and runtimeRequirements if not provided)
- */
-
-/**
- * @typedef {Object} LibIdentOptions
- * @property {string} context absolute context path to which lib ident is relative to
- * @property {Object=} associatedObjectForCache object for caching
- */
-
-/**
- * @typedef {Object} KnownBuildMeta
- * @property {string=} moduleArgument
- * @property {string=} exportsArgument
- * @property {boolean=} strict
- * @property {string=} moduleConcatenationBailout
- * @property {("default" | "namespace" | "flagged" | "dynamic")=} exportsType
- * @property {(false | "redirect" | "redirect-warn")=} defaultObject
- * @property {boolean=} strictHarmonyModule
- * @property {boolean=} async
- * @property {boolean=} sideEffectFree
- */
-
-/**
- * @typedef {Object} NeedBuildContext
- * @property {FileSystemInfo} fileSystemInfo
- * @property {Map<string, string | Set<string>>} valueCacheVersions
- */
-
-/** @typedef {KnownBuildMeta & Record<string, any>} BuildMeta */
-
 /**
  * BuildMeta(打包元信息)
  * moduleArgument:
@@ -150,8 +65,6 @@ const deprecatedNeedRebuild = util.deprecate(
 	"DEP_WEBPACK_MODULE_NEED_REBUILD"
 );
 
-/** @typedef {(requestShortener: RequestShortener) => string} OptimizationBailoutFunction */
-
 // 模块
 class Module extends DependenciesBlock {
 	constructor(type, context = null, layer = null) {
@@ -195,6 +108,7 @@ class Module extends DependenciesBlock {
 		this.presentationalDependencies = undefined;
 	}
 
+	// ChunkGraph
 	// 返回 chunkGraphModule.id
 	get id() {
 		return ChunkGraph.getChunkGraphForModule(
@@ -204,6 +118,7 @@ class Module extends DependenciesBlock {
 		).getModuleId(this);
 	}
 
+	// ChunkGraph
 	// 设置 chunkGraphModule.id
 	set id(value) {
 		if (value === "") {
@@ -217,7 +132,8 @@ class Module extends DependenciesBlock {
 		).setModuleId(this, value);
 	}
 
-	// 返回 chunkGraphModule.hashes
+	// ChunkGraph
+	// 返回 chunkGraphModule.hashes.[].hash
 	get hash() {
 		return ChunkGraph.getChunkGraphForModule(
 			this,
@@ -226,9 +142,8 @@ class Module extends DependenciesBlock {
 		).getModuleHash(this, undefined);
 	}
 
-	/**
-	 * @returns {string} the shortened hash of the module
-	 */
+	// ChunkGraph
+	// 返回 chunkGraphModule.hashes.[].renderedHash
 	get renderedHash() {
 		return ChunkGraph.getChunkGraphForModule(
 			this,
@@ -237,6 +152,8 @@ class Module extends DependenciesBlock {
 		).getRenderedModuleHash(this, undefined);
 	}
 
+	// ModuleGraph
+	// 返回 moduleGraphModule.profile
 	get profile() {
 		return ModuleGraph.getModuleGraphForModule(
 			this,
@@ -245,6 +162,8 @@ class Module extends DependenciesBlock {
 		).getProfile(this);
 	}
 
+	// ModuleGraph
+	// 设置 moduleGraphModule.profile
 	set profile(value) {
 		ModuleGraph.getModuleGraphForModule(
 			this,
@@ -253,6 +172,8 @@ class Module extends DependenciesBlock {
 		).setProfile(this, value);
 	}
 
+	// ModuleGraph
+	// 返回 moduleGraphModule.preOrderIndex
 	get index() {
 		return ModuleGraph.getModuleGraphForModule(
 			this,
@@ -261,6 +182,8 @@ class Module extends DependenciesBlock {
 		).getPreOrderIndex(this);
 	}
 
+	// ModuleGraph
+	// 设置 moduleGraphModule.preOrderIndex
 	set index(value) {
 		ModuleGraph.getModuleGraphForModule(
 			this,
@@ -269,6 +192,8 @@ class Module extends DependenciesBlock {
 		).setPreOrderIndex(this, value);
 	}
 
+	// ModuleGraph
+	// 返回 moduleGraphModule.postOrderIndex
 	get index2() {
 		return ModuleGraph.getModuleGraphForModule(
 			this,
@@ -277,6 +202,8 @@ class Module extends DependenciesBlock {
 		).getPostOrderIndex(this);
 	}
 
+	// ModuleGraph
+	// 设置 moduleGraphModule.postOrderIndex
 	set index2(value) {
 		ModuleGraph.getModuleGraphForModule(
 			this,
@@ -285,6 +212,8 @@ class Module extends DependenciesBlock {
 		).setPostOrderIndex(this, value);
 	}
 
+	// ModuleGraph
+	// 返回 moduleGraphModule.depth
 	get depth() {
 		return ModuleGraph.getModuleGraphForModule(
 			this,
@@ -293,6 +222,8 @@ class Module extends DependenciesBlock {
 		).getDepth(this);
 	}
 
+	// ModuleGraph
+	// 设置 moduleGraphModule.depth
 	set depth(value) {
 		ModuleGraph.getModuleGraphForModule(
 			this,
@@ -301,6 +232,8 @@ class Module extends DependenciesBlock {
 		).setDepth(this, value);
 	}
 
+	// ModuleGraph
+	// 返回 moduleGraphModule.issuer
 	get issuer() {
 		return ModuleGraph.getModuleGraphForModule(
 			this,
@@ -309,6 +242,8 @@ class Module extends DependenciesBlock {
 		).getIssuer(this);
 	}
 
+	// ModuleGraph
+	// 设置 moduleGraphModule.issuer
 	set issuer(value) {
 		ModuleGraph.getModuleGraphForModule(
 			this,
@@ -317,6 +252,7 @@ class Module extends DependenciesBlock {
 		).setIssuer(this, value);
 	}
 
+	// 
 	get usedExports() {
 		return ModuleGraph.getModuleGraphForModule(
 			this,
@@ -325,10 +261,8 @@ class Module extends DependenciesBlock {
 		).getUsedExports(this, undefined);
 	}
 
-	/**
-	 * @deprecated
-	 * @returns {(string | OptimizationBailoutFunction)[]} list
-	 */
+	// ModuleGraph
+	// 返回 moduleGraphModule.optimizationBailout
 	get optimizationBailout() {
 		return ModuleGraph.getModuleGraphForModule(
 			this,
@@ -337,6 +271,7 @@ class Module extends DependenciesBlock {
 		).getOptimizationBailout(this);
 	}
 
+	// 
 	get optional() {
 		return this.isOptional(
 			ModuleGraph.getModuleGraphForModule(

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const DllEntryPlugin = require("./DllEntryPlugin");
@@ -10,9 +5,7 @@ const FlagAllModulesAsUsedPlugin = require("./FlagAllModulesAsUsedPlugin");
 const LibManifestPlugin = require("./LibManifestPlugin");
 const createSchemaValidation = require("./util/create-schema-validation");
 
-/** @typedef {import("../declarations/plugins/DllPlugin").DllPluginOptions} DllPluginOptions */
-/** @typedef {import("./Compiler")} Compiler */
-
+// 验证选项
 const validate = createSchemaValidation(
 	require("../schemas/plugins/DllPlugin.check.js"),
 	() => require("../schemas/plugins/DllPlugin.json"),
@@ -22,10 +15,9 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 此插件会生成一个名为 manifest.json 的文件
+// 这个文件包含了从 require 和 import 中 request 到模块 id 的映射
 class DllPlugin {
-	/**
-	 * @param {DllPluginOptions} options options object
-	 */
 	constructor(options) {
 		validate(options);
 		this.options = {
@@ -34,11 +26,6 @@ class DllPlugin {
 		};
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.entryOption.tap("DllPlugin", (context, entry) => {
 			if (typeof entry !== "function") {

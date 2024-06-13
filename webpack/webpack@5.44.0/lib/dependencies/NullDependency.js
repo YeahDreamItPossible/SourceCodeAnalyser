@@ -3,6 +3,7 @@
 const Dependency = require("../Dependency");
 const DependencyTemplate = require("../DependencyTemplate");
 
+// 
 class NullDependency extends Dependency {
 	get type() {
 		return "null";

@@ -11,6 +11,7 @@ const {
 } = require("../javascript/JavascriptParserHelpers");
 
 // TODO:
+// 用于解析 require.sure 语句
 class RequireEnsurePlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

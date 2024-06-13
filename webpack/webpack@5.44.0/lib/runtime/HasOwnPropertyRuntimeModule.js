@@ -4,7 +4,9 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
-// __webpack_require__.o
+// 运行时模块
+// 该运行时模块 用来判断 某个对象是否具有某个属性
+//  __webpack_require__.o
 class HasOwnPropertyRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("hasOwnProperty shorthand");

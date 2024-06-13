@@ -6,6 +6,7 @@ const makeSerializable = require("./util/makeSerializable");
 
 const TYPES = new Set(["javascript"]);
 
+// 原始模块
 class RawModule extends Module {
 	constructor(source, identifier, readableIdentifier, runtimeRequirements) {
 		super("javascript/dynamic", null);
@@ -35,10 +36,7 @@ class RawModule extends Module {
 		return Math.max(1, this.sourceStr.length);
 	}
 
-	/**
-	 * @param {RequestShortener} requestShortener the request shortener
-	 * @returns {string} a user readable identifier of the module
-	 */
+	// 路径缩短器
 	readableIdentifier(requestShortener) {
 		return requestShortener.shorten(this.readableIdentifierStr);
 	}

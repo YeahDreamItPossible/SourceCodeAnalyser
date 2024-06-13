@@ -405,7 +405,7 @@ class Chunk {
 		return false;
 	}
 
-	// 返回 当前 Chunk 是否是初始快
+	// 返回 当前 Chunk 是否是初始块
 	canBeInitial() {
 		for (const chunkGroup of this._groups) {
 			// 当前 ChunkGroup 是否是异步

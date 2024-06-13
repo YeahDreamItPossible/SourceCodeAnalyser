@@ -6,10 +6,7 @@ const ModuleFilenameHelpers = require("./ModuleFilenameHelpers");
 const Template = require("./Template");
 const createSchemaValidation = require("./util/create-schema-validation");
 
-/** @typedef {import("../declarations/plugins/BannerPlugin").BannerPluginArgument} BannerPluginArgument */
-/** @typedef {import("../declarations/plugins/BannerPlugin").BannerPluginOptions} BannerPluginOptions */
-/** @typedef {import("./Compiler")} Compiler */
-
+// 验证选项
 const validate = createSchemaValidation(
 	require("../schemas/plugins/BannerPlugin.check.js"),
 	() => require("../schemas/plugins/BannerPlugin.json"),
@@ -32,11 +29,8 @@ const wrapComment = str => {
 		.trimRight()}\n */`;
 };
 
-// 给每个chunk文件头部添加banner注释
+// 给满足条件的chunk文件头部或者尾部添加banner注释
 class BannerPlugin {
-	/**
-	 * @param {BannerPluginArgument} options options object
-	 */
 	constructor(options) {
 		if (typeof options === "string" || typeof options === "function") {
 			options = {
@@ -46,8 +40,14 @@ class BannerPlugin {
 
 		validate(options);
 
+		// options.raw  如果值为 true，将直接输出，不会被作为注释
+		// options.banner 该值为字符串或函数，将作为注释存在
+		// options.entryOnly 如果值为 true，将只在入口 chunks 文件中添加
+		// options.test 包含所有匹配的模块
+		// options.include 根据条件匹配所有模块
+		// options.exclude 根据条件排除所有模块
+		// footer 如果值为 true，banner 将会位于编译结果的最下方
 		this.options = options;
-
 		const bannerOption = options.banner;
 		// options.raw 如果值为 true，将直接输出，不会被作为注释
 		if (typeof bannerOption === "function") {
@@ -63,11 +63,6 @@ class BannerPlugin {
 		}
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const options = this.options;
 		const banner = this.banner;

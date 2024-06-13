@@ -1,49 +1,30 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { RawSource } = require("webpack-sources");
 const OriginalSource = require("webpack-sources").OriginalSource;
 const Module = require("./Module");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("./Module").CodeGenerationContext} CodeGenerationContext */
-/** @typedef {import("./Module").CodeGenerationResult} CodeGenerationResult */
-/** @typedef {import("./Module").NeedBuildContext} NeedBuildContext */
-/** @typedef {import("./RequestShortener")} RequestShortener */
-/** @typedef {import("./ResolverFactory").ResolverWithOptions} ResolverWithOptions */
-/** @typedef {import("./WebpackError")} WebpackError */
-/** @typedef {import("./util/Hash")} Hash */
-/** @typedef {import("./util/fs").InputFileSystem} InputFileSystem */
-
 const TYPES = new Set(["runtime"]);
 
+// 运行时模块
 class RuntimeModule extends Module {
-	/**
-	 * @param {string} name a readable name
-	 * @param {number=} stage an optional stage
-	 */
 	constructor(name, stage = 0) {
 		super("runtime");
-		// 
+		// 模块运行时名
 		this.name = name;
+		// 
 		this.stage = stage;
+		// 构建元信息
 		this.buildMeta = {};
+		// 构建信息
 		this.buildInfo = {};
-		/** @type {Compilation} */
+		// 
 		this.compilation = undefined;
-		/** @type {Chunk} */
+		// 
 		this.chunk = undefined;
-		/** @type {ChunkGraph} */
+		// 
 		this.chunkGraph = undefined;
+		// 
 		this.fullHash = false;
 		// 缓存的生成的代码
 		this._cachedGeneratedCode = undefined;
@@ -148,9 +129,8 @@ class RuntimeModule extends Module {
 		return (this._cachedGeneratedCode = this.generate());
 	}
 
-	/**
-	 * @returns {boolean} true, if the runtime module should get it's own scope
-	 */
+	// 是否应该隔离
+	// 当 该运行时模块 需要独立作用域时
 	shouldIsolate() {
 		return true;
 	}
@@ -159,21 +139,14 @@ class RuntimeModule extends Module {
 /**
  * Runtime modules without any dependencies to other runtime modules
  */
+// 运行时模块阶段
+// 当前运行时模块 不依赖 其他运行时模块
 RuntimeModule.STAGE_NORMAL = 0;
-
-/**
- * Runtime modules with simple dependencies on other runtime modules
- */
+// 当前运行时模块 对 其他运行时模块 有简单依赖关系
 RuntimeModule.STAGE_BASIC = 5;
-
-/**
- * Runtime modules which attach to handlers of other runtime modules
- */
+// 当前运行时模块 附加到 其他运行时模块
 RuntimeModule.STAGE_ATTACH = 10;
-
-/**
- * Runtime modules which trigger actions on bootstrap
- */
+// 当前运行时模块 将会在引导程序上 触发操作
 RuntimeModule.STAGE_TRIGGER = 20;
 
 module.exports = RuntimeModule;

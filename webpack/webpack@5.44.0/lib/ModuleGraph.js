@@ -80,7 +80,6 @@ class ModuleGraphModule {
 		// Number
 		this.postOrderIndex = null;
 		// 深度
-		// Number
 		this.depth = null;
 		// 性能分析 ModuleProfile
 		this.profile = undefined;
@@ -100,7 +99,7 @@ class ModuleGraph {
 		this._dependencyMap = new Map();
 		// Map<Module, ModuleGraphModule>
 		this._moduleMap = new Map();
-		// TOOD: 好像没啥卵用(全局搜索未发现使用)?!
+		// 全局搜索未发现使用
 		// Map<Module, Set<ModuleGraphConnection>>
 		this._originMap = new Map();
 		// 元信息

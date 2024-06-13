@@ -21,12 +21,7 @@ const stringifySafe = data => {
 	); // invalid in JavaScript but valid JSON
 };
 
-/**
- * @param {Object} data data (always an object or array)
- * @param {ExportsInfo} exportsInfo exports info
- * @param {RuntimeSpec} runtime the runtime
- * @returns {Object} reduced data
- */
+// 
 const createObjectForExportsInfo = (data, exportsInfo, runtime) => {
 	if (exportsInfo.otherExportsInfo.getUsed(runtime) !== UsageState.Unused)
 		return data;

@@ -2,8 +2,7 @@
 
 const makeSerializable = require("./util/makeSerializable");
 
-// 模块基类
-// 依赖块
+// 依赖块(模块基类)
 class DependenciesBlock {
 	constructor() {
 		// 依赖

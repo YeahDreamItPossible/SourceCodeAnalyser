@@ -9,20 +9,8 @@ const AwaitDependenciesInitFragment = require("../async-modules/AwaitDependencie
 const { filterRuntime, mergeRuntime } = require("../util/runtime");
 const ModuleDependency = require("./ModuleDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../Dependency").ReferencedExport} ReferencedExport */
-/** @typedef {import("../Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("../WebpackError")} WebpackError */
-/** @typedef {import("../util/Hash")} Hash */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
-
-// ES模块依赖
+// ES模块导入依赖
+// Dependency => ModuleDependency => HarmonyImportDependency
 class HarmonyImportDependency extends ModuleDependency {
 	constructor(request, sourceOrder) {
 		super(request);
@@ -35,12 +23,6 @@ class HarmonyImportDependency extends ModuleDependency {
 		return "esm";
 	}
 
-	/**
-	 * Returns list of exports referenced by this dependency
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @param {RuntimeSpec} runtime the runtime for which the module is analysed
-	 * @returns {(string[] | ReferencedExport)[]} referenced exports
-	 */
 	// 
 	getReferencedExports(moduleGraph, runtime) {
 		return Dependency.NO_EXPORTS_REFERENCED;
@@ -66,7 +48,6 @@ class HarmonyImportDependency extends ModuleDependency {
 
 	// 返回 [String, String]
 	// 返回 加工后 import 语句
-	//
 	// 示例:
 	// var _utils_math__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils/math */ \"./src/utils/math.js\");
 	getImportStatement(
@@ -84,12 +65,7 @@ class HarmonyImportDependency extends ModuleDependency {
 		});
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @param {string[]} ids imported ids
-	 * @param {string} additionalMessage extra info included in the error message
-	 * @returns {WebpackError[] | undefined} errors
-	 */
+	// 返回错误
 	getLinkingErrors(moduleGraph, ids, additionalMessage) {
 		const importedModule = moduleGraph.getModule(this);
 		// ignore errors for missing or failed modules
@@ -209,18 +185,12 @@ class HarmonyImportDependency extends ModuleDependency {
 
 module.exports = HarmonyImportDependency;
 
-/** @type {WeakMap<Module, WeakMap<Module, RuntimeSpec | boolean>>} */
+// WeakMap<Module, WeakMap<Module, >>
 const importEmittedMap = new WeakMap();
 
 HarmonyImportDependency.Template = class HarmonyImportDependencyTemplate extends (
 	ModuleDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(dependency, source, templateContext) {
 		const dep = /** @type {HarmonyImportDependency} */ (dependency);
 		const { module, chunkGraph, moduleGraph, runtime } = templateContext;

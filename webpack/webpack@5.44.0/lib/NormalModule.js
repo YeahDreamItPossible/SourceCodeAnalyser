@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use strict";
 
 const parseJson = require("json-parse-better-errors");
@@ -189,11 +190,13 @@ const compilationHooksMap = new WeakMap();
  */
 
 /**
- * 1. 通过所有的加载器(Loader)返回加工后的source
+ * 1. 通过所有的加载器(Loader)返回处理后的source
  * 2. 通过语法解析器(parser) 对代码语法解析
  * 3. 通过代码生成器(generator) 生成中间代码
  */
+// 标准模块
 class NormalModule extends Module {
+	// 返回当前 compilation 对应的 hooks
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
 			throw new TypeError(
@@ -203,8 +206,11 @@ class NormalModule extends Module {
 		let hooks = compilationHooksMap.get(compilation);
 		if (hooks === undefined) {
 			hooks = {
+				// 当创建完 loaderContext 后立即调用
 				loader: new SyncHook(["loaderContext", "module"]),
+				// 在运行 loaders 之前
 				beforeLoaders: new SyncHook(["loaders", "module", "loaderContext"]),
+				// 
 				readResourceForScheme: new HookMap(
 					() => new AsyncSeriesBailHook(["resource", "module"])
 				)
@@ -214,23 +220,6 @@ class NormalModule extends Module {
 		return hooks;
 	}
 
-	/**
-	 * @param {Object} options options object
-	 * @param {string=} options.layer an optional layer in which the module is
-	 * @param {string} options.type module type
-	 * @param {string} options.request request string
-	 * @param {string} options.userRequest request intended by user (without loaders from config)
-	 * @param {string} options.rawRequest request without resolving
-	 * @param {LoaderItem[]} options.loaders list of loaders
-	 * @param {string} options.resource path + query of the real resource
-	 * @param {Record<string, any>=} options.resourceResolveData resource resolve data
-	 * @param {string | undefined} options.matchResource path + query of the matched resource (virtual)
-	 * @param {Parser} options.parser the parser used
-	 * @param {object} options.parserOptions the options of the parser used
-	 * @param {Generator} options.generator the generator used
-	 * @param {object} options.generatorOptions the options of the generator used
-	 * @param {Object} options.resolveOptions options used for resolving requests from this module
-	 */
 	constructor({
 		layer,
 		type,
@@ -249,20 +238,20 @@ class NormalModule extends Module {
 	}) {
 		super(type, getContext(resource), layer);
 
-		// 模块路径: 将loaders路径和资源路径组合后的绝对路径
+		// 内部请求(Webpack 内部对 原始请求 内部处理后,  将loaders路径和资源路径组合后的绝对路径)
 		// 示例: 
 		// /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang! +
 		// /path/laoders/first.js???ruleSet[1].rules[0]!/path/loaders/second.js?ruleSet[1].rules[1]! +
 		// /path/math.js?ts=123
 		this.request = request;
-		// 将 模块加载路径 全部转换成 绝对路径
+		// 用户请求(将 原始请求 分类后全部转换成 绝对路径)
 		// 示例: /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang!/path/math.js?ts=123
 		this.userRequest = userRequest;
-		// 资源加载路径
+		// 原始请求(资源加载路径)
 		// 示例: ../loaders/first.js?auth=Lee!../loaders/second.js?user=Wang!./math.js?ts=123
 		this.rawRequest = rawRequest;
 
-		// 标识: 经过loader加工后的源代码类型是Buffer 还是String
+		// 标识: 经过loader处理后的源代码类型是Buffer 还是String
 		this.binary = /^(asset|webassembly)\b/.test(type);
 
 		// 语法分析器
@@ -275,10 +264,10 @@ class NormalModule extends Module {
 		// 代码生成器选项
 		this.generatorOptions = generatorOptions;
 
-		// 序列化后的模块路径(绝对路径 且包括参数)
+		// 序列化后的资源路径(绝对路径 且包括参数)
 		// 示例: /path/math.js?ts=123
 		this.resource = resource;
-		// 路径解析器解析resource返回的数据
+		// 路径解析器 解析 资源(resource) 后返回的数据
 		this.resourceResolveData = resourceResolveData;
 		// 匹配的路径资源
 		this.matchResource = matchResource;
@@ -294,23 +283,24 @@ class NormalModule extends Module {
 			this.resolveOptions = resolveOptions;
 		}
 
-		// Info from Build
+		// 当前模块的错误
 		this.error = null;
-		// 经过Loader加工后的源代码(WebpackSource实例)
+		// 经过Loader处理后的源代码(WebpackSource实例)
 		this._source = null;
-		// 经过Loader加工后的源代码大小
+		// 经过Loader处理后的源代码大小
 		this._sourceSizes = undefined;
-		// 经过Loader加工后的源代码类型
+		// 经过Loader处理后的源代码类型
 		this._sourceTypes = undefined;
 
 		// 上次成功构建时的 this.buildMeta
 		this._lastSuccessfulBuildMeta = {};
 		// 标识: 当前模块是否要强制构建
+		// 
 		this._forceBuild = true;
 		//
 		this._isEvaluatingSideEffects = false;
 		// 
-		/** @type {WeakSet<ModuleGraph> | undefined} */
+		// WeakSet<ModuleGraph>
 		this._addedSideEffectsBailout = undefined;
 	}
 
@@ -1098,7 +1088,7 @@ class NormalModule extends Module {
 		return this._sourceTypes;
 	}
 
-	// 通过代码生成器(generator) 生成中间代码
+	// 通过 代码生成器(generator) 生成中间代码
 	codeGeneration({
 		dependencyTemplates,
 		runtimeTemplate,
@@ -1157,7 +1147,7 @@ class NormalModule extends Module {
 	}
 
 	// 返回 this._source
-	// 返回经过加载器 Loader 加工后的source(WebpackSource实例)
+	// 返回经过加载器 Loader 处理后的source(WebpackSource实例)
 	originalSource() {
 		return this._source;
 	}

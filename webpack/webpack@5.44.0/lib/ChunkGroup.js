@@ -234,6 +234,7 @@ class ChunkGroup {
 	/**
 	 * @returns {boolean} true, when this chunk group will be loaded on initial page load
 	 */
+	// 
 	isInitial() {
 		return false;
 	}

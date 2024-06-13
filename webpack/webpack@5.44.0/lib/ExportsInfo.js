@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { equals } = require("./util/ArrayHelpers");
@@ -10,21 +5,12 @@ const SortableSet = require("./util/SortableSet");
 const makeSerializable = require("./util/makeSerializable");
 const { forEachRuntime } = require("./util/runtime");
 
-/** @typedef {import("./Dependency").RuntimeSpec} RuntimeSpec */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-/** @typedef {import("./ModuleGraphConnection")} ModuleGraphConnection */
-/** @typedef {import("./util/Hash")} Hash */
-
-/** @typedef {typeof UsageState.OnlyPropertiesUsed | typeof UsageState.NoInfo | typeof UsageState.Unknown | typeof UsageState.Used} RuntimeUsageStateType */
-/** @typedef {typeof UsageState.Unused | RuntimeUsageStateType} UsageStateType */
-
 const UsageState = Object.freeze({
-	Unused: /** @type {0} */ (0),
-	OnlyPropertiesUsed: /** @type {1} */ (1),
-	NoInfo: /** @type {2} */ (2),
-	Unknown: /** @type {3} */ (3),
-	Used: /** @type {4} */ (4)
+	Unused: (0),
+	OnlyPropertiesUsed: (1),
+	NoInfo: (2),
+	Unknown: (3),
+	Used: (4)
 });
 
 const RETURNS_TRUE = () => true;
@@ -62,31 +48,29 @@ makeSerializable(
 	"RestoreProvidedData"
 );
 
+// 导出信息
 class ExportsInfo {
 	constructor() {
-		// Map<string, ExportInfo>
+		// Map<String, ExportInfo>
 		this._exports = new Map();
 		//
 		this._otherExportsInfo = new ExportInfo(null);
 		// 
 		this._sideEffectsOnlyInfo = new ExportInfo("*side effects only*");
-		// 
+		// 标识: this._exports 是否已经排序过
 		this._exportsAreOrdered = false;
 		// 
 		/** @type {ExportsInfo=} */
 		this._redirectTo = undefined;
 	}
 
-	/**
-	 * @returns {Iterable<ExportInfo>} all owned exports in any order
-	 */
+	
+	// 所有拥有的输出
 	get ownedExports() {
 		return this._exports.values();
 	}
 
-	/**
-	 * @returns {Iterable<ExportInfo>} all owned exports in order
-	 */
+	
 	get orderedOwnedExports() {
 		if (!this._exportsAreOrdered) {
 			this._sortExports();
@@ -139,6 +123,7 @@ class ExportsInfo {
 		return this._otherExportsInfo;
 	}
 
+	// 对 this._exports 按照 name 字段 进行排序
 	_sortExportsMap(exports) {
 		if (exports.size > 1) {
 			const namesInOrder = [];
@@ -161,11 +146,13 @@ class ExportsInfo {
 		}
 	}
 
+	// 排序
 	_sortExports() {
 		this._sortExportsMap(this._exports);
 		this._exportsAreOrdered = true;
 	}
 
+	// 设置 this._redirectTo
 	setRedirectNamedTo(exportsInfo) {
 		if (this._redirectTo === exportsInfo) return false;
 		this._redirectTo = exportsInfo;
@@ -218,10 +205,6 @@ class ExportsInfo {
 		return newInfo;
 	}
 
-	/**
-	 * @param {string} name export name
-	 * @returns {ExportInfo} export info for this name
-	 */
 	// 根据 export name 返回 ExportInfo
 	getExportInfo(name) {
 		const info = this._exports.get(name);
@@ -790,7 +773,6 @@ class ExportInfo {
 	 */
 	constructor(name, initFrom) {
 		// 
-		/** @type {string} */
 		this.name = name;
 		/** @private @type {string | null} */
 		this._usedName = initFrom ? initFrom._usedName : null;
@@ -852,26 +834,22 @@ class ExportInfo {
 		this._maxTarget = undefined;
 	}
 
-	// ExportInfo.prototype.used 属性被移除
-	// ExportInfo.prototype._used 代替 但是该属性是私有属性
+	// ExportInfo.prototype.used 已被 ExportInfo.prototype._used 替代
 	get used() {
 		throw new Error("REMOVED");
 	}
 
-	// ExportInfo.prototype.usedName 属性被移除
-	// ExportInfo.prototype._usedName 代替 但是该属性是私有属性
+	// ExportInfo.prototype.usedName 已被 ExportInfo.prototype._usedName 替代
 	get usedName() {
 		throw new Error("REMOVED");
 	}
 	
-	// ExportInfo.prototype.used 属性被移除
-	// ExportInfo.prototype._used 代替 但是该属性是私有属性
+	// ExportInfo.prototype.used 已被 ExportInfo.prototype._used 替代
 	set used(v) {
 		throw new Error("REMOVED");
 	}
 
-	// ExportInfo.prototype.usedName 属性被移除
-	// ExportInfo.prototype._usedName 代替 但是该属性是私有属性
+	// ExportInfo.prototype.usedName 已被 ExportInfo.prototype._usedName 替代
 	set usedName(v) {
 		throw new Error("REMOVED");
 	}

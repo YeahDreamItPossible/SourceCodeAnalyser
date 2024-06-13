@@ -1,14 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const DllModuleFactory = require("./DllModuleFactory");
 const DllEntryDependency = require("./dependencies/DllEntryDependency");
 const EntryDependency = require("./dependencies/EntryDependency");
 
+// 动态链接入口插件
 class DllEntryPlugin {
 	constructor(context, entries, options) {
 		this.context = context;

@@ -1,7 +1,5 @@
 "use strict";
 
-/** @typedef {import("./Dependency")} Dependency */
-/** @typedef {import("./Module")} Module */
 /** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
 
 /**
@@ -69,12 +67,11 @@ class ModuleGraphConnection {
 		this.resolvedModule = module;
 		// 当前Module
 		this.module = module;
-
 		// 标识 当前 connection 是否是可选的
-		// TODO: 好像根据 dep.weak 决定
+		// 根据 dep.weak 决定
 		this.weak = weak;
-		// 根据 this.condition  决定
-		// 当前Connection 是否是可选的
+		// 标识 当前 connection 是否是可选的
+		// 根据 dep.condition  决定
 		this.conditional = !!condition;
 		// 标识: 当前 connection 是否激活
 		this._active = condition !== false;
@@ -83,7 +80,6 @@ class ModuleGraphConnection {
 		// function(ModuleGraphConnection, RuntimeSpec): ConnectionState
 		this.condition = condition || undefined;
 		// 
-		// Set<string>
 		this.explanations = undefined;
 		if (explanation) {
 			this.explanations = new Set();

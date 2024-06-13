@@ -1,27 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Florent Cailhol @ooflorent
-*/
-
 "use strict";
 
 const { ConcatSource } = require("webpack-sources");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("./Generator").GenerateContext} GenerateContext */
-
-/**
- * @param {InitFragment} fragment the init fragment
- * @param {number} index index
- * @returns {[InitFragment, number]} tuple with both
- */
+// 
 const extractFragmentIndex = (fragment, index) => [fragment, index];
 
-/**
- * @param {[InitFragment, number]} a first pair
- * @param {[InitFragment, number]} b second pair
- * @returns {number} sort value
- */
+// 排序
 const sortFragmentWithIndex = ([a, i], [b, j]) => {
 	const stageCmp = a.stage - b.stage;
 	if (stageCmp !== 0) return stageCmp;
@@ -30,41 +14,31 @@ const sortFragmentWithIndex = ([a, i], [b, j]) => {
 	return i - j;
 };
 
-/**
- * @template Context
- */
+// 初始化代码片段
 class InitFragment {
-	/**
-	 * @param {string|Source} content the source code that will be included as initialization code
-	 * @param {number} stage category of initialization code (contribute to order)
-	 * @param {number} position position in the category (contribute to order)
-	 * @param {string=} key unique key to avoid emitting the same initialization code twice
-	 * @param {string|Source=} endContent the source code that will be included at the end of the module
-	 */
 	constructor(content, stage, position, key, endContent) {
+		// 内容
+		// String | Source
 		this.content = content;
+		// 阶段
 		this.stage = stage;
+		// 位置
 		this.position = position;
+		// 唯一Key
 		this.key = key;
+		// 结束内容
 		this.endContent = endContent;
 	}
 
-	/**
-	 * @param {Context} context context
-	 * @returns {string|Source} the source code that will be included as initialization code
-	 */
 	getContent(context) {
 		return this.content;
 	}
 
-	/**
-	 * @param {Context} context context
-	 * @returns {string|Source=} the source code that will be included at the end of the module
-	 */
 	getEndContent(context) {
 		return this.endContent;
 	}
 
+	// 返回 Source
 	static addToSource(source, initFragments, context) {
 		if (initFragments.length > 0) {
 			// Sort fragments by position. If 2 fragments have the same position,

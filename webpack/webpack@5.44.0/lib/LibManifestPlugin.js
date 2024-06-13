@@ -11,25 +11,13 @@ const { someInIterable } = require("./util/IterableHelpers");
 const { compareModulesById } = require("./util/comparators");
 const { dirname, mkdirp } = require("./util/fs");
 
-/** @typedef {import("./Compiler")} Compiler */
-
-/**
- * @typedef {Object} ManifestModuleData
- * @property {string | number} id
- * @property {Object} buildMeta
- * @property {boolean | string[]} exports
- */
-
+// 此插件会生成一个名为 manifest.json 的文件
+// 这个文件包含了从 require 和 import 中 request 到模块 id 的映射
 class LibManifestPlugin {
 	constructor(options) {
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.emit.tapAsync(
 			"LibManifestPlugin",

@@ -81,6 +81,7 @@ const SNAPSHOT_OPTIONS = { timestamp: true };
 
 const TYPES = new Set(["javascript"]);
 
+// 上下文模块
 class ContextModule extends Module {
 	/**
 	 * @param {ResolveDependencies} resolveDependencies function to get dependencies in this context

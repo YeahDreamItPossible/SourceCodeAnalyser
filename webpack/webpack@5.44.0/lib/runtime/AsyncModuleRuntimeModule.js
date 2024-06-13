@@ -13,9 +13,6 @@ class AsyncModuleRuntimeModule extends HelperRuntimeModule {
 		super("async module");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { runtimeTemplate } = this.compilation;
 		const fn = RuntimeGlobals.asyncModule;

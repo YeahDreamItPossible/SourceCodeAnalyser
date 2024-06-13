@@ -6,11 +6,6 @@ const Chunk = require("./Chunk");
 const Module = require("./Module");
 const { parseResource } = require("./util/identifier");
 
-/** @typedef {import("./Compilation").AssetInfo} AssetInfo */
-/** @typedef {import("./Compilation").PathData} PathData */
-/** @typedef {import("./Compiler")} Compiler */
-
-// \*\*\
 const REGEXP = /\[\\*([\w:]+)\\*\]/gi;
 
 const prepareId = id => {
@@ -88,12 +83,6 @@ const deprecated = (fn, message, code) => {
 	};
 };
 
-/**
- * @param {string | function(PathData, AssetInfo=): string} path the raw path
- * @param {PathData} data context data
- * @param {AssetInfo} assetInfo extra info about the asset (will be written to)
- * @returns {string} the interpolated path
- */
 const replacePathVariables = (path, data, assetInfo) => {
 	const chunkGraph = data.chunkGraph;
 

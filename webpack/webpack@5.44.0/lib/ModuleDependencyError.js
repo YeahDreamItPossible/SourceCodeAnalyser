@@ -1,22 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
-/** @typedef {import("./Dependency").DependencyLocation} DependencyLocation */
-/** @typedef {import("./Module")} Module */
-
+// 模块依赖错误
 class ModuleDependencyError extends WebpackError {
-	/**
-	 * Creates an instance of ModuleDependencyError.
-	 * @param {Module} module module tied to dependency
-	 * @param {Error} err error thrown
-	 * @param {DependencyLocation} loc location of dependency
-	 */
 	constructor(module, err, loc) {
 		super(err.message);
 

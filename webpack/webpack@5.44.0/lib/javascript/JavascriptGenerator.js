@@ -6,7 +6,6 @@ const Generator = require("../Generator");
 const InitFragment = require("../InitFragment");
 const HarmonyCompatibilityDependency = require("../dependencies/HarmonyCompatibilityDependency");
 
-
 const deprecatedGetInitFragments = util.deprecate(
 	(template, dependency, templateContext) =>
 		template.getInitFragments(dependency, templateContext),
@@ -16,7 +15,7 @@ const deprecatedGetInitFragments = util.deprecate(
 
 const TYPES = new Set(["javascript"]);
 
-// JS类型代码生成器
+// JS类型 代码生成器
 class JavascriptGenerator extends Generator {
 	// 返回当前生成器类型
 	getTypes(module) {
@@ -132,9 +131,7 @@ class JavascriptGenerator extends Generator {
 
 	// 生成 依赖代码
 	sourceDependency(module, dependency, initFragments, source, generateContext) {
-		const constructor = /** @type {new (...args: any[]) => Dependency} */ (
-			dependency.constructor
-		);
+		const constructor = ( dependency.constructor );
 		const template = generateContext.dependencyTemplates.get(constructor);
 		if (!template) {
 			throw new Error(

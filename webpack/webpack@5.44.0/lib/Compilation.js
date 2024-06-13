@@ -323,7 +323,7 @@ const { isSourceEqual } = require("./util/source");
 const EMPTY_ASSET_INFO = Object.freeze({});
 
 const esmDependencyCategory = "esm";
-// TODO webpack 6: remove
+// Compilation.hooks.normalModuleLoader 已被 NormalModule.getCompilationHooks(compilation).loader 替代
 const deprecatedNormalModuleLoaderHook = util.deprecate(
 	compilation => {
 		return require("./NormalModule").getCompilationHooks(compilation).loader;
@@ -812,7 +812,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 空调用
 			// 当一个 chunk 中的一个 asset 被添加到 compilation 时调用
 			chunkAsset: new SyncHook(["chunk", "filename"]),
-			// 调用以决定 asset 的路径
+			// 通过此钩子决定 asset 的路径
 			assetPath: new SyncWaterfallHook(["path", "options", "assetInfo"]),
 			// 空调用
 			// 当 compiler 输出 assets 后是否需要进一步处理
@@ -905,6 +905,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.moduleTemplates = {
 			javascript: new ModuleTemplate(this.runtimeTemplate, this)
 		};
+		// this.moduleTemplates
 		// this.moduleTemplates.asset 属性废弃
 		// this.moduleTemplates.webassembly 属性废弃
 		defineRemovedModuleTemplates(this.moduleTemplates);
@@ -996,16 +997,16 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		arrayToSetDeprecation(this.modules, "Compilation.modules");
 		// 缓存模块 Map<ModuleId, Module>
 		this._modules = new Map();
-
+		// 文件记录
 		this.records = null;
 		//
 		// Array<String>
 		this.additionalChunkAssets = [];
-		// Object<String, Source>
-		/** @type {CompilationAssets} */
+		// 资源
+		// Object<Filename, WebpackSource>
 		this.assets = {};
-		// 
-		// Map<string, AssetInfo>
+		// 资源信息
+		// Map<Filename, AssetInfo>
 		this.assetsInfo = new Map();
 		// 
 		// Map<string, Map<string, Set<string>>>
@@ -1016,17 +1017,19 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.errors = [];
 		// WebpackError[]
 		this.warnings = [];
-
-		// Compilation[]
+		// Array<Compilation>
 		this.children = [];
 		// Map<string, LogEntry[]>
 		this.logging = new Map();
 
-		// DependencyConstructor => ModuleFactory
+		// 根据 依赖 知道对应的 模块工厂
+		// 通过 模块工厂 来创建对应的 模块实例
 		// Map<DependencyConstructor, ModuleFactory>
 		this.dependencyFactories = new Map();
-		// DependencyConstructor => DependencyTemplate
-		// this._dependencyTemplates.map  Map<DependencyConstructor, DependencyTemplate>
+		// 根据 依赖 找到对应的 依赖模板
+		// 通过 依赖模板 来获取 转换后的依赖代码
+		// 例如: import ... from ... => const ... = __webpack_require__('...')
+		// Map<DependencyConstructor, DependencyTemplate>
 		this.dependencyTemplates = new DependencyTemplates();
 		this.childrenCounters = {};
 		/** @type {Set<number|string>} */
@@ -1064,7 +1067,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// 打包依赖
 		// Set<string>
 		this.buildDependencies = new LazySet();
-		// TODO webpack 6 remove
+		// Compilation.prototype.compilationDependencies 将在 webpack 6 移除
 		this.compilationDependencies = {
 			add: util.deprecate(
 				item => this.fileDependencies.add(item),

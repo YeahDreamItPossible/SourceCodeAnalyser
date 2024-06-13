@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const { Tracer } = require("chrome-trace-event");
@@ -28,6 +24,7 @@ try {
 	console.log("Unable to CPU profile in < node 8.0");
 }
 
+// 
 class Profiler {
 	constructor(inspector) {
 		this.session = undefined;
@@ -185,12 +182,12 @@ const createTrace = (fs, outputPath) => {
 
 const pluginName = "ProfilingPlugin";
 
+// 生成 Chrome 配置文件
+
 class ProfilingPlugin {
-	/**
-	 * @param {ProfilingPluginOptions=} options options object
-	 */
 	constructor(options = {}) {
 		validate(options);
+		// 输出文件
 		this.outputPath = options.outputPath || "events.json";
 	}
 

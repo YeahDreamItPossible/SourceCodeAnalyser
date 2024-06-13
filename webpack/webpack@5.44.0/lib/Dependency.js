@@ -2,77 +2,6 @@
 
 const memoize = require("./util/memoize");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./DependenciesBlock")} DependenciesBlock */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-/** @typedef {import("./ModuleGraphConnection")} ModuleGraphConnection */
-/** @typedef {import("./ModuleGraphConnection").ConnectionState} ConnectionState */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("./WebpackError")} WebpackError */
-/** @typedef {import("./util/Hash")} Hash */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
-/**
- * @typedef {Object} UpdateHashContext
- * @property {ChunkGraph} chunkGraph
- * @property {RuntimeSpec} runtime
- * @property {RuntimeTemplate=} runtimeTemplate
- */
-
-/**
- * @typedef {Object} SourcePosition
- * @property {number} line
- * @property {number=} column
- */
-
-/**
- * @typedef {Object} RealDependencyLocation
- * @property {SourcePosition} start
- * @property {SourcePosition=} end
- * @property {number=} index
- */
-
-/**
- * @typedef {Object} SyntheticDependencyLocation
- * @property {string} name
- * @property {number=} index
- */
-
-/** @typedef {SyntheticDependencyLocation|RealDependencyLocation} DependencyLocation */
-
-/**
- * @typedef {Object} ExportSpec
- * @property {string} name the name of the export
- * @property {boolean=} canMangle can the export be renamed (defaults to true)
- * @property {boolean=} terminalBinding is the export a terminal binding that should be checked for export star conflicts
- * @property {(string | ExportSpec)[]=} exports nested exports
- * @property {ModuleGraphConnection=} from when reexported: from which module
- * @property {string[] | null=} export when reexported: from which export
- * @property {number=} priority when reexported: with which priority
- * @property {boolean=} hidden export is not visible, because another export blends over it
- */
-
-/**
- * @typedef {Object} ExportsSpec
- * @property {(string | ExportSpec)[] | true | null} exports exported names, true for unknown exports or null for no exports
- * @property {Set<string>=} excludeExports when exports = true, list of unaffected exports
- * @property {Set<string>=} hideExports list of maybe prior exposed, but now hidden exports
- * @property {ModuleGraphConnection=} from when reexported: from which module
- * @property {number=} priority when reexported: with which priority
- * @property {boolean=} canMangle can the export be renamed (defaults to true)
- * @property {boolean=} terminalBinding are the exports terminal bindings that should be checked for export star conflicts
- * @property {Module[]=} dependencies module on which the result depends on
- */
-
-/**
- * @typedef {Object} ReferencedExport
- * @property {string[]} name name of the referenced export
- * @property {boolean=} canMangle when false, referenced export can not be mangled, defaults to true
- */
-
 const getIgnoredModule = memoize(() => {
 	const RawModule = require("./RawModule");
 	return new RawModule("/* (ignored) */", `ignored`, `(ignored)`);
@@ -88,14 +17,12 @@ class Dependency {
 		// 标识 当前依赖 是否是弱的
 		// 弱依赖 意味着这个依赖 对于模块的运行不是必须的
 		// 即使这个依赖不存在 模块也能以某种降级模式运行
-		// TODO check if this can be moved into ModuleDependency
 		this.weak = false;
 		// 标识 当前依赖 是否是可选的
 		// 与弱依赖类似 可选依赖也不是模块运行所必需的
 		// 可选依赖通常有一个更具体的含义 即当这个依赖不存在时
 		// 模块应该能够优雅地处理这种情况 而不是简单地失败
 		this.optional = false;
-
 		// 位置信息
 		// 起始行 SL(start line) 
 		this._locSL = 0;
@@ -120,7 +47,7 @@ class Dependency {
 	}
 
 	// 返回 Dependency 的分类
-	// commonjs || amd || esm
+	// commonjs | amd | esm | self
 	get category() {
 		return "unknown";
 	}
@@ -179,39 +106,24 @@ class Dependency {
 		return null;
 	}
 
-	// Dependency.getReference 移除
-	// 
-	// 获取关联的模块和输出
+	// Dependency.prototype.getReference 已被 Dependency.prototype.getReferencedExports 替代
 	getReference(moduleGraph) {
 		throw new Error(
 			"Dependency.getReference was removed in favor of Dependency.getReferencedExports, ModuleGraph.getModule and ModuleGraph.getConnection().active"
 		);
 	}
 
-	/**
-	 * Returns list of exports referenced by this dependency
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @param {RuntimeSpec} runtime the runtime for which the module is analysed
-	 * @returns {(string[] | ReferencedExport)[]} referenced exports
-	 */
 	// 返回关联输出
 	getReferencedExports(moduleGraph, runtime) {
 		return Dependency.EXPORTS_OBJECT_REFERENCED;
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @returns {null | false | function(ModuleGraphConnection, RuntimeSpec): ConnectionState} function to determine if the connection is active
-	 */
+	// 返回条件
 	getCondition(moduleGraph) {
 		return null;
 	}
 
-	/**
-	 * Returns the exported names
-	 * @param {ModuleGraph} moduleGraph module graph
-	 * @returns {ExportsSpec | undefined} export names
-	 */
+	// 返回 导出的 names
 	getExports(moduleGraph) {
 		return undefined;
 	}
@@ -229,30 +141,22 @@ class Dependency {
 	// 更新hash
 	updateHash(hash, context) {}
 
-	/**
-	 * implement this method to allow the occurrence order plugin to count correctly
-	 * @returns {number} count how often the id is used in this dependency
-	 */
+	// 返回 此依赖中 id 的使用频率
 	getNumberOfIdOccurrences() {
 		return 1;
 	}
 
-	/**
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 * @returns {ConnectionState} how this dependency connects the module to referencing modules
-	 */
+	// 此依赖如何关联模块
 	getModuleEvaluationSideEffectsState(moduleGraph) {
 		return true;
 	}
 
-	/**
-	 * @param {string} context context directory
-	 * @returns {Module} a module
-	 */
+	// 返回 RawModule 的实例
 	createIgnoredModule(context) {
 		return getIgnoredModule();
 	}
 
+	// 序列化
 	serialize({ write }) {
 		write(this.weak);
 		write(this.optional);
@@ -264,6 +168,7 @@ class Dependency {
 		write(this._locN);
 	}
 
+	// 反序列化
 	deserialize({ read }) {
 		this.weak = read();
 		this.optional = read();
@@ -281,8 +186,7 @@ Dependency.NO_EXPORTS_REFERENCED = [];
 // Array<Array<String>>
 Dependency.EXPORTS_OBJECT_REFERENCED = [[]];
 
-// Dependency.prototype.module 移除
-// Compilation.ModuleGraph.getModule(Dependency) 替代
+// Dependency.prototype.module 已被Compilation.ModuleGraph.getModule(Dependency) 替代
 Object.defineProperty(Dependency.prototype, "module", {
 	/**
 	 * @deprecated
@@ -304,7 +208,6 @@ Object.defineProperty(Dependency.prototype, "module", {
 		);
 	}
 });
-
 // Dependency.prototype.disconnect 移除 不再支持
 Object.defineProperty(Dependency.prototype, "disconnect", {
 	get() {
