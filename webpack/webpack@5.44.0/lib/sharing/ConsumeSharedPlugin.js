@@ -42,6 +42,7 @@ const validate = createSchemaValidation(
 const RESOLVE_OPTIONS = { dependencyType: "esm" };
 const PLUGIN_NAME = "ConsumeSharedPlugin";
 
+// 消费共享插件
 class ConsumeSharedPlugin {
 	/**
 	 * @param {ConsumeSharedPluginOptions} options options

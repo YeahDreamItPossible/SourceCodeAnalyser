@@ -97,8 +97,8 @@ module.exports = class ResolverFactory {
 		// ResolveOptionsWithDependencyType
 		const originalResolveOptions = { ...resolveOptionsWithDepType };
 
-		// 对于 normal 和 context 类型 将 resolveOptionsWithDepType 和 Webpack.Config.resolve 属性合并
-		// 对于 loader 类型 将 resolveOptionsWithDepType 和 Webpack.Config.resolveLoader 属性合并
+		// 对于 normal 和 context 类型 将 resolveOptionsWithDepType 和 Webpack.options.resolve 属性合并
+		// 对于 loader 类型 将 resolveOptionsWithDepType 和 Webpack.options.resolveLoader 属性合并
 		const resolveOptions = convertToResolveOptions(
 			this.hooks.resolveOptions.for(type).call(resolveOptionsWithDepType)
 		);

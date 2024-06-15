@@ -6,17 +6,11 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compiler")} Compiler */
 
-/**
- * @typedef {Object} LoadScriptCompilationHooks
- * @property {SyncWaterfallHook<[string, Chunk]>} createScript
- */
-
-/** @type {WeakMap<Compilation, LoadScriptCompilationHooks>} */
+// WeakMap<Compilation, LoadScriptCompilationHooks>
 const compilationHooksMap = new WeakMap();
 
+// 辅助运行时模块之加载远程脚本代码
 class LoadScriptRuntimeModule extends HelperRuntimeModule {
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {
@@ -34,9 +28,6 @@ class LoadScriptRuntimeModule extends HelperRuntimeModule {
 		return hooks;
 	}
 
-	/**
-	 * @param {boolean=} withCreateScriptUrl use create script url for trusted types
-	 */
 	constructor(withCreateScriptUrl) {
 		super("load script");
 		this._withCreateScriptUrl = withCreateScriptUrl;

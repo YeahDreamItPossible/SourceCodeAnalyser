@@ -8,7 +8,7 @@ const {
 } = require("./IdHelpers");
 
 // 给 chunk.id 设置 xx(基于内容的确定性哈希)
-// 根据 Webpack.Config.optimization.chunkIds = 'deterministic' 注册该插件
+// 根据 Webpack.options.optimization.chunkIds = 'deterministic' 注册该插件
 class DeterministicChunkIdsPlugin {
 	constructor(options) {
 		this.options = options || {};

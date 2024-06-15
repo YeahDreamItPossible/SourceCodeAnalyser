@@ -2,7 +2,7 @@
 
 const WebpackError = require("./WebpackError");
 
-// Webpack.Config.xx 被废弃 抛出错误
+// Webpack.options.xx 被废弃 抛出错误
 class WarnDeprecatedOptionPlugin {
 	/**
 	 * Create an instance of the plugin

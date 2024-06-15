@@ -4,12 +4,12 @@
  * 根据以下条件(condition)编译成对应的匹配规则副作用
  * 匹配规则: { type: String, value: String || Function || RegExp || Array }
  * 条件condition:
- * Webpack.Config.Module.Rule.type
- * Webpack.Config.Module.Rule.sideEffects
- * Webpack.Config.Module.Rule.parser
- * Webpack.Config.Module.Rule.resolve
- * Webpack.Config.Module.Rule.generator
- * Webpack.Config.Module.Rule.layer
+ * Webpack.options.Module.Rule.type
+ * Webpack.options.Module.Rule.sideEffects
+ * Webpack.options.Module.Rule.parser
+ * Webpack.options.Module.Rule.resolve
+ * Webpack.options.Module.Rule.generator
+ * Webpack.options.Module.Rule.layer
  */
 class BasicEffectRulePlugin {
 	constructor(ruleProperty, effectType) {

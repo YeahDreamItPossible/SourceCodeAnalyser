@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra and Zackary Jackson @ScriptedAlchemy
-*/
-
 "use strict";
 
 const { RawSource } = require("webpack-sources");
@@ -28,7 +23,8 @@ const RemoteToExternalDependency = require("./RemoteToExternalDependency");
 
 const TYPES = new Set(["remote", "share-init"]);
 const RUNTIME_REQUIREMENTS = new Set([RuntimeGlobals.module]);
-
+// 实例: import module from 'remote_app/MyComponent'
+// 远程模块
 class RemoteModule extends Module {
 	/**
 	 * @param {string} request request string
@@ -38,18 +34,23 @@ class RemoteModule extends Module {
 	 */
 	constructor(request, externalRequests, internalRequest, shareScope) {
 		super("remote-module");
+		// 请求
+		// remote_app/MyComponent
 		this.request = request;
+		// 外部请求
+		// [ 'webpack/container/reference/remote_app' ]
 		this.externalRequests = externalRequests;
+		// 内部请求
+		// ./MyComponent
 		this.internalRequest = internalRequest;
 		this.shareScope = shareScope;
+		// 
 		this._identifier = `remote (${shareScope}) ${this.externalRequests.join(
 			" "
 		)} ${this.internalRequest}`;
 	}
 
-	/**
-	 * @returns {string} a unique identifier of the module
-	 */
+	// 返回唯一标识符
 	identifier() {
 		return this._identifier;
 	}

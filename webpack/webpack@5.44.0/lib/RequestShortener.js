@@ -7,7 +7,7 @@ class RequestShortener {
 	constructor(dir, associatedObjectForCache) {
 		// 将 给定的路径 转换成相对于给定上下文的 相对路径
 		this.contextify = contextify.bindContextCache(
-			dir, // Webpack.Config.context
+			dir, // Webpack.options.context
 			associatedObjectForCache // Compiler示例
 		);
 	}

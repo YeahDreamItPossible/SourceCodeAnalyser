@@ -5,7 +5,7 @@ const CreateScriptUrlRuntimeModule = require("../runtime/CreateScriptUrlRuntimeM
 const StartupChunkDependenciesPlugin = require("../runtime/StartupChunkDependenciesPlugin");
 const ImportScriptsChunkLoadingRuntimeModule = require("./ImportScriptsChunkLoadingRuntimeModule");
 
-// 根据 Webpack.Config.output.chunkLoading = 'import-scripts' 注册该插件
+// 根据 Webpack.options.output.chunkLoading = 'import-scripts' 注册该插件
 // 利用 Worker importScripts 属性
 class ImportScriptsChunkLoadingPlugin {
 	apply(compiler) {

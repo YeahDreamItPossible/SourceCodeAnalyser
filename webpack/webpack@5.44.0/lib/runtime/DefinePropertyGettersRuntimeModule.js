@@ -4,6 +4,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
+// 运行时模块之定义属性getters函数
 // __webpack_require__.d
 class DefinePropertyGettersRuntimeModule extends HelperRuntimeModule {
 	constructor() {

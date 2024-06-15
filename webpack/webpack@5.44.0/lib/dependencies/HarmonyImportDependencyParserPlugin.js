@@ -31,7 +31,7 @@ module.exports = class HarmonyImportDependencyParserPlugin {
 	constructor(options) {
 		// Wepback.Config.module.parser.strictExportPresence
 		this.strictExportPresence = options.strictExportPresence;
-		// Webpack.Config.module.strictThisContextOnImports
+		// Webpack.options.module.strictThisContextOnImports
 		this.strictThisContextOnImports = options.strictThisContextOnImports;
 	}
 

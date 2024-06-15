@@ -32,10 +32,8 @@ const validate = createSchemaValidation(
 
 const slashCode = "/".charCodeAt(0);
 
+// 
 class ContainerReferencePlugin {
-	/**
-	 * @param {ContainerReferencePluginOptions} options options
-	 */
 	constructor(options) {
 		validate(options);
 
@@ -55,15 +53,10 @@ class ContainerReferencePlugin {
 		);
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { _remotes: remotes, _remoteType: remoteType } = this;
 
-		/** @type {Record<string, string>} */
+		// Record<String, String>
 		const remoteExternals = {};
 		for (const [key, config] of remotes) {
 			let i = 0;

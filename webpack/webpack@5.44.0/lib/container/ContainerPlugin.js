@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra, Zackary Jackson @ScriptedAlchemy, Marais Rossouw @maraisr
-*/
-
 "use strict";
 
 const createSchemaValidation = require("../util/create-schema-validation");
@@ -11,9 +6,7 @@ const ContainerEntryModuleFactory = require("./ContainerEntryModuleFactory");
 const ContainerExposedDependency = require("./ContainerExposedDependency");
 const { parseOptions } = require("./options");
 
-/** @typedef {import("../../declarations/plugins/container/ContainerPlugin").ContainerPluginOptions} ContainerPluginOptions */
-/** @typedef {import("../Compiler")} Compiler */
-
+// 验证 ContainerPlugin options 是否合法
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/container/ContainerPlugin.check.js"),
 	() => require("../../schemas/plugins/container/ContainerPlugin.json"),
@@ -25,10 +18,8 @@ const validate = createSchemaValidation(
 
 const PLUGIN_NAME = "ContainerPlugin";
 
+// 容器插件
 class ContainerPlugin {
-	/**
-	 * @param {ContainerPluginOptions} options options
-	 */
 	constructor(options) {
 		validate(options);
 
@@ -55,11 +46,6 @@ class ContainerPlugin {
 		};
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { name, exposes, shareScope, filename, library, runtime } =
 			this._options;

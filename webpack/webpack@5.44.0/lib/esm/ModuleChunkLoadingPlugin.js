@@ -4,7 +4,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const ExportWebpackRequireRuntimeModule = require("./ExportWebpackRequireRuntimeModule");
 const ModuleChunkLoadingRuntimeModule = require("./ModuleChunkLoadingRuntimeModule");
 
-// 根据 Webpack.Config.output.chunkLoading = 'import' 注册该插件
+// 根据 Webpack.options.output.chunkLoading = 'import' 注册该插件
 class ModuleChunkLoadingPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

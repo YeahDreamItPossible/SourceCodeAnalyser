@@ -10,6 +10,109 @@ const {
 	getDefaultTarget
 } = require("./target");
 
+/**
+ * Webpack.options.output.library.type
+ * var | assign | assign-properties
+ * this | window | global
+ * commonjs | commonjs2 | module | amd | amd-require | umd | umd2
+ * system | json | commonjs-module
+ * var:
+ * 导出一个全局变量 
+ * 示例: `var libraryName = ...`
+ * assign:
+ * 导出一个变量 并将该变量默认绑定在某个对象上
+ * 1. 如果 Webpack.options.output.library.name 值为数组形式 将默认绑定到数组第一个值上
+ * 		示例: 
+ * 				Webpack.options.output.library.name = ['MyNamespace', 'MyLibrary']
+ * 				=> (MyNamespace = typeof MyNamespace === "undefined" ? {} : MyNamespace).MyLibrary = '...'
+ * 2. 如果 Webpack.options.output.library.name 值为字符串形式 将默认绑定到全局对象(window | global)上
+ * 		此时 导出的是一个隐藏的全局变量
+ * 		示例:
+ * 				Webpack.options.output.library.name = 'MyLibrary'
+ * 				=> { MyNamespace = '...' }
+ * assign-properties:
+ * 与 assign 类似 但是更安全
+ * 如果 已经存在 MyLibrary 时 将会重用 MyLibrary
+ * 并将 导出的属性 依次绑定到 MyLibrary
+ * 		示例:
+ * 				var __webpack_export_target__ = ((MyNamespace = typeof MyNamespace === "undefined" ? {} : MyNamespace).MyPlugin = MyNamespace.MyPlugin || {})
+ * 				// __webpack_exports__ 表示 MyLibrary 导出的属性
+ * 				for(var i in __webpack_exports__) __webpack_export_target__[i] = __webpack_exports__[i];
+ * this:
+ * 将绑定到 this 对象上
+ * 		示例:
+ * 				this.MyLibrary = '...'
+ * window:
+ * 将绑定到 window 对象上
+ * 		示例:
+ * 				window.MyLibrary = '...'
+ * global:
+ * 取决于 target 值 全局对象可以分别改变 例如: self、global 或者 globalThis
+ * 		示例:
+ * 				self.MyLibrary = '...'
+ * commonjs:
+ * 在 CommonJS 环境中运行 绑定到 exports 上
+ * 		示例:
+ * 				exports.MyLibrary = '...'
+ * commonjs2:
+ * 在 CommonJS 环境中运行 绑定到 module.exports 上
+ * 		示例:
+ * 				module.exports.MyLibrary = '...'
+ * module:
+ * 输出 ES 模块 前提是: Webpack.options.experiments.outputModul = true
+ * 		示例:
+ * 				exports { __webpack_exports__default as default }
+ * amd:
+ * 以 AMD 模块格式导出
+ * amd-require:
+ * 立即执行的 AMD require(dependencies, factory) 包装器来打包输出
+ * umd:
+ * 以 umd 模块格式 导出
+ * umd2:
+ * 与 umd 感觉没啥区别
+ * system:
+ * webpack@4.30 特性 可跳过
+ * json:
+ * TODO:
+ */
+
+/**
+ * Webpack.options.target
+ * web | esX | webworker | 
+ * node | async-node | node-webkit
+ * electron-main | electron-renderer | electron-preload
+ */
+
+/**
+ * Webpack.options.output.chunkFormat
+ * array-push | commonjs | module
+ * array-push(web/WebWorker)
+ * commonjs(nodejs)
+ * module(esm)
+ */
+
+/**
+ * Webpack.options.output.chunkLoading
+ * jsonp | import-script | require | async-node | import
+ * jsonp(web)
+ * import-script(web/WebWorker)
+ * require(nodeJS)
+ * async-node(async nodejs)
+ * import(esm)
+ */
+
+/**
+ * Webpack.options.optimization.moduleIds
+ * natural | named | deterministic | size
+ * natural:
+ * 
+ */
+
+/**
+ * Webpack.options.optimization.chunkIds
+ * natural | named | deterministic | size | total-size
+ */
+
 const NODE_MODULES_REGEXP = /[\\/]node_modules[\\/]/i;
 
 // 对 对象 的某个属性 设置默认值
@@ -66,14 +169,14 @@ const A = (obj, prop, factory) => {
 	}
 };
 
-// 1. 对 Webpack.Config.context 设置默认值
-// 2. 对 Webpack.Config.infrastructureLogging 设置默认值
+// 1. 对 Webpack.options.context 设置默认值
+// 2. 对 Webpack.options.infrastructureLogging 设置默认值
 const applyWebpackOptionsBaseDefaults = options => {
 	F(options, "context", () => process.cwd());
 	applyInfrastructureLoggingDefaults(options.infrastructureLogging);
 };
 
-// 对 Webpack.Config.xx 设置默认值
+// 对 Webpack.options 设置默认值
 const applyWebpackOptionsDefaults = options => {
 	F(options, "context", () => process.cwd());
 	F(options, "target", () => {
@@ -193,7 +296,7 @@ const applyWebpackOptionsDefaults = options => {
 	);
 };
 
-// 对 Webpack.Config.experiments 设置默认值
+// 对 Webpack.options.experiments 设置默认值
 const applyExperimentsDefaults = experiments => {
 	D(experiments, "topLevelAwait", false);
 	D(experiments, "syncWebAssembly", false);
@@ -201,7 +304,7 @@ const applyExperimentsDefaults = experiments => {
 	D(experiments, "outputModule", false);
 };
 
-// 对 Webpack.Config.cache 设置默认值
+// 对 Webpack.options.cache 设置默认值
 const applyCacheDefaults = (cache, { name, mode, development }) => {
 	if (cache === false) return;
 	switch (cache.type) {
@@ -256,7 +359,7 @@ const applyCacheDefaults = (cache, { name, mode, development }) => {
 	}
 };
 
-// 对 Webpack.Config.snapshot 设置默认值
+// 对 Webpack.options.snapshot 设置默认值
 const applySnapshotDefaults = (snapshot, { production }) => {
 	A(snapshot, "managedPaths", () => {
 		if (process.versions.pnp === "3") {
@@ -311,7 +414,7 @@ const applySnapshotDefaults = (snapshot, { production }) => {
 	);
 };
 
-// 对 Webpack.Config.module.parser.javascript 设置默认值
+// 对 Webpack.options.module.parser.javascript 设置默认值
 const applyJavascriptParserOptionsDefaults = parserOptions => {
 	D(parserOptions, "unknownContextRequest", ".");
 	D(parserOptions, "unknownContextRegExp", false);
@@ -329,7 +432,7 @@ const applyJavascriptParserOptionsDefaults = parserOptions => {
 	D(parserOptions, "strictThisContextOnImports", false);
 };
 
-// 对 Webpack.Config.module 设置默认值
+// 对 Webpack.options.module 设置默认值
 const applyModuleDefaults = (
 	module,
 	{ cache, syncWebAssembly, asyncWebAssembly }
@@ -470,7 +573,7 @@ const applyModuleDefaults = (
 	});
 };
 
-// 对 Webpack.Config.output 设置默认值
+// 对 Webpack.options.output 设置默认值
 const applyOutputDefaults = (
 	output,
 	{
@@ -764,7 +867,7 @@ const applyOutputDefaults = (
 	});
 };
 
-// 对 Webpack.Config.externalsPresets 设置默认值
+// 对 Webpack.options.externalsPresets 设置默认值
 const applyExternalsPresetsDefaults = (
 	externalsPresets,
 	{ targetProperties }
@@ -800,7 +903,7 @@ const applyExternalsPresetsDefaults = (
 	);
 };
 
-// 对 Webpack.Config.loader 设置默认值
+// 对 Webpack.options.loader 设置默认值
 const applyLoaderDefaults = (loader, { targetProperties }) => {
 	F(loader, "target", () => {
 		if (targetProperties) {
@@ -817,7 +920,7 @@ const applyLoaderDefaults = (loader, { targetProperties }) => {
 	});
 };
 
-// 对 Webpack.Config.node 设置默认值
+// 对 Webpack.options.node 设置默认值
 const applyNodeDefaults = (node, { targetProperties }) => {
 	if (node === false) return;
 	F(node, "global", () => {
@@ -834,7 +937,7 @@ const applyNodeDefaults = (node, { targetProperties }) => {
 	});
 };
 
-// 对 Webpack.Config.performance 设置默认值
+// 对 Webpack.options.performance 设置默认值
 const applyPerformanceDefaults = (performance, { production }) => {
 	if (performance === false) return;
 	D(performance, "maxAssetSize", 250000);
@@ -842,7 +945,7 @@ const applyPerformanceDefaults = (performance, { production }) => {
 	F(performance, "hints", () => (production ? "warning" : false));
 };
 
-// 对 Webpack.Config.optimization 设置默认值
+// 对 Webpack.options.optimization 设置默认值
 const applyOptimizationDefaults = (
 	optimization,
 	{ production, development, records }
@@ -923,7 +1026,7 @@ const applyOptimizationDefaults = (
 	}
 };
 
-// 返回 Webpack.Config.resolve 默认选项
+// 返回 Webpack.options.resolve 默认选项
 const getResolveDefaults = ({ cache, context, targetProperties, mode }) => {
 	/** @type {string[]} */
 	const conditions = ["webpack"];
@@ -995,7 +1098,7 @@ const getResolveDefaults = ({ cache, context, targetProperties, mode }) => {
 	return resolveOptions;
 };
 
-// 返回 Webpack.Config.resolveLoader 默认选项
+// 返回 Webpack.options.resolveLoader 默认选项
 const getResolveLoaderDefaults = ({ cache }) => {
 	const resolveOptions = {
 		cache,
@@ -1009,7 +1112,7 @@ const getResolveLoaderDefaults = ({ cache }) => {
 	return resolveOptions;
 };
 
-// 对 Webpack.Config.infrastructureLogging 设置默认值
+// 对 Webpack.options.infrastructureLogging 设置默认值
 const applyInfrastructureLoggingDefaults = infrastructureLogging => {
 	F(infrastructureLogging, "stream", () => process.stderr);
 	const tty =

@@ -35,7 +35,7 @@ Module has these incoming connections: ${Array.from(
 class RuntimeTemplate {
 	constructor(compilation, outputOptions, requestShortener) {
 		this.compilation = compilation;
-		// Webpack.Config.output
+		// Webpack.options.output
 		this.outputOptions = outputOptions || {};
 		// 路径缩短器
 		this.requestShortener = requestShortener;

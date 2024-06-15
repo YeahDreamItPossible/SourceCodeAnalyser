@@ -11,14 +11,13 @@ const Template = require("../Template");
 
 /** @typedef {import("./RemoteModule")} RemoteModule */
 
+// 远程运行时模块
 class RemoteRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("remotes loading");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
+	// 生成代码
 	generate() {
 		const { compilation, chunkGraph } = this;
 		const { runtimeTemplate, moduleGraph } = compilation;

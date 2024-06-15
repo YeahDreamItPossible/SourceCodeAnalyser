@@ -21,7 +21,7 @@ const devtoolWarning = new RawSource(`/*
  */
 `);
 
-// Webpack.Config.devtool = `eval-[nosources-][cheap-[module]]-source-map`
+// Webpack.options.devtool = `eval-[nosources-][cheap-[module]]-source-map`
 class EvalSourceMapDevToolPlugin {
 	constructor(inputOptions) {
 		let options;

@@ -1,6 +1,6 @@
 "use strict";
 
-// 根据 Webpack.Config.optimization.flagIncludedChunks 注册该插件
+// 根据 Webpack.options.optimization.flagIncludedChunks 注册该插件
 // 默认 production 模式下启用 
 // 添加 Chunk.prototype.ids 
 // 告知 webpack 确定和标记出作为其他 chunk 子集的那些 chunk，

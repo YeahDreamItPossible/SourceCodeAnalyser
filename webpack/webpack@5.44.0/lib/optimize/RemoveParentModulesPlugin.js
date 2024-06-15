@@ -7,7 +7,7 @@ const { intersect } = require("../util/SetHelpers");
 // 如果模块已经包含在所有父级模块中，告知 webpack 从 chunk 中检测出这些模块，或移除这些模块。
 // 将 optimization.removeAvailableModules 设置为 true 以启用这项优化。
 // 在 production 模式 中默认会被开启。
-// 根据 Webpack.Config.optimization.removeAvailableModules 注册该插件
+// 根据 Webpack.options.optimization.removeAvailableModules 注册该插件
 class RemoveParentModulesPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap("RemoveParentModulesPlugin", compilation => {

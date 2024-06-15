@@ -18,7 +18,7 @@ const validate = createSchemaValidation(
 
 // 给 Module 对应的 ChunkGraphModule 设置 id
 // 即： chunkGraphModule.id = xx
-// 根据 Webpack.Config.optimization.moduleIds = 'size' 注册该插件
+// 根据 Webpack.options.optimization.moduleIds = 'size' 注册该插件
 class OccurrenceModuleIdsPlugin {
 	constructor(options = {}) {
 		validate(options);

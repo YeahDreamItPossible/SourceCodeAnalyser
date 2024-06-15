@@ -16,7 +16,7 @@ const { HarmonyStarExportsList } = HarmonyExportImportedSpecifierDependency;
 // ES模块 export 语句 语法分析器 插件
 module.exports = class HarmonyExportDependencyParserPlugin {
 	constructor(options) {
-		// Webpack.Config.module.parser.javascript.strictExportPresence
+		// Webpack.options.module.parser.javascript.strictExportPresence
 		// 默认值: false
 		// 将缺失的导出提示成错误而不是警告
 		this.strictExportPresence = options.strictExportPresence;

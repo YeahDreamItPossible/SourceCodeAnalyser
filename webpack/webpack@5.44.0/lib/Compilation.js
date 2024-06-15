@@ -832,9 +832,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 当获取 compilation.errors 时
 			// 当调用 compilation.errors 时
 			processErrors: new SyncWaterfallHook(["errors"]),
-			// 对 Webpack.Config.stats.preset 属性进行加工处理
+			// 对 Webpack.options.stats.preset 属性进行加工处理
 			statsPreset: new HookMap(() => new SyncHook(["options", "context"])),
-			// 对 Webpack.Config.stats 属性进行加工处理
+			// 对 Webpack.options.stats 属性进行加工处理
 			statsNormalize: new SyncHook(["options", "context"]),
 			// 当创建完 StatsFactory 的实例后
 			statsFactory: new SyncHook(["statsFactory", "options"]),
@@ -847,7 +847,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 
 		// 编译过程名称
-		// Webpack.Config.name
+		// Webpack.options.name
 		this.name = undefined;
 		// 编译过程开始时间(时间戳 以ms为单位)
 		this.startTime = undefined;
@@ -880,14 +880,14 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		this.logger = this.getLogger("webpack.Compilation");
 
-		// Webpack.Config
+		// Webpack.options
 		const options = compiler.options;
 		this.options = options;
-		// Webpack.Config.output
+		// Webpack.options.output
 		this.outputOptions = options && options.output;
-		// Webpack.Config.bail
+		// Webpack.options.bail
 		this.bail = (options && options.bail) || false;
-		// Webpack.Config.profile
+		// Webpack.options.profile
 		this.profile = (options && options.profile) || false;
 
 		// 模板
@@ -1089,16 +1089,16 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		return new Stats(this);
 	}
 
-	// 标准化 Webpack.Config.stats 属性
+	// 标准化 Webpack.options.stats 属性
 	createStatsOptions(optionsOrPreset, context = {}) {
-		// Webpack.Config.stats = 'String' || 'Boolean'
+		// Webpack.options.stats = 'String' || 'Boolean'
 		if (
 			typeof optionsOrPreset === "boolean" ||
 			typeof optionsOrPreset === "string"
 		) {
 			optionsOrPreset = { preset: optionsOrPreset };
 		}
-		// Webpack.Config.stats = 'Object'
+		// Webpack.options.stats = 'Object'
 		if (typeof optionsOrPreset === "object" && optionsOrPreset !== null) {
 			const options = {};
 			for (const key in optionsOrPreset) {
@@ -1258,7 +1258,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	}
 
 	// 缓存module
-	// 1. 根据 Webpack.Config.Cache.type 缓存模块
+	// 1. 根据 Webpack.options.Cache.type 缓存模块
 	// 2. compilation.modules
 	// 3. compilation._modules
 	// 4. ModuleGraph.setModuleGraphForModule(module, this.moduleGraph)
@@ -1276,7 +1276,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			currentProfile.markRestoringStart();
 		}
 
-		// 根据Webpack.Config.Cache.type来缓存module
+		// 根据Webpack.options.Cache.type来缓存module
 		this._modulesCache.get(identifier, null, (err, cacheModule) => {
 			if (err) return callback(new ModuleRestoreError(module, err));
 
@@ -2284,7 +2284,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// Map<Entrypoint, Module[]>
 		const chunkGraphInit = new Map();
 
-		// 根据 Webpack.Config.Entry 创建 Chunk 和 ChunkGroup
+		// 根据 Webpack.options.Entry 创建 Chunk 和 ChunkGroup
 		// 绑定 Chunk 与 ChunkGroup 关联关系
 		// Chunk._groups.push(ChunkGroup)
 		// ChunkGroup.chunks.push(chunk)
@@ -2348,9 +2348,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		}
 
-		// 根据 Webpack.Config.Entry.runtime 来绑定 ChunkGroup._runtimeChunk
+		// 根据 Webpack.options.Entry.runtime 来绑定 ChunkGroup._runtimeChunk
 		// 根据 Wepback.Config.Entry.dependOn 来绑定 ChunkGroup 的层级关系
-		//  Webpack.Config.Entry.dependOn 和 Webpack.Config.Entry.runtime
+		//  Webpack.options.Entry.dependOn 和 Webpack.options.Entry.runtime
 		const runtimeChunks = new Set();
 		outer: for (const [
 			name,
@@ -2358,7 +2358,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				options: { dependOn, runtime }
 			}
 		] of this.entries) {
-			// webpack.Config.Entry.dependOn 和 Webpack.Config.Entry.runtime 不允许同时出现
+			// webpack.Config.Entry.dependOn 和 Webpack.options.Entry.runtime 不允许同时出现
 			if (dependOn && runtime) {
 				const err =
 					new WebpackError(`Entrypoint '${name}' has 'dependOn' and 'runtime' specified. This is not valid.
@@ -3069,6 +3069,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			new Set([RuntimeGlobals.requireScope])
 		);
 
+		// 运行时模块不要 ids
 		// runtime modules don't need ids
 		chunkGraph.setModuleId(module, "");
 

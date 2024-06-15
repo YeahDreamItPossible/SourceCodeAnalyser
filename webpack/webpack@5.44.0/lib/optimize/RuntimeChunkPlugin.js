@@ -2,7 +2,7 @@
 
 // 将 optimization.runtimeChunk 设置为 true 或 'multiple'，
 // 会为每个入口添加一个只含有 runtime 的额外 chunk。
-// 根据 Webpack.Config.optimization.runtimeChunk 注册该插件
+// 根据 Webpack.options.optimization.runtimeChunk 注册该插件
 class RuntimeChunkPlugin {
 	constructor(options) {
 		this.options = {

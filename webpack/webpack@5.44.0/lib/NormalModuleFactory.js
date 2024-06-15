@@ -252,7 +252,7 @@ class NormalModuleFactory extends ModuleFactory {
 		this.context = context || "";
 		this.fs = fs;
 
-		// 用户自定义语法解析器(Webpack.Config.Module.parser)
+		// 用户自定义语法解析器(Webpack.options.Module.parser)
 		this._globalParserOptions = options.parser;
 		// 用户自定义代码生成器(Wepback.Config.Module.generator)
 		this._globalGeneratorOptions = options.generator;
@@ -471,7 +471,7 @@ class NormalModuleFactory extends ModuleFactory {
 						stringifyLoadersAndResource(loaders, resourceData.resource);
 					// 路径解析器返回的路径信息
 					const resourceDataForRules = matchResourceData || resourceData;
-					// 通过匹配规则Webpack.Config.Module.Rule来获取匹配的loaders
+					// 通过匹配规则Webpack.options.Module.Rule来获取匹配的loaders
 					const result = this.ruleSet.exec({
 						resource: resourceDataForRules.path,
 						realResource: resourceData.path,

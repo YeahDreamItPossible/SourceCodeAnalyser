@@ -4,7 +4,7 @@ const { STAGE_BASIC } = require("../OptimizationStages");
 const { runtimeEqual } = require("../util/runtime");
 
 // 合并含有相同模块的重复块
-// 根据 Webpack.Config.optimization.mergeDuplicateChunks 注册该插件
+// 根据 Webpack.options.optimization.mergeDuplicateChunks 注册该插件
 class MergeDuplicateChunksPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

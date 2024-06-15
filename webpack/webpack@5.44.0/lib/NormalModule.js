@@ -238,7 +238,7 @@ class NormalModule extends Module {
 	}) {
 		super(type, getContext(resource), layer);
 
-		// 内部请求(Webpack 内部对 原始请求 内部处理后,  将loaders路径和资源路径组合后的绝对路径)
+		// 请求(Webpack 内部对 原始请求 内部处理后,  将loaders路径和资源路径组合后的绝对路径)
 		// 示例: 
 		// /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang! +
 		// /path/laoders/first.js???ruleSet[1].rules[0]!/path/loaders/second.js?ruleSet[1].rules[1]! +
@@ -275,7 +275,7 @@ class NormalModule extends Module {
 		/**
 		 * NormalModuleFactory 筛选后的loaders
 		 * 1. 模块加载路径解析出来的loaders
-		 * 2. 根据 Webpack.Config.Module.Rule 匹配出来的loaders
+		 * 2. 根据 Webpack.options.Module.Rule 匹配出来的loaders
 		 */
 		this.loaders = loaders;
 		if (resolveOptions !== undefined) {
@@ -817,7 +817,7 @@ class NormalModule extends Module {
 		this.addError(error);
 	}
 
-	// 根据 Webpack.Config.module.noParse 字段值 判断当前资源路径是否满足匹配
+	// 根据 Webpack.options.module.noParse 字段值 判断当前资源路径是否满足匹配
 	applyNoParseRule(rule, content) {
 		// must start with "rule" if rule is a string
 		if (typeof rule === "string") {
@@ -831,7 +831,7 @@ class NormalModule extends Module {
 		return rule.test(content);
 	}
 
-	// 根据 Webpack.Config.module.noParse 字段来判断当前资源是否需要经过语法分析
+	// 根据 Webpack.options.module.noParse 字段来判断当前资源是否需要经过语法分析
 	shouldPreventParsing(noParseRule, request) {
 		if (!noParseRule) {
 			return false;

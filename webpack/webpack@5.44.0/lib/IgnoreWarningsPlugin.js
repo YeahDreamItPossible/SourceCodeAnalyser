@@ -3,7 +3,7 @@
 // 根据 特定的匹配规则 来忽视webpack警告
 class IgnoreWarningsPlugin {
 	constructor(ignoreWarnings) {
-		// Webpack.Config.ignoreWarnings
+		// Webpack.options.ignoreWarnings
 		this._ignoreWarnings = ignoreWarnings;
 	}
 

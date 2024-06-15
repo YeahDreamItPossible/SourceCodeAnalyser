@@ -1906,14 +1906,14 @@ const MERGER = {
 	"compilation.namedChunkGroups": mergeToObject
 };
 
-// 对 Webpack.Config.stats 字段 注册插件
+// 对 Webpack.options.stats 字段 注册插件
 class DefaultStatsFactoryPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap("DefaultStatsFactoryPlugin", compilation => {
 			compilation.hooks.statsFactory.tap(
 				"DefaultStatsFactoryPlugin",
 				(stats, options, context) => {
-					// options: Webpack.Config.stats.[xx]
+					// options: Webpack.options.stats.[xx]
 
 					// 提取器
 					iterateConfig(SIMPLE_EXTRACTORS, options, (hookFor, fn) => {
@@ -1983,7 +1983,7 @@ class DefaultStatsFactoryPlugin {
 						stats.hooks.merge.for(key).tap("DefaultStatsFactoryPlugin", merger);
 					}
 
-					// Webpack.Config.stats.children
+					// Webpack.options.stats.children
 					if (options.children) {
 						if (Array.isArray(options.children)) {
 							stats.hooks.getItemFactory

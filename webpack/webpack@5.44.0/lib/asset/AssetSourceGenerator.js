@@ -11,7 +11,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const TYPES = new Set(["javascript"]);
 
 // 导出资源的源代码 通过raw-loader实现
-// Webpack.Config.module.Rule.type = 'asset/source' 
+// Webpack.options.module.Rule.type = 'asset/source' 
 class AssetSourceGenerator extends Generator {
 	/**
 	 * @param {NormalModule} module module for which the code should be generated

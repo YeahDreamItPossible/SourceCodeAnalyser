@@ -257,8 +257,8 @@ class Template {
 				source: renderModule(module) || "false"
 			};
 		});
-		// 当 Webpack.Config.optimization.moduleIds = 'natural' 时
-		// 或 Webpack.Config.optimization.chunkIds = 'natural' 时
+		// 当 Webpack.options.optimization.moduleIds = 'natural' 时
+		// 或 Webpack.options.optimization.chunkIds = 'natural' 时
 		// module.id 是 number
 		const bounds = Template.getModulesArrayBounds(allModules);
 		// 生成数组的形式

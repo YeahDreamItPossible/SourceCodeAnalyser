@@ -13,7 +13,7 @@ const {
 } = require("./StartupHelpers");
 
 // 非运行时Chunk格式
-// Webpack.Config.output.chunkFormat = 'commonjs'
+// Webpack.options.output.chunkFormat = 'commonjs'
 class CommonJsChunkFormatPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

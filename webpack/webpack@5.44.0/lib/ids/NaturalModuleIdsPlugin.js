@@ -7,7 +7,7 @@ const { assignAscendingModuleIds } = require("./IdHelpers");
 
 // 给 Module 对应的 ChunkGraphModule 设置 id(按使用顺序的数字 id)
 // 即： chunkGraphModule.id = Number(从 0 开始)
-// 根据 Webpack.Config.optimization.moduleIds = 'natural' 注册该插件
+// 根据 Webpack.options.optimization.moduleIds = 'natural' 注册该插件
 class NaturalModuleIdsPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap("NaturalModuleIdsPlugin", compilation => {

@@ -2,7 +2,7 @@
 
 const Cache = require("../Cache");
 
-// 根据 Webpack.Config.cache.type = memory 使用该插件
+// 根据 Webpack.options.cache.type = memory 使用该插件
 // 带有垃圾回收的内存缓存策略
 class MemoryWithGcCachePlugin {
 	constructor({ maxGenerations }) {

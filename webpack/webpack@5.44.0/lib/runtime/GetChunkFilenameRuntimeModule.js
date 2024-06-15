@@ -16,6 +16,7 @@ const { first } = require("../util/SetHelpers");
 
 /** @typedef {function(PathData, AssetInfo=): string} FilenameFunction */
 
+// 运行时模块之返回块文件名
 class GetChunkFilenameRuntimeModule extends RuntimeModule {
 	/**
 	 * @param {string} contentType the contentType to use the content hash for
@@ -32,9 +33,6 @@ class GetChunkFilenameRuntimeModule extends RuntimeModule {
 		this.allChunks = allChunks;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const {
 			global,

@@ -11,7 +11,7 @@ const {
 } = require("./StartupHelpers");
 
 // 非运行时Chunk格式
-// Webpack.Config.output.chunkFormat = 'array-push'
+// Webpack.options.output.chunkFormat = 'array-push'
 class ArrayPushCallbackChunkFormatPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

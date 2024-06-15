@@ -33,9 +33,9 @@ const resolveLayer = (obj, layer) => {
 
 class ExternalModuleFactoryPlugin {
 	constructor(type, externals) {
-		// Webpack.Config.externalsType
+		// Webpack.options.externalsType
 		this.type = type;
-		// Webpack.Config.externals
+		// Webpack.options.externals
 		this.externals = externals;
 	}
 
@@ -100,13 +100,13 @@ class ExternalModuleFactoryPlugin {
 				};
 
 				const handleExternals = (externals, callback) => {
-					// Webpack.Config.externals = 'String'
+					// Webpack.options.externals = 'String'
 					if (typeof externals === "string") {
 						if (externals === dependency.request) {
 							return handleExternal(dependency.request, undefined, callback);
 						}
 					} 
-					// Webpack.Config.externals = 'Array'
+					// Webpack.options.externals = 'Array'
 					else if (Array.isArray(externals)) {
 						let i = 0;
 						const next = () => {
@@ -134,13 +134,13 @@ class ExternalModuleFactoryPlugin {
 						next();
 						return;
 					} 
-					// Webpack.Config.externals = 'RegExp'
+					// Webpack.options.externals = 'RegExp'
 					else if (externals instanceof RegExp) {
 						if (externals.test(dependency.request)) {
 							return handleExternal(dependency.request, undefined, callback);
 						}
 					} 
-					// Webpack.Config.externals = 'Function'
+					// Webpack.options.externals = 'Function'
 					else if (typeof externals === "function") {
 						const cb = (err, value, type) => {
 							if (err) return callback(err);
@@ -213,7 +213,7 @@ class ExternalModuleFactoryPlugin {
 						}
 						return;
 					} 
-					// Webpack.Config.externals = 'Object'
+					// Webpack.options.externals = 'Object'
 					else if (typeof externals === "object") {
 						const resolvedExternals = resolveLayer(
 							externals,

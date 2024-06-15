@@ -10,7 +10,7 @@ const {
 } = require("./IdHelpers");
 
 // 给 chunk.id 设置 模块短路劲(相对路径)
-// 根据 Webpack.Config.optimization.chunkIds = 'named' 注册该插件
+// 根据 Webpack.options.optimization.chunkIds = 'named' 注册该插件
 class NamedChunkIdsPlugin {
 	constructor(options) {
 		this.delimiter = (options && options.delimiter) || "-";

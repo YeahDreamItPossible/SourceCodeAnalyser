@@ -284,12 +284,12 @@ const NORMALIZER = {
 };
 
 /**
- * 对 Webpack.Config.stats 值 进行加工处理
- * 1. 如果 Webpack.Config.stats = 'String' 表示预设(preset)
+ * 对 Webpack.options.stats 值 进行加工处理
+ * 1. 如果 Webpack.options.stats = 'String' 表示预设(preset)
  * 		每种预设(preset) 都对应着某种默认详细配置
- * 2. 如果 Webpack.Config.stats = 'Object' 表示用户自定义详细配置
+ * 2. 如果 Webpack.options.stats = 'Object' 表示用户自定义详细配置
  */
-// 针对 Webpack.Config.stats 字段注册插件
+// 针对 Webpack.options.stats 字段注册插件
 // 将 默认配置 合并到 用户自定义配置中
 // 1. 先将 默认预设中的默认配置 合并到 用户自定义配置中
 // 2. 再将 特殊的默认配置 合并到 用户自定义配置中

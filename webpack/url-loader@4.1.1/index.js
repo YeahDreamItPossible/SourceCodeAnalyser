@@ -97,7 +97,7 @@ function getEncodedData(generator, mimetype, encoding, content, resourcePath) {
  */
 function loader(content) {
   // 获取当前Loader Options
-  // 该选项注册在Webpack.Config Module.Rule.options中
+  // 该选项注册在Webpack.options Module.Rule.options中
   const options = (0, _loaderUtils.getOptions)(this) || {};
 
   // 验证

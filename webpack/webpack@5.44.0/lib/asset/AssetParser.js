@@ -2,9 +2,9 @@
 
 const Parser = require("../Parser");
 
-// Webpack.Config.module.Rule.type = 'asset'
-// Webpack.Config.module.Rule.type = 'asset/resource'
-// Webpack.Config.module.Rule.type = 'asset/inline'
+// Webpack.options.module.Rule.type = 'asset'
+// Webpack.options.module.Rule.type = 'asset/resource'
+// Webpack.options.module.Rule.type = 'asset/inline'
 class AssetParser extends Parser {
 	constructor(dataUrlCondition) {
 		super();

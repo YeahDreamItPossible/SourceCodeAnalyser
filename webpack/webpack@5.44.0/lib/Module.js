@@ -26,7 +26,7 @@ const makeSerializable = require("./util/makeSerializable");
  * BuildInfo(打包信息)
  * strict: 是否使用严格模式
  * topLevelDeclarations:
- * module: Webpack.Config.output.module
+ * module: Webpack.options.output.module
  * cacheable: false, // 表示当前 Module 能否被缓存
  * parsed: true, // 表示当前 Module 已经被语法分析过
  * fileDependencies: undefined, // 
@@ -75,8 +75,8 @@ class Module extends DependenciesBlock {
 		// 示例: /path/myProject/src
 		this.context = context;
 		// 图层
-		// 必须得 Webpack.Config.experiments.layers = true 时
-		// Webpack.Config.Entry.layer 或者 Webpack.Config.module.Rule.layer 配置
+		// 必须得 Webpack.options.experiments.layers = true 时
+		// Webpack.options.Entry.layer 或者 Webpack.options.module.Rule.layer 配置
 		this.layer = layer;
 		// 标识: 标识当前module是否需要Id
 		this.needId = true;

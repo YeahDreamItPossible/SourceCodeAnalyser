@@ -8,6 +8,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
+// 运行时模块之
 class AsyncModuleRuntimeModule extends HelperRuntimeModule {
 	constructor() {
 		super("async module");

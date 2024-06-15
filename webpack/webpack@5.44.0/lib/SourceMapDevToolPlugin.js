@@ -106,23 +106,23 @@ const getTaskForFile = (
 };
 
 // SourceMap 
-// Webpack.Config.devtool = [inline-|hidden-][nosources-][cheap-[module-]]-source-map
+// Webpack.options.devtool = [inline-|hidden-][nosources-][cheap-[module-]]-source-map
 class SourceMapDevToolPlugin {
 	constructor(options = {}) {
 		validate(options);
-		// Webpack.Config.output.sourceMapFilename
+		// Webpack.options.output.sourceMapFilename
 		this.sourceMapFilename = options.filename;
 		this.sourceMappingURLComment =
 			options.append === false
 				? false
 				: options.append || "\n//# source" + "MappingURL=[url]";
-		// Webpack.Config.output.devtoolModuleFilenameTemplate
+		// Webpack.options.output.devtoolModuleFilenameTemplate
 		this.moduleFilenameTemplate = options.moduleFilenameTemplate || "webpack://[namespace]/[resourcePath]";
-		// Webpack.Config.output.devtoolFallbackModuleFilenameTemplate
+		// Webpack.options.output.devtoolFallbackModuleFilenameTemplate
 		this.fallbackModuleFilenameTemplate =
 			options.fallbackModuleFilenameTemplate ||
 			"webpack://[namespace]/[resourcePath]?[hash]";
-		// Webpack.Config.output.devtoolNamespace
+		// Webpack.options.output.devtoolNamespace
 		this.namespace = options.namespace || "";
 		this.options = options;
 	}

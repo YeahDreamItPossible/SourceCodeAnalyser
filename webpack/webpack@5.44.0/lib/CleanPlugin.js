@@ -253,7 +253,7 @@ class CleanPlugin {
 		return hooks;
 	}
 
-	// Webpack.Config.output.clean
+	// Webpack.options.output.clean
 	constructor(options = {}) {
 		validate(options);
 		this.options = { dry: false, ...options };

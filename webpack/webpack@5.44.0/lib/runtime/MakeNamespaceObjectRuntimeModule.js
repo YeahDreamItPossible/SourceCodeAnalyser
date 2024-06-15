@@ -4,6 +4,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
+// 运行时模块之定义输出对象为 ESModule
 // __webpack_require__.r
 class MakeNamespaceObjectRuntimeModule extends HelperRuntimeModule {
 	constructor() {

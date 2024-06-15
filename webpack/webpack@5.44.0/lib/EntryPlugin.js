@@ -5,11 +5,11 @@ const EntryDependency = require("./dependencies/EntryDependency");
 // 入口插件
 class EntryPlugin {
 	constructor(context, entry, options) {
-		// Webpack.Config.context
+		// Webpack.options.context
 		this.context = context;
-		// Webpack.Config.entry.descriptor.import
+		// Webpack.options.entry.descriptor.import
 		this.entry = entry;
-		// Webpack.Config.entry.descriptor
+		// Webpack.options.entry.descriptor
 		this.options = options || "";
 	}
 

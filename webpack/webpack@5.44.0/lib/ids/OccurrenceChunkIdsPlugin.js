@@ -14,7 +14,7 @@ const validate = createSchemaValidation(
 );
 
 // 给 chunk.id 设置 xx
-// 根据 Webpack.Config.optimization.chunkIds = ('size' || 'total-size') 注册该插件
+// 根据 Webpack.options.optimization.chunkIds = ('size' || 'total-size') 注册该插件
 class OccurrenceChunkIdsPlugin {
 	constructor(options = {}) {
 		validate(options);

@@ -55,7 +55,7 @@ const builtins = [
 	"pnpapi"
 ];
 
-// Webpack.Config.externalsPresets.node
+// Webpack.options.externalsPresets.node
 class NodeTargetPlugin {
 	apply(compiler) {
 		new ExternalsPlugin("node-commonjs", builtins).apply(compiler);

@@ -1,15 +1,6 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const createSchemaValidation = require("./util/create-schema-validation");
-
-/** @typedef {import("../declarations/plugins/WatchIgnorePlugin").WatchIgnorePluginOptions} WatchIgnorePluginOptions */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./util/fs").WatchFileSystem} WatchFileSystem */
 
 const validate = createSchemaValidation(
 	require("../schemas/plugins/WatchIgnorePlugin.check.js"),
@@ -23,10 +14,6 @@ const validate = createSchemaValidation(
 const IGNORE_TIME_ENTRY = "ignore";
 
 class IgnoringWatchFileSystem {
-	/**
-	 * @param {WatchFileSystem} wfs original file system
-	 * @param {(string|RegExp)[]} paths ignored paths
-	 */
 	constructor(wfs, paths) {
 		this.wfs = wfs;
 		this.paths = paths;
@@ -93,20 +80,13 @@ class IgnoringWatchFileSystem {
 	}
 }
 
+// 配置 观察模式 下 应忽视的文件
 class WatchIgnorePlugin {
-	/**
-	 * @param {WatchIgnorePluginOptions} options options
-	 */
 	constructor(options) {
 		validate(options);
 		this.paths = options.paths;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.afterEnvironment.tap("WatchIgnorePlugin", () => {
 			compiler.watchFileSystem = new IgnoringWatchFileSystem(

@@ -1,13 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ModuleDependency = require("../dependencies/ModuleDependency");
 const makeSerializable = require("../util/makeSerializable");
 
+// 远程 外部扩展 依赖
 class RemoteToExternalDependency extends ModuleDependency {
 	constructor(request) {
 		super(request);

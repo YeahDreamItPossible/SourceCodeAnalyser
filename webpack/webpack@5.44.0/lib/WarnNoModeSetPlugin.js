@@ -2,7 +2,7 @@
 
 const NoModeWarning = require("./NoModeWarning");
 
-// 警告 Webpack.Config.mode 字段缺失
+// 警告: Webpack.options.mode 字段缺失
 class WarnNoModeSetPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap("WarnNoModeSetPlugin", compilation => {

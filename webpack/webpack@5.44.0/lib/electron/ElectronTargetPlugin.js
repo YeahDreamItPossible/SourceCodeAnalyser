@@ -3,9 +3,9 @@
 const ExternalsPlugin = require("../ExternalsPlugin");
 
 
-// Webpack.Config.externalsPresets.electronMain
-// Webpack.Config.externalsPresets.electronPreload
-// Webpack.Config.externalsPresets.electronRenderer
+// Webpack.options.externalsPresets.electronMain
+// Webpack.options.externalsPresets.electronPreload
+// Webpack.options.externalsPresets.electronRenderer
 class ElectronTargetPlugin {
 	constructor(context) {
 		this._context = context;

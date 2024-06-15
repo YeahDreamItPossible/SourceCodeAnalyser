@@ -3,7 +3,7 @@
 const { STAGE_BASIC, STAGE_ADVANCED } = require("../OptimizationStages");
 
 // 移除空块
-// 根据 Webpack.Config.optimization.removeEmptyChunks 注册该插件
+// 根据 Webpack.options.optimization.removeEmptyChunks 注册该插件
 class RemoveEmptyChunksPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap("RemoveEmptyChunksPlugin", compilation => {

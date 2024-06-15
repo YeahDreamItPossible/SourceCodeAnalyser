@@ -19,7 +19,7 @@ const validate = createSchemaValidation(
 
 // 给 Module 对应的 ChunkGraphModule 设置 id
 // 即： chunkGraphModule.id = 模块hash
-// 根据 Webpack.Config.optimization.moduleIds = 'hashed' 注册该插件
+// 根据 Webpack.options.optimization.moduleIds = 'hashed' 注册该插件
 class HashedModuleIdsPlugin {
 	constructor(options = {}) {
 		validate(options);

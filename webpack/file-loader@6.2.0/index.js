@@ -26,7 +26,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 // 将 文件 按照特定格式 输出到 特定目录 中
 function loader(content) {
   // 获取当前Loader options
-  // 该选项注册在Webpack.Config Module.Rule.options中
+  // 该选项注册在Webpack.options Module.Rule.options中
   const options = (0, _loaderUtils.getOptions)(this);
 
   // 验证

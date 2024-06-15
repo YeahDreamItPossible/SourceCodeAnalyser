@@ -507,8 +507,6 @@ DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule
 //
 DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule => AsyncModuleRuntimeModule
 //
-DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule => AsyncModuleRuntimeModule
-//
 DependenciesBlock => Module => ContextModule
 DependenciesBlock => Module => DllModule
 // TODO:

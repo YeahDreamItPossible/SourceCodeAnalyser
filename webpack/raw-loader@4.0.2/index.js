@@ -6,7 +6,7 @@ import schema from './options.json';
 // 将 资源内容 转换成 字符串
 export default function rawLoader(source) {
   // 获取当前Loader options
-  // 该选项注册在Webpack.Config Module.Rule.options中
+  // 该选项注册在Webpack.options Module.Rule.options中
   const options = getOptions(this);
 
   // 验证选项是否符合webpack options要求

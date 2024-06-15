@@ -4,19 +4,19 @@
  * 根据以下条件(condition)编译成对应的匹配规则条件
  * 匹配规则: { property: String, matchWhenEmpty: Boolean || Function, fn: Function}
  * 条件condition:
- * Webpack.Config.Module.Rule.test 
- * Webpack.Config.Module.Rule.schema
- * Webpack.Config.Module.Rule.mimetype
- * Webpack.Config.Module.Rule.dependency
- * Webpack.Config.Module.Rule.include
- * Webpack.Config.Module.Rule.exclude
- * Webpack.Config.Module.Rule.resouce
- * Webpack.Config.Module.Rule.resourceQuery
- * Webpack.Config.Module.Rule.resourceFragment
- * Webpack.Config.Module.Rule.realResource
- * Webpack.Config.Module.Rule.issuer
- * Webpack.Config.Module.Rule.compiler
- * Webpack.Config.Module.Rule.issuerLayer
+ * Webpack.options.Module.Rule.test 
+ * Webpack.options.Module.Rule.schema
+ * Webpack.options.Module.Rule.mimetype
+ * Webpack.options.Module.Rule.dependency
+ * Webpack.options.Module.Rule.include
+ * Webpack.options.Module.Rule.exclude
+ * Webpack.options.Module.Rule.resouce
+ * Webpack.options.Module.Rule.resourceQuery
+ * Webpack.options.Module.Rule.resourceFragment
+ * Webpack.options.Module.Rule.realResource
+ * Webpack.options.Module.Rule.issuer
+ * Webpack.options.Module.Rule.compiler
+ * Webpack.options.Module.Rule.issuerLayer
  */
 class BasicMatcherRulePlugin {
 	constructor(ruleProperty, dataProperty, invert) {

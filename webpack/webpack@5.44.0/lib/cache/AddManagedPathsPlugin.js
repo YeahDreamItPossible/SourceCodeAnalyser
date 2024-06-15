@@ -4,9 +4,9 @@
 // 
 class AddManagedPathsPlugin {
 	constructor(managedPaths, immutablePaths) {
-		// Webpack.Config.snap.managedPaths
+		// Webpack.options.snap.managedPaths
 		this.managedPaths = new Set(managedPaths);
-		// Webpack.Config.snap.immutablePaths
+		// Webpack.options.snap.immutablePaths
 		this.immutablePaths = new Set(immutablePaths);
 	}
 

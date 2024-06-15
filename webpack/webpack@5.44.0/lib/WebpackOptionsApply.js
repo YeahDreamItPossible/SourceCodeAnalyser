@@ -63,7 +63,7 @@ class WebpackOptionsApply extends OptionsApply {
 
 
 		// 排除依赖(以cdn方式引入的)
-		// Webpack.Config.externals
+		// Webpack.options.externals
 		if (options.externals) {
 			const ExternalsPlugin = require("./ExternalsPlugin");
 			new ExternalsPlugin(options.externalsType, options.externals).apply(
@@ -73,22 +73,22 @@ class WebpackOptionsApply extends OptionsApply {
 
 		// externals presets
 		// 为特定的 target 启用 externals 的 preset
-		// Webpack.Config.externalsPresets.node
+		// Webpack.options.externalsPresets.node
 		if (options.externalsPresets.node) {
 			const NodeTargetPlugin = require("./node/NodeTargetPlugin");
 			new NodeTargetPlugin().apply(compiler);
 		}
-		// Webpack.Config.externalsPresets.electronMain
+		// Webpack.options.externalsPresets.electronMain
 		if (options.externalsPresets.electronMain) {
 			const ElectronTargetPlugin = require("./electron/ElectronTargetPlugin");
 			new ElectronTargetPlugin("main").apply(compiler);
 		}
-		// Webpack.Config.externalsPresets.electronPreload
+		// Webpack.options.externalsPresets.electronPreload
 		if (options.externalsPresets.electronPreload) {
 			const ElectronTargetPlugin = require("./electron/ElectronTargetPlugin");
 			new ElectronTargetPlugin("preload").apply(compiler);
 		}
-		// Webpack.Config.externalsPresets.electronRenderer
+		// Webpack.options.externalsPresets.electronRenderer
 		if (options.externalsPresets.electronRenderer) {
 			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ElectronTargetPlugin = require("./electron/ElectronTargetPlugin");
@@ -103,17 +103,17 @@ class WebpackOptionsApply extends OptionsApply {
 			const ElectronTargetPlugin = require("./electron/ElectronTargetPlugin");
 			new ElectronTargetPlugin().apply(compiler);
 		}
-		// Webpack.Config.externalsPresets.nwjs
+		// Webpack.options.externalsPresets.nwjs
 		if (options.externalsPresets.nwjs) {
 			const ExternalsPlugin = require("./ExternalsPlugin");
 			new ExternalsPlugin("node-commonjs", "nw.gui").apply(compiler);
 		}
-		// Webpack.Config.externalsPresets.webAsync
+		// Webpack.options.externalsPresets.webAsync
 		if (options.externalsPresets.webAsync) {
 			const ExternalsPlugin = require("./ExternalsPlugin");
 			new ExternalsPlugin("import", /^(https?:\/\/|std:)/).apply(compiler);
 		} 
-		// Webpack.Config.externalsPresets.web
+		// Webpack.options.externalsPresets.web
 		else if (options.externalsPresets.web) {
 			//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 			const ExternalsPlugin = require("./ExternalsPlugin");
@@ -124,7 +124,7 @@ class WebpackOptionsApply extends OptionsApply {
 		new ChunkPrefetchPreloadPlugin().apply(compiler);
 
 		// 非运行时Chunk 的格式
-		// Webpack.Config.output.chunkFormat
+		// Webpack.options.output.chunkFormat
 		if (typeof options.output.chunkFormat === "string") {
 			switch (options.output.chunkFormat) {
 				case "array-push": {
@@ -150,7 +150,7 @@ class WebpackOptionsApply extends OptionsApply {
 		}
 
 		// Chunk 加载类型
-		// Webpack.Config.output.enabledChunkLoadingTypes
+		// Webpack.options.output.enabledChunkLoadingTypes
 		if (options.output.enabledChunkLoadingTypes.length > 0) {
 			for (const type of options.output.enabledChunkLoadingTypes) {
 				const EnableChunkLoadingPlugin = require("./javascript/EnableChunkLoadingPlugin");
@@ -158,7 +158,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
-		// Webpack.Config.output.enabledWasmLoadingTypes
+		// Webpack.options.output.enabledWasmLoadingTypes
 		if (options.output.enabledWasmLoadingTypes.length > 0) {
 			for (const type of options.output.enabledWasmLoadingTypes) {
 				const EnableWasmLoadingPlugin = require("./wasm/EnableWasmLoadingPlugin");
@@ -166,7 +166,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
-		// Webpack.Config.output.enabledLibraryTypes
+		// Webpack.options.output.enabledLibraryTypes
 		if (options.output.enabledLibraryTypes.length > 0) {
 			for (const type of options.output.enabledLibraryTypes) {
 				const EnableLibraryPlugin = require("./library/EnableLibraryPlugin");
@@ -174,7 +174,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
-		// Webpack.Config.output.pathinfo
+		// Webpack.options.output.pathinfo
 		// 告知 webpack 在 bundle 中引入「所包含模块信息」的相关注释
 		if (options.output.pathinfo) {
 			const ModuleInfoHeaderPlugin = require("./ModuleInfoHeaderPlugin");
@@ -183,7 +183,7 @@ class WebpackOptionsApply extends OptionsApply {
 			);
 		}
 
-		// Webpack.Config.output.clean
+		// Webpack.options.output.clean
 		if (options.output.clean) {
 			const CleanPlugin = require("./CleanPlugin");
 			new CleanPlugin(
@@ -191,7 +191,7 @@ class WebpackOptionsApply extends OptionsApply {
 			).apply(compiler);
 		}
 
-		// Webpack.Config.devtool
+		// Webpack.options.devtool
 		// [inline-|hidden-|eval-][nosources-][cheap-[module-]]source-map || eval
 		// Wepack.Config.devtool 字段值 只要包含 source-map 表示要生成 source-map JSON文件
 		// module cheap nosources 是用来对 source-map 文件内容进行筛选
@@ -265,7 +265,7 @@ class WebpackOptionsApply extends OptionsApply {
 			}
 		}
 
-		// Webpack.Config.experiments
+		// Webpack.options.experiments
 		if (options.experiments.syncWebAssembly) {
 			const WebAssemblyModulesPlugin = require("./wasm-sync/WebAssemblyModulesPlugin");
 			new WebAssemblyModulesPlugin({
@@ -367,14 +367,14 @@ class WebpackOptionsApply extends OptionsApply {
 			options.output.module
 		).apply(compiler);
 
-		// Webpack.Config.stats
+		// Webpack.options.stats
 		new DefaultStatsFactoryPlugin().apply(compiler);
 		new DefaultStatsPresetPlugin().apply(compiler);
 		new DefaultStatsPrinterPlugin().apply(compiler);
 
 		new JavascriptMetaInfoPlugin().apply(compiler);
 
-		// Webpack.Config.mode
+		// Webpack.options.mode
 		if (typeof options.mode !== "string") {
 			const WarnNoModeSetPlugin = require("./WarnNoModeSetPlugin");
 			new WarnNoModeSetPlugin().apply(compiler);
@@ -383,30 +383,30 @@ class WebpackOptionsApply extends OptionsApply {
 		// 
 		const EnsureChunkConditionsPlugin = require("./optimize/EnsureChunkConditionsPlugin");
 		new EnsureChunkConditionsPlugin().apply(compiler);
-		// Webpack.Config.optimization.removeAvailableModules
+		// Webpack.options.optimization.removeAvailableModules
 		if (options.optimization.removeAvailableModules) {
 			const RemoveParentModulesPlugin = require("./optimize/RemoveParentModulesPlugin");
 			new RemoveParentModulesPlugin().apply(compiler);
 		}
-		// Webpack.Config.optimization.removeEmptyChunks
+		// Webpack.options.optimization.removeEmptyChunks
 		// 移除空块
 		if (options.optimization.removeEmptyChunks) {
 			const RemoveEmptyChunksPlugin = require("./optimize/RemoveEmptyChunksPlugin");
 			new RemoveEmptyChunksPlugin().apply(compiler);
 		}
-		// Webpack.Config.optimization.mergeDuplicateChunks
+		// Webpack.options.optimization.mergeDuplicateChunks
 		// 合并重复块
 		if (options.optimization.mergeDuplicateChunks) {
 			const MergeDuplicateChunksPlugin = require("./optimize/MergeDuplicateChunksPlugin");
 			new MergeDuplicateChunksPlugin().apply(compiler);
 		}
-		// Webpack.Config.optimization.flagIncludedChunks
+		// Webpack.options.optimization.flagIncludedChunks
 		// 
 		if (options.optimization.flagIncludedChunks) {
 			const FlagIncludedChunksPlugin = require("./optimize/FlagIncludedChunksPlugin");
 			new FlagIncludedChunksPlugin().apply(compiler);
 		}
-		// Webpack.Config.optimization.sideEffects
+		// Webpack.options.optimization.sideEffects
 		// 告诉 webpack 去辨识 package.json 中的 sideEffects 标记或规则，
 		// 以跳过那些当导出不被使用且被标记为不包含副作用的模块
 		if (options.optimization.sideEffects) {
@@ -415,13 +415,13 @@ class WebpackOptionsApply extends OptionsApply {
 				options.optimization.sideEffects === true
 			).apply(compiler);
 		}
-		// Webpack.Config.optimization.providedExports
+		// Webpack.options.optimization.providedExports
 		// 告知 webpack 去确定那些由模块提供的导出内容，为 export * from ... 生成更多高效的代码。
 		if (options.optimization.providedExports) {
 			const FlagDependencyExportsPlugin = require("./FlagDependencyExportsPlugin");
 			new FlagDependencyExportsPlugin().apply(compiler);
 		}
-		// Webpack.Config.optimization.usedExports
+		// Webpack.options.optimization.usedExports
 		// 告诉 webpack 去决定每个模块的到处内容是否被使用
 		// 这首先取决于 optimization.providedExports 选项是否被启用
 		if (options.optimization.usedExports) {
@@ -572,6 +572,7 @@ class WebpackOptionsApply extends OptionsApply {
 			new SizeLimitsPlugin(options.performance).apply(compiler);
 		}
 
+		// 模板路径
 		new TemplatedPathPlugin().apply(compiler);
 
 		new RecordIdsPlugin({

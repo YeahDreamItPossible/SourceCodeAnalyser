@@ -34,11 +34,11 @@ const workerIndexMap = new WeakMap();
 // 
 class WorkerPlugin {
 	constructor(chunkLoading, wasmLoading, module) {
-		// Webpack.Config.output.workerChunkLoading
+		// Webpack.options.output.workerChunkLoading
 		this._chunkLoading = chunkLoading;
-		// Webpack.Config.output.workerWasmLoading
+		// Webpack.options.output.workerWasmLoading
 		this._wasmLoading = wasmLoading;
-		// Webpack.Config.output.module
+		// Webpack.options.output.module
 		this._module = module;
 	}
 	
@@ -146,8 +146,8 @@ class WorkerPlugin {
 				};
 
 				const parserPlugin = (parser, parserOptions) => {
-					// 当 Webpack.Config.module.parser.['javascript/auto'].work = false 时
-					// 当 Webpack.Config.module.parser.['javascript/esm'].work = false 时
+					// 当 Webpack.options.module.parser.['javascript/auto'].work = false 时
+					// 当 Webpack.options.module.parser.['javascript/esm'].work = false 时
 					// 明确禁用 Worker
 					if (parserOptions.worker === false) return;
 					const options = !Array.isArray(parserOptions.worker)

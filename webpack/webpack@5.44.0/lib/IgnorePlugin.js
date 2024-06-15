@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const createSchemaValidation = require("./util/create-schema-validation");
@@ -65,11 +60,6 @@ class IgnorePlugin {
 		}
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.normalModuleFactory.tap("IgnorePlugin", nmf => {
 			nmf.hooks.beforeResolve.tap("IgnorePlugin", this.checkIgnore);

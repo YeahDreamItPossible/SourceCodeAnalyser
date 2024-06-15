@@ -62,84 +62,106 @@ class Compiler {
 		this.hooks = Object.freeze({
 			// 当根据选项 注册完不同的内置插件后
 			initialize: new SyncHook([]),
-
-			// 当要把 asset 输出到 output 目录前 返回 Boolean 告知是否要输出
+			// 返回 是否应该把 asset 输出到 output 目录前
+			// NoEmitOnErrorsPlugin
 			shouldEmit: new SyncBailHook(["compilation"]),
-			// 当compilation完成时
-			// 主要用于输出stats
+			// 当 完成一次完整的编译过程(compilation) 时 主要用于输出stats
+			// IdleFileCachePlugin
+			// ProfilingPlugin
 			done: new AsyncSeriesHook(["stats"]),
-			// 空调用
-			// 
+			// 当 完成一次完整的编译过程(compilation) 并缓存 编译过程结果后 主要用于输出stats
+			// MemoryWithGcCachePlugin
 			afterDone: new SyncHook(["stats"]),
-			// 
+			// 此 钩子 允许再进行一个构建
 			// 当调用完 compiler.hooks.done 后立即调用
 			additionalPass: new AsyncSeriesHook([]),
 			// 当开始执行一次构建之前调用
-			// compiler.run 方法开始执行后立刻进行调用
+			// NodeEnvironmentPlugin
 			beforeRun: new AsyncSeriesHook(["compiler"]),
 			// 当开始执行构建时
+			// 当调用完 compiler.hooks.beforeRun 后立即调用
 			run: new AsyncSeriesHook(["compiler"]),
 			// 当要把 asset 输出到 output 目录之前执行
+			// CleanPlugin
+			// LibManifestPlugin
 			emit: new AsyncSeriesHook(["compilation"]),
 			// 当把每个 asset 输出到 output 目录后执行
 			assetEmitted: new AsyncSeriesHook(["file", "info"]),
 			// 当把所有的 asset 输出到 output 目录后执行
+			// SizeLimitsPlugin
 			afterEmit: new AsyncSeriesHook(["compilation"]),
-
 			// 当创建完 Compilation 的实例后
 			// 这个钩子不会被复制到子编译器中
+			// 注册只属于当前 compilation 的插件
+			// ...(插件太多)
 			thisCompilation: new SyncHook(["compilation", "params"]),
 			// 当创建完 Compilation 的实例后
-			// 注册完 compiler.hooks.thisCompilation 后立即注册 compiler.hooks.compilation
+			// 注册完 compiler.hooks.thisCompilation 后立即注册
+			// 注册所有 compilation 共享的插件
+			// ...(插件太多)
 			compilation: new SyncHook(["compilation", "params"]),
 			// 当创建完 NormalModuleFactory 的实例后
+			// NormalModuleReplacementPlugin
+			// IgnorePlugin
 			normalModuleFactory: new SyncHook(["normalModuleFactory"]),
 			// 当创建完 ContextModuleFactory 的实例后
 			contextModuleFactory: new SyncHook(["contextModuleFactory"]),
-
-			// 直接执行回调
 			// 当创建完 compilation params 后
 			beforeCompile: new AsyncSeriesHook(["params"]),
 			// 当调用 compiler.hooks.beforeCompile 后 
 			compile: new SyncHook(["params"]),
-			// 当创建 Compilation 的实例后
-			// 
+			// 当创建 Compilation 的实例后 要添加入口 开始构建模块树
+			// EntryPlugin
+			// PrefetchPlugin
+			// DynamicEntryPlugin
+			// DllEntryPlugin
+			// AutomaticPrefetchPlugin
+			// ContainerPlugin
 			make: new AsyncParallelHook(["compilation"]),
-			// 
+			// 当 Compilation 构建模块树后
+			// ProvideSharedPlugin
 			finishMake: new AsyncSeriesHook(["compilation"]),
-			// 当完成一次构建过程(Compilation)后
+			// 当 完成编译 后
+			// AutomaticPrefetchPlugin
+			// ProgressPlugin
 			afterCompile: new AsyncSeriesHook(["compilation"]),
 
-			// AsyncSeriesHook<[Compiler]>
+			// 与 监听器 相关
+			// Watching
 			watchRun: new AsyncSeriesHook(["compiler"]),
-			// SyncHook<[Error]>
+			// Watching
 			failed: new SyncHook(["error"]),
-			// SyncHook<[string | null, number]>
+			// 
 			invalid: new SyncHook(["filename", "changeTime"]),
-			// SyncHook<[]>
+			// 
 			watchClose: new SyncHook([]),
-			// AsyncSeriesHook<[]>
+			// 当 关闭编译器 时
+			// IdleFileCachePlugin
+			// MemoryCachePlugin
+			// MemoryWithGcCachePlugin
+			// LazyCompilationPlugin
 			shutdown: new AsyncSeriesHook([]),
 			// 在每一次基础日志输出前
 			infrastructureLog: new SyncBailHook(["origin", "type", "args"]),
-			// 空调用
-			// 在编译器准备环境时调用，就在配置文件中注册完用户自定义插件之后
+			// 当 标准化 Webpack.optios 并设置完默认值后
 			environment: new SyncHook([]),
-			// 空调用
-			// 当编译器环境设置完成后，在 environment hook 后直接调用
+			// 当 标准化 Webpack.optios 并设置完默认值后
+			// 在 compiler.hooks.environment 后立即调用
+			// WatchIgnorePlugin
 			afterEnvironment: new SyncHook([]),
 			// 当根据选项 注册完不同的内置插件后
 			afterPlugins: new SyncHook(["compiler"]),
-			// 当设置完 resolverFactory.hooks.resolveOptions 后
+			// 当设置完 resolver options 后
 			afterResolvers: new SyncHook(["compiler"]),
-			// 主要是对 Webpack.Config.Entry 处理
-			// SyncBailHook<[string, Entry], boolean>
+			// 当对选项中的 entry 处理完后
+			// EntryOptionPlugin
+			// DllPlugin
 			entryOption: new SyncBailHook(["context", "entry"])
 		});
 		// 
 		this.webpack = webpack;
 		// 编译器名称
-		// Webpack.Config.name
+		// Webpack.options.name
 		this.name = undefined;
 		// 父编译器名称
 		this.parentCompilation = undefined;
@@ -171,10 +193,10 @@ class Compiler {
 		// 文件记录
 		this.records = {};
 		// 
-		// Webpack.Config.snap.managedPaths
+		// Webpack.options.snap.managedPaths
 		this.managedPaths = new Set();
 		// 
-		// Webpack.Config.snap.immutablePaths
+		// Webpack.options.snap.immutablePaths
 		this.immutablePaths = new Set();
 		// Set<string>
 		this.modifiedFiles = undefined;
@@ -184,7 +206,7 @@ class Compiler {
 		this.fileTimestamps = undefined;
 		// Map<string, FileSystemInfoEntry | "ignore" | null>
 		this.contextTimestamps = undefined;
-		// number
+		// 编译开始时间
 		this.fsStartTime = undefined;
 
 		// 路径解析器工厂
@@ -195,7 +217,7 @@ class Compiler {
 		// 日志
 		this.infrastructureLogger = undefined;
 
-		// Webpack.Config
+		// Webpack.options
 		this.options = ({});
 
 		// 上下文

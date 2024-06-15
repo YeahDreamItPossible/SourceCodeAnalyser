@@ -578,7 +578,7 @@ const createCacheGroupSource = (options, key, defaultSizeTypes) => {
 	};
 };
 
-// 根据 Webpack.Config.optimization.splitChunks 注册该插件
+// 根据 Webpack.options.optimization.splitChunks 注册该插件
 module.exports = class SplitChunksPlugin {
 	/**
 	 * @param {OptimizationSplitChunksOptions=} options plugin options

@@ -3,6 +3,7 @@
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 
+// 运行时模块之设置块名
 // __webpack_require__.cn
 class ChunkNameRuntimeModule extends RuntimeModule {
 	constructor(chunkName) {

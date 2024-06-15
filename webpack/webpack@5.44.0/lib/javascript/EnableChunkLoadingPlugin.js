@@ -12,10 +12,11 @@ const getEnabledTypes = compiler => {
 	return set;
 };
 
-// 根据 Webpack.Config.output.enabledChunkLoadingTypes 值注册不同的插件
+// 保证 chunk load(块加载) 插件
+// 根据 Webpack.options.output.enabledChunkLoadingTypes 值注册不同的插件
 class EnableChunkLoadingPlugin {
 	constructor(type) {
-		// Webpack.Config.output.enabledChunkLoadingTypes
+		// Webpack.options.output.enabledChunkLoadingTypes
 		this.type = type;
 	}
 

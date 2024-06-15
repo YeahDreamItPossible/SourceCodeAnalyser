@@ -96,7 +96,7 @@ const compilationHooksMap = new WeakMap();
 
 // 在处理静态资源后添加额外的哈希编译，以获得正确的静态资源内容哈希。
 // 如果 realContentHash 设置为 false，内部数据用于计算哈希值，当静态资源相同时，它可以改变。
-// 根据 Webpack.Config.optimization.realContentHash 注册该插件
+// 根据 Webpack.options.optimization.realContentHash 注册该插件
 class RealContentHashPlugin {
 	/**
 	 * @param {Compilation} compilation the compilation

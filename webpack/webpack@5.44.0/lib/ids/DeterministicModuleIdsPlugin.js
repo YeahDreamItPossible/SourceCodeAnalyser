@@ -16,7 +16,7 @@ const {
 
 // 给 Module 对应的 ChunkGraphModule 设置 id (基于内容的确定性哈希)
 // 即： chunkGraphModule.id = xx
-// 根据 Webpack.Config.optimization.moduleIds = 'deterministic' 注册该插件
+// 根据 Webpack.options.optimization.moduleIds = 'deterministic' 注册该插件
 class DeterministicModuleIdsPlugin {
 	constructor(options) {
 		this.options = options || {};

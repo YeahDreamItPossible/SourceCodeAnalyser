@@ -119,11 +119,11 @@ const mangleExportsInfo = (deterministic, exportsInfo) => {
 };
 
 // 控制 导出 信息
-// 根据 Webpack.Config.optimization.mangleExports 注册该插件
+// 根据 Webpack.options.optimization.mangleExports 注册该插件
 class MangleExportsPlugin {
 	constructor(deterministic) {
 		// Boolean
-		// Webpack.Config.optimization.mangleExports === 'size'
+		// Webpack.options.optimization.mangleExports === 'size'
 		this._deterministic = deterministic;
 	}
 	

@@ -10,7 +10,7 @@ const ImportDependency = require("./ImportDependency");
 
 // ES模块动态导入依赖
 // 1. 当代码片段中含有 import() 语法
-// 2. 动态导入内敛注释中 webpackMode = 'eager' 时 或者 Webpack.Config.module.parser.javascript.dynamicImportMode = 'eager' 时
+// 2. 动态导入内敛注释中 webpackMode = 'eager' 时 或者 Webpack.options.module.parser.javascript.dynamicImportMode = 'eager' 时
 class ImportEagerDependency extends ImportDependency {
 	constructor(request, range, referencedExports) {
 		super(request, range, referencedExports);

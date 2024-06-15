@@ -11,11 +11,8 @@ const createSchemaValidation = require("../util/create-schema-validation");
 const ContainerPlugin = require("./ContainerPlugin");
 const ContainerReferencePlugin = require("./ContainerReferencePlugin");
 
-/** @typedef {import("../../declarations/plugins/container/ModuleFederationPlugin").ExternalsType} ExternalsType */
-/** @typedef {import("../../declarations/plugins/container/ModuleFederationPlugin").ModuleFederationPluginOptions} ModuleFederationPluginOptions */
-/** @typedef {import("../../declarations/plugins/container/ModuleFederationPlugin").Shared} Shared */
-/** @typedef {import("../Compiler")} Compiler */
 
+// 验证 ModuleFederation options 是否合法
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/container/ModuleFederationPlugin.check.js"),
 	() => require("../../schemas/plugins/container/ModuleFederationPlugin.json"),
@@ -24,28 +21,21 @@ const validate = createSchemaValidation(
 		baseDataPath: "options"
 	}
 );
+
+// 模块联邦插件
 class ModuleFederationPlugin {
-	/**
-	 * @param {ModuleFederationPluginOptions} options options
-	 */
 	constructor(options) {
 		validate(options);
-
 		this._options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { _options: options } = this;
 		const library = options.library || { type: "var", name: options.name };
 		const remoteType =
 			options.remoteType ||
 			(options.library && isValidExternalsType(options.library.type)
-				? /** @type {ExternalsType} */ (options.library.type)
+				? (options.library.type)
 				: "script");
 		if (
 			library &&

@@ -6,14 +6,13 @@ const Template = require("../Template");
 const JavascriptModulesPlugin = require("../javascript/JavascriptModulesPlugin");
 const { getUndoPath } = require("../util/identifier");
 
+// 运行时模块之自动设置公共路径
+// 根据 运行环境 自动设置 __webpack_require__.p 属性
 class AutoPublicPathRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("publicPath", RuntimeModule.STAGE_BASIC);
 	}
-
-	/**
-	 * @returns {string} runtime code
-	 */
+	
 	generate() {
 		const { compilation } = this;
 		const { scriptType, importMetaName, path } = compilation.outputOptions;

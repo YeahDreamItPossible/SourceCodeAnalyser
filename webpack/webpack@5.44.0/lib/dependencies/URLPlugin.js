@@ -16,8 +16,8 @@ class URLPlugin {
 				);
 
 				const parserCallback = (parser, parserOptions) => {
-					// 当 Webpack.Config.module.parser.['javascript/auto'].url = false 时
-					// 当 Webpack.Config.module.parser.['javascript/esm'].url = false 时
+					// 当 Webpack.options.module.parser.['javascript/auto'].url = false 时
+					// 当 Webpack.options.module.parser.['javascript/esm'].url = false 时
 					// 明确禁用 Url
 					if (parserOptions.url === false) return;
 					// 是否时相对路径

@@ -59,14 +59,12 @@ const keyedNestedConfig = (value, fn, customKeys) => {
 	return result;
 };
 
-// 标准化 Webpack.Config 选项
+// 标准化 Webpack.options
 const getNormalizedWebpackOptions = config => {
 	return {
-		// 设置 require.amd 或 define.amd 的值 
 		// 当设置 amd 为 false 会禁用 webpack 的 AMD 支持
 		amd: config.amd,
-		// 当出现第一个 WebpackError 时 将停止打包 
-		// 默认false(表示记录错误并继续打包)
+		// 当设置 bail 为 true 时 表示当出现第一个 WebpackError 时 将停止打包 默认false
 		bail: config.bail,
 		// 缓存(缓存生成的 webpack 模块和 chunk 来改善构建速度)
 		cache: optionalNestedConfig(config.cache, cache => {
@@ -128,18 +126,20 @@ const getNormalizedWebpackOptions = config => {
 					throw new Error(`Not implemented cache.type ${cache.type}`);
 			}
 		}),
+		// 上下文
 		// 基础目录(绝对路径) 用于从配置中解析入口点(entry point)和 加载器(loader)
 		// 默认使用 Node.js 进程的当前工作目录 即: process.cwd()
 		context: config.context,
-		// 所依赖的 Webpack.Config.name 列表
+		// 所依赖的 Webpack.options.name 列表
 		dependencies: config.dependencies,
 		// 开发服务器选项
 		devServer: optionalNestedConfig(config.devServer, devServer => ({
 			...devServer
 		})),
-		// 如何生成SourceMap
+		// 源代码映射工具(开发工具)
 		devtool: config.devtool,
-		// 入口对象(开始打包构建的入口)
+		// 入口
+		// 开始打包构建的入口
 		entry:
 			config.entry === undefined
 				? { main: {} }
@@ -153,8 +153,9 @@ const getNormalizedWebpackOptions = config => {
 		experiments: cloneObject(config.experiments),
 		// 外部扩展(从输出的 bundle 中排除依赖)
 		externals: config.externals,
-		//
+		// 外部扩展预设
 		externalsPresets: cloneObject(config.externalsPresets),
+		// 外部扩展类型
 		// 指定 externals 的默认类型
 		// 默认值: var
 		externalsType: config.externalsType,
@@ -186,7 +187,7 @@ const getNormalizedWebpackOptions = config => {
 			: undefined,
 		// 基础设施水平的日志选项
 		infrastructureLogging: cloneObject(config.infrastructureLogging),
-		// 在 loader 上下文中暴漏自定义值
+		// 在 loader 上下文(loaderContext)中暴漏自定义值
 		loader: cloneObject(config.loader),
 		// 打包模式 development || production || none
 		mode: config.mode,
@@ -218,6 +219,7 @@ const getNormalizedWebpackOptions = config => {
 		})),
 		// 配置名称
 		name: config.name,
+		// 与 NodeJS 相关
 		// 是否 polyfill 或 mock 某些 Node.js 全局变量
 		node: nestedConfig(
 			config.node,
@@ -350,10 +352,11 @@ const getNormalizedWebpackOptions = config => {
 			};
 			return result;
 		}),
+		// 并行
 		// 限制并行处理的模块数量
 		// 默认值: 100
 		parallelism: config.parallelism,
-		// 性能相关配置
+		// 性能
 		performance: optionalNestedConfig(config.performance, performance => {
 			if (performance === false) return false;
 			return {
@@ -362,26 +365,27 @@ const getNormalizedWebpackOptions = config => {
 		}),
 		// 插件
 		plugins: nestedArray(config.plugins, p => [...p]),
-		// 
+		// 配置文件
 		profile: config.profile,
-		// 
+		// 记录文件输入路径
 		recordsInputPath:
 			config.recordsInputPath !== undefined
 				? config.recordsInputPath
 				: config.recordsPath,
-		// 
+		// 记录文件输出路径
 		recordsOutputPath:
 			config.recordsOutputPath !== undefined
 				? config.recordsOutputPath
 				: config.recordsPath,
-		// 路径解析器选项
+		// 路径解析器 选项
 		resolve: nestedConfig(config.resolve, resolve => ({
 			...resolve,
 			byDependency: keyedNestedConfig(resolve.byDependency, cloneObject)
 		})),
-		// 
+		// 路径解析器 选项
+		// 仅用于解析 webpack 的 loader 包
 		resolveLoader: cloneObject(config.resolveLoader),
-		// 快照选项
+		// 快照
 		snapshot: nestedConfig(config.snapshot, snapshot => ({
 			resolveBuildDependencies: optionalNestedConfig(
 				snapshot.resolveBuildDependencies,
@@ -432,13 +436,14 @@ const getNormalizedWebpackOptions = config => {
 		// 构建目标
 		target: config.target,
 		// 观察模式
+		// 启用 Watch 模式后 意味着在初始构建之后 webpack 将继续监听任何已解析文件的更改
 		watch: config.watch,
-		// 观察选项
+		// 观察模式选项
 		watchOptions: cloneObject(config.watchOptions)
 	};
 };
 
-// 标准化 Webpack.Config.entry 选项
+// 标准化 Webpack.options.entry
 const getNormalizedEntryStatic = entry => {
 	if (typeof entry === "string") {
 		return {
@@ -487,7 +492,7 @@ const getNormalizedEntryStatic = entry => {
 	return result;
 };
 
-// 标准化 Webpack.Config.optimization.runtimeChunk
+// 标准化 Webpack.options.optimization.runtimeChunk
 const getNormalizedOptimizationRuntimeChunk = runtimeChunk => {
 	if (runtimeChunk === undefined) return undefined;
 	if (runtimeChunk === false) return false;
@@ -507,5 +512,5 @@ const getNormalizedOptimizationRuntimeChunk = runtimeChunk => {
 	};
 };
 
-// 主要对用户Webpack.Config 标准化
+// 主要对用户 Webpack.options 标准化
 exports.getNormalizedWebpackOptions = getNormalizedWebpackOptions;

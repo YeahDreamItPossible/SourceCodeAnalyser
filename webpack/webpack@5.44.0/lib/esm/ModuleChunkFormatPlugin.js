@@ -14,7 +14,7 @@ const {
 } = require("../javascript/StartupHelpers");
 
 // 非运行时Chunk格式
-// Webpack.Config.output.chunkFormat = 'module'
+// Webpack.options.output.chunkFormat = 'module'
 class ModuleChunkFormatPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

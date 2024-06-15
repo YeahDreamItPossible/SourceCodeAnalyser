@@ -18,7 +18,7 @@ const Queue = require("./util/Queue");
 
 // 告知 webpack 去确定那些由模块提供的导出内容，为 export * from ... 生成更多高效的代码。
 // 默认 optimization.providedExports 会被启用。
-// 根据 Webpack.Config.optimization.providedExports 注册该插件
+// 根据 Webpack.options.optimization.providedExports 注册该插件
 class FlagDependencyExportsPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

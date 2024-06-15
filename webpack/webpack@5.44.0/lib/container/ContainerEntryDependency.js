@@ -1,31 +1,20 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra, Zackary Jackson @ScriptedAlchemy, Marais Rossouw @maraisr
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
 const makeSerializable = require("../util/makeSerializable");
 
-/** @typedef {import("./ContainerEntryModule").ExposeOptions} ExposeOptions */
-
+// 容器入口依赖
 class ContainerEntryDependency extends Dependency {
-	/**
-	 * @param {string} name entry name
-	 * @param {[string, ExposeOptions][]} exposes list of exposed modules
-	 * @param {string} shareScope name of the share scope
-	 */
 	constructor(name, exposes, shareScope) {
 		super();
+		// ModuleFederationPlugin.options.name
 		this.name = name;
+		// ModuleFederationPlugin.options.exposes
 		this.exposes = exposes;
+		// ModuleFederationPlugin.options.shareScope
 		this.shareScope = shareScope;
 	}
 
-	/**
-	 * @returns {string | null} an identifier to merge equal requests
-	 */
 	getResourceIdentifier() {
 		return `container-entry-${this.name}`;
 	}

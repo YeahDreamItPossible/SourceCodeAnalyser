@@ -16,9 +16,9 @@ class DynamicEntryPlugin {
 	 * @param {EntryDynamic} entry the entry value
 	 */
 	constructor(context, entry) {
-		// Webpack.Config.context
+		// Webpack.options.context
 		this.context = context;
-		// Webpack.Config.entry
+		// Webpack.options.entry
 		this.entry = entry;
 	}
 

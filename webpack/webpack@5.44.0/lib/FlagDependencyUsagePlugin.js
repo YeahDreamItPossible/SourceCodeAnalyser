@@ -11,7 +11,7 @@ const { getEntryRuntime, mergeRuntimeOwned } = require("./util/runtime");
 
 const { NO_EXPORTS_REFERENCED, EXPORTS_OBJECT_REFERENCED } = Dependency;
 
-// Webpack.Config.optimization.usedExports
+// Webpack.options.optimization.usedExports
 // 告诉 webpack 去决定每个模块的到处内容是否被使用
 // 这首先取决于 optimization.providedExports 选项是否被启用
 class FlagDependencyUsagePlugin {

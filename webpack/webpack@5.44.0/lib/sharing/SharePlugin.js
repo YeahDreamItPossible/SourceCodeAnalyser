@@ -18,6 +18,7 @@ const { isRequiredVersion } = require("./utils");
 /** @typedef {import("../../declarations/plugins/sharing/SharePlugin").SharedConfig} SharedConfig */
 /** @typedef {import("../Compiler")} Compiler */
 
+// 工厂插件
 class SharePlugin {
 	/**
 	 * @param {SharePluginOptions} options options

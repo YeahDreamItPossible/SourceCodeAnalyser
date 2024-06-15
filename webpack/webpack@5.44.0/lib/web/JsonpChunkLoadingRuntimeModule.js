@@ -12,8 +12,7 @@ const compileBooleanMatcher = require("../util/compileBooleanMatcher");
 // WeakMap<Compilation, Hooks>
 const compilationHooksMap = new WeakMap();
 
-// TODO:
-// 以 jsonp 的方式 加载 Chunk
+// 运行时模块之以 jsonp 的方式 加载 Chunk
 class JsonpChunkLoadingRuntimeModule extends RuntimeModule {
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {

@@ -71,14 +71,14 @@ class Chunk {
 		// RuntimeChunk.preventIntegration = true
 		this.preventIntegration = false;
 		// 输出文件模板
-		// Webpack.Config.Entry.filename
+		// Webpack.options.Entry.filename
 		this.filenameTemplate = undefined;
 		// ChunkGroup
 		// Set<ChunkGroup>
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
 		// 运行时名称
-		// Webpack.Config.Entry.runtime
-		// Webpack.Config.Entry.dependOn 的keys + RuntimeChunk 的 key ???
+		// Webpack.options.Entry.runtime
+		// Webpack.options.Entry.dependOn 的keys + RuntimeChunk 的 key ???
 		this.runtime = undefined;
 		// 输出文件名 
 		// 示例: app.67f6cda2.js

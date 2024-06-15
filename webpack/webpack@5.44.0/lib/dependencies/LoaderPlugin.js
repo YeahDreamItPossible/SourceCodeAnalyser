@@ -13,7 +13,7 @@ const LoaderImportDependency = require("./LoaderImportDependency");
 // TODO:
 class LoaderPlugin {
 	constructor(options = {}) {
-		// Webpack.Config.experiments.executeModule
+		// Webpack.options.experiments.executeModule
 		this._enableExecuteModule = !!options.enableExecuteModule;
 	}
 

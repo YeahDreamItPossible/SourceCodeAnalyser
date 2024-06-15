@@ -1,22 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
+// 运行时模块之
 class EnsureChunkRuntimeModule extends RuntimeModule {
 	constructor(runtimeRequirements) {
 		super("ensure chunk");
 		this.runtimeRequirements = runtimeRequirements;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { runtimeTemplate } = this.compilation;
 		// Check if there are non initial chunks which need to be imported using require-ensure

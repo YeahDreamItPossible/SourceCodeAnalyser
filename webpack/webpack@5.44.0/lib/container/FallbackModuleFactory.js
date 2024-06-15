@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra, Zackary Jackson @ScriptedAlchemy, Marais Rossouw @maraisr
-*/
-
 "use strict";
 
 const ModuleFactory = require("../ModuleFactory");
@@ -12,6 +7,7 @@ const FallbackModule = require("./FallbackModule");
 /** @typedef {import("../ModuleFactory").ModuleFactoryResult} ModuleFactoryResult */
 /** @typedef {import("./FallbackDependency")} FallbackDependency */
 
+// 回退模块工厂
 module.exports = class FallbackModuleFactory extends ModuleFactory {
 	/**
 	 * @param {ModuleFactoryCreateData} data data object

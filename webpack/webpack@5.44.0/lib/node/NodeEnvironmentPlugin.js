@@ -8,7 +8,7 @@ const nodeConsole = require("./nodeConsole");
 
 // 绑定compiler文件系统api
 class NodeEnvironmentPlugin {
-	// Webpack.Config.infrastructureLogger
+	// Webpack.options.infrastructureLogger
 	constructor(options) {
 		this.options = options;
 	}

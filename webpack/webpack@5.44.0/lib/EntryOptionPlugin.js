@@ -1,6 +1,6 @@
 "use strict";
 
-// 根据 Webpack.Config.Entry 注册插件
+// 根据 Webpack.options.Entry 注册插件
 class EntryOptionPlugin {
 	apply(compiler) {
 		compiler.hooks.entryOption.tap("EntryOptionPlugin", (context, entry) => {
@@ -9,7 +9,7 @@ class EntryOptionPlugin {
 		});
 	}
 
-	// 使用 Webpack.Config.Entry 值类型 注册入口插件
+	// 使用 Webpack.options.Entry 值类型 注册入口插件
 	static applyEntryOption(compiler, context, entry) {
 		if (typeof entry === "function") {
 			// 动态入口
@@ -33,7 +33,7 @@ class EntryOptionPlugin {
 		}
 	}
 
-	// 根据 Webpack.Config.entry.descriptor 的值注册插件 并返回 Webpack.Config.entry.descriptor
+	// 根据 Webpack.options.entry.descriptor 的值注册插件 并返回 Webpack.options.entry.descriptor
 	static entryDescriptionToOptions(compiler, name, desc) {
 		const options = {
 			name,

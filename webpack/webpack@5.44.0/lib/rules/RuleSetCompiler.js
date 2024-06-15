@@ -41,7 +41,7 @@ class RuleSetCompiler {
 		// refs: Map<loader.ident, laoder.options>
 		const refs = new Map();
 		// 在创建NormalModuleFactory实例时 调用ruleSetCompiler.compile
-		// ruleSet: [{ rules: Webpack.Config.defaultRules },{ rules: Wepback.Config.rules }]
+		// ruleSet: [{ rules: Webpack.options.defaultRules },{ rules: Wepback.Config.rules }]
 		// rules: [
 		//	{ 
 		//			rules: [], 
@@ -147,10 +147,10 @@ class RuleSetCompiler {
 			oneOf: undefined // 
 		};
 
-		// 编译Webpack.Config.Module.Rule.[xx]
+		// 编译Webpack.options.Module.Rule.[xx]
 		this.hooks.rule.call(path, rule, unhandledProperties, compiledRule, refs);
 
-		// 编译Webpack.Config.Module.Rule.rules
+		// 编译Webpack.options.Module.Rule.rules
 		if (unhandledProperties.has("rules")) {
 			unhandledProperties.delete("rules");
 			const rules = rule.rules;
@@ -159,7 +159,7 @@ class RuleSetCompiler {
 			compiledRule.rules = this.compileRules(`${path}.rules`, rules, refs);
 		}
 
-		// 编译Webpack.Config.Module.Rule.oneOf
+		// 编译Webpack.options.Module.Rule.oneOf
 		if (unhandledProperties.has("oneOf")) {
 			unhandledProperties.delete("oneOf");
 			const oneOf = rule.oneOf;
