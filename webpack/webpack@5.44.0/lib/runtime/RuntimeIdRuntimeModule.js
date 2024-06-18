@@ -3,6 +3,7 @@
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 
+// 运行时模块之
 class RuntimeIdRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("runtimeId");

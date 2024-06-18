@@ -565,10 +565,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			);
 		};
 		this.hooks = Object.freeze({
-			// 空调用
 			// 在单个模块构建开始之前
+			// SourceMapDevToolModuleOptionsPlugin
+			// ProgressPlugin
 			buildModule: new SyncHook(["module"]),
 			// 在重新单个模块构建开始之前
+			// FlagDependencyExportsPlugin
 			rebuildModule: new SyncHook(["module"]),
 			// 当单个模块构建失败后
 			failedModule: new SyncHook(["module", "error"]),
@@ -578,8 +580,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 
 			stillValidModule: new SyncHook(["module"]),
 			// 当添加完单项入口后
+			// RuntimeChunkPlugin
+			// ProgressPlugin
 			addEntry: new SyncHook(["entry", "options"]),
 			// 当在构建单项入口的模块树的过程中出错时
+			// ProgressPlugin
 			failedEntry: new SyncHook(["entry", "options", "error"]),
 			// 当成功构建完单项入口的模块树后
 			succeedEntry: new SyncHook(["entry", "options", "module"]),
@@ -590,43 +595,64 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				"runtime"
 			]),
 			// 
+			// JavascriptModulesPlugin
 			executeModule: new SyncHook(["options", "context"]),
 			// 
+			// AssetModulesPlugin
 			prepareModuleExecution: new AsyncParallelHook(["options", "context"]),
 			// 当所有的模块都构建完成时
 			// 所有的入口都已构建完成 ??
+			// FlagDependencyExportsPlugin
+			// InferAsyncModulesPlugin
+			// ResolverCachePlugin
+			// AbstractLibraryPlugin
+			// InnerGraphPlugin
+			// WasmFinalizeExportsPlugin
 			finishModules: new AsyncSeriesHook(["modules"]),
 			// 
+			// FlagDependencyExportsPlugin
 			finishRebuildingModule: new AsyncSeriesHook(["module"]),
-			// 
+			// 解除冻结
 			unseal: new SyncHook([]),
-			// 
+			// 冻结(compilation对象停止接受新的模块)
+			// FlagEntryExportAsUsedPlugin
+			// WarnCaseSensitiveModulesPlugin
 			seal: new SyncHook([]),
 			// 在分块之前
 			beforeChunks: new SyncHook([]),
 			// 在分块后
+			// WebAssemblyModulesPlugin
 			afterChunks: new SyncHook(["chunks"]),
-			// 依赖优化开始时触发
+			// 开始优化依赖
+			// FlagAllModulesAsUsedPlugin
+			// FlagDependencyUsagePlugin
+			// SideEffectsFlagPlugin
 			optimizeDependencies: new SyncBailHook(["modules"]),
-			// 空调用
-			// 依赖优化之后触发
+			// 当优化完依赖后
+			// WebAssemblyModulesPlugin
 			afterOptimizeDependencies: new SyncHook(["modules"]),
-			// 空调用
 			// 在所有的优化开始前
+			// AggressiveSplittingPlugin
 			optimize: new SyncHook([]),
-			// 空调用
 			// 当优化模块前
 			// 在执行完 compilation.hooks.optimize 后立即执行
 			optimizeModules: new SyncBailHook(["modules"]),
-			// 空调用
 			// 在优化完所有的模块后
 			// 在执行完 compilation.hooks.optimizeModules 后立即执行
 			afterOptimizeModules: new SyncHook(["modules"]),
 
 			// 当优化块时
 			// 在执行完 compilation.hooks.afterOptimizeModules 后立即执行
+			// AggressiveMergingPlugin
+			// AggressiveSplittingPlugin
+			// EnsureChunkConditionsPlugin
+			// LimitChunkCountPlugin
+			// MergeDuplicateChunksPlugin
+			// MinChunkSizePlugin
+			// RemoveEmptyChunksPlugin
+			// RemoveParentModulesPlugin
+			// SplitChunksPlugin
 			optimizeChunks: new SyncBailHook(["chunks", "chunkGroups"]),
-			// 空调用
 			// 当优化玩所有的块后
 			// 在执行完 compilation.hooks.optimizeChunks 后立即执行
 			afterOptimizeChunks: new SyncHook(["chunks", "chunkGroups"]),
@@ -642,16 +668,20 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 直接执行回调
 			// 在树优化之后，chunk 模块优化开始时
 			// 在执行完 compilation.hooks.afterOptimizeTree 后立即执行
+			// ModuleConcatenationPlugin
 			optimizeChunkModules: new AsyncSeriesBailHook(["chunks", "modules"]),
-			// 空调用
 			// 在 chunk 模块优化成功完成之后调用
 			// 在执行完 compilation.hooks.optimizeChunkModules 后立即执行
 			afterOptimizeChunkModules: new SyncHook(["chunks", "modules"]),
-			// 空调用
 			// 用来决定是否存储 record
 			// 在执行完 compilation.hooks.afterOptimizeChunkModules 后立即执行
+			// NoEmitOnErrorsPlugin
 			shouldRecord: new SyncBailHook([]),
-			// 
+			// ModuleChunkFormatPlugin
+			// ArrayPushCallbackChunkFormatPlugin
+			// CommonJsChunkFormatPlugin
+			// AbstractLibraryPlugin
+			// ChunkPrefetchPreloadPlugin
 			additionalChunkRuntimeRequirements: new SyncHook([
 				"chunk",
 				"runtimeRequirements",
@@ -671,89 +701,112 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			runtimeRequirementInModule: new HookMap(
 				() => new SyncBailHook(["module", "runtimeRequirements", "context"])
 			),
-			// 
+			// 根据 添加运行时模块 并设置
+			// HotModuleReplacementPlugin
+			// RuntimePlugin
+			// JavascriptModulesPlugin
+			// ChunkPrefetchPreloadPlugin
+			// StartupChunkDependenciesPlugin
+			// ConsumeSharedPlugin
 			additionalTreeRuntimeRequirements: new SyncHook([
 				"chunk",
 				"runtimeRequirements",
 				"context"
 			]),
-			// 
+			// 根据  添加运行时模块
+			// APIPlugin
+			// RuntimePlugin
+			// ContainerReferencePlugin
+			// AMDPlugin
+			// CommonJsPlugin
+			// ModuleChunkLoadingPlugin
+			// CommonJsChunkLoadingPlugin
+			// ReadFileCompileAsyncWasmPlugin
+			// ReadFileCompileWasmPlugin
+			// ChunkPrefetchPreloadPlugin
+			// StartupChunkDependenciesPlugin
+			// FetchCompileAsyncWasmPlugin
+			// FetchCompileWasmPlugin
+			// JsonpChunkLoadingPlugin
+			// ImportScriptsChunkLoadingPlugin
 			runtimeRequirementInTree: new HookMap(
 				() => new SyncBailHook(["chunk", "runtimeRequirements", "context"])
 			),
 			// 
 			runtimeModule: new SyncHook(["module", "chunk"]),
 			// 从 record 中恢复模块信息
+			// RecordIdsPlugin
 			reviveModules: new SyncHook(["modules", "records"]),
-			// 空调用
 			// 在为每个模块分配 id 之前执行
 			beforeModuleIds: new SyncHook(["modules"]),
 			// 当给每个模块分配 id 时
 			// 设置 Module 对应的 ChunkGraphModule.id
+			// ChunkModuleIdRangePlugin
+			// DeterministicModuleIdsPlugin
+			// HashedModuleIdsPlugin
+			// NamedModuleIdsPlugin
+			// NaturalModuleIdsPlugin
+			// OccurrenceModuleIdsPlugin
 			moduleIds: new SyncHook(["modules"]),
 			// 在模块 id 优化开始时调用
 			optimizeModuleIds: new SyncHook(["modules"]),
 			// 在模块 id 优化完成时调用
 			afterOptimizeModuleIds: new SyncHook(["modules"]),
 			// 从 record 中恢复 chunk 信息
+			// RecordIdsPlugin
 			reviveChunks: new SyncHook(["chunks", "records"]),
-			// 空调用
 			// 在为每个 chunk 分配 id 之前执行
 			beforeChunkIds: new SyncHook(["chunks"]),
 			// 当给每个 chunk 分配一个 id时
 			// 设置 Chunk.id
+			// DeterministicChunkIdsPlugin
+			// NamedChunkIdsPlugin
+			// NaturalChunkIdsPlugin
+			// OccurrenceChunkIdsPlugin
 			chunkIds: new SyncHook(["chunks"]),
-			// 空调用
 			// 在 chunk id 优化阶段开始时调用
+			// FlagIncludedChunksPlugin
 			optimizeChunkIds: new SyncHook(["chunks"]),
-			// 空调用
 			// 当chunk id 优化结束之后调用
 			afterOptimizeChunkIds: new SyncHook(["chunks"]),
 			// 将模块信息存储到 record 中
+			// RecordIdsPlugin
 			recordModules: new SyncHook(["modules", "records"]),
 			// 将 chunk 存储到 record 中
+			// RecordIdsPlugin
 			recordChunks: new SyncHook(["chunks", "records"]),
-			// 空调用
+			// 
+			// MangleExportsPlugin
 			optimizeCodeGeneration: new SyncHook(["modules"]),
-			// 空调用
 			// 在创建模块哈希（hash）之前
 			beforeModuleHash: new SyncHook([]),
-			// 空调用
 			// 在创建模块哈希（hash）之后
 			afterModuleHash: new SyncHook([]),
-			// 空调用
 			// 
 			beforeCodeGeneration: new SyncHook([]),
-			// 空调用
 			//
 			afterCodeGeneration: new SyncHook([]),
-			// 空调用
 			// 
 			beforeRuntimeRequirements: new SyncHook([]),
-			// 空调用
 			// 
 			afterRuntimeRequirements: new SyncHook([]),
-			// 空调用
 			// 在 compilation 添加哈希（hash）之前
 			beforeHash: new SyncHook([]),
 			// 
+			// JavascriptModulesPlugin
 			contentHash: new SyncHook(["chunk"]),
-			// 空调用
 			// 在 compilation 添加哈希（hash）之后
 			afterHash: new SyncHook([]),
-			// 
 			// 将有关 record 的信息存储到 records 中
+			// AggressiveSplittingPlugin
 			recordHash: new SyncHook(["records"]),
-			// 
 			// 将 compilation 相关信息存储到 record 中
+			// HotModuleReplacementPlugin
 			record: new SyncHook(["compilation", "records"]),
-			// 空调用
 			// 在创建模块 asset 之前执行
 			beforeModuleAssets: new SyncHook([]),
-			// 空调用
 			// 用来确定是否生成 chunk asset
 			shouldGenerateChunkAssets: new SyncBailHook([]),
-			// 空调用
 			// 在创建 chunk asset 之前
 			beforeChunkAssets: new SyncHook([]),
 			// 废弃
@@ -790,29 +843,46 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// webpack 6 将会移除
 			afterOptimizeAssets: afterProcessAssetsHook,
 			// 对 assets 进行加工处理
+			// BannerPlugin
+			// HotModuleReplacementPlugin
+			// SourceMapDevToolPlugin
+			// RealContentHashPlugin
 			processAssets: processAssetsHook,
-			// 空调用
 			// 对 assets 加工处理无报错后立即调用
 			afterProcessAssets: afterProcessAssetsHook,
 			// 
 			processAdditionalAssets: new AsyncSeriesHook(["assets"]),
 			// 调用来决定 compilation 是否需要解除 seal 以引入其他文件
+			// AggressiveSplittingPlugin
 			needAdditionalSeal: new SyncBailHook([]),
 			// 
 			afterSeal: new AsyncSeriesHook([]),
 			// 当获取 chunk render 时
+			// AssetModulesPlugin
+			// JavascriptModulesPlugin
+			// WebAssemblyModulesPlugin
+			// WebAssemblyModulesPlugin
 			renderManifest: new SyncWaterfallHook(["result", "options"]),
 			// 
+			// HotModuleReplacementPlugin
 			fullHash: new SyncHook(["hash"]),
 			// 当给每个 chunk 生成 hash时
+			// EvalDevToolModulePlugin
+			// EvalSourceMapDevToolPlugin
+			// ModuleInfoHeaderPlugin
+			// RuntimePlugin
+			// ModuleChunkFormatPlugin
+			// ArrayPushCallbackChunkFormatPlugin
+			// CommonJsChunkFormatPlugin
+			// JavascriptModulesPlugin
+			// AbstractLibraryPlugin
 			chunkHash: new SyncHook(["chunk", "chunkHash", "ChunkHashContext"]),
-			// 空调用
 			// 当一个模块中的一个 asset 被添加到 compilation 时调用
 			moduleAsset: new SyncHook(["module", "filename"]),
-			// 空调用
 			// 当一个 chunk 中的一个 asset 被添加到 compilation 时调用
 			chunkAsset: new SyncHook(["chunk", "filename"]),
 			// 通过此钩子决定 asset 的路径
+			// TemplatedPathPlugin
 			assetPath: new SyncWaterfallHook(["path", "options", "assetInfo"]),
 			// 空调用
 			// 当 compiler 输出 assets 后是否需要进一步处理
@@ -828,6 +898,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			log: new SyncBailHook(["origin", "logEntry"]),
 			// 当获取 compilation.warnings 时
 			// 当调用 compilation.getWarnings 时
+			// IgnoreWarningsPlugin
 			processWarnings: new SyncWaterfallHook(["warnings"]),
 			// 当获取 compilation.errors 时
 			// 当调用 compilation.errors 时
@@ -835,10 +906,13 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 对 Webpack.options.stats.preset 属性进行加工处理
 			statsPreset: new HookMap(() => new SyncHook(["options", "context"])),
 			// 对 Webpack.options.stats 属性进行加工处理
+			// DefaultStatsPresetPlugin
 			statsNormalize: new SyncHook(["options", "context"]),
 			// 当创建完 StatsFactory 的实例后
+			// DefaultStatsFactoryPlugin
 			statsFactory: new SyncHook(["statsFactory", "options"]),
 			// 当创建完 StatsPrinter 的实例后
+			// DefaultStatsPrinterPlugin
 			statsPrinter: new SyncHook(["statsPrinter", "options"]),
 
 			get normalModuleLoader() {
@@ -4598,7 +4672,7 @@ This prevents using hashes of each other and should be avoided.`);
 // Hide from typescript
 const compilationPrototype = Compilation.prototype;
 
-// TODO webpack 6 remove
+// Compilation.prototype.modifyHash 已被 Compilation.hooks.fullHash 替代
 Object.defineProperty(compilationPrototype, "modifyHash", {
 	writable: false,
 	enumerable: false,
@@ -4609,8 +4683,7 @@ Object.defineProperty(compilationPrototype, "modifyHash", {
 		);
 	}
 });
-
-// TODO webpack 6 remove
+// Compilation.prototype.cache 已被 Compilation.prototype.getCache 替代
 Object.defineProperty(compilationPrototype, "cache", {
 	enumerable: false,
 	configurable: false,

@@ -4,7 +4,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
-// 运行时模块之返回 全局对象
+// 运行时模块之返回全局对象
 class GlobalRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("global");

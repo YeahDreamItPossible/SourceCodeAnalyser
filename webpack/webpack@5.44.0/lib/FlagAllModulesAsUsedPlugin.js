@@ -1,25 +1,13 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { getEntryRuntime, mergeRuntimeOwned } = require("./util/runtime");
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
+// TODO:
 class FlagAllModulesAsUsedPlugin {
 	constructor(explanation) {
 		this.explanation = explanation;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"FlagAllModulesAsUsedPlugin",
@@ -28,7 +16,6 @@ class FlagAllModulesAsUsedPlugin {
 				compilation.hooks.optimizeDependencies.tap(
 					"FlagAllModulesAsUsedPlugin",
 					modules => {
-						/** @type {RuntimeSpec} */
 						let runtime = undefined;
 						for (const [name, { options }] of compilation.entries) {
 							runtime = mergeRuntimeOwned(

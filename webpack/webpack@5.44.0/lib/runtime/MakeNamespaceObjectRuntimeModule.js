@@ -4,6 +4,14 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
+// define __esModule on exports
+// __webpack_require__.r = (exports) => {
+// 	if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+// 		Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+// 	}
+// 	Object.defineProperty(exports, '__esModule', { value: true });
+// };
+
 // 运行时模块之定义输出对象为 ESModule
 // __webpack_require__.r
 class MakeNamespaceObjectRuntimeModule extends HelperRuntimeModule {
@@ -11,13 +19,6 @@ class MakeNamespaceObjectRuntimeModule extends HelperRuntimeModule {
 		super("make namespace object");
 	}
 
-	// define __esModule on exports
-	// __webpack_require__.r = (exports) => {
-	// 	if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-	// 		Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-	// 	}
-	// 	Object.defineProperty(exports, '__esModule', { value: true });
-	// };
 	generate() {
 		const { runtimeTemplate } = this.compilation;
 		const fn = RuntimeGlobals.makeNamespaceObject;

@@ -1,15 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
-/** @typedef {import("../Compilation")} Compilation */
-
+// 运行时模块之
 class GetMainFilenameRuntimeModule extends RuntimeModule {
 	/**
 	 * @param {string} name readable name
@@ -22,9 +17,6 @@ class GetMainFilenameRuntimeModule extends RuntimeModule {
 		this.filename = filename;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { global, filename, compilation, chunk } = this;
 		const { runtimeTemplate } = compilation;
