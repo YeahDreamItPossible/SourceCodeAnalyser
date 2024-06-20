@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -15,7 +11,39 @@ const { getInitialChunkIds } = require("../javascript/StartupHelpers");
 const compileBooleanMatcher = require("../util/compileBooleanMatcher");
 const { getUndoPath } = require("../util/identifier");
 
-// TODO:
+// // no baseURI
+// // object to store loaded chunks
+// // "1" means "loaded", otherwise not loaded yet
+// var installedChunks = {
+// 	"runtime": 1
+// };
+// __webpack_require__.O.require = (chunkId) => (installedChunks[chunkId]);
+// var installChunk = (chunk) => {
+// 	var moreModules = chunk.modules, chunkIds = chunk.ids, runtime = chunk.runtime;
+// 	for(var moduleId in moreModules) {
+// 		if(__webpack_require__.o(moreModules, moduleId)) {
+// 			__webpack_require__.m[moduleId] = moreModules[moduleId];
+// 		}
+// 	}
+// 	if(runtime) runtime(__webpack_require__);
+// 	for(var i = 0; i < chunkIds.length; i++)
+// 		installedChunks[chunkIds[i]] = 1;
+// 	__webpack_require__.O();
+// };
+// // require() chunk loading for javascript
+// __webpack_require__.f.require = (chunkId, promises) => {
+// 	// "1" is the signal for "already loaded"
+// 	if(!installedChunks[chunkId]) {
+// 		if("runtime" != chunkId) {
+// 			installChunk(require("./" + __webpack_require__.u(chunkId)));
+// 		} else installedChunks[chunkId] = 1;
+// 	}
+// };
+// // no external install chunk
+// // no HMR
+// // no HMR manifest
+
+// 在 node 环境中 以 同步的方式 加载 非初始化块
 class RequireChunkLoadingRuntimeModule extends RuntimeModule {
 	constructor(runtimeRequirements) {
 		super("require chunk loading", RuntimeModule.STAGE_ATTACH);

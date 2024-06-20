@@ -1,5 +1,0 @@
-{
-  "modules": {
-    "57iH": "function(e,n,t){console.log(\"hello world\")}"
-  }
-}

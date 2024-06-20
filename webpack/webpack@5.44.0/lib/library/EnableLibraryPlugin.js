@@ -1,12 +1,7 @@
 "use strict";
 
-/** @typedef {import("../../declarations/WebpackOptions").LibraryOptions} LibraryOptions */
-/** @typedef {import("../../declarations/WebpackOptions").LibraryType} LibraryType */
-/** @typedef {import("../Compiler")} Compiler */
-
-/** @type {WeakMap<Compiler, Set<LibraryType>>} */
+// WeakMap<Compiler, Set<LibraryType>>
 const enabledTypes = new WeakMap();
-
 const getEnabledTypes = compiler => {
 	let set = enabledTypes.get(compiler);
 	if (set === undefined) {
@@ -16,29 +11,88 @@ const getEnabledTypes = compiler => {
 	return set;
 };
 
-// TODO:
+/**
+ * Webpack.options.output.library.type
+ * var | assign | assign-properties
+ * this | window | global
+ * commonjs | commonjs2 | module | amd | amd-require | umd | umd2
+ * system | json | commonjs-module
+ * var:
+ * 导出一个全局变量 
+ * 示例: `var libraryName = ...`
+ * assign:
+ * 导出一个变量 并将该变量默认绑定在某个对象上
+ * 1. 如果 Webpack.options.output.library.name 值为数组形式 将默认绑定到数组第一个值上
+ * 		示例: 
+ * 				Webpack.options.output.library.name = ['MyNamespace', 'MyLibrary']
+ * 				=> (MyNamespace = typeof MyNamespace === "undefined" ? {} : MyNamespace).MyLibrary = '...'
+ * 2. 如果 Webpack.options.output.library.name 值为字符串形式 将默认绑定到全局对象(window | global)上
+ * 		此时 导出的是一个隐藏的全局变量
+ * 		示例:
+ * 				Webpack.options.output.library.name = 'MyLibrary'
+ * 				=> { MyNamespace = '...' }
+ * assign-properties:
+ * 与 assign 类似 但是更安全
+ * 如果 已经存在 MyLibrary 时 将会重用 MyLibrary
+ * 并将 导出的属性 依次绑定到 MyLibrary
+ * 		示例:
+ * 				var __webpack_export_target__ = ((MyNamespace = typeof MyNamespace === "undefined" ? {} : MyNamespace).MyPlugin = MyNamespace.MyPlugin || {})
+ * 				// __webpack_exports__ 表示 MyLibrary 导出的属性
+ * 				for(var i in __webpack_exports__) __webpack_export_target__[i] = __webpack_exports__[i];
+ * this:
+ * 将绑定到 this 对象上
+ * 		示例:
+ * 				this.MyLibrary = '...'
+ * window:
+ * 将绑定到 window 对象上
+ * 		示例:
+ * 				window.MyLibrary = '...'
+ * global:
+ * 取决于 target 值 全局对象可以分别改变 例如: self、global 或者 globalThis
+ * 		示例:
+ * 				self.MyLibrary = '...'
+ * commonjs:
+ * 在 CommonJS 环境中运行 绑定到 exports 上
+ * 		示例:
+ * 				exports.MyLibrary = '...'
+ * commonjs2:
+ * 在 CommonJS 环境中运行 绑定到 module.exports 上
+ * 		示例:
+ * 				module.exports.MyLibrary = '...'
+ * module:
+ * 输出 ES 模块 前提是: Webpack.options.experiments.outputModul = true
+ * 		示例:
+ * 				exports { __webpack_exports__default as default }
+ * amd:
+ * 以 AMD 模块格式导出
+ * amd-require:
+ * 立即执行的 AMD require(dependencies, factory) 包装器来打包输出
+ * umd:
+ * 以 umd 模块格式 导出
+ * umd2:
+ * 与 umd 感觉没啥区别
+ * system:
+ * webpack@4.30 特性 可跳过
+ * json:
+ * TODO:
+ */
+
+// 输出库的类型
+// var | assign | assign-properties
+// this | window | global
+// commonjs | commonjs2 | module | amd | amd-require | umd | umd2
+// system | json | commonjs-module
 class EnableLibraryPlugin {
-	/**
-	 * @param {LibraryType} type library type that should be available
-	 */
 	constructor(type) {
 		this.type = type;
 	}
 
-	/**
-	 * @param {Compiler} compiler the compiler instance
-	 * @param {LibraryType} type type of library
-	 * @returns {void}
-	 */
+	// 添加 自定义输出库 类型
 	static setEnabled(compiler, type) {
 		getEnabledTypes(compiler).add(type);
 	}
 
-	/**
-	 * @param {Compiler} compiler the compiler instance
-	 * @param {LibraryType} type type of library
-	 * @returns {void}
-	 */
+	// 检查 某个库类型 是否存在
 	static checkEnabled(compiler, type) {
 		if (!getEnabledTypes(compiler).has(type)) {
 			throw new Error(

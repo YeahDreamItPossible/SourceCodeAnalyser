@@ -1,1 +1,0 @@
-self.webpackChunk([1],[,function(n,t,c){"use strict";c.r(t),c.d(t,"foo",(function(){return o}));const o=42}]);

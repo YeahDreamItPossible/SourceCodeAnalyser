@@ -13,17 +13,23 @@ const getEnabledTypes = compiler => {
 };
 
 // 保证 chunk load(块加载) 插件
+// jsonp | import | require | node-async | import-scripts
 // 根据 Webpack.options.output.enabledChunkLoadingTypes 值注册不同的插件
+// 在 web 环境中 以 jsonp 的方式加载
+// 在 node 环境中 以 require 同步加载 或者 以 async-node 的方式异步加载
+// 在 webworker 环境中 以 import-scripts 的方式加载
 class EnableChunkLoadingPlugin {
 	constructor(type) {
 		// Webpack.options.output.enabledChunkLoadingTypes
 		this.type = type;
 	}
 
+	// 使用 自定义类型 的 块加载方式
 	static setEnabled(compiler, type) {
 		getEnabledTypes(compiler).add(type);
 	}
 
+	// 检查 某种块加载方式 是否存在
 	static checkEnabled(compiler, type) {
 		if (!getEnabledTypes(compiler).has(type)) {
 			throw new Error(

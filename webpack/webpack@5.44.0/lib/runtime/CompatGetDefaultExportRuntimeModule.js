@@ -4,7 +4,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
-// 运行时模块之
+// 运行时模块之兼容默认导出
 class CompatGetDefaultExportRuntimeModule extends HelperRuntimeModule {
 	constructor() {
 		super("compat get default export");

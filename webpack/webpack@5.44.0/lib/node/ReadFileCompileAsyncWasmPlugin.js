@@ -1,26 +1,17 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const AsyncWasmChunkLoadingRuntimeModule = require("../wasm-async/AsyncWasmChunkLoadingRuntimeModule");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// 根据 Webpack.options.output.enabledWasmLoadingTypes = async-node
+// 或   Webpack.options.output.enabledWasmLoadingTypes = async-node-module 注册插件
 class ReadFileCompileAsyncWasmPlugin {
 	constructor({ type = "async-node", import: useImport = false } = {}) {
 		this._type = type;
 		this._import = useImport;
 	}
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
+	
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(
 			"ReadFileCompileAsyncWasmPlugin",

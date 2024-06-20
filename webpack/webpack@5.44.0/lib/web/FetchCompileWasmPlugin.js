@@ -1,27 +1,16 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const WasmChunkLoadingRuntimeModule = require("../wasm-sync/WasmChunkLoadingRuntimeModule");
 
-/** @typedef {import("../Compiler")} Compiler */
 
-// TODO webpack 6 remove
-
+// webpack 6 将会移除
+// 根据 Webpack.options.output.enabledWasmLoadingTypes = fetch 注册插件
 class FetchCompileWasmPlugin {
 	constructor(options) {
 		this.options = options || {};
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(
 			"FetchCompileWasmPlugin",

@@ -1,21 +1,15 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
+// 运行时模块之
 class CreateFakeNamespaceObjectRuntimeModule extends HelperRuntimeModule {
 	constructor() {
 		super("create fake namespace object");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { runtimeTemplate } = this.compilation;
 		const fn = RuntimeGlobals.createFakeNamespaceObject;

@@ -211,13 +211,14 @@ if (!process.env.WEBPACK_SERVE) {
   process.env.WEBPACK_SERVE = true;
 }
 
+// 服务
 class Server {
   /**
    * @param {Configuration | Compiler | MultiCompiler} options
    * @param {Compiler | MultiCompiler | Configuration} compiler
    */
   constructor(options = {}, compiler) {
-    // TODO: remove this after plugin support is published
+    // compiler 作为第一个参数 的方式已被遗弃
     if (/** @type {Compiler | MultiCompiler} */ (options).hooks) {
       util.deprecate(
         () => {},
@@ -228,6 +229,7 @@ class Server {
       [options = {}, compiler] = [compiler, options];
     }
 
+    // 验证 选项
     validate(/** @type {Schema} */ (schema), options, {
       name: "Dev Server",
       baseDataPath: "options",
@@ -266,7 +268,7 @@ class Server {
     this.currentHash = undefined;
   }
 
-  // TODO compatibility with webpack v4, remove it after drop
+  // 兼容 webpack v4 之后将会被移除
   static get cli() {
     return {
       get getArguments() {
@@ -362,11 +364,8 @@ class Server {
       // ignore
     }
   }
-
-  /**
-   * @param {Host} hostname
-   * @returns {Promise<string>}
-   */
+  
+  // 根据 主机类型 返回主机名
   static async getHostname(hostname) {
     if (hostname === "local-ip") {
       return (
@@ -383,11 +382,7 @@ class Server {
     return hostname;
   }
 
-  /**
-   * @param {Port} port
-   * @param {string} host
-   * @returns {Promise<number | string>}
-   */
+  // 返回 端口
   static async getFreePort(port, host) {
     if (typeof port !== "undefined" && port !== null && port !== "auto") {
       return port;
@@ -412,9 +407,7 @@ class Server {
     });
   }
 
-  /**
-   * @returns {string}
-   */
+  // 返回 缓存目录(绝对路径)
   static findCacheDir() {
     const cwd = process.cwd();
 
@@ -710,10 +703,7 @@ class Server {
     }
   }
 
-  /**
-   * @private
-   * @returns {Compiler["options"]}
-   */
+  // 返回 Webpack.options
   getCompilerOptions() {
     if (
       typeof (/** @type {MultiCompiler} */ (this.compiler).compilers) !==
@@ -765,10 +755,7 @@ class Server {
     return /** @type {Compiler} */ (this.compiler).options;
   }
 
-  /**
-   * @private
-   * @returns {Promise<void>}
-   */
+  // 正常化 选项
   async normalizeOptions() {
     const { options } = this;
     const compilerOptions = this.getCompilerOptions();
@@ -1714,10 +1701,7 @@ class Server {
     return implementation;
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 启动 进度插件
   setupProgressPlugin() {
     const { ProgressPlugin } =
       /** @type {MultiCompiler}*/
@@ -1760,10 +1744,7 @@ class Server {
     ).apply(this.compiler);
   }
 
-  /**
-   * @private
-   * @returns {Promise<void>}
-   */
+  // 初始化
   async initialize() {
     if (this.options.webSocketServer) {
       const compilers =
@@ -1808,15 +1789,24 @@ class Server {
       }
     }
 
+    // 
     this.setupHooks();
+    // 
     this.setupApp();
+    // 
     this.setupHostHeaderCheck();
+    // 
     this.setupDevMiddleware();
     // Should be after `webpack-dev-middleware`, otherwise other middlewares might rewrite response
+    // 启动内置路由
     this.setupBuiltInRoutes();
+    // 
     this.setupWatchFiles();
+    // 
     this.setupWatchStaticFiles();
+    // 启动中间件
     this.setupMiddlewares();
+    // 创建服务器
     this.createServer();
 
     if (this.options.setupExitSignals) {
@@ -1866,10 +1856,7 @@ class Server {
     }, this);
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 启动应用
   setupApp() {
     /** @type {import("express").Application | undefined}*/
     // eslint-disable-next-line new-cap
@@ -1894,10 +1881,7 @@ class Server {
     return statsObj.toJson(stats);
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 启动 钩子
   setupHooks() {
     this.compiler.hooks.invalid.tap("webpack-dev-server", () => {
       if (this.webSocketServer) {
@@ -1923,10 +1907,7 @@ class Server {
     );
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 每次请求时 检查请求头
   setupHostHeaderCheck() {
     /** @type {import("express").Application} */
     (this.app).all(
@@ -1953,10 +1934,7 @@ class Server {
     );
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 启动中间件
   setupDevMiddleware() {
     const webpackDevMiddleware = require("webpack-dev-middleware");
 
@@ -1967,10 +1945,7 @@ class Server {
     );
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 启动内置路由
   setupBuiltInRoutes() {
     const { app, middleware } = this;
 
@@ -2072,10 +2047,7 @@ class Server {
     );
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 启动 观察静态文件
   setupWatchStaticFiles() {
     if (/** @type {NormalizedStatic[]} */ (this.options.static).length > 0) {
       /** @type {NormalizedStatic[]} */
@@ -2087,10 +2059,7 @@ class Server {
     }
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 启动文件观察
   setupWatchFiles() {
     const { watchFiles } = this.options;
 
@@ -2102,10 +2071,7 @@ class Server {
     }
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 启动中间件
   setupMiddlewares() {
     /**
      * @type {Array<Middleware>}
@@ -2429,10 +2395,7 @@ class Server {
     }
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 创建服务器
   createServer() {
     const { type, options } = /** @type {ServerConfiguration} */ (
       this.options.server
@@ -2473,12 +2436,9 @@ class Server {
       }
     );
   }
-
-  /**
-   * @private
-   * @returns {void}
-   */
-  // TODO: remove `--web-socket-server` in favor of `--web-socket-server-type`
+  
+  // 命令行参数 --web-socket-server 已被 --web-socket-server-type 替代
+  // 创建 websocket 服务器
   createWebSocketServer() {
     /** @type {WebSocketServerImplementation | undefined | null} */
     this.webSocketServer = new /** @type {any} */ (this.getServerTransport())(
@@ -2580,11 +2540,7 @@ class Server {
     );
   }
 
-  /**
-   * @private
-   * @param {string} defaultOpenTarget
-   * @returns {void}
-   */
+  // 打开浏览器
   openBrowser(defaultOpenTarget) {
     const open = require("open");
 
@@ -2628,10 +2584,7 @@ class Server {
     );
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 通过 ZeroConf 网络广播你的开发服务器
   runBonjour() {
     const { Bonjour } = require("bonjour-service");
     /**
@@ -2653,10 +2606,7 @@ class Server {
     });
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 停止通过 ZeroConf 网络广播你的开发服务器
   stopBonjour(callback = () => {}) {
     /** @type {Bonjour} */
     (this.bonjour).unpublishAll(() => {
@@ -2669,10 +2619,7 @@ class Server {
     });
   }
 
-  /**
-   * @private
-   * @returns {void}
-   */
+  // 记录状态
   logStatus() {
     const { isColorSupported, cyan, red } = require("colorette");
 
@@ -2950,6 +2897,7 @@ class Server {
    * @param {string} headerToCheck
    * @returns {boolean}
    */
+  // 检查请求头
   checkHeader(headers, headerToCheck) {
     // allow user to opt out of this security check, at their own risk
     // by explicitly enabling allowedHosts
@@ -3166,6 +3114,7 @@ class Server {
    * @param {string | string[]} watchPath
    * @param {WatchOptions} [watchOptions]
    */
+  // 观察文件
   watchFiles(watchPath, watchOptions) {
     const chokidar = require("chokidar");
     const watcher = chokidar.watch(watchPath, watchOptions);
@@ -3195,9 +3144,7 @@ class Server {
     }
   }
 
-  /**
-   * @returns {Promise<void>}
-   */
+  // 开始
   async start() {
     await this.normalizeOptions();
 
@@ -3288,18 +3235,14 @@ class Server {
     }
   }
 
-  /**
-   * @param {(err?: Error) => void} [callback]
-   */
+  // 开始服务后并执行回调函数
   startCallback(callback = () => {}) {
     this.start()
       .then(() => callback(), callback)
       .catch(callback);
   }
 
-  /**
-   * @returns {Promise<void>}
-   */
+  // 停止服务
   async stop() {
     if (this.bonjour) {
       await /** @type {Promise<void>} */ (
@@ -3384,9 +3327,7 @@ class Server {
     }
   }
 
-  /**
-   * @param {(err?: Error) => void} [callback]
-   */
+  // 停止服务后并执行回调函数
   stopCallback(callback = () => {}) {
     this.stop()
       .then(() => callback(), callback)
@@ -3400,6 +3341,8 @@ class Server {
    * @param {(err?: Error) => void} fn
    * @returns {void}
    */
+  // 监听
+  // 下个大版本中将移除该api
   listen(port, hostname, fn) {
     util.deprecate(
       () => {},
@@ -3456,12 +3399,10 @@ class Server {
         }
       });
   }
-
-  /**
-   * @param {(err?: Error) => void} [callback]
-   * @returns {void}
-   */
+  
   // TODO remove in the next major release
+  // 关闭
+  // 下个大版本中将移除该api
   close(callback) {
     util.deprecate(
       () => {},

@@ -188,6 +188,7 @@ const generateImportObject = (
 	}
 };
 
+// 以同步的方式加载 wasm
 class WasmChunkLoadingRuntimeModule extends RuntimeModule {
 	constructor({ generateLoadBinaryCode, supportsStreaming, mangleImports }) {
 		super("wasm chunk loading", RuntimeModule.STAGE_ATTACH);

@@ -9,9 +9,61 @@ const {
 } = require("../javascript/JavascriptModulesPlugin");
 const { getInitialChunkIds } = require("../javascript/StartupHelpers");
 const compileBooleanMatcher = require("../util/compileBooleanMatcher");
-const { getUndoPath } = require("../util/identifier");
+const { getUndoPath } = require("../util/identifier")
 
-// TODO:
+// // no baseURI
+// // object to store loaded chunks
+// // "0" means "already loaded", Promise means loading
+// var installedChunks = {
+// 	"runtime": 0
+// };
+// __webpack_require__.O.readFileVm = (chunkId) => (installedChunks[chunkId] === 0);
+// var installChunk = (chunk) => {
+// 	var moreModules = chunk.modules, chunkIds = chunk.ids, runtime = chunk.runtime;
+// 	for(var moduleId in moreModules) {
+// 		if(__webpack_require__.o(moreModules, moduleId)) {
+// 			__webpack_require__.m[moduleId] = moreModules[moduleId];
+// 		}
+// 	}
+// 	if(runtime) runtime(__webpack_require__);
+// 	for(var i = 0; i < chunkIds.length; i++) {
+// 		if(installedChunks[chunkIds[i]]) {
+// 			installedChunks[chunkIds[i]][0]();
+// 		}
+// 		installedChunks[chunkIds[i]] = 0;
+// 	}
+// 	__webpack_require__.O();
+// };
+// // ReadFile + VM.run chunk loading for javascript
+// __webpack_require__.f.readFileVm = function(chunkId, promises) {
+// 	var installedChunkData = installedChunks[chunkId];
+// 	if(installedChunkData !== 0) { // 0 means "already installed".
+// 		// array of [resolve, reject, promise] means "currently loading"
+// 		if(installedChunkData) {
+// 			promises.push(installedChunkData[2]);
+// 		} else {
+// 			if("runtime" != chunkId) {
+// 				// load the chunk and return promise to it
+// 				var promise = new Promise(function(resolve, reject) {
+// 					installedChunkData = installedChunks[chunkId] = [resolve, reject];
+// 					var filename = require('path').join(__dirname, "" + __webpack_require__.u(chunkId));
+// 					require('fs').readFile(filename, 'utf-8', function(err, content) {
+// 						if(err) return reject(err);
+// 						var chunk = {};
+// 						require('vm').runInThisContext('(function(exports, require, __dirname, __filename) {' + content + '\n})', filename)(chunk, require, require('path').dirname(filename), filename);
+// 						installChunk(chunk);
+// 					});
+// 				});
+// 				promises.push(installedChunkData[2] = promise);
+// 			} else installedChunks[chunkId] = 0;
+// 		}
+// 	}
+// };
+// // no external install chunk
+// // no HMR
+// // no HMR manifest;
+
+// 在 node 环境中 以 异步的方式 加载 非初始化块
 class ReadFileChunkLoadingRuntimeModule extends RuntimeModule {
 	constructor(runtimeRequirements) {
 		super("readFile chunk loading", RuntimeModule.STAGE_ATTACH);

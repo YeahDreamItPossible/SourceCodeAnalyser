@@ -1,1 +1,0 @@
-(()=>{"use strict";console.log("module a","module b")})();

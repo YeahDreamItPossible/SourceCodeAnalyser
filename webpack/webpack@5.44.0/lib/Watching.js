@@ -1,43 +1,33 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Stats = require("./Stats");
 
-/** @typedef {import("../declarations/WebpackOptions").WatchOptions} WatchOptions */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./Compiler")} Compiler */
-
-/**
- * @template T
- * @callback Callback
- * @param {Error=} err
- * @param {T=} result
- */
+// 开启观察模式后
 // 监听器
 class Watching {
-	/**
-	 * @param {Compiler} compiler the compiler
-	 * @param {WatchOptions} watchOptions options
-	 * @param {Callback<Stats>} handler completion handler
-	 */
 	constructor(compiler, watchOptions, handler) {
+		// 标识: 编译开始时间
 		this.startTime = null;
+		// 标识: 当前编译是否有效(已经在编译中)
 		this.invalid = false;
+		// 
 		this.handler = handler;
-		/** @type {Callback<void>[]} */
+		// 当 编译完成 时 回调函数队列
+		// Array<Callback>
 		this.callbacks = [];
-		/** @type {Callback<void>[] | undefined} */
+		// 当 关闭观察模式 时 回调函数队列
+		// Array<Callback>
 		this._closeCallbacks = undefined;
+		// 标识: 是否已退出观察模式
 		this.closed = false;
+		// 标识: 是否暂停当前编译过程
 		this.suspended = false;
+		// 标识: 
 		this.blocked = false;
 		this._isBlocked = () => false;
 		this._onChange = () => {};
 		this._onInvalid = () => {};
+		// 正常化 watchOptions
 		if (typeof watchOptions === "number") {
 			this.watchOptions = {
 				aggregateTimeout: watchOptions
@@ -50,16 +40,22 @@ class Watching {
 		if (typeof this.watchOptions.aggregateTimeout !== "number") {
 			this.watchOptions.aggregateTimeout = 200;
 		}
+		// 当前编译器
 		this.compiler = compiler;
+		// 标识: 正在编译中
 		this.running = false;
+		// 标识: 是否是初次编译
 		this._initial = true;
+		// 
 		this._invalidReported = true;
+		// 标识: 是否要读取记录信息
 		this._needRecords = true;
+		// 当前监听器
 		this.watcher = undefined;
 		this.pausedWatcher = undefined;
-		/** @type {Set<string>} */
+		// Set<String>
 		this._collectedChangedFiles = undefined;
-		/** @type {Set<string>} */
+		// Set<String>
 		this._collectedRemovedFiles = undefined;
 		this._done = this._done.bind(this);
 		process.nextTick(() => {
@@ -67,6 +63,7 @@ class Watching {
 		});
 	}
 
+	// 
 	_mergeWithCollected(changedFiles, removedFiles) {
 		if (!changedFiles) return;
 		if (!this._collectedChangedFiles) {
@@ -84,6 +81,7 @@ class Watching {
 		}
 	}
 
+	// 开始 Compilation
 	_go(fileTimeInfoEntries, contextTimeInfoEntries, changedFiles, removedFiles) {
 		this._initial = false;
 		if (this.startTime === null) this.startTime = Date.now();
@@ -192,20 +190,13 @@ class Watching {
 		run();
 	}
 
-	/**
-	 * @param {Compilation} compilation the compilation
-	 * @returns {Stats} the compilation stats
-	 */
+	// 返回 Stats 实例
 	_getStats(compilation) {
 		const stats = new Stats(compilation);
 		return stats;
 	}
 
-	/**
-	 * @param {Error=} err an optional error
-	 * @param {Compilation=} compilation the compilation
-	 * @returns {void}
-	 */
+	// 当编译完成时
 	_done(err, compilation) {
 		this.running = false;
 
@@ -294,6 +285,7 @@ class Watching {
 	 * @param {Iterable<string>} missing watched existence entries
 	 * @returns {void}
 	 */
+	// 开启观察模式
 	watch(files, dirs, missing) {
 		this.pausedWatcher = null;
 		this.watcher = this.compiler.watchFileSystem.watch(
@@ -335,10 +327,7 @@ class Watching {
 		);
 	}
 
-	/**
-	 * @param {Callback<void>=} callback signals when the build has completed again
-	 * @returns {void}
-	 */
+	// 
 	invalidate(callback) {
 		if (callback) {
 			this.callbacks.push(callback);
@@ -351,6 +340,7 @@ class Watching {
 		this._invalidate();
 	}
 
+	// 使无效
 	_invalidate(
 		fileTimeInfoEntries,
 		contextTimeInfoEntries,
@@ -375,10 +365,12 @@ class Watching {
 		}
 	}
 
+	// 暂停
 	suspend() {
 		this.suspended = true;
 	}
 
+	// 重新开始
 	resume() {
 		if (this.suspended) {
 			this.suspended = false;
@@ -386,10 +378,7 @@ class Watching {
 		}
 	}
 
-	/**
-	 * @param {Callback<void>} callback signals when the watcher is closed
-	 * @returns {void}
-	 */
+	// 关闭 观察模式
 	close(callback) {
 		if (this._closeCallbacks) {
 			if (callback) {

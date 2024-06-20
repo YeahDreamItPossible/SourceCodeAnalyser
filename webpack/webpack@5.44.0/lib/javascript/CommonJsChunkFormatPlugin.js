@@ -12,8 +12,23 @@ const {
 	updateHashForEntryStartup
 } = require("./StartupHelpers");
 
-// 非运行时Chunk格式
+// (() => {
+// 	var exports = {};
+// 	exports.id = "app";
+// 	exports.ids = ["app"];
+// 	exports.modules = {
+// 		...
+// 	}
+// 	// load runtime
+// 	var __webpack_require__ = require("./runtime.js");
+// 	__webpack_require__.C(exports);
+// 	var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
+// 	var __webpack_exports__ = (__webpack_exec__("./src/index.js"));
+// })();
+
+// 非初始化块时Chunk格式
 // Webpack.options.output.chunkFormat = 'commonjs'
+// 以 commonjs 的方式导出
 class CommonJsChunkFormatPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

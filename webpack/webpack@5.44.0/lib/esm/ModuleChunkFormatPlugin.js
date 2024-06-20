@@ -13,8 +13,15 @@ const {
 	updateHashForEntryStartup
 } = require("../javascript/StartupHelpers");
 
+// export const id = "src_utils_math_js";
+// export const ids = ["src_utils_math_js"];
+// export const modules = {
+// 	...
+// };
+
 // 非运行时Chunk格式
 // Webpack.options.output.chunkFormat = 'module'
+// 以 esm 的方式 导出
 class ModuleChunkFormatPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

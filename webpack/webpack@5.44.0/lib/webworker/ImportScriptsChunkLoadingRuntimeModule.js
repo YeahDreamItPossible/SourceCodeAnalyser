@@ -11,7 +11,7 @@ const { getInitialChunkIds } = require("../javascript/StartupHelpers");
 const compileBooleanMatcher = require("../util/compileBooleanMatcher");
 const { getUndoPath } = require("../util/identifier");
 
-// TODO:
+// 运行时模块之在 WebWorker 环境中 通过 importScripts 的方式加载脚本
 class ImportScriptsChunkLoadingRuntimeModule extends RuntimeModule {
 	constructor(runtimeRequirements, withCreateScriptUrl) {
 		super("importScripts chunk loading", RuntimeModule.STAGE_ATTACH);

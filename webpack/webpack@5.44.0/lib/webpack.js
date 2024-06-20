@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
@@ -19,27 +14,9 @@ const { getNormalizedWebpackOptions } = require("./config/normalization");
 const NodeEnvironmentPlugin = require("./node/NodeEnvironmentPlugin");
 const memoize = require("./util/memoize");
 
-/** @typedef {import("../declarations/WebpackOptions").WebpackOptions} WebpackOptions */
-/** @typedef {import("./Compiler").WatchOptions} WatchOptions */
-/** @typedef {import("./MultiCompiler").MultiCompilerOptions} MultiCompilerOptions */
-/** @typedef {import("./MultiStats")} MultiStats */
-/** @typedef {import("./Stats")} Stats */
-
 const getValidateSchema = memoize(() => require("./validateSchema"));
 
-/**
- * @template T
- * @callback Callback
- * @param {Error=} err
- * @param {T=} stats
- * @returns {void}
- */
-
-/**
- * @param {ReadonlyArray<WebpackOptions>} childOptions options array
- * @param {MultiCompilerOptions} options options
- * @returns {MultiCompiler} a multi-compiler
- */
+// 创建 多个编译器
 const createMultiCompiler = (childOptions, options) => {
 	const compilers = childOptions.map(options => createCompiler(options));
 	const compiler = new MultiCompiler(compilers, options);
@@ -54,10 +31,6 @@ const createMultiCompiler = (childOptions, options) => {
 	return compiler;
 };
 
-/**
- * @param {WebpackOptions} rawOptions options object
- * @returns {Compiler} a compiler
- */
 // 创建Compiler
 const createCompiler = rawOptions => {
 	// normalize(标准化) options
@@ -104,26 +77,7 @@ const createCompiler = rawOptions => {
 	return compiler;
 };
 
-/**
- * @callback WebpackFunctionSingle
- * @param {WebpackOptions} options options object
- * @param {Callback<Stats>=} callback callback
- * @returns {Compiler} the compiler object
- */
-
-/**
- * @callback WebpackFunctionMulti
- * @param {ReadonlyArray<WebpackOptions> & MultiCompilerOptions} options options objects
- * @param {Callback<MultiStats>=} callback callback
- * @returns {MultiCompiler} the multi compiler object
- */
-
-const webpack = /** @type {WebpackFunctionSingle & WebpackFunctionMulti} */ (
-	/**
-	 * @param {WebpackOptions | (ReadonlyArray<WebpackOptions> & MultiCompilerOptions)} options options
-	 * @param {Callback<Stats> & Callback<MultiStats>=} callback callback
-	 * @returns {Compiler | MultiCompiler}
-	 */
+const webpack = (
 	(options, callback) => {
 		const create = () => {
 			// 验证用户options是否合法

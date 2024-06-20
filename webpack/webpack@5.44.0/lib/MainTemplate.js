@@ -10,23 +10,6 @@ const util = require("util");
 const RuntimeGlobals = require("./RuntimeGlobals");
 const memoize = require("./util/memoize");
 
-/** @typedef {import("webpack-sources").ConcatSource} ConcatSource */
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/WebpackOptions").Output} OutputOptions */
-/** @typedef {import("./ModuleTemplate")} ModuleTemplate */
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./Compilation").AssetInfo} AssetInfo */
-/** @typedef {import("./Module")} Module} */
-/** @typedef {import("./util/Hash")} Hash} */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates} */
-/** @typedef {import("./javascript/JavascriptModulesPlugin").RenderContext} RenderContext} */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate} */
-/** @typedef {import("./ModuleGraph")} ModuleGraph} */
-/** @typedef {import("./ChunkGraph")} ChunkGraph} */
-/** @typedef {import("./Template").RenderManifestOptions} RenderManifestOptions} */
-/** @typedef {import("./Template").RenderManifestEntry} RenderManifestEntry} */
-
 const getJavascriptModulesPlugin = memoize(() =>
 	require("./javascript/JavascriptModulesPlugin")
 );
@@ -37,15 +20,12 @@ const getLoadScriptRuntimeModule = memoize(() =>
 	require("./runtime/LoadScriptRuntimeModule")
 );
 
-// TODO webpack 6 remove this class
+// 此类功能已被其他类替代
+// webpack 6 将会移除这个类
 class MainTemplate {
-	/**
-	 *
-	 * @param {OutputOptions} outputOptions output options for the MainTemplate
-	 * @param {Compilation} compilation the compilation
-	 */
 	constructor(outputOptions, compilation) {
 		/** @type {OutputOptions} */
+		// Webpack.options.output
 		this._outputOptions = outputOptions || {};
 		this.hooks = Object.freeze({
 			renderManifest: {
@@ -304,6 +284,7 @@ class MainTemplate {
 	}
 }
 
+// MainTemplate.prototype.requireFn 已被 __webpack_require__ 替代
 Object.defineProperty(MainTemplate.prototype, "requireFn", {
 	get: util.deprecate(
 		() => "__webpack_require__",
@@ -311,13 +292,9 @@ Object.defineProperty(MainTemplate.prototype, "requireFn", {
 		"DEP_WEBPACK_MAIN_TEMPLATE_REQUIRE_FN"
 	)
 });
-
+// MainTemplate.prototype.outputOptions 已被 compilation.outputOptions 替代
 Object.defineProperty(MainTemplate.prototype, "outputOptions", {
 	get: util.deprecate(
-		/**
-		 * @this {MainTemplate}
-		 * @returns {OutputOptions} output options
-		 */
 		function () {
 			return this._outputOptions;
 		},

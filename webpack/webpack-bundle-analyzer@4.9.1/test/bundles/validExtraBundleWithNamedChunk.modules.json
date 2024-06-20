@@ -1,5 +1,0 @@
-{
-  "modules": {
-    "125": "function(n,e,t){console.log(\"it works\");}"
-  }
-}

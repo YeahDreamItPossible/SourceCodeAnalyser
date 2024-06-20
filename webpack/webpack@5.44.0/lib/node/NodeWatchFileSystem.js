@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Watchpack = require("watchpack");
@@ -32,6 +27,7 @@ class NodeWatchFileSystem {
 	 * @param {function(string, number): void} callbackUndelayed callback when the first change was detected
 	 * @returns {Watcher} a watcher
 	 */
+	// 观察
 	watch(
 		files,
 		directories,

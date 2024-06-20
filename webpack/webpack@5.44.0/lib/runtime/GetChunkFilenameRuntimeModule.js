@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -9,12 +5,11 @@ const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 const { first } = require("../util/SetHelpers");
 
-/** @typedef {import("../Chunk")} Chunk */
-/** @typedef {import("../Compilation")} Compilation */
-/** @typedef {import("../Compilation").AssetInfo} AssetInfo */
-/** @typedef {import("../Compilation").PathData} PathData */
-
-/** @typedef {function(PathData, AssetInfo=): string} FilenameFunction */
+// // This function allow to reference async chunks
+// __webpack_require__.u = (chunkId) => {
+// 	// return url for filenames based on template
+// 	return "" + chunkId + ".js";
+// };
 
 // 运行时模块之返回块文件名
 class GetChunkFilenameRuntimeModule extends RuntimeModule {

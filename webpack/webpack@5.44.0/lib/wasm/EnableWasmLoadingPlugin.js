@@ -1,17 +1,7 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("../../declarations/WebpackOptions").LibraryOptions} LibraryOptions */
-/** @typedef {import("../../declarations/WebpackOptions").WasmLoadingType} WasmLoadingType */
-/** @typedef {import("../Compiler")} Compiler */
-
-/** @type {WeakMap<Compiler, Set<WasmLoadingType>>} */
+// WeakMap<Compiler, Set<WasmLoadingType>>
 const enabledTypes = new WeakMap();
-
 const getEnabledTypes = compiler => {
 	let set = enabledTypes.get(compiler);
 	if (set === undefined) {
@@ -21,28 +11,20 @@ const getEnabledTypes = compiler => {
 	return set;
 };
 
+// 确保 wasm 加载插件
+// 根据 Webpack.options.output.enabledWasmLoadingTypes 值 注册插件
+// fetch |"async-node-module | async-node
 class EnableWasmLoadingPlugin {
-	/**
-	 * @param {WasmLoadingType} type library type that should be available
-	 */
 	constructor(type) {
 		this.type = type;
 	}
 
-	/**
-	 * @param {Compiler} compiler the compiler instance
-	 * @param {WasmLoadingType} type type of library
-	 * @returns {void}
-	 */
+	// 添加 自定义wasm加载类型
 	static setEnabled(compiler, type) {
 		getEnabledTypes(compiler).add(type);
 	}
 
-	/**
-	 * @param {Compiler} compiler the compiler instance
-	 * @param {WasmLoadingType} type type of library
-	 * @returns {void}
-	 */
+	// 检查 某中wasm加载类型 是否存在
 	static checkEnabled(compiler, type) {
 		if (!getEnabledTypes(compiler).has(type)) {
 			throw new Error(
@@ -56,11 +38,6 @@ class EnableWasmLoadingPlugin {
 		}
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { type } = this;
 

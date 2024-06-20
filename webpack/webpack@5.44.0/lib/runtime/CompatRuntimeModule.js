@@ -1,23 +1,15 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 
-/** @typedef {import("../MainTemplate")} MainTemplate */
-
+// 运行时模块之兼容
 class CompatRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("compat", RuntimeModule.STAGE_ATTACH);
 		this.fullHash = true;
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { chunkGraph, chunk, compilation } = this;
 		const {
@@ -66,9 +58,7 @@ class CompatRuntimeModule extends RuntimeModule {
 			.join("\n");
 	}
 
-	/**
-	 * @returns {boolean} true, if the runtime module should get it's own scope
-	 */
+	// 运行时模块是否应该有独立作用域
 	shouldIsolate() {
 		// We avoid isolating this to have better backward-compat
 		return false;

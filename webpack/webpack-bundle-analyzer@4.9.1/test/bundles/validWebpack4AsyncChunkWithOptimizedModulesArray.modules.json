@@ -1,5 +1,0 @@
-{
-  "modules": {
-    "549": "function(e,n,t){console.log(\"hello world\")}"
-  }
-}

@@ -16,6 +16,59 @@ const { getUndoPath } = require("../util/identifier");
 // WeakMap<Compilation, Hooks>
 const compilationHooksMap = new WeakMap();
 
+// // no baseURI
+// // object to store loaded and loading chunks
+// // undefined = chunk not loaded, null = chunk preloaded/prefetched
+// // [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
+// var installedChunks = {
+// 	"runtime": 0
+// };
+// var installChunk = (data) => {
+// 	var {ids, modules, runtime} = data;
+// 	// add "modules" to the modules object,
+// 	// then flag all "ids" as loaded and fire callback
+// 	var moduleId, chunkId, i = 0;
+// 	for(moduleId in modules) {
+// 		if(__webpack_require__.o(modules, moduleId)) {
+// 			__webpack_require__.m[moduleId] = modules[moduleId];
+// 		}
+// 	}
+// 	if(runtime) runtime(__webpack_require__);
+// 	for(;i < ids.length; i++) {
+// 		chunkId = ids[i];
+// 		if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
+// 			installedChunks[chunkId][0]();
+// 		}
+// 		installedChunks[ids[i]] = 0;
+// 	}
+// 	__webpack_require__.O();
+// }
+// __webpack_require__.f.j = (chunkId, promises) => {
+// 		// import() chunk loading for javascript
+// 		var installedChunkData = __webpack_require__.o(installedChunks, chunkId) ? installedChunks[chunkId] : undefined;
+// 		if(installedChunkData !== 0) { // 0 means "already installed".
+
+// 			// a Promise means "currently loading".
+// 			if(installedChunkData) {
+// 				promises.push(installedChunkData[1]);
+// 			} else {
+// 				if("runtime" != chunkId) {
+// 					// setup Promise in chunk cache
+// 					var promise = import("./" + __webpack_require__.u(chunkId)).then(installChunk, (e) => {
+// 						if(installedChunks[chunkId] !== 0) installedChunks[chunkId] = undefined;
+// 						throw e;
+// 					});
+// 					var promise = Promise.race([promise, new Promise((resolve) => (installedChunkData = installedChunks[chunkId] = [resolve]))])
+// 					promises.push(installedChunkData[1] = promise);
+// 				} else installedChunks[chunkId] = 0;
+// 			}
+// 		}
+// };
+// // no external install chunk
+// webpack_require__.O.j = (chunkId) => (installedChunks[chunkId] === 0);
+
+// 根据 Webpack.options.output.chunkLoading = 'import' 注册该插件
+// 在 esm 环境中 以 import 的方式加载非初始化块
 class ModuleChunkLoadingRuntimeModule extends RuntimeModule {
 	static getCompilationHooks(compilation) {
 		if (!(compilation instanceof Compilation)) {

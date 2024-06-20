@@ -1,21 +1,14 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ArrayPushCallbackChunkFormatPlugin = require("../javascript/ArrayPushCallbackChunkFormatPlugin");
 const EnableChunkLoadingPlugin = require("../javascript/EnableChunkLoadingPlugin");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// 在 WebWorker 环境下 利用 importScript 加载脚本
+// 并将 非初始化块 格式 设置为 array-push 类型
+// 即:
+// Webpack.options.output.chunkLoading = 'import-scripts'
+// Webpack.options.output.chunkFormat = 'array-push'
 class WebWorkerTemplatePlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.options.output.chunkLoading = "import-scripts";
 		new ArrayPushCallbackChunkFormatPlugin().apply(compiler);

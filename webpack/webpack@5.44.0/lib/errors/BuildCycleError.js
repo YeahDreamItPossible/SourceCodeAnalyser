@@ -1,19 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("../WebpackError");
 
-/** @typedef {import("../Module")} Module */
-
+// 循环构建错误
 class BuildCycleError extends WebpackError {
-	/**
-	 * Creates an instance of ModuleDependencyError.
-	 * @param {Module} module the module starting the cycle
-	 */
 	constructor(module) {
 		super(
 			"There is a circular build dependency, which makes it impossible to create this module"

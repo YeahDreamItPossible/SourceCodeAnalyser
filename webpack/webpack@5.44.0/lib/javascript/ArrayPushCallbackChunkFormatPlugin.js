@@ -10,8 +10,19 @@ const {
 	updateHashForEntryStartup
 } = require("./StartupHelpers");
 
-// 非运行时Chunk格式
+// (self["webpackChunkwebpack"] = self["webpackChunkwebpack"] || []).push([["src_utils_math_js"],{
+// /***/ "./src/utils/math.js":
+// /*!***************************!*\
+//  !*** ./src/utils/math.js ***!
+//  \***************************/
+// /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+// ...
+// /***/ })
+// }]);
+
+// 非初始化块Chunk格式
 // Webpack.options.output.chunkFormat = 'array-push'
+// 以 向数组中 添加项 的方式
 class ArrayPushCallbackChunkFormatPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

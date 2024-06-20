@@ -123,7 +123,7 @@ class WebpackOptionsApply extends OptionsApply {
 		//
 		new ChunkPrefetchPreloadPlugin().apply(compiler);
 
-		// 非运行时Chunk 的格式
+		// 非初始化块Chunk 的格式
 		// Webpack.options.output.chunkFormat
 		if (typeof options.output.chunkFormat === "string") {
 			switch (options.output.chunkFormat) {
