@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const TOMBSTONE = Symbol("tombstone");
@@ -38,6 +33,7 @@ const extractPair = pair => {
  * @template K
  * @template V
  */
+// 栈类型的Map
 class StackedMap {
 	/**
 	 * @param {Map<K, InternalCell<V>>[]=} parentStack an optional parent
@@ -50,11 +46,7 @@ class StackedMap {
 		this.stack.push(this.map);
 	}
 
-	/**
-	 * @param {K} item the key of the element to add
-	 * @param {V} value the value of the element to add
-	 * @returns {void}
-	 */
+	
 	set(item, value) {
 		this.map.set(item, value === undefined ? UNDEFINED_MARKER : value);
 	}
@@ -93,10 +85,6 @@ class StackedMap {
 		return false;
 	}
 
-	/**
-	 * @param {K} item the key of the element to return
-	 * @returns {Cell<V>} the value of the element
-	 */
 	get(item) {
 		const topValue = this.map.get(item);
 		if (topValue !== undefined) {

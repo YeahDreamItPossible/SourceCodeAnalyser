@@ -3,6 +3,8 @@
 const { getEntryRuntime, mergeRuntimeOwned } = require("./util/runtime");
 
 // TODO:
+// 与 DllPlugin 相关
+// 当 DllPlugin.options.entryOnly !== true 时
 class FlagAllModulesAsUsedPlugin {
 	constructor(explanation) {
 		this.explanation = explanation;

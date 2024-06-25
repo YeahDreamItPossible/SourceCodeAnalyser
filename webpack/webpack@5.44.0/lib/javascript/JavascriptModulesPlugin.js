@@ -73,6 +73,8 @@ class JavascriptModulesPlugin {
 		if (hooks === undefined) {
 			hooks = {
 				// 渲染模块内容
+				// EvalSourceMapDevToolPlugin
+				// EvalDevToolModulePlugin
 				renderModuleContent: new SyncWaterfallHook([
 					"source",
 					"module",
@@ -85,30 +87,43 @@ class JavascriptModulesPlugin {
 					"renderContext"
 				]),
 				// 渲染模块包
+				// ModuleInfoHeaderPlugin
 				renderModulePackage: new SyncWaterfallHook([
 					"source",
 					"module",
 					"renderContext"
 				]),
 				// 
+				// EvalDevToolModulePlugin
+				// EvalSourceMapDevToolPlugin
+				// AbstractLibraryPlugin
 				render: new SyncWaterfallHook(["source", "renderContext"]),
 				// 
 				renderContent: new SyncWaterfallHook(["source", "renderContext"]),
-				// 
+				// AbstractLibraryPlugin
 				renderStartup: new SyncWaterfallHook([
 					"source",
 					"module",
 					"startupRenderContext"
 				]),
-				// 
+				// ModuleChunkFormatPlugin
+				// ArrayPushCallbackChunkFormatPlugin
+				// CommonJsChunkFormatPlugin
 				renderChunk: new SyncWaterfallHook(["source", "renderContext"]),
 				// 
 				renderMain: new SyncWaterfallHook(["source", "renderContext"]),
+				// 
 				renderRequire: new SyncWaterfallHook(["code", "renderContext"]),
+				// EvalDevToolModulePlugin
+				// EvalSourceMapDevToolPlugin
 				inlineInRuntimeBailout: new SyncBailHook(["module", "renderContext"]),
+				// 
 				embedInRuntimeBailout: new SyncBailHook(["module", "renderContext"]),
+				// 
 				strictRuntimeBailout: new SyncBailHook(["renderContext"]),
+				// 
 				chunkHash: new SyncHook(["chunk", "hash", "context"]),
+				// 
 				useSourceMap: new SyncBailHook(["chunk", "renderContext"])
 			};
 			compilationHooksMap.set(compilation, hooks);

@@ -1,27 +1,15 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const NormalModule = require("./NormalModule");
 
-/** @typedef {import("./Compiler")} Compiler */
-
+// 设置 loaderContext.target
+// 有的 loader 需要从配置中读取一些 context 信息(保持对旧 loaders 的兼容)
+// 目前版本的loader 从 loader.options 传入
 class LoaderTargetPlugin {
-	/**
-	 * @param {string} target the target
-	 */
 	constructor(target) {
 		this.target = target;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap("LoaderTargetPlugin", compilation => {
 			NormalModule.getCompilationHooks(compilation).loader.tap(

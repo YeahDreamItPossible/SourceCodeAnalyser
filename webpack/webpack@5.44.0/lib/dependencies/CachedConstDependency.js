@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Florent Cailhol @ooflorent
-*/
-
 "use strict";
 
 const DependencyTemplate = require("../DependencyTemplate");
@@ -10,16 +5,8 @@ const InitFragment = require("../InitFragment");
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("../util/Hash")} Hash */
 
+// TODO:
 class CachedConstDependency extends NullDependency {
 	constructor(expression, range, identifier) {
 		super();

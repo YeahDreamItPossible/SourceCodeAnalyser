@@ -1,13 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
 const makeSerializable = require("../util/makeSerializable");
 
+// 动态链接库入口依赖
 class DllEntryDependency extends Dependency {
 	constructor(dependencies, name) {
 		super();

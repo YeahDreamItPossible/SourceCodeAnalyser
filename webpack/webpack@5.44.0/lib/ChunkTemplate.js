@@ -1,27 +1,20 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
 const memoize = require("./util/memoize");
 
-/** @typedef {import("../declarations/WebpackOptions").Output} OutputOptions */
-/** @typedef {import("./Compilation")} Compilation */
-
 const getJavascriptModulesPlugin = memoize(() =>
 	require("./javascript/JavascriptModulesPlugin")
 );
 
-// TODO webpack 6 remove this class
+// webpack 6 将会移除这个类
 class ChunkTemplate {
 	/**
 	 * @param {OutputOptions} outputOptions output options
 	 * @param {Compilation} compilation the compilation
 	 */
 	constructor(outputOptions, compilation) {
+		// Webpack.options.output
 		this._outputOptions = outputOptions || {};
 		this.hooks = Object.freeze({
 			renderManifest: {
@@ -121,6 +114,7 @@ class ChunkTemplate {
 	}
 }
 
+// ChunkTemplate.prototype.outputOptions 已被 compilation.outputOptions 代替
 Object.defineProperty(ChunkTemplate.prototype, "outputOptions", {
 	get: util.deprecate(
 		/**

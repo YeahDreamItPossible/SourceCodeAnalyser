@@ -2,9 +2,6 @@
 
 const WebpackError = require("./WebpackError");
 
-/** @typedef {import("./Dependency").DependencyLocation} DependencyLocation */
-/** @typedef {import("./Module")} Module */
-
 const previouslyPolyfilledBuiltinModules = {
 	assert: "assert/",
 	buffer: "buffer/",

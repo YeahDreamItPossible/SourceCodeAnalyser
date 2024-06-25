@@ -1,14 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { cutOffLoaderExecution } = require("./ErrorHelpers");
 const WebpackError = require("./WebpackError");
 const makeSerializable = require("./util/makeSerializable");
 
+// 模块构建错误
 class ModuleBuildError extends WebpackError {
 	/**
 	 * @param {string | Error&any} err error thrown

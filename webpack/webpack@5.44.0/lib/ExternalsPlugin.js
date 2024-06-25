@@ -2,10 +2,9 @@
 
 const ExternalModuleFactoryPlugin = require("./ExternalModuleFactoryPlugin");
 
-/**
- * 从输出的bundle中排除依赖(以cdn的方式引入的依赖)
- * 根据Webpack.options.externals和Webpack.options.externalsType字段配置
- */
+// 外部扩展插件
+// 从输出的bundle中排除依赖(以cdn的方式引入的依赖)
+// 根据 Webpack.options.externals 和 Webpack.options.externalsType 字段配置
 class ExternalsPlugin {
 	constructor(type, externals) {
 		// Webpack.options.externalsType

@@ -103,8 +103,8 @@ class Module extends DependenciesBlock {
 		this.buildMeta = undefined;
 		// 构建信息
 		this.buildInfo = undefined;
-		// TODO:
-		// 这个依赖 暂时不知道是什么
+		// 属于当前模块的依赖集合
+		// Array<Dependency>
 		this.presentationalDependencies = undefined;
 	}
 
@@ -447,6 +447,7 @@ class Module extends DependenciesBlock {
 	 * This is a Dependency without edge in the module graph. It's only for presentation.
 	 * @returns {void}
 	 */
+	// 添加依赖
 	addPresentationalDependency(presentationalDependency) {
 		if (this.presentationalDependencies === undefined) {
 			this.presentationalDependencies = [];

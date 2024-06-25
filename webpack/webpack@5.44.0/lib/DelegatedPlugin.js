@@ -1,25 +1,15 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const DelegatedModuleFactoryPlugin = require("./DelegatedModuleFactoryPlugin");
 const DelegatedSourceDependency = require("./dependencies/DelegatedSourceDependency");
 
-/** @typedef {import("./Compiler")} Compiler */
-
+// TODO:
+// 代理插件
 class DelegatedPlugin {
 	constructor(options) {
 		this.options = options;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"DelegatedPlugin",

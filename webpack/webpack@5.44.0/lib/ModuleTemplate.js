@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
@@ -22,7 +17,7 @@ const getJavascriptModulesPlugin = memoize(() =>
 	require("./javascript/JavascriptModulesPlugin")
 );
 
-// TODO webpack 6: remove this class
+// webpack 6 将会移除这个类
 class ModuleTemplate {
 	/**
 	 * @param {RuntimeTemplate} runtimeTemplate the runtime template
@@ -125,6 +120,7 @@ class ModuleTemplate {
 	}
 }
 
+// ModuleTemplate.prototype.runtimeTemplate 已被 compilation.runtimeTemplate 替代
 Object.defineProperty(ModuleTemplate.prototype, "runtimeTemplate", {
 	get: util.deprecate(
 		/**

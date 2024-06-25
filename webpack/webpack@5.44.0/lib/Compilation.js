@@ -323,7 +323,7 @@ const { isSourceEqual } = require("./util/source");
 const EMPTY_ASSET_INFO = Object.freeze({});
 
 const esmDependencyCategory = "esm";
-// Compilation.hooks.normalModuleLoader 已被 NormalModule.getCompilationHooks(compilation).loader 替代
+// compilation.hooks.normalModuleLoader 已被 NormalModule.getCompilationHooks(compilation).loader 替代
 const deprecatedNormalModuleLoaderHook = util.deprecate(
 	compilation => {
 		return require("./NormalModule").getCompilationHooks(compilation).loader;
@@ -677,6 +677,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 在执行完 compilation.hooks.afterOptimizeChunkModules 后立即执行
 			// NoEmitOnErrorsPlugin
 			shouldRecord: new SyncBailHook([]),
+			// TODO:
+			// 当前chunk 以及 所需要的 运行时变量
 			// ModuleChunkFormatPlugin
 			// ArrayPushCallbackChunkFormatPlugin
 			// CommonJsChunkFormatPlugin
@@ -687,17 +689,20 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				"runtimeRequirements",
 				"context"
 			]),
-			// 
+			// TODO:
+			// 当前chunk 以及 所需要的 运行时变量
 			runtimeRequirementInChunk: new HookMap(
 				() => new SyncBailHook(["chunk", "runtimeRequirements", "context"])
 			),
-			// 
+			// TODO:
+			// 当前模块 以及 所需要的 运行时变量
 			additionalModuleRuntimeRequirements: new SyncHook([
 				"module",
 				"runtimeRequirements",
 				"context"
 			]),
-			// 
+			// TODO:
+			// 当前模块 以及 所需要的 运行时变量
 			runtimeRequirementInModule: new HookMap(
 				() => new SyncBailHook(["module", "runtimeRequirements", "context"])
 			),
@@ -946,7 +951,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		if (compiler.contextTimestamps) {
 			this.fileSystemInfo.addContextTimestamps(compiler.contextTimestamps);
 		}
-		/** @type {Map<string, string | Set<string>>} */
+		// 
 		this.valueCacheVersions = new Map();
 		// 路径缩短器
 		this.requestShortener = compiler.requestShortener;
@@ -1077,7 +1082,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// Array<String>
 		this.additionalChunkAssets = [];
 		// 资源
-		// Object<Filename, WebpackSource>
+		// Object<Filename, Source>
 		this.assets = {};
 		// 资源信息
 		// Map<Filename, AssetInfo>
@@ -1326,7 +1331,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	// 添加模块队列中 添加添加模块任务
+	// 向添加模块队列中 添加添加模块任务
 	addModule(module, callback) {
 		this.addModuleQueue.add(module, callback);
 	}
@@ -1374,7 +1379,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		});
 	}
 
-	// 根据 Module.id 返回 Module
+	// 根据 module.id 返回 Module
 	getModule(module) {
 		const identifier = module.identifier();
 		return this._modules.get(identifier);
@@ -1458,7 +1463,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	// 解析依赖队列中 添加解析依赖任务
+	// 向解析依赖队列中 添加解析依赖任务
 	processModuleDependencies(module, callback) {
 		this.processDependenciesQueue.add(module, callback);
 	}
@@ -1881,7 +1886,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	// 
+	// 添加模块链
 	addModuleChain(context, dependency, callback) {
 		return this.addModuleTree({ context, dependency }, callback);
 	}
@@ -1942,7 +1947,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this._addEntryItem(context, entry, "dependencies", options, callback);
 	}
 
-	// TODO: 模块联邦 
+	// TODO:
+	// 与 模块联邦 相关 
 	addInclude(context, dependency, options, callback) {
 		this._addEntryItem(
 			context,
@@ -2015,20 +2021,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	/**
-	 * @param {Module} module module to be rebuilt
-	 * @param {ModuleCallback} callback callback when module finishes rebuilding
-	 * @returns {void}
-	 */
+	// 向重建模块队列中 添加模块重建任务
 	rebuildModule(module, callback) {
 		this.rebuildQueue.add(module, callback);
 	}
 
-	/**
-	 * @param {Module} module module to be rebuilt
-	 * @param {ModuleCallback} callback callback when module finishes rebuilding
-	 * @returns {void}
-	 */
+	// 重新构建模块
 	_rebuildModule(module, callback) {
 		this.hooks.rebuildModule.call(module);
 		const oldDependencies = module.dependencies.slice();
@@ -2342,8 +2340,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			/* empty */
 		}
 
-		// 空调用
 		// 依赖优化之后触发
+		// WebAssemblyModulesPlugin
 		this.hooks.afterOptimizeDependencies.call(this.modules);
 
 		this.logger.timeEnd("optimize dependencies");
@@ -2675,7 +2673,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						// 空调用
 						this.hooks.beforeRuntimeRequirements.call();
 
-						// TODO:
+						// 处理 模块 和 块 运行时所需要的运行时变量
 						this.processRuntimeRequirements();
 
 						// 空调用
@@ -2720,7 +2718,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 							// 在创建模块 asset 之前执行
 							this.hooks.beforeModuleAssets.call();
 
-							// TODO: 值得好好看看
+							// TODO: 
 							this.createModuleAssets();
 
 							this.logger.timeEnd("module assets");
@@ -2928,19 +2926,6 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 	}
 
 	/**
-	 * @param {Module} module module
-	 * @param {RuntimeSpec} runtime runtime
-	 * @param {RuntimeSpec[]} runtimes runtimes
-	 * @param {string} hash hash
-	 * @param {DependencyTemplates} dependencyTemplates dependencyTemplates
-	 * @param {ChunkGraph} chunkGraph chunkGraph
-	 * @param {ModuleGraph} moduleGraph moduleGraph
-	 * @param {RuntimeTemplate} runtimeTemplate runtimeTemplate
-	 * @param {WebpackError[]} errors errors
-	 * @param {CodeGenerationResults} results results
-	 * @param {function(WebpackError=, boolean=): void} callback callback
-	 */
-	/**
 	 * Module生成代码
 	 * 1. Module.codeGeneration 生成代码
 	 * 2. 缓存生成的代码
@@ -3019,16 +3004,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return treeEntries;
 	}
 
-	/**
-	 * @param {Object} options options
-	 * @param {ChunkGraph=} options.chunkGraph the chunk graph
-	 * @param {Iterable<Module>=} options.modules modules
-	 * @param {Iterable<Chunk>=} options.chunks chunks
-	 * @param {CodeGenerationResults=} options.codeGenerationResults codeGenerationResults
-	 * @param {Iterable<Chunk>=} options.chunkGraphEntries chunkGraphEntries
-	 * @returns {void}
-	 */
-	// 
+	// 处理 模块 及 块 运行时所需要的 运行时变量
 	processRuntimeRequirements({
 		chunkGraph = this.chunkGraph,
 		modules = this.modules,
@@ -3194,6 +3170,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 	 * @param {string} request the request from which the the chunk group is referenced
 	 * @returns {Entrypoint} the new or existing entrypoint
 	 */
+	// 添加异步入口
 	addAsyncEntrypoint(options, module, loc, request) {
 		const name = options.name;
 		if (name) {
@@ -3247,6 +3224,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return chunk;
 	}
 
+	// 为给定的模块及其依赖块递归分配 depth 
 	// 递归设置 ModuleGraphModule.depth
 	assignDepth(module) {
 		const moduleGraph = this.moduleGraph;
@@ -3278,11 +3256,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	/**
-	 * @param {Dependency} dependency the dependency
-	 * @param {RuntimeSpec} runtime the runtime
-	 * @returns {(string[] | ReferencedExport)[]} referenced exports
-	 */
+	// 返回给定模块对依赖的引用
 	getDependencyReferencedExports(dependency, runtime) {
 		const referencedExports = dependency.getReferencedExports(
 			this.moduleGraph,
@@ -3295,12 +3269,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		);
 	}
 
-	/**
-	 *
-	 * @param {Module} module module relationship for removal
-	 * @param {DependenciesBlockLike} block //TODO: good description
-	 * @returns {void}
-	 */
+	// 移除模块与依赖块之间的关系
 	removeReasonsOfDependencyBlock(module, block) {
 		if (block.blocks) {
 			for (const b of block.blocks) {
@@ -3326,11 +3295,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	/**
-	 * @param {Module} module module to patch tie
-	 * @param {Chunk} chunk chunk to patch tie
-	 * @returns {void}
-	 */
+	// 删除依赖性原因后，修补模块和 chunk 的关系
 	patchChunksAfterReasonRemoval(module, chunk) {
 		if (!module.hasReasons(this.moduleGraph, chunk.runtime)) {
 			this.removeReasonsOfDependencyBlock(module, module);
@@ -3343,12 +3308,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	/**
-	 *
-	 * @param {DependenciesBlock} block block tie for Chunk
-	 * @param {Chunk} chunk chunk to remove from dep
-	 * @returns {void}
-	 */
+	// 在除去依赖性原因后，从依赖块模块和 chunk 中移除给定的 chunk
 	removeChunkFromDependencies(block, chunk) {
 		/**
 		 * @param {Dependency} d dependency to (maybe) patch up
@@ -3747,12 +3707,6 @@ This prevents using hashes of each other and should be avoided.`);
 		return codeGenerationJobs;
 	}
 
-	/**
-	 * @param {string} file file name
-	 * @param {Source} source asset source
-	 * @param {AssetInfo} assetInfo extra asset information
-	 * @returns {void}
-	 */
 	// 存储 资源文件(构建产物)
 	// 设置 compilation.assets
 	emitAsset(file, source, assetInfo = {}) {
@@ -3992,7 +3946,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	// TODO: 为什么会根据module.buildInfo.assets信息生成compilation.assets
+	// 从缓存(module.buildInfo.assetsInfo)中读取生成的代码
 	createModuleAssets() {
 		const { chunkGraph } = this;
 		for (const module of this.modules) {
@@ -4026,16 +3980,12 @@ This prevents using hashes of each other and should be avoided.`);
 		return this.hooks.renderManifest.call([], options);
 	}
 
-	/**
-	 * @param {Callback} callback signals when the call finishes
-	 * @returns {void}
-	 */
 	// render chunk
 	// 根据chunks来生成compilation.assets
 	createChunkAssets(callback) {
 		const outputOptions = this.outputOptions;
 		const cachedSourceMap = new WeakMap();
-		/** @type {Map<string, {hash: string, source: Source, chunk: Chunk}>} */
+		// Map<string, {hash: string, source: Source, chunk: Chunk}>
 		const alreadyWrittenFiles = new Map();
 
 		asyncLib.forEach(
@@ -4187,11 +4137,6 @@ This prevents using hashes of each other and should be avoided.`);
 		);
 	}
 
-	/**
-	 * @param {string | function(PathData, AssetInfo=): string} filename used to get asset path with hash
-	 * @param {PathData} data context data
-	 * @returns {string} interpolated path
-	 */
 	// 返回 资源路径信息
 	getPath(filename, data = {}) {
 		if (!data.hash) {
@@ -4218,11 +4163,6 @@ This prevents using hashes of each other and should be avoided.`);
 		return this.getAssetPathWithInfo(filename, data);
 	}
 
-	/**
-	 * @param {string | function(PathData, AssetInfo=): string} filename used to get asset path with hash
-	 * @param {PathData} data context data
-	 * @returns {string} interpolated path
-	 */
 	// 
 	getAssetPath(filename, data) {
 		// TemplatedPathPlugin
@@ -4233,15 +4173,9 @@ This prevents using hashes of each other and should be avoided.`);
 		);
 	}
 
-	/**
-	 * @param {string | function(PathData, AssetInfo=): string} filename used to get asset path with hash
-	 * @param {PathData} data context data
-	 * @returns {{ path: string, info: AssetInfo }} interpolated path and asset info
-	 */
-	// 返回 资源路径信息
+	// 返回 资源路径和资源信息
 	getAssetPathWithInfo(filename, data) {
 		const assetInfo = {};
-		// TODO webpack 5: refactor assetPath hook to receive { path, info } object
 		// TemplatedPathPlugin
 		const newPath = this.hooks.assetPath.call(
 			typeof filename === "function" ? filename(data, assetInfo) : filename,
@@ -4628,6 +4562,7 @@ This prevents using hashes of each other and should be avoided.`);
 		);
 	}
 
+	// 检查约束
 	checkConstraints() {
 		const chunkGraph = this.chunkGraph;
 
@@ -4669,9 +4604,7 @@ This prevents using hashes of each other and should be avoided.`);
 	}
 }
 
-// Hide from typescript
 const compilationPrototype = Compilation.prototype;
-
 // Compilation.prototype.modifyHash 已被 Compilation.hooks.fullHash 替代
 Object.defineProperty(compilationPrototype, "modifyHash", {
 	writable: false,
@@ -4705,7 +4638,7 @@ Object.defineProperty(compilationPrototype, "cache", {
 	)
 });
 
-// dui compilation.assets 进行加工处理的注册事件默认阶段
+// 对 compilation.assets 进行加工处理的注册事件默认阶段
 // 在编译中添加额外的 asset
 Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL = -2000;
 // 对 asset 进行了基础预处理

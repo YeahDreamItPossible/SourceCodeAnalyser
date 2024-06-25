@@ -6,28 +6,6 @@ const {
 	makeWebpackErrorCallback
 } = require("./HookWebpackError");
 
-/** @typedef {import("./WebpackError")} WebpackError */
-
-/**
- * @typedef {Object} Etag
- * @property {function(): string} toString
- */
-
-/**
- * @template T
- * @callback CallbackCache
- * @param {WebpackError=} err
- * @param {T=} result
- * @returns {void}
- */
-
-/**
- * @callback GotHandler
- * @param {any} result
- * @param {function(Error=): void} callback
- * @returns {void}
- */
-
 const needCalls = (times, callback) => {
 	return err => {
 		if (--times === 0) {
@@ -44,17 +22,17 @@ const needCalls = (times, callback) => {
 class Cache {
 	constructor() {
 		this.hooks = {
-			/** @type {AsyncSeriesBailHook<[string, Etag | null, GotHandler[]], any>} */
+			// AsyncSeriesBailHook<[string, Etag | null, GotHandler[]], any>
 			get: new AsyncSeriesBailHook(["identifier", "etag", "gotHandlers"]),
-			/** @type {AsyncParallelHook<[string, Etag | null, any]>} */
+			// AsyncParallelHook<[string, Etag | null, any]>
 			store: new AsyncParallelHook(["identifier", "etag", "data"]),
-			/** @type {AsyncParallelHook<[Iterable<string>]>} */
+			// AsyncParallelHook<[Iterable<string>]>
 			storeBuildDependencies: new AsyncParallelHook(["dependencies"]),
-			/** @type {SyncHook<[]>} */
+			// SyncHook<[]>
 			beginIdle: new SyncHook([]),
-			/** @type {AsyncParallelHook<[]>} */
+			// AsyncParallelHook<[]>
 			endIdle: new AsyncParallelHook([]),
-			/** @type {AsyncParallelHook<[]>} */
+			// AsyncParallelHook<[]>
 			shutdown: new AsyncParallelHook([])
 		};
 	}
@@ -109,7 +87,6 @@ class Cache {
 		);
 	}
 
-	
 	beginIdle() {
 		this.hooks.beginIdle.call();
 	}

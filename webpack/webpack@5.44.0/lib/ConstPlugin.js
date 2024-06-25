@@ -108,12 +108,9 @@ const getHoistedDeclarations = (branch, includeFunctionDeclarations) => {
 	return Array.from(declarations);
 };
 
+// TODO:
+// 
 class ConstPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const cachedParseResource = parseResource.bindCache(compiler.root);
 		compiler.hooks.compilation.tap(

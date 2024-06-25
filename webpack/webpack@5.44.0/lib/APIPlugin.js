@@ -107,6 +107,7 @@ const REPLACEMENTS = {
 /* eslint-enable camelcase */
 
 // TODO:
+// 
 class APIPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

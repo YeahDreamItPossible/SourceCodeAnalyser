@@ -1,14 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
-/** @typedef {import("./Module")} Module */
-
+// 模块存储错误
 class ModuleStoreError extends WebpackError {
 	/**
 	 * @param {Module} module module tied to dependency

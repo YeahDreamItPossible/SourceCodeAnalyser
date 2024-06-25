@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { OriginalSource, RawSource } = require("webpack-sources");
@@ -38,6 +33,8 @@ const RUNTIME_REQUIREMENTS = new Set([
 	RuntimeGlobals.require
 ]);
 
+// TODO:
+// 
 class DelegatedModule extends Module {
 	constructor(sourceRequest, data, type, userRequest, originalRequest) {
 		super("javascript/dynamic", null);
@@ -55,9 +52,6 @@ class DelegatedModule extends Module {
 		this.delegatedSourceDependency = undefined;
 	}
 
-	/**
-	 * @returns {Set<string>} types available (do not mutate)
-	 */
 	getSourceTypes() {
 		return TYPES;
 	}

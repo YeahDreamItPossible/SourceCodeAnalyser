@@ -12,7 +12,7 @@ const makePathsRelative = require("./util/identifier").makePathsRelative;
 /** @typedef {import("../declarations/plugins/DllReferencePlugin").DllReferencePluginOptions} DllReferencePluginOptions */
 /** @typedef {import("../declarations/plugins/DllReferencePlugin").DllReferencePluginOptionsManifest} DllReferencePluginOptionsManifest */
 
-// 验证选项
+// 验证 DllReferencePlugin.options 选项
 const validate = createSchemaValidation(
 	require("../schemas/plugins/DllReferencePlugin.check.js"),
 	() => require("../schemas/plugins/DllReferencePlugin.json"),
@@ -23,9 +23,6 @@ const validate = createSchemaValidation(
 );
 
 class DllReferencePlugin {
-	/**
-	 * @param {DllReferencePluginOptions} options options object
-	 */
 	constructor(options) {
 		validate(options);
 		this.options = options;

@@ -9,8 +9,7 @@ const DynamicExports = require("./DynamicExports");
 const HarmonyCompatibilityDependency = require("./HarmonyCompatibilityDependency");
 const HarmonyExports = require("./HarmonyExports");
 
-// TODO:
-// 代码分析器 插件
+// ES 检查 语法分析插件
 module.exports = class HarmonyDetectionParserPlugin {
 	constructor(options) {
 		const { topLevelAwait = false } = options || {};
@@ -19,7 +18,9 @@ module.exports = class HarmonyDetectionParserPlugin {
 
 	apply(parser) {
 		parser.hooks.program.tap("HarmonyDetectionParserPlugin", ast => {
+			// 是否是 esm 模块
 			const isStrictHarmony = parser.state.module.type === "javascript/esm";
+			// 是否是 esm 模块
 			const isHarmony =
 				isStrictHarmony ||
 				ast.body.some(

@@ -2,7 +2,7 @@
 
 const WebpackError = require("./WebpackError");
 
-// 异步依赖初始块错误
+// 异步依赖转初始块错误
 class AsyncDependencyToInitialChunkError extends WebpackError {
 	constructor(chunkName, module, loc) {
 		super(

@@ -10,31 +10,11 @@ const {
 } = require("./javascript/JavascriptParserHelpers");
 const { provide } = require("./util/MapHelpers");
 
-/** @typedef {import("estree").Expression} Expression */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./NormalModule")} NormalModule */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("./javascript/JavascriptParser")} JavascriptParser */
-
-/** @typedef {null|undefined|RegExp|Function|string|number|boolean|bigint|undefined} CodeValuePrimitive */
-/** @typedef {RecursiveArrayOrRecord<CodeValuePrimitive|RuntimeValue>} CodeValue */
-
-/**
- * @typedef {Object} RuntimeValueOptions
- * @property {string[]=} fileDependencies
- * @property {string[]=} contextDependencies
- * @property {string[]=} missingDependencies
- * @property {string[]=} buildDependencies
- * @property {string|function(): string=} version
- */
 
 class RuntimeValue {
-	/**
-	 * @param {function({ module: NormalModule, key: string, readonly version: string | undefined }): CodeValuePrimitive} fn generator function
-	 * @param {true | string[] | RuntimeValueOptions=} options options
-	 */
 	constructor(fn, options) {
 		this.fn = fn;
+		// True || Array<String>
 		if (Array.isArray(options)) {
 			options = {
 				fileDependencies: options
@@ -211,6 +191,7 @@ const toCode = (
 	return code + "";
 };
 
+// 
 const toCacheVersion = code => {
 	if (code === null) {
 		return "null";
@@ -247,29 +228,19 @@ const toCacheVersion = code => {
 const VALUE_DEP_PREFIX = "webpack/DefinePlugin ";
 const VALUE_DEP_MAIN = "webpack/DefinePlugin";
 
+// 定义插件
+// 允许在 编译时 将你代码中的变量替换为其他值或表达式
 class DefinePlugin {
-	/**
-	 * Create a new define plugin
-	 * @param {Record<string, CodeValue>} definitions A map of global object definitions
-	 */
 	constructor(definitions) {
+		// Recode<String, CodeValue>
 		this.definitions = definitions;
 	}
 
-	/**
-	 * @param {function({ module: NormalModule, key: string, readonly version: string | undefined }): CodeValuePrimitive} fn generator function
-	 * @param {true | string[] | RuntimeValueOptions=} options options
-	 * @returns {RuntimeValue} runtime value
-	 */
+	// 返回 RuntimeValue 实例
 	static runtimeValue(fn, options) {
 		return new RuntimeValue(fn, options);
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const definitions = this.definitions;
 		compiler.hooks.compilation.tap(
@@ -281,7 +252,8 @@ class DefinePlugin {
 				);
 				const { runtimeTemplate } = compilation;
 
-				const mainValue = /** @type {Set<string>} */ (
+				// Set<String>
+				const mainValue = (
 					provide(
 						compilation.valueCacheVersions,
 						VALUE_DEP_MAIN,
@@ -289,16 +261,13 @@ class DefinePlugin {
 					)
 				);
 
-				/**
-				 * Handler
-				 * @param {JavascriptParser} parser Parser
-				 * @returns {void}
-				 */
 				const handler = parser => {
+					// 设置 module.buildInfo.valueDependencies
 					parser.hooks.program.tap("DefinePlugin", () => {
 						const { buildInfo } = parser.state.module;
-						if (!buildInfo.valueDependencies)
+						if (!buildInfo.valueDependencies) {
 							buildInfo.valueDependencies = new Map();
+						}
 						buildInfo.valueDependencies.set(VALUE_DEP_MAIN, mainValue);
 					});
 
@@ -549,12 +518,6 @@ class DefinePlugin {
 					.for("javascript/esm")
 					.tap("DefinePlugin", handler);
 
-				/**
-				 * Walk definitions
-				 * @param {Object} definitions Definitions map
-				 * @param {string} prefix Prefix string
-				 * @returns {void}
-				 */
 				const walkDefinitionsForValues = (definitions, prefix) => {
 					Object.keys(definitions).forEach(key => {
 						const code = definitions[key];

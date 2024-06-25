@@ -1,14 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { cleanUp } = require("./ErrorHelpers");
 const WebpackError = require("./WebpackError");
 const makeSerializable = require("./util/makeSerializable");
 
+// 模块警告
 class ModuleWarning extends WebpackError {
 	/**
 	 * @param {Error} warning error thrown

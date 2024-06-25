@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("./RuntimeGlobals");
@@ -11,14 +6,9 @@ const {
 	toConstantDependency
 } = require("./javascript/JavascriptParserHelpers");
 
-/** @typedef {import("./Compiler")} Compiler */
-
+// 解决兼容问题
+// 兼容 require.config require.version require.onError 方法
 module.exports = class RequireJsStuffPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"RequireJsStuffPlugin",

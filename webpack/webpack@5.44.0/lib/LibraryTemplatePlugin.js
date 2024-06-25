@@ -1,20 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const EnableLibraryPlugin = require("./library/EnableLibraryPlugin");
 
-/** @typedef {import("../declarations/WebpackOptions").AuxiliaryComment} AuxiliaryComment */
-/** @typedef {import("../declarations/WebpackOptions").LibraryExport} LibraryExport */
-/** @typedef {import("../declarations/WebpackOptions").LibraryName} LibraryName */
-/** @typedef {import("../declarations/WebpackOptions").LibraryType} LibraryType */
-/** @typedef {import("../declarations/WebpackOptions").UmdNamedDefine} UmdNamedDefine */
-/** @typedef {import("./Compiler")} Compiler */
-
-// TODO webpack 6 remove
+// TODO:
+// 
+// webpack 6 将会移除这个类
 class LibraryTemplatePlugin {
 	/**
 	 * @param {LibraryName} name name of library
@@ -33,11 +23,6 @@ class LibraryTemplatePlugin {
 		};
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const { output } = compiler.options;
 		output.library = this.library;

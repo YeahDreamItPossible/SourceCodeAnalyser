@@ -8,7 +8,6 @@ function createMessage(method) {
 	return `Abstract method${method ? " " + method : ""}. Must be overridden.`;
 }
 
-
 function Message() {
 	this.stack = undefined;
 	// 非 标准属性

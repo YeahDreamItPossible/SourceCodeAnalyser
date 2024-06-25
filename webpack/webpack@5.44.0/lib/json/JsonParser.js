@@ -26,11 +26,13 @@ class JsonParser extends Parser {
 				? source
 				: parseFn(source[0] === "\ufeff" ? source.slice(1) : source);
 
-		// 
+		// 存储数据
 		state.module.buildInfo.jsonData = new JsonData(data);
+		// 严格模式
 		state.module.buildInfo.strict = true;
-		// 
+		// 默认导出 default
 		state.module.buildMeta.exportsType = "default";
+		// 
 		state.module.buildMeta.defaultObject =
 			typeof data === "object" ? "redirect-warn" : false;
 		state.module.addDependency(

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
@@ -115,7 +110,6 @@ const createOrderedArrayFunction = comparator => {
 	createOrderedArrayFunctionMap.set(comparator, fn);
 	return fn;
 };
-
 
 // 返回所有的 Module 的大小之和
 const getModulesSize = modules => {
@@ -1129,19 +1123,12 @@ class ChunkGraph {
 		cgm.id = id;
 	}
 
-	/**
-	 * @param {string} runtime runtime
-	 * @returns {string | number} the id of the runtime
-	 */
+	// 返回
 	getRuntimeId(runtime) {
 		return this._runtimeIds.get(runtime);
 	}
 
-	/**
-	 * @param {string} runtime runtime
-	 * @param {string | number} id the id of the runtime
-	 * @returns {void}
-	 */
+	// 设置运行时id
 	setRuntimeId(runtime, id) {
 		this._runtimeIds.set(runtime, id);
 	}

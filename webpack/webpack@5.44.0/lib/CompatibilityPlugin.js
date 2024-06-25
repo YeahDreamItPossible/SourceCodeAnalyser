@@ -5,7 +5,7 @@ const ConstDependency = require("./dependencies/ConstDependency");
 const nestedWebpackRequireTag = Symbol("nested __webpack_require__");
 
 // TODO:
-// 兼容性
+// 兼容性插件
 class CompatibilityPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

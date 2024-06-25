@@ -1,16 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ModuleDependency = require("./ModuleDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-
+// TODO:
+// 
 class ModuleDependencyTemplateAsId extends ModuleDependency.Template {
 	/**
 	 * @param {Dependency} dependency the dependency for which the template should be applied

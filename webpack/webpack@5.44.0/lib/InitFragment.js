@@ -38,6 +38,7 @@ class InitFragment {
 		return this.endContent;
 	}
 
+	// 将 初始化代码片段 融合进 Source 中
 	// 返回 Source
 	static addToSource(source, initFragments, context) {
 		if (initFragments.length > 0) {

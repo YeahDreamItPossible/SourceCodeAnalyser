@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ * 主要对 Webpack.options 标准化
+ */
+
 const util = require("util");
 
 const handledDeprecatedNoEmitOnErrors = util.deprecate(
@@ -512,5 +516,5 @@ const getNormalizedOptimizationRuntimeChunk = runtimeChunk => {
 	};
 };
 
-// 主要对用户 Webpack.options 标准化
+// 主要对 Webpack.options 标准化
 exports.getNormalizedWebpackOptions = getNormalizedWebpackOptions;

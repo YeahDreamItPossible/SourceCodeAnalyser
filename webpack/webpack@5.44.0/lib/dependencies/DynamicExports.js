@@ -1,19 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 /** @typedef {import("../Parser").ParserState} ParserState */
 
-/** @type {WeakMap<ParserState, boolean>} */
+// WeakMap<ParserState, boolean>
 const parserStateExportsState = new WeakMap();
 
-/**
- * @param {ParserState} parserState parser state
- * @returns {void}
- */
+// 设置 parser.module.buildMeta
 exports.bailout = parserState => {
 	const value = parserStateExportsState.get(parserState);
 	parserStateExportsState.set(parserState, false);

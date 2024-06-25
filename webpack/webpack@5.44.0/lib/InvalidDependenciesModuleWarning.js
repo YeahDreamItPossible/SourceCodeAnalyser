@@ -1,16 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 const makeSerializable = require("./util/makeSerializable");
 
-/** @typedef {import("./Dependency").DependencyLocation} DependencyLocation */
-/** @typedef {import("./Module")} Module */
-
+// 无效的依赖模块警告
 class InvalidDependenciesModuleWarning extends WebpackError {
 	/**
 	 * @param {Module} module module tied to dependency

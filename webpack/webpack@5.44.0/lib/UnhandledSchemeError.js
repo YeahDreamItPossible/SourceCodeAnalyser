@@ -1,13 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Ivan Kopeykin @vankop
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 const makeSerializable = require("./util/makeSerializable");
 
+// 
 class UnhandledSchemeError extends WebpackError {
 	/**
 	 * @param {string} scheme scheme

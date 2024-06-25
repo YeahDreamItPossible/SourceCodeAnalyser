@@ -1,15 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Chunk = require("./Chunk");
 
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./util/Hash")} Hash */
-
+// 热更新块
 class HotUpdateChunk extends Chunk {
 	constructor() {
 		super();

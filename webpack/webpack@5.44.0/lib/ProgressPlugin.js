@@ -6,7 +6,7 @@ const NormalModule = require("./NormalModule");
 const createSchemaValidation = require("./util/create-schema-validation");
 const { contextify } = require("./util/identifier");
 
-// 验证 ProgressPlugin options
+// 验证 ProgressPlugin.options
 const validate = createSchemaValidation(
 	require("../schemas/plugins/ProgressPlugin.check.js"),
 	() => require("../schemas/plugins/ProgressPlugin.json"),
@@ -86,12 +86,12 @@ const createDefaultHandler = (profile, logger) => {
 	return defaultHandler;
 };
 
-// WeakMap<Compiler,ReportProgress>
+// WeakMap<Compiler, ReportProgress>
 const progressReporters = new WeakMap();
 
 /**
  * 进度插件
- * 自定义报告当前编译进度
+ * 自定义报告当前编译进度格式
  */
 class ProgressPlugin {
 	static getReporter(compiler) {
@@ -133,6 +133,7 @@ class ProgressPlugin {
 		}
 	}
 
+	// 对于 多个编译器
 	_applyOnMultiCompiler(compiler, handler) {
 		const states = compiler.compilers.map(
 			() => /** @type {[number, ...string[]]} */ ([0])
@@ -147,7 +148,7 @@ class ProgressPlugin {
 		});
 	}
 
-	// 对于
+	// 对于 单个编译器
 	_applyOnCompiler(compiler, handler) {
 		const showEntries = this.showEntries;
 		const showModules = this.showModules;

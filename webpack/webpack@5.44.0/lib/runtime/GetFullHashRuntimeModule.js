@@ -3,8 +3,8 @@
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 
-/** @typedef {import("../Compilation")} Compilation */
 
+// 运行时模块之返回完整的hash
 class GetFullHashRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("getFullHash");

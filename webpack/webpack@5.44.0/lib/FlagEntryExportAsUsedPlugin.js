@@ -1,25 +1,15 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { getEntryRuntime } = require("./util/runtime");
 
-/** @typedef {import("./Compiler")} Compiler */
-
+// TODO:
+// 
 class FlagEntryExportAsUsedPlugin {
 	constructor(nsObjectUsed, explanation) {
 		this.nsObjectUsed = nsObjectUsed;
 		this.explanation = explanation;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(
 			"FlagEntryExportAsUsedPlugin",

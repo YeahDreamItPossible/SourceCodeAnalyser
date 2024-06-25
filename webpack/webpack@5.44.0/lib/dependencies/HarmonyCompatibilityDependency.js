@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { UsageState } = require("../ExportsInfo");
@@ -11,11 +6,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../Module")} Module */
-
+// ES兼容依赖
 class HarmonyCompatibilityDependency extends NullDependency {
 	get type() {
 		return "harmony export header";

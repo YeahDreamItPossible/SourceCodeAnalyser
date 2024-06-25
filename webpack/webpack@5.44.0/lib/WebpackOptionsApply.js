@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ * 主要是对 Webpack.options 各个字段值 注册内置插件
+ */
+
 const OptionsApply = require("./OptionsApply");
 
 const AssetModulesPlugin = require("./asset/AssetModulesPlugin");
@@ -49,7 +53,7 @@ const DefaultStatsPrinterPlugin = require("./stats/DefaultStatsPrinterPlugin");
 
 const { cleverMerge } = require("./util/cleverMerge");
 
-// 使用 Webpack.plugins
+// 主要是对 Webpack.options 各个字段值 注册内置插件
 class WebpackOptionsApply extends OptionsApply {
 	constructor() {
 		super();

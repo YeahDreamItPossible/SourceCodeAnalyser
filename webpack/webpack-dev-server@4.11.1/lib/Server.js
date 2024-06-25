@@ -213,10 +213,6 @@ if (!process.env.WEBPACK_SERVE) {
 
 // 服务
 class Server {
-  /**
-   * @param {Configuration | Compiler | MultiCompiler} options
-   * @param {Compiler | MultiCompiler | Configuration} compiler
-   */
   constructor(options = {}, compiler) {
     // compiler 作为第一个参数 的方式已被遗弃
     if (/** @type {Compiler | MultiCompiler} */ (options).hooks) {
@@ -236,9 +232,6 @@ class Server {
     });
 
     this.compiler = /** @type {Compiler | MultiCompiler} */ (compiler);
-    /**
-     * @type {ReturnType<Compiler["getInfrastructureLogger"]>}
-     * */
     this.logger = this.compiler.getInfrastructureLogger("webpack-dev-server");
     this.options = /** @type {Configuration} */ (options);
     /**
@@ -249,6 +242,7 @@ class Server {
      * @private
      * @type {{ name: string | symbol, listener: (...args: any[]) => void}[] }}
      */
+    // Array<>
     this.listeners = [];
     // Keep track of websocket proxies for external websocket upgrade.
     /**
@@ -280,15 +274,12 @@ class Server {
     };
   }
 
+  // 返回schema
   static get schema() {
     return schema;
   }
 
-  /**
-   * @private
-   * @returns {StatsOptions}
-   * @constructor
-   */
+  // 返回默认的 Webpack.options.stats 配置
   static get DEFAULT_STATS() {
     return {
       all: false,
@@ -299,11 +290,9 @@ class Server {
     };
   }
 
-  /**
-   * @param {string} URL
-   * @returns {boolean}
-   */
+  // 是否是绝对路径
   static isAbsoluteURL(URL) {
+    // window 环境中是否是绝对路径
     // Don't match Windows paths `c:\`
     if (/^[a-zA-Z]:\\/.test(URL)) {
       return false;
@@ -314,10 +303,7 @@ class Server {
     return /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(URL);
   }
 
-  /**
-   * @param {string} gateway
-   * @returns {string | undefined}
-   */
+  // 返回 Ip 地址
   static findIp(gateway) {
     const gatewayIp = ipaddr.parse(gateway);
 
@@ -339,10 +325,7 @@ class Server {
     }
   }
 
-  /**
-   * @param {"v4" | "v6"} family
-   * @returns {Promise<string | undefined>}
-   */
+  // 根据 类型(v4 | v6) 以 Promise 的方式返回 ip 地址
   static async internalIP(family) {
     try {
       const { gateway } = await defaultGateway[family]();
@@ -351,11 +334,8 @@ class Server {
       // ignore
     }
   }
-
-  /**
-   * @param {"v4" | "v6"} family
-   * @returns {string | undefined}
-   */
+  
+  // 根据 类型(v4 | v6) 以同步的方式返回 ip 地址
   static internalIPSync(family) {
     try {
       const { gateway } = defaultGateway[family].sync();
@@ -444,10 +424,7 @@ class Server {
     return path.resolve(dir, "node_modules/.cache/webpack-dev-server");
   }
 
-  /**
-   * @private
-   * @param {Compiler} compiler
-   */
+  // 添加额外的入口
   addAdditionalEntries(compiler) {
     /**
      * @type {string[]}
@@ -760,6 +737,7 @@ class Server {
     const { options } = this;
     const compilerOptions = this.getCompilerOptions();
     // TODO remove `{}` after drop webpack v4 support
+    // Webpack.options.watchOptions
     const compilerWatchOptions = compilerOptions.watchOptions || {};
     /**
      * @param {WatchOptions & { aggregateTimeout?: number, ignored?: WatchOptions["ignored"], poll?: number | boolean }} watchOptions
@@ -888,6 +866,7 @@ class Server {
       return item;
     };
 
+    // 许将允许访问开发服务器的服务列入白名单
     if (typeof options.allowedHosts === "undefined") {
       // AllowedHosts allows some default hosts picked from `options.host` or `webSocketURL.hostname` and `localhost`
       options.allowedHosts = "auto";
@@ -914,6 +893,7 @@ class Server {
       options.bonjour = options.bonjour ? {} : false;
     }
 
+    // 客户端设置
     if (
       typeof options.client === "undefined" ||
       (typeof options.client === "object" && options.client !== null)
@@ -922,6 +902,7 @@ class Server {
         options.client = {};
       }
 
+      // 允许指定 URL 到 web socket 服务器
       if (typeof options.client.webSocketURL === "undefined") {
         options.client.webSocketURL = {};
       } else if (typeof options.client.webSocketURL === "string") {
@@ -941,6 +922,7 @@ class Server {
         );
       }
 
+      // 出现编译错误或警告时，在浏览器中显示全屏覆盖
       // Enable client overlay by default
       if (typeof options.client.overlay === "undefined") {
         options.client.overlay = true;
@@ -952,6 +934,7 @@ class Server {
         };
       }
 
+      // dev-server 它应该尝试重新连接客户端的次数
       if (typeof options.client.reconnect === "undefined") {
         options.client.reconnect = 10;
       } else if (options.client.reconnect === true) {
@@ -960,6 +943,7 @@ class Server {
         options.client.reconnect = 0;
       }
 
+      // 在浏览器中设置日志级别
       // Respect infrastructureLogging.level
       if (typeof options.client.logging === "undefined") {
         options.client.logging = compilerOptions.infrastructureLogging
@@ -968,16 +952,18 @@ class Server {
       }
     }
 
+    // 是否启用压缩
     if (typeof options.compress === "undefined") {
       options.compress = true;
     }
 
+    // 提供处理 webpack 资源的配置项
     if (typeof options.devMiddleware === "undefined") {
       options.devMiddleware = {};
     }
 
+    // 
     // No need to normalize `headers`
-
     if (typeof options.historyApiFallback === "undefined") {
       options.historyApiFallback = false;
     } else if (
@@ -987,8 +973,8 @@ class Server {
       options.historyApiFallback = {};
     }
 
+    // 启用 webpack 的 模块热替换 特性
     // No need to normalize `host`
-
     options.hot =
       typeof options.hot === "boolean" || options.hot === "only"
         ? options.hot
@@ -1564,10 +1550,7 @@ class Server {
     }
   }
 
-  /**
-   * @private
-   * @returns {string}
-   */
+  // 返回 客户端 
   getClientTransport() {
     let clientImplementation;
     let clientImplementationFound = true;
@@ -1641,11 +1624,8 @@ class Server {
 
     return /** @type {string} */ (clientImplementation);
   }
-
-  /**
-   * @private
-   * @returns {string}
-   */
+ 
+  // 返回 服务端 
   getServerTransport() {
     let implementation;
     let implementationFound = true;
@@ -1789,20 +1769,20 @@ class Server {
       }
     }
 
-    // 
+    // 注册 compiler 钩子
     this.setupHooks();
-    // 
+    // 启动应用
     this.setupApp();
-    // 
+    // 每次请求时 检查请求头
     this.setupHostHeaderCheck();
-    // 
+    // 启动 webpack-dev-middleware
     this.setupDevMiddleware();
     // Should be after `webpack-dev-middleware`, otherwise other middlewares might rewrite response
     // 启动内置路由
     this.setupBuiltInRoutes();
-    // 
+    // 启动文件观察
     this.setupWatchFiles();
-    // 
+    // 启动 观察静态文件
     this.setupWatchStaticFiles();
     // 启动中间件
     this.setupMiddlewares();
@@ -1859,15 +1839,10 @@ class Server {
   // 启动应用
   setupApp() {
     /** @type {import("express").Application | undefined}*/
-    // eslint-disable-next-line new-cap
-    this.app = new /** @type {any} */ (express)();
+    this.app = new (express)();
   }
 
-  /**
-   * @private
-   * @param {Stats | MultiStats} statsObj
-   * @returns {StatsCompilation}
-   */
+  // 返回 stats.toJson
   getStats(statsObj) {
     const stats = Server.DEFAULT_STATS;
     const compilerOptions = this.getCompilerOptions();
@@ -1881,7 +1856,7 @@ class Server {
     return statsObj.toJson(stats);
   }
 
-  // 启动 钩子
+  // 注册 compiler 钩子
   setupHooks() {
     this.compiler.hooks.invalid.tap("webpack-dev-server", () => {
       if (this.webSocketServer) {
@@ -1890,18 +1865,11 @@ class Server {
     });
     this.compiler.hooks.done.tap(
       "webpack-dev-server",
-      /**
-       * @param {Stats | MultiStats} stats
-       */
       (stats) => {
         if (this.webSocketServer) {
           this.sendStats(this.webSocketServer.clients, this.getStats(stats));
         }
 
-        /**
-         * @private
-         * @type {Stats | MultiStats}
-         */
         this.stats = stats;
       }
     );
@@ -1934,7 +1902,7 @@ class Server {
     );
   }
 
-  // 启动中间件
+  // 启动 webpack-dev-middleware
   setupDevMiddleware() {
     const webpackDevMiddleware = require("webpack-dev-middleware");
 
@@ -2844,12 +2812,7 @@ class Server {
     }
   }
 
-  /**
-   * @private
-   * @param {Request} req
-   * @param {Response} res
-   * @param {NextFunction} next
-   */
+  // 为 所有响应 添加 headers
   setHeaders(req, res, next) {
     let { headers } = this.options;
 
@@ -2891,12 +2854,6 @@ class Server {
     next();
   }
 
-  /**
-   * @private
-   * @param {{ [key: string]: string | undefined }} headers
-   * @param {string} headerToCheck
-   * @returns {boolean}
-   */
   // 检查请求头
   checkHeader(headers, headerToCheck) {
     // allow user to opt out of this security check, at their own risk
@@ -2990,13 +2947,7 @@ class Server {
     return false;
   }
 
-  /**
-   * @param {ClientConnection[]} clients
-   * @param {string} type
-   * @param {any} [data]
-   * @param {any} [params]
-   */
-  // eslint-disable-next-line class-methods-use-this
+  // 发送消息
   sendMessage(clients, type, data, params) {
     for (const client of clients) {
       // `sockjs` uses `1` to indicate client is ready to accept data
@@ -3052,13 +3003,13 @@ class Server {
     });
   }
 
-  // Send stats to a socket or multiple sockets
   /**
    * @private
    * @param {ClientConnection[]} clients
    * @param {StatsCompilation} stats
    * @param {boolean} [force]
    */
+  // 给 sockets 发送统计信息
   sendStats(clients, stats, force) {
     const shouldEmit =
       !force &&
@@ -3110,10 +3061,6 @@ class Server {
     }
   }
 
-  /**
-   * @param {string | string[]} watchPath
-   * @param {WatchOptions} [watchOptions]
-   */
   // 观察文件
   watchFiles(watchPath, watchOptions) {
     const chokidar = require("chokidar");

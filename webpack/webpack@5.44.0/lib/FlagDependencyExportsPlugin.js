@@ -1,20 +1,7 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
 const Queue = require("./util/Queue");
-
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./DependenciesBlock")} DependenciesBlock */
-/** @typedef {import("./Dependency")} Dependency */
-/** @typedef {import("./Dependency").ExportSpec} ExportSpec */
-/** @typedef {import("./Dependency").ExportsSpec} ExportsSpec */
-/** @typedef {import("./ExportsInfo")} ExportsInfo */
-/** @typedef {import("./Module")} Module */
 
 // 告知 webpack 去确定那些由模块提供的导出内容，为 export * from ... 生成更多高效的代码。
 // 默认 optimization.providedExports 会被启用。

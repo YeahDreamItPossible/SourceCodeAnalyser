@@ -1,19 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-
-/**
- * @param {Module[]} modules the modules to be sorted
- * @returns {Module[]} sorted version of original modules
- */
+// 模块排序
 const sortModules = modules => {
 	return modules.sort((a, b) => {
 		const aIdent = a.identifier();
@@ -27,11 +16,7 @@ const sortModules = modules => {
 	});
 };
 
-/**
- * @param {Module[]} modules each module from throw
- * @param {ModuleGraph} moduleGraph the module graph
- * @returns {string} each message from provided modules
- */
+// 
 const createModulesListMessage = (modules, moduleGraph) => {
 	return modules
 		.map(m => {
@@ -49,12 +34,8 @@ const createModulesListMessage = (modules, moduleGraph) => {
 		.join("\n");
 };
 
+// 区分大小写模块警告
 class CaseSensitiveModulesWarning extends WebpackError {
-	/**
-	 * Creates an instance of CaseSensitiveModulesWarning.
-	 * @param {Iterable<Module>} modules modules that were detected
-	 * @param {ModuleGraph} moduleGraph the module graph
-	 */
 	constructor(modules, moduleGraph) {
 		const sortedModules = sortModules(Array.from(modules));
 		const modulesList = createModulesListMessage(sortedModules, moduleGraph);

@@ -1,6 +1,6 @@
 "use strict";
 
-// 根据 Webpack.options.Entry 注册插件
+// 根据 Webpack.options.entry 不同值 注册不同的插件
 class EntryOptionPlugin {
 	apply(compiler) {
 		compiler.hooks.entryOption.tap("EntryOptionPlugin", (context, entry) => {

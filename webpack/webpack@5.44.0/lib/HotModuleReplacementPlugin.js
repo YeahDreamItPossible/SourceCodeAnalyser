@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { SyncBailHook } = require("tapable");
@@ -35,27 +30,12 @@ const {
 	intersectRuntime
 } = require("./util/runtime");
 
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./Compilation").AssetInfo} AssetInfo */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./RuntimeModule")} RuntimeModule */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
 
-/**
- * @typedef {Object} HMRJavascriptParserHooks
- * @property {SyncBailHook<[TODO, string[]], void>} hotAcceptCallback
- * @property {SyncBailHook<[TODO, string[]], void>} hotAcceptWithoutCallback
- */
-
-/** @type {WeakMap<JavascriptParser, HMRJavascriptParserHooks>} */
+// WeakMap<JavascriptParser, Hooks>
 const parserHooksMap = new WeakMap();
 
+// 热模块替换插件
 class HotModuleReplacementPlugin {
-	/**
-	 * @param {JavascriptParser} parser the parser
-	 * @returns {HMRJavascriptParserHooks} the attached hooks
-	 */
 	static getParserHooks(parser) {
 		if (!(parser instanceof JavascriptParser)) {
 			throw new TypeError(
@@ -77,12 +57,8 @@ class HotModuleReplacementPlugin {
 		this.options = options || {};
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
+		// 按照 ES Module 规范处理 module 加载时的错误
 		if (compiler.options.output.strictModuleErrorHandling === undefined)
 			compiler.options.output.strictModuleErrorHandling = true;
 		const runtimeRequirements = [RuntimeGlobals.module];

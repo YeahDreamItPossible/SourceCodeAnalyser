@@ -1,13 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
+// ES链接错误
 module.exports = class HarmonyLinkingError extends WebpackError {
-	/** @param {string} message Error message */
 	constructor(message) {
 		super(message);
 		this.name = "HarmonyLinkingError";

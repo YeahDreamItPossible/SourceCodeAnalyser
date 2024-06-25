@@ -1,16 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Authors Simen Brekken @simenbrekken, Einar Löve @einarlove
-*/
-
 "use strict";
 
 const DefinePlugin = require("./DefinePlugin");
 const WebpackError = require("./WebpackError");
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./DefinePlugin").CodeValue} CodeValue */
-
+// 定义 进程环境变量process.env 
+// 是对 DefinePlugin 中 process.env 快捷方式 
 class EnvironmentPlugin {
 	constructor(...keys) {
 		if (keys.length === 1 && Array.isArray(keys[0])) {
@@ -25,11 +19,6 @@ class EnvironmentPlugin {
 		}
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		/** @type {Record<string, CodeValue>} */
 		const definitions = {};

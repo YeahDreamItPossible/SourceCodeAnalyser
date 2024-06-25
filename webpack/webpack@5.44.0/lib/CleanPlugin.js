@@ -7,19 +7,7 @@ const createSchemaValidation = require("./util/create-schema-validation");
 const { join } = require("./util/fs");
 const processAsyncTree = require("./util/processAsyncTree");
 
-/** @typedef {import("../declarations/WebpackOptions").CleanOptions} CleanOptions */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./logging/Logger").Logger} Logger */
-/** @typedef {import("./util/fs").OutputFileSystem} OutputFileSystem */
-
-/** @typedef {(function(string):boolean)|RegExp} IgnoreItem */
-/** @typedef {function(IgnoreItem): void} AddToIgnoreCallback */
-
-/**
- * @typedef {Object} CleanPluginCompilationHooks
- * @property {SyncBailHook<[string], boolean>} keep when returning true the file/directory will be kept during cleaning, returning false will clean it and ignore the following plugins and config
- */
-
+// 验证 CleanPlugin.options
 const validate = createSchemaValidation(
 	undefined,
 	() => {
@@ -35,13 +23,7 @@ const validate = createSchemaValidation(
 	}
 );
 
-/**
- * @param {OutputFileSystem} fs filesystem
- * @param {string} outputPath output path
- * @param {Set<string>} currentAssets filename of the current assets (must not start with .. or ., must only use / as path separator)
- * @param {function(Error=, Set<string>=): void} callback returns the filenames of the assets that shouldn't be there
- * @returns {void}
- */
+// 根据 目录 和 资源路径 来获取 最终的资源路径
 const getDiffToFs = (fs, outputPath, currentAssets, callback) => {
 	const directories = new Set();
 	// get directories of assets
@@ -60,6 +42,7 @@ const getDiffToFs = (fs, outputPath, currentAssets, callback) => {
 			fs.readdir(join(fs, outputPath, directory), (err, entries) => {
 				if (err) {
 					if (err.code === "ENOENT") return callback();
+					// 读取的是资源路径 不是资源目录
 					if (err.code === "ENOTDIR") {
 						diff.add(directory);
 						return callback();
@@ -84,11 +67,7 @@ const getDiffToFs = (fs, outputPath, currentAssets, callback) => {
 	);
 };
 
-/**
- * @param {Set<string>} currentAssets assets list
- * @param {Set<string>} oldAssets old assets list
- * @returns {Set<string>} diff
- */
+// 对比所有的 新资源路径 和 旧资源路径 返回最终的资源路径
 const getDiffToOldAssets = (currentAssets, oldAssets) => {
 	const diff = new Set();
 	for (const asset of oldAssets) {
@@ -97,16 +76,7 @@ const getDiffToOldAssets = (currentAssets, oldAssets) => {
 	return diff;
 };
 
-/**
- * @param {OutputFileSystem} fs filesystem
- * @param {string} outputPath output path
- * @param {boolean} dry only log instead of fs modification
- * @param {Logger} logger logger
- * @param {Set<string>} diff filenames of the assets that shouldn't be there
- * @param {function(string): boolean} isKept check if the entry is ignored
- * @param {function(Error=): void} callback callback
- * @returns {void}
- */
+// 对 最终的资源路径 进行处理(删除)
 const applyDiff = (fs, outputPath, dry, logger, diff, isKept, callback) => {
 	const log = msg => {
 		if (dry) {
@@ -234,6 +204,7 @@ const applyDiff = (fs, outputPath, dry, logger, diff, isKept, callback) => {
 // WeakMap<Compilation, Hooks>
 const compilationHooksMap = new WeakMap();
 
+// 清空插件
 // 在生成文件之前 清空 output 目录
 class CleanPlugin {
 	static getCompilationHooks(compilation) {
@@ -298,6 +269,7 @@ class CleanPlugin {
 				for (const asset of Object.keys(compilation.assets)) {
 					if (/^[A-Za-z]:\\|^\/|^\\\\/.test(asset)) continue;
 					let normalizedAsset;
+					// window 环境资源路径
 					let newNormalizedAsset = asset.replace(/\\/g, "/");
 					do {
 						normalizedAsset = newNormalizedAsset;

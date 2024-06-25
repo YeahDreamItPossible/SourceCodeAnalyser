@@ -1,32 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { UsageState } = require("../ExportsInfo");
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../util/Hash")} Hash */
-/** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
-
-/**
- * @param {ModuleGraph} moduleGraph the module graph
- * @param {Module} module the module
- * @param {string | null} exportName name of the export if any
- * @param {string | null} property name of the requested property
- * @param {RuntimeSpec} runtime for which runtime
- * @returns {any} value of the property
- */
 const getProperty = (moduleGraph, module, exportName, property, runtime) => {
 	if (!exportName) {
 		switch (property) {
@@ -75,6 +52,7 @@ const getProperty = (moduleGraph, module, exportName, property, runtime) => {
 	return undefined;
 };
 
+// 导出信息依赖
 class ExportsInfoDependency extends NullDependency {
 	constructor(range, exportName, property) {
 		super();

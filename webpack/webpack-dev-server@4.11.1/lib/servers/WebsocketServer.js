@@ -3,19 +3,12 @@
 const WebSocket = require("ws");
 const BaseServer = require("./BaseServer");
 
-/** @typedef {import("../Server").WebSocketServerConfiguration} WebSocketServerConfiguration */
-/** @typedef {import("../Server").ClientConnection} ClientConnection */
-
 module.exports = class WebsocketServer extends BaseServer {
   static heartbeatInterval = 1000;
 
-  /**
-   * @param {import("../Server")} server
-   */
   constructor(server) {
     super(server);
 
-    /** @type {import("ws").ServerOptions} */
     const options = {
       .../** @type {WebSocketServerConfiguration} */
       (this.server.options.webSocketServer).options,
@@ -31,7 +24,6 @@ module.exports = class WebsocketServer extends BaseServer {
 
     this.implementation = new WebSocket.Server(options);
 
-    /** @type {import("http").Server} */
     (this.server.server).on(
       "upgrade",
       /**

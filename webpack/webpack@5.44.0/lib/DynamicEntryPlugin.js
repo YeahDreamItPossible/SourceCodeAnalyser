@@ -4,17 +4,9 @@ const EntryOptionPlugin = require("./EntryOptionPlugin");
 const EntryPlugin = require("./EntryPlugin");
 const EntryDependency = require("./dependencies/EntryDependency");
 
-/** @typedef {import("../declarations/WebpackOptions").EntryDynamicNormalized} EntryDynamic */
-/** @typedef {import("../declarations/WebpackOptions").EntryItem} EntryItem */
-/** @typedef {import("../declarations/WebpackOptions").EntryStaticNormalized} EntryStatic */
-/** @typedef {import("./Compiler")} Compiler */
-
 // 动态入口插件
+// 当 Webpack.options.entry 值为函数时
 class DynamicEntryPlugin {
-	/**
-	 * @param {string} context the context path
-	 * @param {EntryDynamic} entry the entry value
-	 */
 	constructor(context, entry) {
 		// Webpack.options.context
 		this.context = context;

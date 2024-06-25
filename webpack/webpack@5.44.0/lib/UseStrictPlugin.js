@@ -2,7 +2,8 @@
 
 const ConstDependency = require("./dependencies/ConstDependency");
 
-// 使用 严格模式
+// 使用严格模式插件
+// 设置 moulde.buildInfo.strict = true
 class UseStrictPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
@@ -11,6 +12,7 @@ class UseStrictPlugin {
 				const handler = parser => {
 					parser.hooks.program.tap("UseStrictPlugin", ast => {
 						const firstNode = ast.body[0];
+						// 判断 ast.body 的第一个 node
 						if (
 							firstNode &&
 							firstNode.type === "ExpressionStatement" &&

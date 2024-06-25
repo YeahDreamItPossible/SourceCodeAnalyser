@@ -1,15 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 const makeSerializable = require("./util/makeSerializable");
 
-/** @typedef {import("./Dependency").DependencyLocation} DependencyLocation */
-
+// 不支持特征警告
 class UnsupportedFeatureWarning extends WebpackError {
 	/**
 	 * @param {string} message description of warning

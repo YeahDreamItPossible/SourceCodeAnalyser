@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
@@ -11,6 +6,7 @@ const { someInIterable } = require("./util/IterableHelpers");
 const { compareModulesById } = require("./util/comparators");
 const { dirname, mkdirp } = require("./util/fs");
 
+// 与 DllPlugin 相关
 // 此插件会生成一个名为 manifest.json 的文件
 // 这个文件包含了从 require 和 import 中 request 到模块 id 的映射
 class LibManifestPlugin {

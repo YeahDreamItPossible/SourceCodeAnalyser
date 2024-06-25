@@ -11,8 +11,10 @@ const { relative } = require("./util/fs");
 const { parseResource } = require("./util/identifier");
 
 // TODO:
+// 是否 polyfill 或 mock 某些 Node.js 全局变量
 class NodeStuffPlugin {
 	constructor(options) {
+		// Webpack.options.node
 		this.options = options;
 	}
 

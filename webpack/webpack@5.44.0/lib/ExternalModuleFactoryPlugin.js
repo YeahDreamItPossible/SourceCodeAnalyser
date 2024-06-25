@@ -31,6 +31,7 @@ const resolveLayer = (obj, layer) => {
 	return result;
 };
 
+// 外部扩展模块插件
 class ExternalModuleFactoryPlugin {
 	constructor(type, externals) {
 		// Webpack.options.externalsType

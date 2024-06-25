@@ -2,7 +2,7 @@
 
 const { register } = require("../util/serialization");
 
-// 存储JSON数据
+// 存储 JSON 数据
 class JsonData {
 	constructor(data) {
 		// Buffer 类型

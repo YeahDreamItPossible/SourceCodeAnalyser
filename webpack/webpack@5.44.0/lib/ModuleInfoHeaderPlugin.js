@@ -5,15 +5,6 @@ const { UsageState } = require("./ExportsInfo");
 const Template = require("./Template");
 const JavascriptModulesPlugin = require("./javascript/JavascriptModulesPlugin");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./ExportsInfo")} ExportsInfo */
-/** @typedef {import("./ExportsInfo").ExportInfo} ExportInfo */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-/** @typedef {import("./ModuleTemplate")} ModuleTemplate */
-/** @typedef {import("./RequestShortener")} RequestShortener */
-
 const joinIterableWithComma = iterable => {
 	// This is more performant than Array.from().join(", ")
 	// as it doesn't create an array
@@ -137,6 +128,8 @@ const printExportsInfoToSource = (
 /** @type {WeakMap<RequestShortener, WeakMap<Module, { header: RawSource, full: WeakMap<Source, CachedSource> }>>} */
 const caches = new WeakMap();
 
+// 根据 Webpack.options.output.pathinfo 注册该插件
+// 告知 webpack 在 bundle 中引入「所包含模块信息」的相关注释
 class ModuleInfoHeaderPlugin {
 	constructor(verbose = true) {
 		this._verbose = verbose;

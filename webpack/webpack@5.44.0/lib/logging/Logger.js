@@ -30,6 +30,7 @@ const LOG_SYMBOL = Symbol("webpack logger raw log method");
 const TIMERS_SYMBOL = Symbol("webpack logger times");
 const TIMERS_AGGREGATES_SYMBOL = Symbol("webpack logger aggregated times");
 
+// 日志输出
 class WebpackLogger {
 	constructor(log, getChildLogger) {
 		this[LOG_SYMBOL] = log;

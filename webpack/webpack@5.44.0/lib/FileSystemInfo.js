@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { create: createResolver } = require("enhanced-resolve");
@@ -778,9 +773,9 @@ const toExistence = entry => {
 	return Boolean(entry);
 };
 
-/**
- * Used to access information about the filesystem in a cached way
- */
+// TODO:
+// 
+// 以 缓存的方式 来访问有关文件系统的信息
 class FileSystemInfo {
 	/**
 	 * @param {InputFileSystem} fs file system

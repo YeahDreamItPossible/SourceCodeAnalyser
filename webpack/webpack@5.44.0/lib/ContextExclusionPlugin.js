@@ -1,25 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./ContextModuleFactory")} ContextModuleFactory */
-
+// 上下文排除插件
 class ContextExclusionPlugin {
-	/**
-	 * @param {RegExp} negativeMatcher Matcher regular expression
-	 */
 	constructor(negativeMatcher) {
+		// RegExp
 		this.negativeMatcher = negativeMatcher;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.contextModuleFactory.tap("ContextExclusionPlugin", cmf => {
 			cmf.hooks.contextModuleFiles.tap("ContextExclusionPlugin", files => {

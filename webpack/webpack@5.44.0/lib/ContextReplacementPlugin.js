@@ -1,13 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ContextElementDependency = require("./dependencies/ContextElementDependency");
 const { join } = require("./util/fs");
 
+// TODO:
 class ContextReplacementPlugin {
 	constructor(
 		resourceRegExp,

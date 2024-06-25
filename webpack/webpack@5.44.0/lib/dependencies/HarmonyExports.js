@@ -1,15 +1,11 @@
 "use strict";
 
-/** @typedef {import("../Parser").ParserState} ParserState */
 
 // WeakMap<ParserState, boolean>
 const parserStateExportsState = new WeakMap();
 
-/**
- * @param {ParserState} parserState parser state
- * @param {boolean} isStrictHarmony strict harmony mode should be enabled
- * @returns {void}
- */
+// 设置 parser.module.buildInfo
+// 设置 parser.module.buildMeta
 exports.enable = (parserState, isStrictHarmony) => {
 	const value = parserStateExportsState.get(parserState);
 	if (value === false) return;
@@ -18,6 +14,7 @@ exports.enable = (parserState, isStrictHarmony) => {
 		parserState.module.buildMeta.exportsType = "namespace";
 		parserState.module.buildInfo.strict = true;
 		parserState.module.buildInfo.exportsArgument = "__webpack_exports__";
+		// 当该模块是 ES 模块时
 		if (isStrictHarmony) {
 			parserState.module.buildMeta.strictHarmonyModule = true;
 			parserState.module.buildInfo.moduleArgument = "__webpack_module__";

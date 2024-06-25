@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { ConcatSource, PrefixSource } = require("webpack-sources");
@@ -34,6 +29,7 @@ const wrapInCondition = (condition, source) => {
 /**
  * @typedef {GenerateContext} Context
  */
+// TODO:
 class ConditionalInitFragment extends InitFragment {
 	/**
 	 * @param {string|Source} content the source code that will be included as initialization code

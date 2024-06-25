@@ -4,8 +4,6 @@ const ConstDependency = require("./dependencies/ConstDependency");
 const ProvidedDependency = require("./dependencies/ProvidedDependency");
 const { approve } = require("./javascript/JavascriptParserHelpers");
 
-/** @typedef {import("./Compiler")} Compiler */
-
 // 根据键值对定义 自动加载模块
 class ProvidePlugin {
 	// Record<string, string | string[]>

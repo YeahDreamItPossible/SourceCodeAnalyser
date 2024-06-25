@@ -1,12 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Maksim Nazarjev @acupofspirt
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
+// 同时存在编译过程错误
 module.exports = class ConcurrentCompilationError extends WebpackError {
 	constructor() {
 		super();

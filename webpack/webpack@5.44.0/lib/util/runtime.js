@@ -415,20 +415,16 @@ exports.filterRuntime = (runtime, filter) => {
 	return result;
 };
 
-/**
- * @template T
- */
+// 
 class RuntimeSpecMap {
 	/**
 	 * @param {RuntimeSpecMap<T>=} clone copy form this
 	 */
 	constructor(clone) {
-		this._mode = clone ? clone._mode : 0; // 0 = empty, 1 = single entry, 2 = map
-		/** @type {RuntimeSpec} */
+		// 0 = empty, 1 = single entry, 2 = map
+		this._mode = clone ? clone._mode : 0; 
 		this._singleRuntime = clone ? clone._singleRuntime : undefined;
-		/** @type {T} */
 		this._singleValue = clone ? clone._singleValue : undefined;
-		/** @type {Map<string, T> | undefined} */
 		this._map = clone && clone._map ? new Map(clone._map) : undefined;
 	}
 

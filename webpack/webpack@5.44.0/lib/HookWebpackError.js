@@ -1,28 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Sean Larkin @thelarkinn
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
-/** @typedef {import("./Module")} Module */
-
-/**
- * @template T
- * @callback Callback
- * @param {Error=} err
- * @param {T=} stats
- * @returns {void}
- */
-
+// 钩子错误
 class HookWebpackError extends WebpackError {
-	/**
-	 * Creates an instance of HookWebpackError.
-	 * @param {Error} error inner error
-	 * @param {string} hook name of hook
-	 */
 	constructor(error, hook) {
 		super(error.message);
 

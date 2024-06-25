@@ -1,31 +1,17 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { join, dirname } = require("./util/fs");
 
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {function(TODO): void} ModuleReplacer */
-
+// 标准模块替换插件
+// 允许 替换掉 满足匹配规则的 module.request
 class NormalModuleReplacementPlugin {
-	/**
-	 * Create an instance of the plugin
-	 * @param {RegExp} resourceRegExp the resource matcher
-	 * @param {string|ModuleReplacer} newResource the resource replacement
-	 */
 	constructor(resourceRegExp, newResource) {
+		// RegExp
 		this.resourceRegExp = resourceRegExp;
+		// String | ModuleReplacer
 		this.newResource = newResource;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const resourceRegExp = this.resourceRegExp;
 		const newResource = this.newResource;

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { OriginalSource, RawSource } = require("webpack-sources");
@@ -359,7 +354,7 @@ const getSourceForDefaultCase = (optional, request, runtimeTemplate) => {
 	};
 };
 
-// 外部模块
+// 外部扩展模块
 class ExternalModule extends Module {
 	constructor(request, type, userRequest) {
 		super("javascript/dynamic", null);

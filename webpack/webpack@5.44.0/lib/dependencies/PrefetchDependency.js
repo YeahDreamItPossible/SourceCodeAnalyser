@@ -1,12 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ModuleDependency = require("./ModuleDependency");
 
+// 预拉取依赖
 class PrefetchDependency extends ModuleDependency {
 	constructor(request) {
 		super(request);

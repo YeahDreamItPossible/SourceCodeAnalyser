@@ -1,22 +1,13 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
 const NormalModule = require("./NormalModule");
 const PrefetchDependency = require("./dependencies/PrefetchDependency");
 
-/** @typedef {import("./Compiler")} Compiler */
-
+// TODO:
+// 自动预拉取插件
+// 会观察之前编译的 所有模块 的变化 以改进增量构建的时间
 class AutomaticPrefetchPlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
 			"AutomaticPrefetchPlugin",

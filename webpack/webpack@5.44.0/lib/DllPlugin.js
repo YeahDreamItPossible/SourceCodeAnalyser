@@ -5,7 +5,7 @@ const FlagAllModulesAsUsedPlugin = require("./FlagAllModulesAsUsedPlugin");
 const LibManifestPlugin = require("./LibManifestPlugin");
 const createSchemaValidation = require("./util/create-schema-validation");
 
-// 验证选项
+// 验证 DllPlugin.options 选项
 const validate = createSchemaValidation(
 	require("../schemas/plugins/DllPlugin.check.js"),
 	() => require("../schemas/plugins/DllPlugin.json"),
@@ -15,6 +15,8 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 动态链接库插件
+// 用某种方法实现了拆分 bundles，同时还大幅度提升了构建的速度
 // 此插件会生成一个名为 manifest.json 的文件
 // 这个文件包含了从 require 和 import 中 request 到模块 id 的映射
 class DllPlugin {

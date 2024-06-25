@@ -76,6 +76,7 @@ class VariableInfo {
 /** @typedef {Omit<AcornOptions, "sourceType" | "ecmaVersion"> & { sourceType: "module" | "script" | "auto", ecmaVersion?: AcornOptions["ecmaVersion"] }} ParseOptions */
 
 /**
+ * 标签信息
  * @typedef {Object} TagInfo
  * @property {any} tag
  * @property {any} data
@@ -83,6 +84,7 @@ class VariableInfo {
  */
 
 /**
+ * 作用域信息
  * @typedef {Object} ScopeInfo
  * @property {StackedMap<string, VariableInfo | ScopeInfo>} definitions
  * @property {boolean | "arrow"} topLevelScope
@@ -167,7 +169,7 @@ const getRootName = expression => {
 	}
 };
 
-/** @type {AcornOptions} */
+// 默认的 AcornOptions
 const defaultParserOptions = {
 	ranges: true,
 	locations: true,
@@ -394,20 +396,30 @@ class JavascriptParser extends Parser {
 			// SyncBailHook<[ProgramNode, CommentNode[]], boolean | void>
 			finish: new SyncBailHook(["ast", "comments"])
 		});
+		// 源代码类型
 		this.sourceType = sourceType;
-		/** @type {ScopeInfo} */
+		// 作用域
+		// ScopeInfo
 		this.scope = undefined;
-		/** @type {ParserState} */
+		// 状态
+		// ParserState
 		this.state = undefined;
+		// 注释
 		this.comments = undefined;
+		// 
 		this.semicolons = undefined;
+		// 
 		/** @type {(StatementNode|ExpressionNode)[]} */
 		this.statementPath = undefined;
+		// 
 		this.prevStatement = undefined;
+		// 
 		this.currentTagData = undefined;
+		// 注册事件
 		this._initializeEvaluating();
 	}
 
+	// 
 	_initializeEvaluating() {
 		this.hooks.evaluate.for("Literal").tap("JavascriptParser", _expr => {
 			const expr = /** @type {LiteralNode} */ (_expr);
@@ -1488,7 +1500,7 @@ class JavascriptParser extends Parser {
 	}
 
 	// Pre walking iterates the scope for variable declarations
-	// 遍历语句(ast body)
+	// 预遍历 所有的语句(ast.body)
 	preWalkStatements(statements) {
 		for (let index = 0, len = statements.length; index < len; index++) {
 			const statement = statements[index];
@@ -1497,6 +1509,7 @@ class JavascriptParser extends Parser {
 	}
 
 	// Block pre walking iterates the scope for block variable declarations
+	// 块预遍历 所有的语句
 	blockPreWalkStatements(statements) {
 		for (let index = 0, len = statements.length; index < len; index++) {
 			const statement = statements[index];
@@ -1504,6 +1517,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 所有的语句
 	// Walking iterates the statements and expressions and processes them
 	walkStatements(statements) {
 		for (let index = 0, len = statements.length; index < len; index++) {
@@ -1512,7 +1526,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	//
+	// 预遍历 单个语句
 	preWalkStatement(statement) {
 		this.statementPath.push(statement);
 		if (this.hooks.preStatement.call(statement)) {
@@ -1563,6 +1577,7 @@ class JavascriptParser extends Parser {
 		this.prevStatement = this.statementPath.pop();
 	}
 
+	// 块预遍历 单个语句
 	blockPreWalkStatement(statement) {
 		this.statementPath.push(statement);
 		if (this.hooks.blockPreStatement.call(statement)) {
@@ -1592,6 +1607,7 @@ class JavascriptParser extends Parser {
 		this.prevStatement = this.statementPath.pop();
 	}
 
+	// 遍历 单个语句
 	walkStatement(statement) {
 		this.statementPath.push(statement);
 		if (this.hooks.statement.call(statement) !== undefined) {
@@ -1672,7 +1688,7 @@ class JavascriptParser extends Parser {
 		this.walkStatement(statement);
 	}
 
-	// Real Statements
+	// 遍历 块语句
 	preWalkBlockStatement(statement) {
 		this.preWalkStatements(statement.body);
 	}
@@ -1691,6 +1707,7 @@ class JavascriptParser extends Parser {
 		this.walkExpression(statement.expression);
 	}
 
+	// 遍历 If语句
 	preWalkIfStatement(statement) {
 		this.preWalkStatement(statement.consequent);
 		if (statement.alternate) {
@@ -1715,6 +1732,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 Label语句
 	preWalkLabeledStatement(statement) {
 		this.preWalkStatement(statement.body);
 	}
@@ -1737,6 +1755,7 @@ class JavascriptParser extends Parser {
 		this.walkNestedStatement(statement.body);
 	}
 
+	// 遍历 Switch语句
 	preWalkSwitchStatement(statement) {
 		this.preWalkSwitchCases(statement.cases);
 	}
@@ -1785,6 +1804,7 @@ class JavascriptParser extends Parser {
 		this.walkNestedStatement(statement.body);
 	}
 
+	// 遍历 DoWhile语句
 	preWalkDoWhileStatement(statement) {
 		this.preWalkStatement(statement.body);
 	}
@@ -1794,6 +1814,7 @@ class JavascriptParser extends Parser {
 		this.walkExpression(statement.test);
 	}
 
+	// 遍历 For语句
 	preWalkForStatement(statement) {
 		if (statement.init) {
 			if (statement.init.type === "VariableDeclaration") {
@@ -1833,6 +1854,7 @@ class JavascriptParser extends Parser {
 		});
 	}
 
+	// 遍历 ForIn语句
 	preWalkForInStatement(statement) {
 		if (statement.left.type === "VariableDeclaration") {
 			this.preWalkVariableDeclaration(statement.left);
@@ -1862,7 +1884,9 @@ class JavascriptParser extends Parser {
 		});
 	}
 
+	// 遍历 ForOf语句
 	preWalkForOfStatement(statement) {
+		// ForOf 语句中有 await 关键字
 		if (statement.await && this.scope.topLevelScope === true) {
 			this.hooks.topLevelAwait.call(statement);
 		}
@@ -1894,13 +1918,14 @@ class JavascriptParser extends Parser {
 		});
 	}
 
-	// Declarations
+	// 预遍历 函数声明语句
 	preWalkFunctionDeclaration(statement) {
 		if (statement.id) {
 			this.defineVariable(statement.id.name);
 		}
 	}
 
+	// 遍历 函数声明语句
 	walkFunctionDeclaration(statement) {
 		const wasTopLevel = this.scope.topLevelScope;
 		this.scope.topLevelScope = false;
@@ -1921,6 +1946,7 @@ class JavascriptParser extends Parser {
 		this.scope.topLevelScope = wasTopLevel;
 	}
 
+	// 
 	blockPreWalkImportDeclaration(statement) {
 		const source = statement.source.value;
 		this.hooks.import.call(statement, source);
@@ -2100,11 +2126,13 @@ class JavascriptParser extends Parser {
 		this.hooks.exportImportSpecifier.call(statement, source, null, name, 0);
 	}
 
+	// 预遍历 Var变量声明语句
 	preWalkVariableDeclaration(statement) {
 		if (statement.kind !== "var") return;
 		this._preWalkVariableDeclaration(statement, this.hooks.varDeclarationVar);
 	}
 
+	// 块预遍历 变量声明语句
 	blockPreWalkVariableDeclaration(statement) {
 		if (statement.kind === "var") return;
 		const hookMap =
@@ -2114,6 +2142,7 @@ class JavascriptParser extends Parser {
 		this._preWalkVariableDeclaration(statement, hookMap);
 	}
 
+	// 开始预遍历 Var变量声明语句
 	_preWalkVariableDeclaration(statement, hookMap) {
 		for (const declarator of statement.declarations) {
 			switch (declarator.type) {
@@ -2172,6 +2201,7 @@ class JavascriptParser extends Parser {
 		this.walkClass(statement);
 	}
 
+	// 遍历 SwitchCases 语句
 	preWalkSwitchCases(switchCases) {
 		for (let index = 0, len = switchCases.length; index < len; index++) {
 			const switchCase = switchCases[index];
@@ -3159,6 +3189,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// TODO:
 	enterPattern(pattern, onIdent) {
 		if (!pattern) return;
 		switch (pattern.type) {
@@ -3189,12 +3220,14 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 
 	enterIdentifier(pattern, onIdent) {
 		if (!this.callHooksForName(this.hooks.pattern, pattern.name, pattern)) {
 			onIdent(pattern.name, pattern);
 		}
 	}
 
+	// 
 	enterObjectPattern(pattern, onIdent) {
 		for (
 			let propIndex = 0, len = pattern.properties.length;
@@ -3206,6 +3239,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 
 	enterArrayPattern(pattern, onIdent) {
 		for (
 			let elementIndex = 0, len = pattern.elements.length;
@@ -3217,10 +3251,12 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 
 	enterRestElement(pattern, onIdent) {
 		this.enterPattern(pattern.argument, onIdent);
 	}
 
+	// 
 	enterAssignmentPattern(pattern, onIdent) {
 		this.enterPattern(pattern.left, onIdent);
 	}
@@ -3347,6 +3383,7 @@ class JavascriptParser extends Parser {
 	 * @param {ParserState} state the parser state
 	 * @returns {ParserState} the parser state
 	 */
+	// 分析词法、语法
 	parse(source, state) {
 		let ast;
 		let comments;
@@ -3375,12 +3412,13 @@ class JavascriptParser extends Parser {
 		const oldSemicolons = this.semicolons;
 		const oldStatementPath = this.statementPath;
 		const oldPrevStatement = this.prevStatement;
+		// 作用域
 		this.scope = {
 			topLevelScope: true,
 			inTry: false,
 			inShorthand: false,
-			isStrict: false,
-			isAsmJs: false,
+			isStrict: false, // 是否是标准的ES模块 或者 使用严格模式
+			isAsmJs: false,  // 是否是 asm 模块
 			definitions: new StackedMap()
 		};
 		/** @type {ParserState} */
@@ -3396,10 +3434,10 @@ class JavascriptParser extends Parser {
 		if (this.hooks.program.call(ast, comments) === undefined) {
 			// 检查当前JS文件是否是严格模式(use strict)或者use asm
 			this.detectMode(ast.body);
-			//
+			// 预遍历 所有的语句
 			this.preWalkStatements(ast.body);
 			this.prevStatement = undefined;
-			//
+			// 
 			this.blockPreWalkStatements(ast.body);
 			this.prevStatement = undefined;
 			//
@@ -3601,6 +3639,7 @@ class JavascriptParser extends Parser {
 		this.scope.definitions.set(name, newInfo);
 	}
 
+	// 定义当前变量 及 对应作用域
 	defineVariable(name) {
 		const oldInfo = this.scope.definitions.get(name);
 		// Don't redefine variable in same scope to keep existing tags
@@ -3788,11 +3827,6 @@ class JavascriptParser extends Parser {
 		);
 	}
 
-	/**
-	 * @param {string} code source code
-	 * @param {ParseOptions} options parsing options
-	 * @returns {ProgramNode} parsed ast
-	 */
 	// 运行 acorn.parse 返回 ast
 	static _parse(code, options) {
 		const type = options ? options.sourceType : "module";

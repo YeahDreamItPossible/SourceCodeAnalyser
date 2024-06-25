@@ -1,12 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
 
+// Webpack.options.mode 字段缺失警告
 module.exports = class NoModeWarning extends WebpackError {
 	constructor() {
 		super();

@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ * 主要是对 Webpack.options 应用默认值
+ */
+
 const fs = require("fs");
 const path = require("path");
 const Template = require("../Template");

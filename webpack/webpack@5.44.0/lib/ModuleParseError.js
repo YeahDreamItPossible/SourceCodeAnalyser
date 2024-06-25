@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const WebpackError = require("./WebpackError");
@@ -10,6 +5,7 @@ const makeSerializable = require("./util/makeSerializable");
 
 const WASM_HEADER = Buffer.from([0x00, 0x61, 0x73, 0x6d]);
 
+// 模块分析错误
 class ModuleParseError extends WebpackError {
 	/**
 	 * @param {string | Buffer} source source code

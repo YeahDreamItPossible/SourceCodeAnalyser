@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Florent Cailhol @ooflorent
-*/
-
 "use strict";
 
 const InitFragment = require("../InitFragment");
@@ -28,6 +23,7 @@ const pathToString = path =>
 		? path.map(part => `[${JSON.stringify(part)}]`).join("")
 		: "";
 
+// TODO:
 class ProvidedDependency extends ModuleDependency {
 	constructor(request, identifier, path, range) {
 		super(request);

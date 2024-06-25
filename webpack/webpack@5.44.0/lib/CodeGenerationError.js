@@ -4,11 +4,6 @@ const WebpackError = require("./WebpackError");
 
 // 代码生成 错误
 class CodeGenerationError extends WebpackError {
-	/**
-	 * Create a new CodeGenerationError
-	 * @param {Module} module related module
-	 * @param {Error} error Original error
-	 */
 	constructor(module, error) {
 		super();
 

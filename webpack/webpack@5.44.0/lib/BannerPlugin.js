@@ -6,7 +6,7 @@ const ModuleFilenameHelpers = require("./ModuleFilenameHelpers");
 const Template = require("./Template");
 const createSchemaValidation = require("./util/create-schema-validation");
 
-// 验证选项
+// 验证 BannerPlugin.options 选项
 const validate = createSchemaValidation(
 	require("../schemas/plugins/BannerPlugin.check.js"),
 	() => require("../schemas/plugins/BannerPlugin.json"),
@@ -38,6 +38,7 @@ class BannerPlugin {
 			};
 		}
 
+		// 验证选项
 		validate(options);
 
 		// options.raw  如果值为 true，将直接输出，不会被作为注释

@@ -4,6 +4,7 @@ const ConstDependency = require("./dependencies/ConstDependency");
 const ExportsInfoDependency = require("./dependencies/ExportsInfoDependency");
 
 // TODO:
+// 
 class ExportsInfoApiPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

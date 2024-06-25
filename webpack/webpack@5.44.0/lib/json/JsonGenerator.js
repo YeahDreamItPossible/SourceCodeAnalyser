@@ -6,7 +6,6 @@ const { UsageState } = require("../ExportsInfo");
 const Generator = require("../Generator");
 const RuntimeGlobals = require("../RuntimeGlobals");
 
-
 // 将 数据 序列化 并替换掉空格
 const stringifySafe = data => {
 	// 数据序列化

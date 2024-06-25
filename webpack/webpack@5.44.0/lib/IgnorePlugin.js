@@ -2,10 +2,7 @@
 
 const createSchemaValidation = require("./util/create-schema-validation");
 
-/** @typedef {import("../declarations/plugins/IgnorePlugin").IgnorePluginOptions} IgnorePluginOptions */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./NormalModuleFactory").ResolveData} ResolveData */
-
+// 验证 IgnorePlugins.options
 const validate = createSchemaValidation(
 	require("../schemas/plugins/IgnorePlugin.check.js"),
 	() => require("../schemas/plugins/IgnorePlugin.json"),
@@ -15,15 +12,14 @@ const validate = createSchemaValidation(
 	}
 );
 
+// 忽视插件
+// 如果 NormalModuleFactory | ContextModuleFactory 在 beforeResolve 时
+// 如果 满足 匹配规则 则会跳过构建
 class IgnorePlugin {
-	/**
-	 * @param {IgnorePluginOptions} options IgnorePlugin options
-	 */
 	constructor(options) {
 		validate(options);
 		this.options = options;
 
-		/** @private @type {Function} */
 		this.checkIgnore = this.checkIgnore.bind(this);
 	}
 

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { RawSource } = require("webpack-sources");
@@ -10,29 +5,13 @@ const Module = require("./Module");
 const RuntimeGlobals = require("./RuntimeGlobals");
 const makeSerializable = require("./util/makeSerializable");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./Compilation")} Compilation */
-/** @typedef {import("./Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("./Module").CodeGenerationContext} CodeGenerationContext */
-/** @typedef {import("./Module").CodeGenerationResult} CodeGenerationResult */
-/** @typedef {import("./Module").NeedBuildContext} NeedBuildContext */
-/** @typedef {import("./Module").SourceContext} SourceContext */
-/** @typedef {import("./RequestShortener")} RequestShortener */
-/** @typedef {import("./ResolverFactory").ResolverWithOptions} ResolverWithOptions */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("./WebpackError")} WebpackError */
-/** @typedef {import("./util/Hash")} Hash */
-/** @typedef {import("./util/fs").InputFileSystem} InputFileSystem */
-
 const TYPES = new Set(["javascript"]);
 const RUNTIME_REQUIREMENTS = new Set([
 	RuntimeGlobals.require,
 	RuntimeGlobals.module
 ]);
 
+// 动态链接库 模块
 class DllModule extends Module {
 	constructor(context, dependencies, name) {
 		super("javascript/dynamic", context);
@@ -42,16 +21,10 @@ class DllModule extends Module {
 		this.name = name;
 	}
 
-	/**
-	 * @returns {Set<string>} types available (do not mutate)
-	 */
 	getSourceTypes() {
 		return TYPES;
 	}
 
-	/**
-	 * @returns {string} a unique identifier of the module
-	 */
 	identifier() {
 		return `dll ${this.name}`;
 	}
@@ -64,14 +37,6 @@ class DllModule extends Module {
 		return `dll ${this.name}`;
 	}
 
-	/**
-	 * @param {WebpackOptions} options webpack options
-	 * @param {Compilation} compilation the compilation
-	 * @param {ResolverWithOptions} resolver the resolver
-	 * @param {InputFileSystem} fs the file system
-	 * @param {function(WebpackError=): void} callback callback function
-	 * @returns {void}
-	 */
 	build(options, compilation, resolver, fs, callback) {
 		this.buildMeta = {};
 		this.buildInfo = {};
@@ -94,11 +59,6 @@ class DllModule extends Module {
 		};
 	}
 
-	/**
-	 * @param {NeedBuildContext} context context info
-	 * @param {function(WebpackError=, boolean=): void} callback callback function, returns true, if the module needs a rebuild
-	 * @returns {void}
-	 */
 	needBuild(context, callback) {
 		return callback(null, !this.buildMeta);
 	}
@@ -111,11 +71,6 @@ class DllModule extends Module {
 		return 12;
 	}
 
-	/**
-	 * @param {Hash} hash the hash used to track dependencies
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
 	updateHash(hash, context) {
 		hash.update("dll module");
 		hash.update(this.name || "");

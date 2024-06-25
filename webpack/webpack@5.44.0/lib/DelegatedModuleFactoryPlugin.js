@@ -1,12 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const DelegatedModule = require("./DelegatedModule");
 
+// TODO:
+// 与 DllReferencePlugin 相关
 // options.source
 // options.type
 // options.context
