@@ -7,6 +7,7 @@ const ImportParserPlugin = require("./ImportParserPlugin");
 const ImportWeakDependency = require("./ImportWeakDependency");
 
 // ES模块动态导入插件
+// 主要用来分析 ES 动态导入(即: import('...').then(...).catch(...))
 class ImportPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Ivan Kopeykin @vankop
-*/
-
 "use strict";
 
 const { pathToFileURL } = require("url");
@@ -19,15 +14,12 @@ const memoize = require("../util/memoize");
 const propertyAccess = require("../util/propertyAccess");
 const ConstDependency = require("./ConstDependency");
 
-/** @typedef {import("estree").MemberExpression} MemberExpression */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../NormalModule")} NormalModule */
-/** @typedef {import("../javascript/JavascriptParser")} Parser */
-
 const getCriticalDependencyWarning = memoize(() =>
 	require("./CriticalDependencyWarning")
 );
 
+// 导入元信息插件
+// 主要是用来解析 import.meta 表达式
 class ImportMetaPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
@@ -40,11 +32,7 @@ class ImportMetaPlugin {
 				const getUrl = module => {
 					return pathToFileURL(module.resource).toString();
 				};
-				/**
-				 * @param {Parser} parser parser
-				 * @param {Object} parserOptions parserOptions
-				 * @returns {void}
-				 */
+				
 				const parserHandler = (parser, parserOptions) => {
 					/// import.meta direct ///
 					parser.hooks.typeof

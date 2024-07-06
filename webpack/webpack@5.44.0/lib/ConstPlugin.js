@@ -109,7 +109,7 @@ const getHoistedDeclarations = (branch, includeFunctionDeclarations) => {
 };
 
 // TODO:
-// 
+// 常量插件
 class ConstPlugin {
 	apply(compiler) {
 		const cachedParseResource = parseResource.bindCache(compiler.root);

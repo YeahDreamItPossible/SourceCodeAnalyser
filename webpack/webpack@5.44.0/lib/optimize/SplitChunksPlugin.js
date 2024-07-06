@@ -245,15 +245,15 @@ const compareEntries = (a, b) => {
 	return compareModuleIterables(modulesA, modulesB);
 };
 
+// 同步块
 const INITIAL_CHUNK_FILTER = chunk => chunk.canBeInitial();
+// 异步块
 const ASYNC_CHUNK_FILTER = chunk => !chunk.canBeInitial();
+// 
 const ALL_CHUNK_FILTER = chunk => true;
 
-/**
- * @param {OptimizationSplitChunksSizes} value the sizes
- * @param {string[]} defaultSizeTypes the default size types
- * @returns {SplitChunksSizes} normalized representation
- */
+// 标准化 SplitChunksPlugin.options.minSize
+// 标准化 SplitChunksPlugin.options.maxSize
 const normalizeSizes = (value, defaultSizeTypes) => {
 	if (typeof value === "number") {
 		/** @type {Record<string, number>} */
@@ -267,12 +267,8 @@ const normalizeSizes = (value, defaultSizeTypes) => {
 	}
 };
 
-/**
- * @param {...SplitChunksSizes} sizes the sizes
- * @returns {SplitChunksSizes} the merged sizes
- */
+// 合并多个对象
 const mergeSizes = (...sizes) => {
-	/** @type {SplitChunksSizes} */
 	let merged = {};
 	for (let i = sizes.length - 1; i >= 0; i--) {
 		merged = Object.assign(merged, sizes[i]);
@@ -361,10 +357,7 @@ const totalSize = sizes => {
 	return size;
 };
 
-/**
- * @param {false|string|Function} name the chunk name
- * @returns {GetName} a function to get the name of the chunk
- */
+// 标准化 SplitChunksPlugin.options.cacheGroup.name
 const normalizeName = name => {
 	if (typeof name === "string") {
 		return () => name;
@@ -374,10 +367,7 @@ const normalizeName = name => {
 	}
 };
 
-/**
- * @param {OptimizationSplitChunksCacheGroup["chunks"]} chunks the chunk filter option
- * @returns {ChunkFilterFunction} the chunk filter function
- */
+// 标准化 SplitChunkPlugin.options.chunks
 const normalizeChunksFilter = chunks => {
 	if (chunks === "initial") {
 		return INITIAL_CHUNK_FILTER;
@@ -393,11 +383,7 @@ const normalizeChunksFilter = chunks => {
 	}
 };
 
-/**
- * @param {GetCacheGroups | Record<string, false|string|RegExp|OptimizationSplitChunksGetCacheGroups|OptimizationSplitChunksCacheGroup>} cacheGroups the cache group options
- * @param {string[]} defaultSizeTypes the default size types
- * @returns {GetCacheGroups} a function to get the cache groups
- */
+// 标准化 SplitChunkPlugin.options.cacheGroups
 const normalizeCacheGroups = (cacheGroups, defaultSizeTypes) => {
 	if (typeof cacheGroups === "function") {
 		return cacheGroups;
@@ -470,12 +456,7 @@ const normalizeCacheGroups = (cacheGroups, defaultSizeTypes) => {
 	return () => null;
 };
 
-/**
- * @param {undefined|boolean|string|RegExp|Function} test test option
- * @param {Module} module the module
- * @param {CacheGroupsContext} context context object
- * @returns {boolean} true, if the module should be selected
- */
+// 根据 SplitChunksPlugin.options.cacheGroup.test 字段判断 module 是否满足匹配
 const checkTest = (test, module, context) => {
 	if (test === undefined) return true;
 	if (typeof test === "function") {
@@ -493,11 +474,7 @@ const checkTest = (test, module, context) => {
 	return false;
 };
 
-/**
- * @param {undefined|string|RegExp|Function} test type option
- * @param {Module} module the module
- * @returns {boolean} true, if the module should be selected
- */
+// 根据 SplitChunksPlugin.options.cacheGroup.type 字段判断 module 是否满足匹配
 const checkModuleType = (test, module) => {
 	if (test === undefined) return true;
 	if (typeof test === "function") {
@@ -514,11 +491,7 @@ const checkModuleType = (test, module) => {
 	return false;
 };
 
-/**
- * @param {undefined|string|RegExp|Function} test type option
- * @param {Module} module the module
- * @returns {boolean} true, if the module should be selected
- */
+// 根据 SplitChunksPlugin.options.cacheGroup.layer 字段判断 module 是否满足匹配
 const checkModuleLayer = (test, module) => {
 	if (test === undefined) return true;
 	if (typeof test === "function") {
@@ -541,6 +514,7 @@ const checkModuleLayer = (test, module) => {
  * @param {string[]} defaultSizeTypes the default size types
  * @returns {CacheGroupSource} the normalized cached group
  */
+// 标准化
 const createCacheGroupSource = (options, key, defaultSizeTypes) => {
 	const minSize = normalizeSizes(options.minSize, defaultSizeTypes);
 	const maxSize = normalizeSizes(options.maxSize, defaultSizeTypes);
@@ -580,9 +554,6 @@ const createCacheGroupSource = (options, key, defaultSizeTypes) => {
 
 // 根据 Webpack.options.optimization.splitChunks 注册该插件
 module.exports = class SplitChunksPlugin {
-	/**
-	 * @param {OptimizationSplitChunksOptions=} options plugin options
-	 */
 	constructor(options = {}) {
 		const defaultSizeTypes = options.defaultSizeTypes || [
 			"javascript",
@@ -592,7 +563,6 @@ module.exports = class SplitChunksPlugin {
 		const minSize = normalizeSizes(options.minSize, defaultSizeTypes);
 		const maxSize = normalizeSizes(options.maxSize, defaultSizeTypes);
 
-		/** @type {SplitChunksOptions} */
 		this.options = {
 			chunksFilter: normalizeChunksFilter(options.chunks || "all"),
 			defaultSizeTypes,
@@ -623,6 +593,7 @@ module.exports = class SplitChunksPlugin {
 				defaultSizeTypes
 			),
 			getName: options.name ? normalizeName(options.name) : defaultGetName,
+			// 生成的chunk name分隔符
 			automaticNameDelimiter: options.automaticNameDelimiter,
 			usedExports: options.usedExports,
 			fallbackCacheGroup: {
@@ -649,7 +620,7 @@ module.exports = class SplitChunksPlugin {
 			}
 		};
 
-		/** @type {WeakMap<CacheGroupSource, CacheGroup>} */
+		// WeakMap<CacheGroupSource, CacheGroup>
 		this._cacheGroupCache = new WeakMap();
 	}
 
@@ -738,11 +709,6 @@ module.exports = class SplitChunksPlugin {
 		return cacheGroup;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const cachedContextify = contextify.bindContextCache(
 			compiler.context,
@@ -767,7 +733,7 @@ module.exports = class SplitChunksPlugin {
 					const moduleGraph = compilation.moduleGraph;
 
 					// Give each selected chunk an index (to create strings from chunks)
-					/** @type {Map<Chunk, bigint>} */
+					// Map<Chunk, bigint>
 					const chunkIndexMap = new Map();
 					const ZERO = BigInt("0");
 					const ONE = BigInt("1");
@@ -781,6 +747,7 @@ module.exports = class SplitChunksPlugin {
 					 * @param {Iterable<Chunk>} chunks list of chunks
 					 * @returns {bigint | Chunk} key of the chunks
 					 */
+					// 返回 Chunk 或者 Chunk 对应的 BigInt
 					const getKey = chunks => {
 						const iterator = chunks[Symbol.iterator]();
 						let result = iterator.next();
@@ -802,9 +769,9 @@ module.exports = class SplitChunksPlugin {
 					};
 
 					const getChunkSetsInGraph = memoize(() => {
-						/** @type {Map<bigint, Set<Chunk>>} */
+						// Map<BigInt, Set<Chunk>>
 						const chunkSetsInGraph = new Map();
-						/** @type {Set<Chunk>} */
+						// Set<Chunk>
 						const singleChunkSets = new Set();
 						for (const module of compilation.modules) {
 							const chunks = chunkGraph.getModuleChunksIterable(module);
@@ -839,7 +806,7 @@ module.exports = class SplitChunksPlugin {
 						return groupedByUsedExports.values();
 					};
 
-					/** @type {Map<Module, Iterable<Chunk[]>>} */
+					// Map<Module, Array<Chunk>>
 					const groupedByExportsMap = new Map();
 
 					const getExportsChunkSetsInGraph = memoize(() => {
@@ -1140,11 +1107,11 @@ module.exports = class SplitChunksPlugin {
 
 					logger.time("modules");
 
-					// TODO:
-					// Walk through all modules
+					// 遍历所有的模块
 					for (const module of compilation.modules) {
-						// Get cache group
 						// 根据module模块来获取匹配的cacheGroups
+						// 根据 Webpack.options.optimization.splitChunks.CacheGroup 来匹配 满足条件的 module
+						// 并返回 对应的 CacheGroup
 						let cacheGroups = this.options.getCacheGroups(module, context);
 						if (!Array.isArray(cacheGroups) || cacheGroups.length === 0) {
 							continue;

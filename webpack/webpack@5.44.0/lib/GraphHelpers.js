@@ -12,7 +12,7 @@ const connectChunkGroupAndChunk = (chunkGroup, chunk) => {
 };
 
 /**
- * 绑定 ChunkGroup 的层级关系
+ * 绑定 ChunkGroup 的嵌套关系
  * ChunkGroup.prototype._parents.add(child)
  * ChunkGroup.prototype._children.add(parent)
  */

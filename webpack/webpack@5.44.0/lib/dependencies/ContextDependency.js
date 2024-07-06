@@ -17,6 +17,7 @@ const getCriticalDependencyWarning = memoize(() =>
 
 const regExpToString = r => (r ? r + "" : "");
 
+// 上下文依赖
 class ContextDependency extends Dependency {
 	/**
 	 * @param {ContextDependencyOptions} options options for the context module

@@ -5,7 +5,7 @@ const RequireEnsureDependency = require("./RequireEnsureDependency");
 const RequireEnsureItemDependency = require("./RequireEnsureItemDependency");
 const getFunctionExpression = require("./getFunctionExpression");
 
-// 解析 require.sure 语句
+// 解析 require.ensure 语句
 module.exports = class RequireEnsureDependenciesBlockParserPlugin {
 	apply(parser) {
 		parser.hooks.call
@@ -14,6 +14,7 @@ module.exports = class RequireEnsureDependenciesBlockParserPlugin {
 				let chunkName = null;
 				let errorExpressionArg = null;
 				let errorExpression = null;
+				// 解析 require.ensure 函数参数
 				switch (expr.arguments.length) {
 					case 4: {
 						const chunkNameExpr = parser.evaluateExpression(expr.arguments[3]);

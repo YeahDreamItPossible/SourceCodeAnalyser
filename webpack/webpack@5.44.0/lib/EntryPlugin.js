@@ -2,7 +2,7 @@
 
 const EntryDependency = require("./dependencies/EntryDependency");
 
-// 入口插件
+// 静态入口插件
 class EntryPlugin {
 	constructor(context, entry, options) {
 		// Webpack.options.context

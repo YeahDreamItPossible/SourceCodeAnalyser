@@ -7,18 +7,18 @@ const getIgnoredModule = memoize(() => {
 	return new RawModule("/* (ignored) */", `ignored`, `(ignored)`);
 });
 
-// 依赖
+// 依赖: 用来描述 当前引用依赖 的位置信息 和 引用模块信息
 class Dependency {
 	constructor() {
-		// 引用当前依赖的 Module
+		// 引用当前依赖的 模块
 		this._parentModule = undefined;
-		// 引用当前依赖的 异步Module
+		// 引用当前依赖的 依赖块
 		this._parentDependenciesBlock = undefined;
-		// 标识 当前依赖 是否是弱的
+		// 标识: 当前依赖 是否是弱的
 		// 弱依赖 意味着这个依赖 对于模块的运行不是必须的
 		// 即使这个依赖不存在 模块也能以某种降级模式运行
 		this.weak = false;
-		// 标识 当前依赖 是否是可选的
+		// 标识: 当前依赖 是否是可选的
 		// 与弱依赖类似 可选依赖也不是模块运行所必需的
 		// 可选依赖通常有一个更具体的含义 即当这个依赖不存在时
 		// 模块应该能够优雅地处理这种情况 而不是简单地失败

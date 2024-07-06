@@ -18,6 +18,8 @@ const HarmonyTopLevelThisParserPlugin = require("./HarmonyTopLevelThisParserPlug
 // ES模块插件
 class HarmonyModulesPlugin {
 	constructor(options) {
+		// 是否允许在模块的最高层级使用 await 关键字
+		// { topLevelAwait: Webpack.options.experiments.topLevelAwait }
 		this.options = options;
 	}
 
@@ -92,11 +94,13 @@ class HarmonyModulesPlugin {
 					if (parserOptions.harmony !== undefined && !parserOptions.harmony)
 						return;
 
+					// ES模块检测语法分析插件
 					new HarmonyDetectionParserPlugin(this.options).apply(parser);
-					// ES模块 import 语句
+					// ES模块导入语句语法分析器插件
 					new HarmonyImportDependencyParserPlugin(parserOptions).apply(parser);
-					// ES模块 export 语句
+					// ES模块导出语句语法分析器插件
 					new HarmonyExportDependencyParserPlugin(parserOptions).apply(parser);
+					// ES模块顶级This指向语法分析器插件
 					new HarmonyTopLevelThisParserPlugin().apply(parser);
 				};
 

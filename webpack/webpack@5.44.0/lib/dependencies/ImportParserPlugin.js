@@ -9,7 +9,7 @@ const ImportDependency = require("./ImportDependency");
 const ImportEagerDependency = require("./ImportEagerDependency");
 const ImportWeakDependency = require("./ImportWeakDependency");
 
-// ES模块 动态导入 语法分析器插件
+// ES模块动态导入语法分析器插件
 class ImportParserPlugin {
 	constructor(options) {
 		this.options = options;
@@ -19,8 +19,9 @@ class ImportParserPlugin {
 		parser.hooks.importCall.tap("ImportParserPlugin", expr => {
 			const param = parser.evaluateExpression(expr.source);
 
+			// chunk 名
 			let chunkName = null;
-			//
+			// 
 			let mode = "lazy";
 			//
 			let include = null;
@@ -34,6 +35,7 @@ class ImportParserPlugin {
 			const { options: importOptions, errors: commentErrors } =
 				parser.parseCommentOptions(expr.range);
 
+			// 注释错误
 			if (commentErrors) {
 				for (const e of commentErrors) {
 					const { comment } = e;
@@ -47,6 +49,7 @@ class ImportParserPlugin {
 			}
 
 			if (importOptions) {
+				// webpackIgnore：设置为 true 时，禁用动态导入解析(不进行代码分离)
 				if (importOptions.webpackIgnore !== undefined) {
 					if (typeof importOptions.webpackIgnore !== "boolean") {
 						parser.state.module.addWarning(
@@ -62,6 +65,7 @@ class ImportParserPlugin {
 						}
 					}
 				}
+				// webpackChunkName: 自定义 chunk 名
 				if (importOptions.webpackChunkName !== undefined) {
 					if (typeof importOptions.webpackChunkName !== "string") {
 						parser.state.module.addWarning(
@@ -74,6 +78,7 @@ class ImportParserPlugin {
 						chunkName = importOptions.webpackChunkName;
 					}
 				}
+				// webpackMode: 以指定的模式解析动态导入
 				if (importOptions.webpackMode !== undefined) {
 					if (typeof importOptions.webpackMode !== "string") {
 						parser.state.module.addWarning(
@@ -86,6 +91,7 @@ class ImportParserPlugin {
 						mode = importOptions.webpackMode;
 					}
 				}
+				// webpackPrefetch: 预获取
 				if (importOptions.webpackPrefetch !== undefined) {
 					if (importOptions.webpackPrefetch === true) {
 						groupOptions.prefetchOrder = 0;
@@ -100,6 +106,7 @@ class ImportParserPlugin {
 						);
 					}
 				}
+				// webpackPreload: 预加载
 				if (importOptions.webpackPreload !== undefined) {
 					if (importOptions.webpackPreload === true) {
 						groupOptions.preloadOrder = 0;
@@ -114,6 +121,7 @@ class ImportParserPlugin {
 						);
 					}
 				}
+				// webpackInclude: 在导入解析(import resolution)过程中 只有满足匹配条件(正则表达式)的模块才会被打包
 				if (importOptions.webpackInclude !== undefined) {
 					if (
 						!importOptions.webpackInclude ||
@@ -129,6 +137,7 @@ class ImportParserPlugin {
 						include = new RegExp(importOptions.webpackInclude);
 					}
 				}
+				// webpackExclude: 在导入解析(import resolution)过程中 所有满足匹配条件(正则表达式)的模块都不会被打包。
 				if (importOptions.webpackExclude !== undefined) {
 					if (
 						!importOptions.webpackExclude ||
@@ -144,6 +153,7 @@ class ImportParserPlugin {
 						exclude = new RegExp(importOptions.webpackExclude);
 					}
 				}
+				// webpackExports: 告知 webpack 只构建指定出口的动态 import() 模块
 				if (importOptions.webpackExports !== undefined) {
 					if (
 						!(

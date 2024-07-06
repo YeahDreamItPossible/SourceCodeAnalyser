@@ -1,15 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const DynamicExports = require("./DynamicExports");
 const HarmonyCompatibilityDependency = require("./HarmonyCompatibilityDependency");
 const HarmonyExports = require("./HarmonyExports");
 
-// ES 检查 语法分析插件
+// ES模块检测语法分析插件
+// 该插件主要是用来分析当前模式是否是 ES模块 及 分析
 module.exports = class HarmonyDetectionParserPlugin {
 	constructor(options) {
 		const { topLevelAwait = false } = options || {};

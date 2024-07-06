@@ -4,7 +4,7 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-// require.ensure
+// 通过 webpack特有的 require.ensure 语法引入的依赖
 // CommonJS 相关
 class RequireEnsureDependency extends NullDependency {
 	constructor(range, contentRange, errorHandlerRange) {

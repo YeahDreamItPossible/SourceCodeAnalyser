@@ -5,12 +5,12 @@ const InitFragment = require("../InitFragment");
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-
 // TODO:
+// 缓存的常量依赖
 class CachedConstDependency extends NullDependency {
 	constructor(expression, range, identifier) {
 		super();
-
+		// 
 		this.expression = expression;
 		this.range = range;
 		this.identifier = identifier;

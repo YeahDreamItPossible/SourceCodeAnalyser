@@ -6,7 +6,7 @@ const makeSerializable = require("../util/makeSerializable");
 const HarmonyExportInitFragment = require("./HarmonyExportInitFragment");
 const NullDependency = require("./NullDependency");
 
-// ES模块 export 表达式依赖
+// ES模块导出默认值依赖
 // 当代码片段中包含 export default 时
 class HarmonyExportExpressionDependency extends NullDependency {
 	constructor(range, rangeStatement, prefix, declarationId) {

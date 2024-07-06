@@ -24,13 +24,15 @@ const HarmonyImportDependency = require("./HarmonyImportDependency");
 const idsSymbol = Symbol("HarmonyImportSpecifierDependency.ids");
 
 // ES模块导入标识符依赖
-// 当 import 语句中 包含具体的导入标识符时
+// 当 import 语句中 包含具体的导入标识符时(即: import '...')
+// 当遇到 import 语句时 则会创建 HarmonyImportSideEffectDependency 的实例
 class HarmonyImportSpecifierDependency extends HarmonyImportDependency {
 	constructor(request, sourceOrder, ids, name, range, strictExportPresence) {
 		super(request, sourceOrder);
-		// 
+		// 导入的标识符(即: 变量)
 		this.ids = ids;
-		// 导入的标识符(即变量)
+		// 导入的真正标识符
+		// 如果 导入的标识符号没有使用别名时 this.name 与 this.ids[0] 一致
 		this.name = name;
 		// 
 		this.range = range;

@@ -149,7 +149,7 @@ const findDependencyForName = (
 	return undefined;
 };
 
-// ES模块 export标识符 依赖
+// ES模块复合导出导入标识符依赖
 // 当遇到 export 和 import 复合语句时 即: export * from '...'
 class HarmonyExportImportedSpecifierDependency extends HarmonyImportDependency {
 	/**

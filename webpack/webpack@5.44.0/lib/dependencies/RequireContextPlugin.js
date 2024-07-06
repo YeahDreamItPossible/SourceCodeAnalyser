@@ -8,7 +8,7 @@ const RequireContextDependencyParserPlugin = require("./RequireContextDependency
 // 
 const EMPTY_RESOLVE_OPTIONS = {};
 
-// TODO:
+// 主要是用来解析 webpack特有的 require.context 语法
 class RequireContextPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

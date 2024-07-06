@@ -18,7 +18,7 @@ class ModuleDependency extends Dependency {
 		// 模块引入路径
 		// '../plugins/loaders/first.js?auth=lee!../plugins/loaders/second.js?use=wang!./utils/math.js?ts=12345'
 		this.request = request;
-		// 用户请求
+		// 用户请求路径
 		this.userRequest = request;
 		// 范围 [Number, Number]
 		this.range = undefined;

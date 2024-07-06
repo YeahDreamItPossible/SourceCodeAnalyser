@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const util = require("util");
@@ -13,40 +8,12 @@ const {
 	compareIterables
 } = require("./util/comparators");
 
-/** @typedef {import("./AsyncDependenciesBlock")} AsyncDependenciesBlock */
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./Dependency").DependencyLocation} DependencyLocation */
-/** @typedef {import("./Entrypoint")} Entrypoint */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-
-/** @typedef {{id: number}} HasId */
-/** @typedef {{module: Module, loc: DependencyLocation, request: string}} OriginRecord */
-
-/**
- * @typedef {Object} RawChunkGroupOptions
- * @property {number=} preloadOrder
- * @property {number=} prefetchOrder
- */
-
-/** @typedef {RawChunkGroupOptions & { name?: string }} ChunkGroupOptions */
-
 let debugId = 5000;
 
-/**
- * @template T
- * @param {SortableSet<T>} set set to convert to array.
- * @returns {T[]} the array format of existing set
- */
+// 将 set 转换成 array
 const getArray = set => Array.from(set);
 
-/**
- * A convenience method used to sort chunks based on their id's
- * @param {ChunkGroup} a first sorting comparator
- * @param {ChunkGroup} b second sorting comparator
- * @returns {1|0|-1} a sorting index to determine order
- */
+// 排序(通过比较 id 属性) 返回 0 | 1 | -1
 const sortById = (a, b) => {
 	if (a.id < b.id) return -1;
 	if (b.id < a.id) return 1;
@@ -66,7 +33,7 @@ const sortOrigin = (a, b) => {
 	return compareLocations(a.loc, b.loc);
 };
 
-// 块组(ChunkGroup): 用来对 Chunk 使用描述
+// 块组(ChunkGroup): 用来对 Chunk 的逻辑分组 和 使用描述
 class ChunkGroup {
 	constructor(options) {
 		if (typeof options === "string") {
@@ -80,10 +47,10 @@ class ChunkGroup {
 		this.options = options;
 
 		// ChunkGroup 嵌套关系
-		// 当前 块组 包含的 子块组
+		// 当前 块组 包含的 子块组(与 Webpack.options.Entry.dependOn 相关)
 		// Set<ChunkGroup>
 		this._children = new SortableSet(undefined, sortById);
-		// 当前 块组 包含的 父块组
+		// 当前 块组 包含的 父块组(与 Webpack.options.Entry.dependOn 相关)
 		// Set<ChunkGroup>
 		this._parents = new SortableSet(undefined, sortById);
 		// 当前 块组 包含的 异步块组
@@ -95,7 +62,8 @@ class ChunkGroup {
 		// 当前 块组 包含的块
 		// Array<Chunk>
 		this.chunks = [];
-		// 存放模块和依赖 Array<{module, dependency, loc}>
+		// chunkGroup 的起源
+		// 存放模块和依赖和位置信息 Array<{module, dependency, loc}>
 		this.origins = [];
 
 		// 模块对应的索引
@@ -129,27 +97,27 @@ class ChunkGroup {
 		}
 	}
 
-	// 返回当前ChunkGroup.name
+	// 返回当前chunkGroup.name
 	get name() {
 		return this.options.name;
 	}
 
-	// 设置当前ChunkGroup.name
+	// 设置当前chunkGroup.name
 	set name(value) {
 		this.options.name = value;
 	}
 
-	// 所有Chunk debugId拼接
+	// 返回 debugId(所有 chunk.debugId 拼接)
 	get debugId() {
 		return Array.from(this.chunks, x => x.debugId).join("+");
 	}
 
-	// 所有Chunk id拼接
+	// 返回 id(所有 chunk.id 拼接)
 	get id() {
 		return Array.from(this.chunks, x => x.id).join("+");
 	}
 
-	// ChunkGraph.chunks 添加 chunk
+	// 向当前 块组 的首部添加 块 并返回 是否添加成功
 	// 如果该 chunk 存在 则更新该 chunk
 	unshiftChunk(chunk) {
 		const oldIdx = this.chunks.indexOf(chunk);
@@ -163,12 +131,7 @@ class ChunkGroup {
 		return false;
 	}
 
-	/**
-	 * inserts a chunk before another existing chunk in group
-	 * @param {Chunk} chunk Chunk being inserted
-	 * @param {Chunk} before Placeholder/target chunk marking new chunk insertion point
-	 * @returns {boolean} return true if insertion was successful
-	 */
+	// 在 某个Chunk 前 插入 新Chunk 并返回是否插入成功
 	insertChunk(chunk, before) {
 		const oldIdx = this.chunks.indexOf(chunk);
 		const idx = this.chunks.indexOf(before);
@@ -185,11 +148,9 @@ class ChunkGroup {
 		return false;
 	}
 
-	/**
-	 * add a chunk into ChunkGroup. Is pushed on or prepended
-	 * @param {Chunk} chunk chunk being pushed into ChunkGroupS
-	 * @returns {boolean} returns true if chunk addition was successful.
-	 */
+	// 向当前 块组 添加 块
+	// 当 添加成功 时 返回 true
+	// 当 添加失败 时 返回 false
 	pushChunk(chunk) {
 		const oldIdx = this.chunks.indexOf(chunk);
 		if (oldIdx >= 0) {
@@ -199,7 +160,9 @@ class ChunkGroup {
 		return true;
 	}
 
-	// 返回是否成功 替换 块
+	// 在当前 块组 中 替换掉 某个块
+	// 当 替换成功 时 返回 true
+	// 当 替换失败 时 返回 false
 	replaceChunk(oldChunk, newChunk) {
 		const oldIdx = this.chunks.indexOf(oldChunk);
 		if (oldIdx < 0) return false;
@@ -218,10 +181,9 @@ class ChunkGroup {
 		}
 	}
 
-	/**
-	 * @param {Chunk} chunk chunk to remove
-	 * @returns {boolean} returns true if chunk was removed
-	 */
+	// 向当前 块组 中 移除 某个块
+	// 当 移除成功 时 返回 true
+	// 移除失败时 返回 false
 	removeChunk(chunk) {
 		const idx = this.chunks.indexOf(chunk);
 		if (idx >= 0) {
@@ -231,32 +193,29 @@ class ChunkGroup {
 		return false;
 	}
 
-	/**
-	 * @returns {boolean} true, when this chunk group will be loaded on initial page load
-	 */
-	// 
+	// 返回当前 ChunkGroup 是否要初始加载
 	isInitial() {
 		return false;
 	}
 
-	// 添加 子ChunkGroup
+	// 添加 子ChunkGroup 并返回 是否添加成功
 	addChild(group) {
 		const size = this._children.size;
 		this._children.add(group);
 		return size !== this._children.size;
 	}
 
-	// 返回所有的子ChunkGroup
+	// 以数组形式返回所有的 子ChunkGroup
 	getChildren() {
 		return this._children.getFromCache(getArray);
 	}
 
-	// 返回所有的子ChunkGroup数量
+	// 返回所有的 子ChunkGroup数量
 	getNumberOfChildren() {
 		return this._children.size;
 	}
 
-	// 返回 this._children
+	// 返回所有的 子ChunkGroup
 	get childrenIterable() {
 		return this._children;
 	}
@@ -272,7 +231,7 @@ class ChunkGroup {
 		return true;
 	}
 
-	// 添加 父ChunkGroup
+	// 添加 父ChunkGroup 并返回 是否添加成功
 	addParent(parentChunk) {
 		if (!this._parents.has(parentChunk)) {
 			this._parents.add(parentChunk);
@@ -281,7 +240,7 @@ class ChunkGroup {
 		return false;
 	}
 
-	// 返回所有的 父ChunkGroup
+	// 以数组形式返回所有的 父ChunkGroup
 	getParents() {
 		return this._parents.getFromCache(getArray);
 	}
@@ -296,15 +255,12 @@ class ChunkGroup {
 		return this._parents.has(parent);
 	}
 
-	// 返回 this._parents
+	// 返回所有的 父ChunkGroup
 	get parentsIterable() {
 		return this._parents;
 	}
 
-	/**
-	 * @param {ChunkGroup} chunkGroup the parent group
-	 * @returns {boolean} returns true if this group has been removed from the parent
-	 */
+	// 移除 某个父ChunkGroup 并返回 是否移除成功
 	removeParent(chunkGroup) {
 		if (this._parents.delete(chunkGroup)) {
 			chunkGroup.removeChild(this);
@@ -313,16 +269,14 @@ class ChunkGroup {
 		return false;
 	}
 
-	/**
-	 * @param {Entrypoint} entrypoint entrypoint to add
-	 * @returns {boolean} returns true if entrypoint was added
-	 */
+	// 添加 异步入口点 并返回 是否添加成功
 	addAsyncEntrypoint(entrypoint) {
 		const size = this._asyncEntrypoints.size;
 		this._asyncEntrypoints.add(entrypoint);
 		return size !== this._asyncEntrypoints.size;
 	}
 
+	// 返回所有的 异步入口点
 	get asyncEntrypointsIterable() {
 		return this._asyncEntrypoints;
 	}
@@ -367,6 +321,7 @@ class ChunkGroup {
 	 * @param {string} request request name of the reference
 	 * @returns {void}
 	 */
+	// 添加 
 	addOrigin(module, loc, request) {
 		this.origins.push({
 			module,
@@ -375,9 +330,7 @@ class ChunkGroup {
 		});
 	}
 
-	/**
-	 * @returns {string[]} the files contained this chunk group
-	 */
+	// 返回 当前块组 包含的 所有块 的 输出文件名 
 	getFiles() {
 		const files = new Set();
 
@@ -390,9 +343,7 @@ class ChunkGroup {
 		return Array.from(files);
 	}
 
-	/**
-	 * @returns {void}
-	 */
+	// 解除 当前块组 与 父块组 及 子块组 及 块 的关联关系
 	remove() {
 		// cleanup parents
 		for (const parentChunkGroup of this._parents) {
@@ -423,12 +374,13 @@ class ChunkGroup {
 			chunkGroup._parents.delete(this);
 		}
 
-		// remove chunks
+		// 移除所有的块
 		for (const chunk of this.chunks) {
 			chunk.removeGroup(this);
 		}
 	}
 
+	// 
 	sortItems() {
 		this.origins.sort(sortOrigin);
 	}
@@ -545,12 +497,13 @@ class ChunkGroup {
 	}
 }
 
+// chunkGroup.prototype.getModuleIndex 已被 chunkGroup.prototype.getModulePreOrderIndex 替代
 ChunkGroup.prototype.getModuleIndex = util.deprecate(
 	ChunkGroup.prototype.getModulePreOrderIndex,
 	"ChunkGroup.getModuleIndex was renamed to getModulePreOrderIndex",
 	"DEP_WEBPACK_CHUNK_GROUP_GET_MODULE_INDEX"
 );
-
+// chunkGroup.prototype.getModuleIndex2 已被 chunkGroup.prototype.getModulePostOrderIndex 替代
 ChunkGroup.prototype.getModuleIndex2 = util.deprecate(
 	ChunkGroup.prototype.getModulePostOrderIndex,
 	"ChunkGroup.getModuleIndex2 was renamed to getModulePostOrderIndex",

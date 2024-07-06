@@ -6,7 +6,6 @@ const HarmonyExportImportedSpecifierDependency = require("../dependencies/Harmon
 const HarmonyImportSpecifierDependency = require("../dependencies/HarmonyImportSpecifierDependency");
 const formatLocation = require("../formatLocation");
 
-
 // WeakMap<any, Map<string, RegExp>>
 const globToRegexpCache = new WeakMap();
 

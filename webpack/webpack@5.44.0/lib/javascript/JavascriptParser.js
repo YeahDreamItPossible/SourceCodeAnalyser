@@ -50,14 +50,18 @@ const BasicEvaluatedExpression = require("./BasicEvaluatedExpression");
 /** @typedef {{ name: string | VariableInfo, rootInfo: string | VariableInfo, getMembers: () => string[] }} GetInfoResult */
 
 const EMPTY_ARRAY = [];
+// 用二进制表示 1
 const ALLOWED_MEMBER_TYPES_CALL_EXPRESSION = 0b01;
+// 用二进制表示 2
 const ALLOWED_MEMBER_TYPES_EXPRESSION = 0b10;
+// 用二进制表示 3
 const ALLOWED_MEMBER_TYPES_ALL = 0b11;
 
 // Syntax: https://developer.mozilla.org/en/SpiderMonkey/Parser_API
 
 const parser = AcornParser;
 
+// 变量信息
 class VariableInfo {
 	/**
 	 * @param {ScopeInfo} declaredScope scope in which the variable is declared
@@ -93,22 +97,36 @@ class VariableInfo {
  * @property {boolean} isAsmJs
  * @property {boolean} inTry
  */
+
+/**
+ * 表达式 与 语句 定义以及区别:
+ * 表达式:
+ * 由操作符和操作数组合而成的序列, 它计算出一个值
+ * 在JavaScript中,几乎任何可以产生值的代码片段都可以被视为一个表达式
+ * 用途:
+ * 表达式通常用于赋值、逻辑判断、数学计算等场景
+ * 语句:
+ * 语句是执行特定任务的代码片段, 它可能包含关键字、变量、操作符、表达式等
+ * 用途:
+ * 语句用于声明变量、赋值、执行函数、进行条件判断、循环等
+ */
+
 /**
  * Expression 表达式分类
- * ArrowFunctionExpression 箭头函数表达式
- * AssignmentExpression 赋值表达式
+ * ArrowFunctionExpression 箭头函数表达式(const add = (a, b) => a + b)
+ * AssignmentExpression 赋值表达式(非变量声明)(a = a + 5, 而非 let a = 5)
  * AwaitExpression 等待表达式(用于 await 关键字)
  * BinaryExpression 二元表达式(例如 a + b)
  * CallExpression 调用表达式(用于函数调用)
  * ClassExpression 类表达式(用于定义 class)
  * ConditionalExpression 条件表达式(例如: a ? b : c)
- * FunctionExpression 函数表达式(用于定义匿名函数)
- * Identifier 标识符(例如 变量名 函数名)
+ * FunctionExpression 函数表达式(用于定义函数)
+ * Identifier 标识符(当表达式中包含变量名 函数名时)
  * LogicalExpression 逻辑表达式(例如 || && !)
  * MemberExpression 成员表达式(例如: obj.property obj[key])
  * NewExpression 新建表达式(用于 new 关键字)
  * ObjectExpression 对象表达式(用于定义字面量对象)
- * SequenceExpression 序列表达式(逗号分隔的表达式列表)
+ * SequenceExpression 序列表达式(逗号分隔的表达式列表, (x++, x + 2))
  * SpreadElement 扩展元素(使用到扩展运算符...)
  * TaggedTemplateExpression  标签模板表达式(与模板字符串和函数标签一起使用)
  * TemplateLiteral 模板字面量(用于多行字符串和嵌入表达式 `hello${name}`)
@@ -140,6 +158,73 @@ class VariableInfo {
  * TryStatement：尝试语句（用于捕获异常）
  * LabeledStatement：标签语句（给语句一个标签，以便与 break 或 continue 一起使用）
  * WithStatement：with 语句（注意：在现代 JavaScript 中很少使用，并且可能在未来的规范中被移除）
+ */
+
+/**
+ * evaluate 与 expression 钩子区别
+ * 相同:
+ * 二者都是针对 表达式
+ * 区别:
+ * evaluate 钩子针对 表达式类型 进行代码分析
+ * expression 钩子则针对与 标识符(变量) 进行代码分析
+ */
+
+/**
+ * evaluateTypeof 与 typeof 钩子区别:
+ * 相同点:
+ * 二者都是针对 typeof 标识符进行代码分析
+ * 不同点:
+ * evaluteTypeof 钩子是针对 typeof 自由变量 表达式进行代码分析
+ * typeof 钩子是针对 typeof 标识符 标识符进行代码分析
+ */
+
+/**
+ * Pattern 与 Identifier 区别
+ * Identifier 是 Babel AST 中的一个具体节点类型，用于表示一个标识符，比如变量名、函数名等。
+ * 它是一个基本的 AST 节点，用于引用程序中的名称。
+ * Pattern 在 Babel 中通常指的是一个可以与某个值进行匹配的模式。
+ * 在解构赋值或函数参数等场景中，模式用于描述如何提取或匹配数据的结构。
+ * 然而，在 Babel 的 AST 节点类型中，Pattern 并不是一个直接存在的节点类型，而是指像 ObjectPattern、ArrayPattern 等用于模式匹配的节点。
+ */
+
+/**
+ * 一元表达式
+ * "-" | "+" | "!" | "~" | "typeof" | "void" | "delete"
+ * 二元表达式
+ * "==" | "!=" | "===" | "!==" | "<" | "<=" | 
+ * ">" | ">=" | "<<" | ">>" | ">>>" | "+" | 
+ * "-" | "*" | "/" | "%" | "|" | "^" | "&" | "in" | "instanceof"
+ * 逻辑表达式(LogicalExpression)
+ * "||" | "&&"
+ * 条件表达式(ConditionalExpression)
+ * ?/:
+ * 更新表达式(UpdateExpression)
+ *  "++" | "--"
+ * 序列表达式(SequenceExpression)
+ * 元属性(MetaProperty)
+ * import.meta
+ */
+
+/**
+ * 导入声明(ImportDeclaration):
+ * 当语句中包含 import 关键字时
+ * 导入标识符(ImportSpecifier):
+ * import { foo } from '...'
+ * 导入默认标识符(ImportDefaultSpecifier):
+ * import foo from '...'
+ * 导入命名标识符(ImportNamespaceSpecifier):
+ * import * as foo from '...'
+ */
+
+/**
+ * 导出命名声明(ExportNamedDeclaration):
+ * 当
+ * 导出标识符(ExportSpecifier):
+ * export { name }
+ * 导出默认声明(ExportDefaultDeclaration):
+ * export default function say() {}
+ * 导出全部声明(ExportAllDeclaration):
+ * export * from '...'
  */
 
 const joinRanges = (startRange, endRange) => {
@@ -192,15 +277,13 @@ class JavascriptParser extends Parser {
 	constructor(sourceType = "auto") {
 		super();
 		this.hooks = Object.freeze({
-			// 评估 typeof
-			// 当代码片段中有有计算 typeof 自由变量 表达式时
+			// 当计算 typeof 表达式时(当代码片段中有有计算 typeof 自由变量 表达式时)
 			// 自由变量: 在 A 中作用域要用到的变量 x.并没有在 A 中声明,要到别的作用域中找到他,这个变量 x 就是自由变量
+			// 示例: const val = typeof name
 			evaluateTypeof: new HookMap(() => new SyncBailHook(["expression"])),
-			// 评估 表达式
-			// 当代码片段中有 表达式 时
-			// 
+			// 当计算 表达式时(当代码片段中有 以上表达式类型 时(表达式分类如上图))
 			evaluate: new HookMap(() => new SyncBailHook(["expression"])),
-			// 评估 标识符
+			// 当计算 标识符时
 			// 当代码片段中有有 自由变量 标识符时
 			// HookMap<SyncBailHook<[IdentifierNode | ThisExpressionNode | MemberExpressionNode | MetaPropertyNode], BasicEvaluatedExpression | undefined | null>>
 			evaluateIdentifier: new HookMap(() => new SyncBailHook(["expression"])),
@@ -219,17 +302,17 @@ class JavascriptParser extends Parser {
 			isPure: new HookMap(
 				() => new SyncBailHook(["expression", "commentsStartPosition"])
 			),
-			//
-			// SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>
+			// 在预遍历 单个语句前调用该钩子
+			// 当该钩子返回 true 时 则跳过当前语句的预遍历
 			preStatement: new SyncBailHook(["statement"]),
-			// 
-			// SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>
+			// 当块预遍历 单个语句时
+			// 当该钩子返回 true 时 则跳过当前语句的遍历
 			blockPreStatement: new SyncBailHook(["declaration"]),
-			// 当代码片段中包含语句时
-			// SyncBailHook<[StatementNode | ModuleDeclarationNode], boolean | void>
+			// 当遍历单个语句时
+			// 当该钩子返回 非unfefined 时 则跳过当前语句的遍历
 			statement: new SyncBailHook(["statement"]),
+			// 当遍历 if 语句时
 			// 当代码片段中包含 if 语句时
-			// SyncBailHook<[IfStatementNode], boolean | void>
 			statementIf: new SyncBailHook(["statement"]),
 			// 当代码片段中包含 clss 表达式时
 			// SyncBailHook<[ExpressionNode, ClassExpressionNode | ClassDeclarationNode], boolean | void>
@@ -247,11 +330,11 @@ class JavascriptParser extends Parser {
 			]),
 			/** @type {HookMap<SyncBailHook<[LabeledStatementNode], boolean | void>>} */
 			label: new HookMap(() => new SyncBailHook(["statement"])),
-			// 为代码片段中每个包含 静态import 语句时调用
-			// SyncBailHook<[StatementNode, ImportSource], boolean | void>
+			// 当块预遍历 import 语句时
+			// 代码片段中每个包含 静态import 语句时调用
 			import: new SyncBailHook(["statement", "source"]),
-			// 为代码片段中每个 import 语句中包含具体的导入标识符(import specifier) 时调用
-			// SyncBailHook<[StatementNode, ImportSource, string, string], boolean | void>
+			// 当块预遍历 import 标识符 语句时
+			// 当代码片段中每个 import 语句中包含具体的导入标识符(import specifier) 时调用
 			importSpecifier: new SyncBailHook([
 				"statement",
 				"source",
@@ -262,7 +345,6 @@ class JavascriptParser extends Parser {
 			// SyncBailHook<[ExpressionNode], boolean | void>
 			importCall: new SyncBailHook(["expression"]),
 			// 为代码片段中每个出现 export 语句时调用
-			// SyncBailHook<[StatementNode], boolean | void>
 			export: new SyncBailHook(["statement"]),
 			// 当代码片段中有 export * from '' 语句时
 			// SyncBailHook<[StatementNode, ImportSource], boolean | void>
@@ -291,7 +373,9 @@ class JavascriptParser extends Parser {
 				"exportName",
 				"index"
 			]),
-			/** @type {SyncBailHook<[VariableDeclaratorNode, StatementNode], boolean | void>} */
+			// 预声明
+			// 在预遍历 非var 关键字 声明变量前
+			// 当该钩子返回 true 时则跳过进入模式
 			preDeclarator: new SyncBailHook(["declarator", "statement"]),
 			/** @type {SyncBailHook<[VariableDeclaratorNode, StatementNode], boolean | void>} */
 			declarator: new SyncBailHook(["declarator", "statement"]),
@@ -300,17 +384,19 @@ class JavascriptParser extends Parser {
 			// HookMap<SyncBailHook<[DeclarationNode], boolean | void>>
 			varDeclaration: new HookMap(() => new SyncBailHook(["declaration"])),
 			// 当分析 用 let 关键字声明变量 时
-			// 示例: let name = 'Lee'
-			// HookMap<SyncBailHook<[DeclarationNode], boolean | void>>
+			// 作用: 分析使用 let 关键声明 特定的变量
+			// 示例: let name = 'Lee' => varDeclarationLet.for('name').tap(...)
 			varDeclarationLet: new HookMap(() => new SyncBailHook(["declaration"])),
 			// 当分析 用 const 关键字声明变量 时
-			// 示例: const name = 'Lee'
-			// HookMap<SyncBailHook<[DeclarationNode], boolean | void>>
+			// 作用: 分析使用 const 关键声明 特定的变量
+			// 示例: const name = 'Lee' => varDeclarationConst.for('name').tap(...)
 			varDeclarationConst: new HookMap(() => new SyncBailHook(["declaration"])),
-			// 当分析 用 var 关键字声明变量 时
-			// 示例: var name = 'Lee'
-			// HookMap<SyncBailHook<[DeclarationNode], boolean | void>>
+			// 当分析 使用 var 关键字声明变量 时
+			// 作用: 分析使用 var 关键声明 特定的变量
+			// var name = 'Lee' => varDeclarationVar.for('name').tap(...)
 			varDeclarationVar: new HookMap(() => new SyncBailHook(["declaration"])),
+			// TODO:
+			// 在进入模式(enterPattern)时调用
 			/** @type {HookMap<SyncBailHook<[IdentifierNode], boolean | void>>} */
 			pattern: new HookMap(() => new SyncBailHook(["pattern"])),
 			// 是否可以重命名给
@@ -332,7 +418,7 @@ class JavascriptParser extends Parser {
 			// 示例: typeof obj
 			// HookMap<SyncBailHook<[ExpressionNode], boolean | void>>
 			typeof: new HookMap(() => new SyncBailHook(["expression"])),
-			/** @type {SyncBailHook<[ExpressionNode], boolean | void>} */
+			// 当分析 await 表达式时
 			topLevelAwait: new SyncBailHook(["expression"]),
 			// 当分析函数调用时
 			// 示例: sayHello()
@@ -390,10 +476,8 @@ class JavascriptParser extends Parser {
 			/** @type {SyncBailHook<[ExpressionNode], boolean | void>} */
 			expressionLogicalOperator: new SyncBailHook(["expression"]),
 			// 当访问代码片段中的抽象语法树(ast)时
-			// SyncBailHook<[ProgramNode, CommentNode[]], boolean | void>
 			program: new SyncBailHook(["ast", "comments"]),
-			// 
-			// SyncBailHook<[ProgramNode, CommentNode[]], boolean | void>
+			// 当遍历结束后
 			finish: new SyncBailHook(["ast", "comments"])
 		});
 		// 源代码类型
@@ -419,11 +503,12 @@ class JavascriptParser extends Parser {
 		this._initializeEvaluating();
 	}
 
-	// 
+	// 注册 计算表达式 钩子
+	// 作用: 主要是注册 evaluate 相关钩子
 	_initializeEvaluating() {
+		// 分析 表达式 中的 字面量
 		this.hooks.evaluate.for("Literal").tap("JavascriptParser", _expr => {
 			const expr = /** @type {LiteralNode} */ (_expr);
-
 			switch (typeof expr.value) {
 				case "number":
 					return new BasicEvaluatedExpression()
@@ -451,6 +536,7 @@ class JavascriptParser extends Parser {
 					.setRange(expr.range);
 			}
 		});
+		// 分析 表达式 中的 new表达式
 		this.hooks.evaluate.for("NewExpression").tap("JavascriptParser", _expr => {
 			const expr = /** @type {NewExpressionNode} */ (_expr);
 			const callee = expr.callee;
@@ -1457,6 +1543,7 @@ class JavascriptParser extends Parser {
 			});
 	}
 
+	// 返回 表达式 更名后的标识符
 	getRenameIdentifier(expr) {
 		const result = this.evaluateExpression(expr);
 		if (result && result.isIdentifier()) {
@@ -1464,10 +1551,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	/**
-	 * @param {ClassExpressionNode | ClassDeclarationNode} classy a class node
-	 * @returns {void}
-	 */
+	// 遍历 类语句 或者 类表达式
 	walkClass(classy) {
 		if (classy.superClass) {
 			if (!this.hooks.classExtendsExpression.call(classy.superClass, classy)) {
@@ -1499,8 +1583,8 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// Pre walking iterates the scope for variable declarations
 	// 预遍历 所有的语句(ast.body)
+	// 作用: 为所有的 变量声明 设置 作用域
 	preWalkStatements(statements) {
 		for (let index = 0, len = statements.length; index < len; index++) {
 			const statement = statements[index];
@@ -1508,8 +1592,9 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// Block pre walking iterates the scope for block variable declarations
 	// 块预遍历 所有的语句
+	// 作用: 为import export class const let 声明的变量 设置作用域
+	// 主要是 为 具有块作用域 的关键字 声明的变量 设置作用域
 	blockPreWalkStatements(statements) {
 		for (let index = 0, len = statements.length; index < len; index++) {
 			const statement = statements[index];
@@ -1517,8 +1602,8 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// 遍历 所有的语句
-	// Walking iterates the statements and expressions and processes them
+	// 遍历 所有的语句 
+	// 作用: 遍历所有的语句和表达式 并加工处理
 	walkStatements(statements) {
 		for (let index = 0, len = statements.length; index < len; index++) {
 			const statement = statements[index];
@@ -1676,23 +1761,19 @@ class JavascriptParser extends Parser {
 		this.prevStatement = this.statementPath.pop();
 	}
 
-	/**
-	 * Walks a statements that is nested within a parent statement
-	 * and can potentially be a non-block statement.
-	 * This enforces the nested statement to never be in ASI position.
-	 * @param {StatementNode} statement the nested statement
-	 * @returns {void}
-	 */
+	// 遍历 嵌套的语句
 	walkNestedStatement(statement) {
 		this.prevStatement = undefined;
 		this.walkStatement(statement);
 	}
 
-	// 遍历 块语句
+	// 预遍历 块语句
+	// 递归预遍历statement.body
 	preWalkBlockStatement(statement) {
 		this.preWalkStatements(statement.body);
 	}
 
+	// 遍历 块语句
 	walkBlockStatement(statement) {
 		this.inBlockScope(() => {
 			const body = statement.body;
@@ -1703,18 +1784,21 @@ class JavascriptParser extends Parser {
 		});
 	}
 
+	// 遍历 表达式语句
 	walkExpressionStatement(statement) {
 		this.walkExpression(statement.expression);
 	}
 
-	// 遍历 If语句
+	// 预遍历 If语句
 	preWalkIfStatement(statement) {
 		this.preWalkStatement(statement.consequent);
+		// 预分析 else-if 或者 else 语句
 		if (statement.alternate) {
 			this.preWalkStatement(statement.alternate);
 		}
 	}
 
+	// 遍历 If语句
 	walkIfStatement(statement) {
 		const result = this.hooks.statementIf.call(statement);
 		if (result === undefined) {
@@ -1732,11 +1816,12 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// 遍历 Label语句
+	// 预遍历 Label语句
 	preWalkLabeledStatement(statement) {
 		this.preWalkStatement(statement.body);
 	}
 
+	// 遍历 Label语句
 	walkLabeledStatement(statement) {
 		const hook = this.hooks.label.get(statement.label.name);
 		if (hook !== undefined) {
@@ -1746,20 +1831,23 @@ class JavascriptParser extends Parser {
 		this.walkNestedStatement(statement.body);
 	}
 
+	// 预遍历 With语句
 	preWalkWithStatement(statement) {
 		this.preWalkStatement(statement.body);
 	}
 
+	// 遍历 With语句
 	walkWithStatement(statement) {
 		this.walkExpression(statement.object);
 		this.walkNestedStatement(statement.body);
 	}
 
-	// 遍历 Switch语句
+	// 预遍历 Switch语句
 	preWalkSwitchStatement(statement) {
 		this.preWalkSwitchCases(statement.cases);
 	}
 
+	// 遍历 Switch语句
 	walkSwitchStatement(statement) {
 		this.walkExpression(statement.discriminant);
 		this.walkSwitchCases(statement.cases);
@@ -1769,20 +1857,24 @@ class JavascriptParser extends Parser {
 		if (statement.argument) this.walkExpression(statement.argument);
 	}
 
+	// 遍历 Return语句
 	walkReturnStatement(statement) {
 		this.walkTerminatingStatement(statement);
 	}
 
+	// 遍历 Throw语句
 	walkThrowStatement(statement) {
 		this.walkTerminatingStatement(statement);
 	}
 
+	// 预遍历 Try语句
 	preWalkTryStatement(statement) {
 		this.preWalkStatement(statement.block);
 		if (statement.handler) this.preWalkCatchClause(statement.handler);
 		if (statement.finializer) this.preWalkStatement(statement.finializer);
 	}
 
+	// 遍历 Try语句
 	walkTryStatement(statement) {
 		if (this.scope.inTry) {
 			this.walkStatement(statement.block);
@@ -1795,26 +1887,30 @@ class JavascriptParser extends Parser {
 		if (statement.finalizer) this.walkStatement(statement.finalizer);
 	}
 
+	// 预遍历 While语句
 	preWalkWhileStatement(statement) {
 		this.preWalkStatement(statement.body);
 	}
 
+	// 遍历 While语句
 	walkWhileStatement(statement) {
 		this.walkExpression(statement.test);
 		this.walkNestedStatement(statement.body);
 	}
 
-	// 遍历 DoWhile语句
+	// 预遍历 DoWhile语句
+	// 递归预遍历statement.body
 	preWalkDoWhileStatement(statement) {
 		this.preWalkStatement(statement.body);
 	}
 
+	// 遍历 DoWhile语句
 	walkDoWhileStatement(statement) {
 		this.walkNestedStatement(statement.body);
 		this.walkExpression(statement.test);
 	}
 
-	// 遍历 For语句
+	// 预遍历 For语句
 	preWalkForStatement(statement) {
 		if (statement.init) {
 			if (statement.init.type === "VariableDeclaration") {
@@ -1824,6 +1920,7 @@ class JavascriptParser extends Parser {
 		this.preWalkStatement(statement.body);
 	}
 
+	// 遍历 For语句
 	walkForStatement(statement) {
 		this.inBlockScope(() => {
 			if (statement.init) {
@@ -1854,7 +1951,7 @@ class JavascriptParser extends Parser {
 		});
 	}
 
-	// 遍历 ForIn语句
+	// 预遍历 ForIn语句
 	preWalkForInStatement(statement) {
 		if (statement.left.type === "VariableDeclaration") {
 			this.preWalkVariableDeclaration(statement.left);
@@ -1862,6 +1959,7 @@ class JavascriptParser extends Parser {
 		this.preWalkStatement(statement.body);
 	}
 
+	// 遍历 ForIn语句
 	walkForInStatement(statement) {
 		this.inBlockScope(() => {
 			if (statement.left.type === "VariableDeclaration") {
@@ -1884,9 +1982,10 @@ class JavascriptParser extends Parser {
 		});
 	}
 
-	// 遍历 ForOf语句
+	// 预遍历 ForOf语句
 	preWalkForOfStatement(statement) {
 		// ForOf 语句中有 await 关键字
+		// 示例: for await(let i of arr) {}
 		if (statement.await && this.scope.topLevelScope === true) {
 			this.hooks.topLevelAwait.call(statement);
 		}
@@ -1896,6 +1995,7 @@ class JavascriptParser extends Parser {
 		this.preWalkStatement(statement.body);
 	}
 
+	// 遍历 ForOf语句
 	walkForOfStatement(statement) {
 		this.inBlockScope(() => {
 			if (statement.left.type === "VariableDeclaration") {
@@ -1946,7 +2046,7 @@ class JavascriptParser extends Parser {
 		this.scope.topLevelScope = wasTopLevel;
 	}
 
-	// 
+	// 块预遍历 导入声明语句
 	blockPreWalkImportDeclaration(statement) {
 		const source = statement.source.value;
 		this.hooks.import.call(statement, source);
@@ -2004,6 +2104,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 块预遍历 导出命名声明
 	blockPreWalkExportNamedDeclaration(statement) {
 		let source;
 		if (statement.source) {
@@ -2059,12 +2160,14 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 导出命名语句
 	walkExportNamedDeclaration(statement) {
 		if (statement.declaration) {
 			this.walkStatement(statement.declaration);
 		}
 	}
 
+	// 块预遍历 导出默认声明
 	blockPreWalkExportDefaultDeclaration(statement) {
 		const prev = this.prevStatement;
 		this.preWalkStatement(statement.declaration);
@@ -2084,6 +2187,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 导出默认值语句
 	walkExportDefaultDeclaration(statement) {
 		this.hooks.export.call(statement);
 		if (
@@ -2119,6 +2223,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 块预遍历 导出所有声明语句
 	blockPreWalkExportAllDeclaration(statement) {
 		const source = statement.source.value;
 		const name = statement.exported ? statement.exported.name : null;
@@ -2128,6 +2233,7 @@ class JavascriptParser extends Parser {
 
 	// 预遍历 Var变量声明语句
 	preWalkVariableDeclaration(statement) {
+		// 只有当 使用 var 关键字声明变量时 
 		if (statement.kind !== "var") return;
 		this._preWalkVariableDeclaration(statement, this.hooks.varDeclarationVar);
 	}
@@ -2164,6 +2270,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 变量声明语句
 	walkVariableDeclaration(statement) {
 		for (const declarator of statement.declarations) {
 			switch (declarator.type) {
@@ -2191,17 +2298,19 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 块遍历 类声明语句
 	blockPreWalkClassDeclaration(statement) {
 		if (statement.id) {
 			this.defineVariable(statement.id.name);
 		}
 	}
 
+	// 遍历 类声明语句
 	walkClassDeclaration(statement) {
 		this.walkClass(statement);
 	}
 
-	// 遍历 SwitchCases 语句
+	// 预遍历 SwitchCases 语句
 	preWalkSwitchCases(switchCases) {
 		for (let index = 0, len = switchCases.length; index < len; index++) {
 			const switchCase = switchCases[index];
@@ -2209,6 +2318,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 SwitchCase
 	walkSwitchCases(switchCases) {
 		this.inBlockScope(() => {
 			const len = switchCases.length;
@@ -2244,6 +2354,7 @@ class JavascriptParser extends Parser {
 		});
 	}
 
+	// 预遍历 Catch语句
 	preWalkCatchClause(catchClause) {
 		this.preWalkStatement(catchClause.body);
 	}
@@ -2264,6 +2375,7 @@ class JavascriptParser extends Parser {
 		});
 	}
 
+	// 遍历 模式
 	walkPattern(pattern) {
 		switch (pattern.type) {
 			case "ArrayPattern":
@@ -2284,11 +2396,13 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 赋值模式
 	walkAssignmentPattern(pattern) {
 		this.walkExpression(pattern.right);
 		this.walkPattern(pattern.left);
 	}
 
+	// 遍历 对象模式
 	walkObjectPattern(pattern) {
 		for (let i = 0, len = pattern.properties.length; i < len; i++) {
 			const prop = pattern.properties[i];
@@ -2299,6 +2413,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 数组模式
 	walkArrayPattern(pattern) {
 		for (let i = 0, len = pattern.elements.length; i < len; i++) {
 			const element = pattern.elements[i];
@@ -2306,10 +2421,12 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 剩余参数模式
 	walkRestElement(pattern) {
 		this.walkPattern(pattern.argument);
 	}
 
+	// 遍历 所有的表达式
 	walkExpressions(expressions) {
 		for (const expression of expressions) {
 			if (expression) {
@@ -2318,6 +2435,8 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 单个表达式
+	// 根据 不同的表达式类型 遍历对应的表达式
 	walkExpression(expression) {
 		switch (expression.type) {
 			case "ArrayExpression":
@@ -2398,24 +2517,28 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 await表达式
 	walkAwaitExpression(expression) {
 		if (this.scope.topLevelScope === true)
 			this.hooks.topLevelAwait.call(expression);
 		this.walkExpression(expression.argument);
 	}
 
+	// 遍历 数组表达式
 	walkArrayExpression(expression) {
 		if (expression.elements) {
 			this.walkExpressions(expression.elements);
 		}
 	}
 
+	// 遍历 扩展运算符元素
 	walkSpreadElement(expression) {
 		if (expression.argument) {
 			this.walkExpression(expression.argument);
 		}
 	}
 
+	// 遍历 对象表达式
 	walkObjectExpression(expression) {
 		for (
 			let propIndex = 0, len = expression.properties.length;
@@ -2427,6 +2550,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 属性
 	walkProperty(prop) {
 		if (prop.type === "SpreadElement") {
 			this.walkExpression(prop.argument);
@@ -2444,6 +2568,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 函数表达式
 	walkFunctionExpression(expression) {
 		const wasTopLevel = this.scope.topLevelScope;
 		this.scope.topLevelScope = false;
@@ -2471,6 +2596,7 @@ class JavascriptParser extends Parser {
 		this.scope.topLevelScope = wasTopLevel;
 	}
 
+	// 遍历 箭头函数表达式
 	walkArrowFunctionExpression(expression) {
 		const wasTopLevel = this.scope.topLevelScope;
 		this.scope.topLevelScope = wasTopLevel ? "arrow" : false;
@@ -2491,9 +2617,7 @@ class JavascriptParser extends Parser {
 		this.scope.topLevelScope = wasTopLevel;
 	}
 
-	/**
-	 * @param {SequenceExpressionNode} expression the sequence
-	 */
+	// 遍历 序列表达式
 	walkSequenceExpression(expression) {
 		if (!expression.expressions) return;
 		// We treat sequence expressions like statements when they are one statement level
@@ -2516,10 +2640,12 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 更新表达式
 	walkUpdateExpression(expression) {
 		this.walkExpression(expression.argument);
 	}
 
+	// 遍历 一元表达式
 	walkUnaryExpression(expression) {
 		if (expression.operator === "typeof") {
 			const result = this.callHooksForExpression(
@@ -2540,15 +2666,18 @@ class JavascriptParser extends Parser {
 		this.walkExpression(expression.argument);
 	}
 
+	// 遍历 表达式左节点和右节点
 	walkLeftRightExpression(expression) {
 		this.walkExpression(expression.left);
 		this.walkExpression(expression.right);
 	}
 
+	// 遍历 二元表达式
 	walkBinaryExpression(expression) {
 		this.walkLeftRightExpression(expression);
 	}
 
+	// 遍历 逻辑表达式
 	walkLogicalExpression(expression) {
 		const result = this.hooks.expressionLogicalOperator.call(expression);
 		if (result === undefined) {
@@ -2560,6 +2689,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 赋值表达式
 	walkAssignmentExpression(expression) {
 		if (expression.left.type === "Identifier") {
 			const renameIdentifier = this.getRenameIdentifier(expression.right);
@@ -2628,6 +2758,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 条件表达式
 	walkConditionalExpression(expression) {
 		const result = this.hooks.expressionConditionalOperator.call(expression);
 		if (result === undefined) {
@@ -2645,6 +2776,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 new表达式
 	walkNewExpression(expression) {
 		const result = this.callHooksForExpression(
 			this.hooks.new,
@@ -2658,18 +2790,21 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 Yield表达式
 	walkYieldExpression(expression) {
 		if (expression.argument) {
 			this.walkExpression(expression.argument);
 		}
 	}
 
+	// 遍历 模板字面量表达式
 	walkTemplateLiteral(expression) {
 		if (expression.expressions) {
 			this.walkExpressions(expression.expressions);
 		}
 	}
 
+	// 遍历 标签模板字面量表达式
 	walkTaggedTemplateExpression(expression) {
 		if (expression.tag) {
 			this.walkExpression(expression.tag);
@@ -2679,13 +2814,12 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 类表达式
 	walkClassExpression(expression) {
 		this.walkClass(expression);
 	}
 
-	/**
-	 * @param {ChainExpressionNode} expression expression
-	 */
+	// 遍历 链式表达式( a.b?.c es2020)
 	walkChainExpression(expression) {
 		const result = this.hooks.optionalChaining.call(expression);
 
@@ -2760,6 +2894,7 @@ class JavascriptParser extends Parser {
 		this.scope.topLevelScope = wasTopLevel;
 	}
 
+	// 遍历 import表达式
 	walkImportExpression(expression) {
 		let result = this.hooks.importCall.call(expression);
 		if (result === true) return;
@@ -2767,6 +2902,7 @@ class JavascriptParser extends Parser {
 		this.walkExpression(expression.source);
 	}
 
+	// 遍历 调用表达式
 	walkCallExpression(expression) {
 		const isSimpleFunction = fn => {
 			return fn.params.every(p => p.type === "Identifier");
@@ -2841,6 +2977,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 遍历 成员表达式
 	walkMemberExpression(expression) {
 		const exprInfo = this.getMemberExpressionInfo(
 			expression,
@@ -2899,6 +3036,7 @@ class JavascriptParser extends Parser {
 		if (expression.computed === true) this.walkExpression(expression.property);
 	}
 
+	// 
 	walkMemberExpressionWithExpressionName(
 		expression,
 		name,
@@ -2932,21 +3070,22 @@ class JavascriptParser extends Parser {
 		if (expression.computed === true) this.walkExpression(expression.property);
 	}
 
+	// 遍历 this表达式
 	walkThisExpression(expression) {
 		this.callHooksForName(this.hooks.expression, "this", expression);
 	}
 
+	// TODO:
 	walkIdentifier(expression) {
 		this.callHooksForName(this.hooks.expression, expression.name, expression);
 	}
 
-	/**
-	 * @param {MetaPropertyNode} metaProperty meta property
-	 */
+	// 遍历 元属性(import.meta)
 	walkMetaProperty(metaProperty) {
 		this.hooks.expression.for(getRootName(metaProperty)).call(metaProperty);
 	}
 
+	// 调用 表达式 某个特定钩子
 	callHooksForExpression(hookMap, expr, ...args) {
 		return this.callHooksForExpressionWithFallback(
 			hookMap,
@@ -2957,6 +3096,7 @@ class JavascriptParser extends Parser {
 		);
 	}
 
+	// TODO:
 	/**
 	 * @template T
 	 * @template R
@@ -2991,14 +3131,8 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	/**
-	 * @template T
-	 * @template R
-	 * @param {HookMap<SyncBailHook<T, R>>} hookMap hooks the should be called
-	 * @param {string} name key in map
-	 * @param {AsArray<T>} args args for the hook
-	 * @returns {R} result of hook
-	 */
+	// 返回 特定钩子映射中 某个具名钩子调用后的返回值
+	// 即: hookMap.for(name).call(....)
 	callHooksForName(hookMap, name, ...args) {
 		return this.callHooksForNameWithFallback(
 			hookMap,
@@ -3009,6 +3143,7 @@ class JavascriptParser extends Parser {
 		);
 	}
 
+	// TODO:
 	/**
 	 * @template T
 	 * @template R
@@ -3027,6 +3162,7 @@ class JavascriptParser extends Parser {
 		);
 	}
 
+	// TODO:
 	/**
 	 * @template T
 	 * @template R
@@ -3077,16 +3213,8 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	/**
-	 * @template T
-	 * @template R
-	 * @param {HookMap<SyncBailHook<T, R>>} hookMap hooks the should be called
-	 * @param {string} name key in map
-	 * @param {function(string): any} fallback callback when variable in not handled by hooks
-	 * @param {function(): any} defined callback when variable is defined
-	 * @param {AsArray<T>} args args for the hook
-	 * @returns {R} result of hook
-	 */
+	// 返回 特定钩子映射中 某个具名钩子调用后的返回值
+	// 即: hookMap.for(name).call(....)
 	callHooksForNameWithFallback(hookMap, name, fallback, defined, ...args) {
 		return this.callHooksForInfoWithFallback(
 			hookMap,
@@ -3125,6 +3253,7 @@ class JavascriptParser extends Parser {
 		this.scope = oldScope;
 	}
 
+	// 绑定 函数作用域
 	inFunctionScope(hasThis, params, fn) {
 		const oldScope = this.scope;
 		this.scope = {
@@ -3149,6 +3278,7 @@ class JavascriptParser extends Parser {
 		this.scope = oldScope;
 	}
 
+	// 绑定 块作用域
 	inBlockScope(fn) {
 		const oldScope = this.scope;
 		this.scope = {
@@ -3165,12 +3295,14 @@ class JavascriptParser extends Parser {
 		this.scope = oldScope;
 	}
 
+	// 设置 parser.scope.isStrict
 	// 检查当前JS文件是否是严格模式(use strict)或者use asm
 	detectMode(statements) {
 		const isLiteral =
 			statements.length >= 1 &&
 			statements[0].type === "ExpressionStatement" &&
 			statements[0].expression.type === "Literal";
+		// 判断文件中的 第一个语句 的类型 和 值
 		if (isLiteral && statements[0].expression.value === "use strict") {
 			this.scope.isStrict = true;
 		}
@@ -3179,6 +3311,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 进入 所有的模式
 	enterPatterns(patterns, onIdent) {
 		for (const pattern of patterns) {
 			if (typeof pattern !== "string") {
@@ -3189,9 +3322,15 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// TODO:
+	// 进入 单个模式
 	enterPattern(pattern, onIdent) {
 		if (!pattern) return;
+		// 数组模式
+		// 赋值模式
+		// 标识符
+		// 对象模式
+		// 剩余参数模式
+		// 属性
 		switch (pattern.type) {
 			case "ArrayPattern":
 				this.enterArrayPattern(pattern, onIdent);
@@ -3206,6 +3345,7 @@ class JavascriptParser extends Parser {
 				this.enterObjectPattern(pattern, onIdent);
 				break;
 			case "RestElement":
+				// 剩余参数
 				this.enterRestElement(pattern, onIdent);
 				break;
 			case "Property":
@@ -3220,14 +3360,14 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// 
+	// 进入 标识符模式
 	enterIdentifier(pattern, onIdent) {
 		if (!this.callHooksForName(this.hooks.pattern, pattern.name, pattern)) {
 			onIdent(pattern.name, pattern);
 		}
 	}
 
-	// 
+	// 进入 对象模式
 	enterObjectPattern(pattern, onIdent) {
 		for (
 			let propIndex = 0, len = pattern.properties.length;
@@ -3239,7 +3379,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// 
+	// 进入 数组模式
 	enterArrayPattern(pattern, onIdent) {
 		for (
 			let elementIndex = 0, len = pattern.elements.length;
@@ -3251,20 +3391,17 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// 
+	// 进入 剩余参数模式
 	enterRestElement(pattern, onIdent) {
 		this.enterPattern(pattern.argument, onIdent);
 	}
 
-	// 
+	// 进入 赋值模式
 	enterAssignmentPattern(pattern, onIdent) {
 		this.enterPattern(pattern.left, onIdent);
 	}
 
-	/**
-	 * @param {ExpressionNode} expression expression node
-	 * @returns {BasicEvaluatedExpression | undefined} evaluation result
-	 */
+	// 计算表达式(主要是调用 表达式类型 对应的钩子 返回钩子计算后的结果)
 	evaluateExpression(expression) {
 		try {
 			const hook = this.hooks.evaluate.get(expression.type);
@@ -3286,6 +3423,7 @@ class JavascriptParser extends Parser {
 			.setExpression(expression);
 	}
 
+	// 分析表达式中的字符串
 	parseString(expression) {
 		switch (expression.type) {
 			case "BinaryExpression":
@@ -3378,12 +3516,7 @@ class JavascriptParser extends Parser {
 		};
 	}
 
-	/**
-	 * @param {string | Buffer | PreparsedAst} source the source to parse
-	 * @param {ParserState} state the parser state
-	 * @returns {ParserState} the parser state
-	 */
-	// 分析词法、语法
+	// 分析源代码的词法、语法作用域后 返回分析器状态
 	parse(source, state) {
 		let ast;
 		let comments;
@@ -3414,12 +3547,12 @@ class JavascriptParser extends Parser {
 		const oldPrevStatement = this.prevStatement;
 		// 作用域
 		this.scope = {
-			topLevelScope: true,
-			inTry: false,
-			inShorthand: false,
+			topLevelScope: true, // 是否是全局作用域
+			inTry: false, // 是否在 try 代码块中
+			inShorthand: false, // 对象属性prop
 			isStrict: false, // 是否是标准的ES模块 或者 使用严格模式
 			isAsmJs: false,  // 是否是 asm 模块
-			definitions: new StackedMap()
+			definitions: new StackedMap() // 
 		};
 		/** @type {ParserState} */
 		this.state = state;
@@ -3431,16 +3564,20 @@ class JavascriptParser extends Parser {
 		// HarmonyDetectionParserPlugin
 		// UseStrictPlugin
 		// DefinePlugin
+		// InnerGraphPlugin
+		// SideEffectsFlagPlugin
 		if (this.hooks.program.call(ast, comments) === undefined) {
 			// 检查当前JS文件是否是严格模式(use strict)或者use asm
 			this.detectMode(ast.body);
 			// 预遍历 所有的语句
+			// 作用: 为所有的 变量声明 设置 作用域(此时只有全局作用域)
 			this.preWalkStatements(ast.body);
 			this.prevStatement = undefined;
-			// 
+			// 块预遍历 所有的导入导出语句
+			// 作用: 为具有块作用域的关键字(export、import、class、const、let) 声明的变量 设置作用域
 			this.blockPreWalkStatements(ast.body);
 			this.prevStatement = undefined;
-			//
+			// 遍历 所有的语句
 			this.walkStatements(ast.body);
 		}
 
@@ -3457,7 +3594,9 @@ class JavascriptParser extends Parser {
 		return state;
 	}
 
+	// 计算源代码
 	evaluate(source) {
+		// 1. 分析 源代码 后返回对应的 ast
 		const ast = JavascriptParser._parse("(" + source + ")", {
 			sourceType: this.sourceType,
 			locations: false
@@ -3465,6 +3604,7 @@ class JavascriptParser extends Parser {
 		if (ast.body.length !== 1 || ast.body[0].type !== "ExpressionStatement") {
 			throw new Error("evaluate: Source is not a expression");
 		}
+		// 2. 调用 表达式类型 对应的钩子 并返回钩子计算后的结果
 		return this.evaluateExpression(ast.body[0].expression);
 	}
 
@@ -3552,6 +3692,7 @@ class JavascriptParser extends Parser {
 		return !evaluated.couldHaveSideEffects();
 	}
 
+	// 返回 特定位置范围的注释
 	getComments(range) {
 		const [rangeStart, rangeEnd] = range;
 		const compare = (comment, needle) => comment.range[0] - needle;
@@ -3648,10 +3789,12 @@ class JavascriptParser extends Parser {
 		this.scope.definitions.set(name, this.scope);
 	}
 
+	// 删除当前变量 及 对应作用域
 	undefineVariable(name) {
 		this.scope.definitions.delete(name);
 	}
 
+	// 判断 当前变量 是否被定义
 	isVariableDefined(name) {
 		const info = this.scope.definitions.get(name);
 		if (info === undefined) return false;
@@ -3661,10 +3804,7 @@ class JavascriptParser extends Parser {
 		return true;
 	}
 
-	/**
-	 * @param {string} name variable name
-	 * @returns {ExportedVariableInfo} info for this variable
-	 */
+	// 返回 当前变量 对应的 作用域
 	getVariableInfo(name) {
 		const value = this.scope.definitions.get(name);
 		if (value === undefined) {
@@ -3674,11 +3814,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	/**
-	 * @param {string} name variable name
-	 * @param {ExportedVariableInfo} variableInfo new info for this variable
-	 * @returns {void}
-	 */
+	// 设置变量
 	setVariable(name, variableInfo) {
 		if (typeof variableInfo === "string") {
 			if (variableInfo === name) {
@@ -3694,6 +3830,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 分析 注释
 	parseCommentOptions(range) {
 		const comments = this.getComments(range);
 		if (comments.length === 0) {
@@ -3767,6 +3904,7 @@ class JavascriptParser extends Parser {
 	 * @param {number} allowedTypes which types should be returned, presented in bit mask
 	 * @returns {CallExpressionInfo | ExpressionExpressionInfo | undefined} expression info
 	 */
+	// 从 表达式 中 返回 成员表达式信息
 	getMemberExpressionInfo(expression, allowedTypes) {
 		const { object, members } = this.extractMemberExpressionChain(expression);
 		switch (object.type) {

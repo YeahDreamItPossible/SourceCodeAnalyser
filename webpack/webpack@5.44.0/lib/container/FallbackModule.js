@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra and Zackary Jackson @ScriptedAlchemy
-*/
-
 "use strict";
 
 const { RawSource } = require("webpack-sources");

@@ -6,7 +6,9 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-// ES兼容依赖
+// ES模块兼容性依赖
+// 当 模块类型 是 ES模块(module.type = 'javascript/esm') 时 或者 模块中含有 导入语句(import) 或者 导出语句(export) 时
+// 该依赖主要是用来表示 当前模块代码 需要进行兼容性处理
 class HarmonyCompatibilityDependency extends NullDependency {
 	get type() {
 		return "harmony export header";

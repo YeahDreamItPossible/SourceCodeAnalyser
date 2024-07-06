@@ -10,6 +10,7 @@ const NullDependency = require("./NullDependency");
 /** @typedef {import("../ModuleGraph")} ModuleGraph */
 /** @typedef {import("../util/Hash")} Hash */
 
+// 静态导出依赖
 // TODO: 与 ExternalModule 相关
 class StaticExportsDependency extends NullDependency {
 	/**

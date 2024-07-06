@@ -320,8 +320,9 @@ class WebpackOptionsApply extends OptionsApply {
 		new FileUriPlugin().apply(compiler);
 
 		new CompatibilityPlugin().apply(compiler);
-		// ES模块
+		// ES模块插件
 		new HarmonyModulesPlugin({
+			// 是否允许在模块的最高层级使用 await 关键字
 			topLevelAwait: options.experiments.topLevelAwait
 		}).apply(compiler);
 		// AMD模块
@@ -348,7 +349,7 @@ class WebpackOptionsApply extends OptionsApply {
 		new ExportsInfoApiPlugin().apply(compiler);
 		//
 		new WebpackIsIncludedPlugin().apply(compiler);
-		//
+		// 常量插件
 		new ConstPlugin().apply(compiler);
 		// 使用严格模式
 		new UseStrictPlugin().apply(compiler);
@@ -358,13 +359,14 @@ class WebpackOptionsApply extends OptionsApply {
 		new RequireEnsurePlugin().apply(compiler);
 		// 
 		new RequireContextPlugin().apply(compiler);
-		// 
+		// ES模块动态导入插件
 		new ImportPlugin().apply(compiler);
 		//
 		new SystemPlugin().apply(compiler);
-		// 
+		// 动态导入元信息插件
 		new ImportMetaPlugin().apply(compiler);
 		new URLPlugin().apply(compiler);
+		// 工作线程插件
 		new WorkerPlugin(
 			options.output.workerChunkLoading,
 			options.output.workerWasmLoading,

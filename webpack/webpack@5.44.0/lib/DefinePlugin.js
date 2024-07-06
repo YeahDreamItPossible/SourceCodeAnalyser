@@ -10,7 +10,7 @@ const {
 } = require("./javascript/JavascriptParserHelpers");
 const { provide } = require("./util/MapHelpers");
 
-
+// 运行时值
 class RuntimeValue {
 	constructor(fn, options) {
 		this.fn = fn;
@@ -89,6 +89,7 @@ class RuntimeValue {
  * @param {boolean|undefined|null=} asiSafe asi safe (undefined: unknown, null: unneeded)
  * @returns {string} code converted to string that evaluates
  */
+// 序列化
 const stringifyObj = (
 	obj,
 	parser,
@@ -140,6 +141,7 @@ const stringifyObj = (
  * @param {boolean|undefined|null=} asiSafe asi safe (undefined: unknown, null: unneeded)
  * @returns {string} code converted to string that evaluates
  */
+// 将 代码 转换成 可计算结果的字符串
 const toCode = (
 	code,
 	parser,
@@ -191,7 +193,7 @@ const toCode = (
 	return code + "";
 };
 
-// 
+// 将 代码 转换成 字符串
 const toCacheVersion = code => {
 	if (code === null) {
 		return "null";
@@ -225,11 +227,13 @@ const toCacheVersion = code => {
 	return code + "";
 };
 
+// 命名空间
 const VALUE_DEP_PREFIX = "webpack/DefinePlugin ";
 const VALUE_DEP_MAIN = "webpack/DefinePlugin";
 
 // 定义插件
-// 允许在 编译时 将你代码中的变量替换为其他值或表达式
+// 作用: 允许在 编译时 将你代码中的变量替换为其他值或表达式
+// 原理: 在 compiler.hooks.normalModuleFactory 钩子
 class DefinePlugin {
 	constructor(definitions) {
 		// Recode<String, CodeValue>
@@ -286,12 +290,7 @@ class DefinePlugin {
 							return fn(...args);
 						};
 
-					/**
-					 * Walk definitions
-					 * @param {Object} definitions Definitions map
-					 * @param {string} prefix Prefix string
-					 * @returns {void}
-					 */
+					// 遍历 定义项
 					const walkDefinitions = (definitions, prefix) => {
 						Object.keys(definitions).forEach(key => {
 							const code = definitions[key];
@@ -310,12 +309,8 @@ class DefinePlugin {
 						});
 					};
 
-					/**
-					 * Apply define key
-					 * @param {string} prefix Prefix
-					 * @param {string} key Key
-					 * @returns {void}
-					 */
+					// 针对 键值对 中键是 以 . 链接的标识符时
+					// 示例: process.env.NODE_ENV
 					const applyDefineKey = (prefix, key) => {
 						const splittedKey = key.split(".");
 						splittedKey.slice(1).forEach((_, i) => {
@@ -518,6 +513,7 @@ class DefinePlugin {
 					.for("javascript/esm")
 					.tap("DefinePlugin", handler);
 
+				// 将 定义的键值对 缓存到 compilation.valueCacheVersions 中
 				const walkDefinitionsForValues = (definitions, prefix) => {
 					Object.keys(definitions).forEach(key => {
 						const code = definitions[key];

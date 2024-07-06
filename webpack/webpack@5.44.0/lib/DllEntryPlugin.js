@@ -4,7 +4,7 @@ const DllModuleFactory = require("./DllModuleFactory");
 const DllEntryDependency = require("./dependencies/DllEntryDependency");
 const EntryDependency = require("./dependencies/EntryDependency");
 
-// 动态链接入口插件
+// 动态链接库入口插件
 class DllEntryPlugin {
 	constructor(context, entries, options) {
 		this.context = context;

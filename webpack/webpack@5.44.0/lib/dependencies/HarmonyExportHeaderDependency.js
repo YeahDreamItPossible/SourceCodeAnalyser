@@ -3,12 +3,14 @@
 const makeSerializable = require("../util/makeSerializable");
 const NullDependency = require("./NullDependency");
 
-// TODO:
-// 
+// ES模块导出头依赖
+// 该依赖主要用来描述模块每个导出语句的内容(即: `export function add(){ ... }`)
 class HarmonyExportHeaderDependency extends NullDependency {
 	constructor(range, rangeStatement) {
 		super();
+		// 
 		this.range = range;
+		// 
 		this.rangeStatement = rangeStatement;
 	}
 

@@ -422,26 +422,75 @@ beforeResolve(直接执行回调)
 
 Module => DependenciesBlock => Dependency => AsyncDependenciesBlock => DependenciesBlock => Dependency
 
+// 初始化代码片段
+InitFragment
+// 
+InitFragment => HarmonyExportInitFragment
+InitFragment => AwaitDependenciesInitFragment
+InitFragment => ModuleExternalInitFragment
+InitFragment => ConditionalInitFragment
+
 
 // 文件的输出是在compiler 发生的
 // compilation 仅仅是生成 asserts 信息 并不输出结果
 
 // 依赖
-// 当代码片段中含有 new Worker()
+Dependency
+// 
+Dependency => LazyCompilationDependency
+Dependency => ProvideSharedDependency
+Dependency => DllEntryDependency
+// 上下文依赖
+Dependency => ContextDependency
+Dependency => FallbackDependency
+Dependency => ContainerEntryDependency
+// 空以来
+Dependency => NullDependency
+// 
+
+Dependency => NullDependency => CommonJsSelfReferenceDependency 
+// 模块装饰依赖
+Dependency => NullDependency => ModuleDecoratorDependency 
+// 
+Dependency => NullDependency => ModuleDecoratorDependency 
+// ES模块导出标识符依赖
+Dependency => NullDependency => HarmonyExportSpecifierDependency 
+// ES模块导出默认值依赖
+Dependency => NullDependency => HarmonyExportExpressionDependency 
+// ES模块兼容性依赖
+Dependency => NullDependency => HarmonyCompatibilityDependency 
+// ES模块导出头依赖
+Dependency => NullDependency => HarmonyExportHeaderDependency 
+// 常量依赖
+Dependency => NullDependency => ConstDependency 
+// 缓存的常量依赖
+Dependency => NullDependency => CachedConstDependency 
+// 模块依赖
+Dependency => ModuleDependency
+// 工作线程依赖(当代码片段中含有 new Worker())
 Dependency => ModuleDependency => WorkerDependency
-// 当代码片段中含有 new URL()
+// URL依赖(当代码片段中含有 new URL())
 Dependency => ModuleDependency => URLDependency
 // 入口依赖
 Dependency => ModuleDependency => EntryDependency 
-// 静态导入 代码分析
+// ES模块导入依赖
 Dependency => ModuleDependency => HarmonyImportDependency
-// 静态导入 副作用依赖
+// ES模块导入副作用依赖
 Dependency => ModuleDependency => HarmonyImportDependency => HarmonyImportSideEffectDependency
-// 静态导入 标识符依赖 
+// ES模块导入标识符依赖
 Dependency => ModuleDependency => HarmonyImportDependency => HarmonyImportSpecifierDependency 
-// 静态导入 标识符依赖 
+// ES模块复合导出导入标识符依赖
 // export * from '...'
 Dependency => ModuleDependency => HarmonyImportDependency => HarmonyExportImportedSpecifierDependency 
+// ES模块动态导入依赖
+Dependency => ModuleDependency => ImportDependency 
+// ES模块动态导入立即加载依赖
+// 动态导入 且 内敛注释 webpackMode = eager
+Dependency => ModuleDependency => ImportDependency => ImportEagerDependency 
+// ES模块动态导入弱引用加载依赖
+// 动态导入 且 内敛注释 webpackMode = weak
+Dependency => ModuleDependency => ImportDependency => ImportWeakDependency 
+// 
 Dependency => ModuleDependency => HarmonyImportDependency => HarmonyAcceptImportDependency 
 Dependency => ModuleDependency => AMDRequireItemDependency 
 Dependency => ModuleDependency => CommonJsRequireDependency 
@@ -457,16 +506,6 @@ Dependency => ModuleDependency => RequireEnsureItemDependency
 Dependency => ModuleDependency => ContextElementDependency 
 // URL
 Dependency => ModuleDependency => URLDependency
-// 动态导入 代码分析
-Dependency => ModuleDependency => ImportDependency 
-// 动态导入 且 内敛注释 webpackMode = eager
-Dependency => ModuleDependency => ImportDependency => ImportEagerDependency 
-// 动态导入 且 内敛注释 webpackMode = weak
-Dependency => ModuleDependency => ImportDependency => ImportWeakDependency 
-
-Dependency => NullDependency => CommonJsSelfReferenceDependency 
-Dependency => NullDependency => ModuleDecoratorDependency 
-
 // 上下文依赖
 Dependency => ContextDependency
 // 动态导入 且导入路径包含动态表达式
@@ -477,22 +516,27 @@ Dependency => ContextDependency => CommonJsRequireContextDependency
 Dependency => ContextDependency => RequireResolveContextDependency 
 Dependency => ContextDependency => RequireContextDependency 
 
-
-
 resolver  路径解析器
 parser    语法分析器(语法解析器)
 generator 代码生成器
 
-
-模块
+// 依赖块
+DependenciesBlock
+// 异步依赖块(异步模块)
+DependenciesBlock => AsyncDependenciesBlock
+// CommonJS 异步模块
+DependenciesBlock => AsyncDependenciesBlock => RequireEnsureDependenciesBlock
+// AMD 异步模块
+DependenciesBlock => AsyncDependenciesBlock => AMDRequireDependenciesBlock
+// 模块
 DependenciesBlock => Module
-// 
+// 标准模块
 DependenciesBlock => Module => NormalModule
-//
+// 原始模块
 DependenciesBlock => Module => RawModule
 // 运行时模块
 DependenciesBlock => Module => RuntimeModule
-// __webpack_require__.o = 
+// 
 DependenciesBlock => Module => RuntimeModule => HasOwnPropertyRuntimeModule
 //
 DependenciesBlock => Module => RuntimeModule => AutoPublicPathRuntimeModule
@@ -504,27 +548,28 @@ DependenciesBlock => Module => RuntimeModule => CompatRuntimeModule
 DependenciesBlock => Module => RuntimeModule => EnsureChunkRuntimeModule
 //
 DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule
+// 
+DependenciesBlock => Module => RuntimeModule => GlobalRuntimeModule
 //
 DependenciesBlock => Module => RuntimeModule => HelperRuntimeModule => AsyncModuleRuntimeModule
-//
+// 上下文模块
 DependenciesBlock => Module => ContextModule
+// 动态链接库模块(与 DllPlugin 相关)
 DependenciesBlock => Module => DllModule
-// TODO:
+// 外部扩展模块
 DependenciesBlock => Module => ExternalModule
-// TODO:
+// 回退模块(与 模块联邦 相关)
 DependenciesBlock => Module => FallbackModule
-// 异步模块
-DependenciesBlock => AsyncDependenciesBlock
-DependenciesBlock => AsyncDependenciesBlock => RequireEnsureDependenciesBlock
-DependenciesBlock => AsyncDependenciesBlock => AMDRequireDependenciesBlock
 
-// 
+// 模块工厂
+ModuleFactory
+// 标准模块工厂
 ModuleFactory => NormalModuleFactory
-// 
+// 上下文模块工厂
 ModuleFactory => ContextModuleFactory
-// 
+// 动态模块工厂
 ModuleFactory => DllModuleFactory
-// 
+// 回退模块工厂(与 模块联邦 相关)
 ModuleFactory => FallbackModuleFactory
 // 
 ModuleFactory => IgnoreErrorModuleFactory
@@ -539,3 +584,7 @@ dependency module chunk assets bundle stats
 1. source map 整个流程 和 debug 时能定位对应的行列 是什么原理
 2. webpack-dev-server 与 webpack-dev-middleware 区别
 3. optimization.moduleIds 与 optimization.chunkIds 到底对hash有什么作用
+
+
+1. webpack 是如何解析 入口的 (动态入口 及 静态入口)
+2. webpack 是如何解析模块方法的(esm cjs amd)

@@ -1,12 +1,8 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RequireContextDependency = require("./RequireContextDependency");
 
+// 主要是用来解析 webpack特有的 require.context 语法
 module.exports = class RequireContextDependencyParserPlugin {
 	apply(parser) {
 		parser.hooks.call
@@ -15,6 +11,7 @@ module.exports = class RequireContextDependencyParserPlugin {
 				let regExp = /^\.\/.*$/;
 				let recursive = true;
 				let mode = "sync";
+				// 解析 require.context 参数
 				switch (expr.arguments.length) {
 					case 4: {
 						const modeExpr = parser.evaluateExpression(expr.arguments[3]);

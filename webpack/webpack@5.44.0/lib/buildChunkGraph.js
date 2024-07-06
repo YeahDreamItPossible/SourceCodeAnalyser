@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const AsyncDependencyToInitialChunkError = require("./AsyncDependencyToInitialChunkError");
@@ -66,6 +61,7 @@ EMPTY_SET.plus = EMPTY_SET;
  * @param {ModuleSetPlus} b second set
  * @returns {number} cmp
  */
+// 
 const bySetSize = (a, b) => {
 	return b.size + b.plus.size - a.size - a.plus.size;
 };

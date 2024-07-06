@@ -3,6 +3,9 @@
 const ChunkGroup = require("./ChunkGroup");
 
 // 入口点
+// 入口点分类
+// InitialEntrypoint 初始入口点
+// AsyncEntrypint 异步入口点
 class Entrypoint extends ChunkGroup {
 	constructor(entryOptions, initial = true) {
 		if (typeof entryOptions === "string") {
@@ -13,9 +16,9 @@ class Entrypoint extends ChunkGroup {
 		});
 		// 选项
 		this.options = entryOptions;
-		// 运行时块(RuntimeChunk)
+		// 运行时块
 		this._runtimeChunk = undefined;
-		// 入口块(EntrypointChunk)
+		// 入口块
 		this._entrypointChunk = undefined;
 		// 标识: 当前入口点是否要初始加载
 		this._initial = initial;

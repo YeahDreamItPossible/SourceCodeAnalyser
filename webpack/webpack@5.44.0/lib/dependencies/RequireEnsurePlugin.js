@@ -10,8 +10,7 @@ const {
 	toConstantDependency
 } = require("../javascript/JavascriptParserHelpers");
 
-// TODO:
-// 用于解析 require.sure 语句
+// 主要是用来解析 webpack特有的 require.ensure 语法
 class RequireEnsurePlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

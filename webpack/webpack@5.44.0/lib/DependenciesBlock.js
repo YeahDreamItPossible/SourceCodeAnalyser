@@ -7,7 +7,7 @@ class DependenciesBlock {
 	constructor() {
 		// 依赖
 		this.dependencies = [];
-		// 当前模块中包含的子模块(异步模块)
+		// 当前模块中包含的异步依赖块(别名: 异步模块)
 		this.blocks = [];
 	}
 

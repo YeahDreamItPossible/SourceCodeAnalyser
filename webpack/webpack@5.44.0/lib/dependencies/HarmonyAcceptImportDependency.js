@@ -1,17 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const makeSerializable = require("../util/makeSerializable");
 const HarmonyImportDependency = require("./HarmonyImportDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-
+// ES模块接受更新导入依赖
+// 热更新相关
 class HarmonyAcceptImportDependency extends HarmonyImportDependency {
 	constructor(request) {
 		super(request, NaN);

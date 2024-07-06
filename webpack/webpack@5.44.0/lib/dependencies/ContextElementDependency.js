@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
@@ -13,6 +8,7 @@ const ModuleDependency = require("./ModuleDependency");
 /** @typedef {import("../ModuleGraph")} ModuleGraph */
 /** @typedef {import("../util/runtime").RuntimeSpec} RuntimeSpec */
 
+// 通过 webpack特有的 require.context 语法引入的依赖
 class ContextElementDependency extends ModuleDependency {
 	constructor(request, userRequest, typePrefix, category, referencedExports) {
 		super(request);

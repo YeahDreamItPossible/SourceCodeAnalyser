@@ -9,10 +9,6 @@ const getJavascriptModulesPlugin = memoize(() =>
 
 // webpack 6 将会移除这个类
 class ChunkTemplate {
-	/**
-	 * @param {OutputOptions} outputOptions output options
-	 * @param {Compilation} compilation the compilation
-	 */
 	constructor(outputOptions, compilation) {
 		// Webpack.options.output
 		this._outputOptions = outputOptions || {};

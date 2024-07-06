@@ -339,7 +339,6 @@ class Compiler {
 		);
 	}
 
-	// TODO webpack 6: solve this in a better way
 	// 主要是清除 ModuleGraph存储的module图 和 ChunkGraph存储的chunk图
 	_cleanupLastCompilation() {
 		// e.g. move compilation specific info from Modules into ModuleGraph
@@ -357,7 +356,6 @@ class Compiler {
 		}
 	}
 
-	// TODO webpack 6: solve this in a better way
 	// 主要是清除 NormalModuleFactory实例 内部的缓存
 	_cleanupLastNormalModuleFactory() {
 		if (this._lastNormalModuleFactory !== undefined) {

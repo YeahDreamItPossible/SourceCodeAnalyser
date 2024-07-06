@@ -951,7 +951,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		if (compiler.contextTimestamps) {
 			this.fileSystemInfo.addContextTimestamps(compiler.contextTimestamps);
 		}
-		// 
+		// 缓存值(DefinePlugin)
 		this.valueCacheVersions = new Map();
 		// 路径缩短器
 		this.requestShortener = compiler.requestShortener;
@@ -1947,7 +1947,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this._addEntryItem(context, entry, "dependencies", options, callback);
 	}
 
-	// TODO:
 	// 与 模块联邦 相关 
 	addInclude(context, dependency, options, callback) {
 		this._addEntryItem(
@@ -2352,14 +2351,20 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// 空调用
 		this.hooks.beforeChunks.call();
 
+		/**
+		 * 分块的过程:
+		 * 1. 根据 Webpack.options.Entry 来创建对应的 Chunk 与 ChunkGroup
+		 * 2. 根据 Webpack.options.Entry.dependOn 来绑定 ChunkGroup 的嵌套关系
+		 * 3. 根据 Webpack.options.Entry.runtime 来绑定 ChunkGroup._runtimeChunk
+		 */
+
+		// 模块图冻结
 		this.moduleGraph.freeze();
+		
 		// Map<Entrypoint, Module[]>
 		const chunkGraphInit = new Map();
-
 		// 根据 Webpack.options.Entry 创建 Chunk 和 ChunkGroup
 		// 绑定 Chunk 与 ChunkGroup 关联关系
-		// Chunk._groups.push(ChunkGroup)
-		// ChunkGroup.chunks.push(chunk)
 		for (const [name, { dependencies, includeDependencies, options }] of this
 			.entries) {
 			const chunk = this.addChunk(name);
@@ -2375,8 +2380,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			this.entrypoints.set(name, entrypoint);
 			this.chunkGroups.push(entrypoint);
 
-			// chunkGroup.chunks.push(chunk)
-			// chunk._groups.push(entrypoint)
+			// 绑定 ChunkGroup 与 Chunk 的关联关系
+			// 即: chunkGroup.chunks.push(chunk)
+			// 		 chunk._groups.push(entrypoint)
 			connectChunkGroupAndChunk(entrypoint, chunk);
 
 			for (const dep of [...this.globalEntry.dependencies, ...dependencies]) {
@@ -2420,9 +2426,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			}
 		}
 
+		// 解析 Webpack.options.Entry.dependOn 和 Webpack.options.Entry.runtime 字段
 		// 根据 Webpack.options.Entry.runtime 来绑定 ChunkGroup._runtimeChunk
-		// 根据 Wepback.Config.Entry.dependOn 来绑定 ChunkGroup 的层级关系
-		//  Webpack.options.Entry.dependOn 和 Webpack.options.Entry.runtime
+		// 根据 Wepback.Config.Entry.dependOn 来绑定 ChunkGroup 的嵌套关系
 		const runtimeChunks = new Set();
 		outer: for (const [
 			name,
@@ -2466,7 +2472,7 @@ Remove the 'runtime' option from the entrypoint.`);
 					}
 					dependOnEntries.push(dependency);
 				}
-				// 构建 ChunkGroup 的层级关系
+				// 构建 ChunkGroup 的嵌套关系
 				for (const dependency of dependOnEntries) {
 					connectChunkGroupParentAndChild(dependency, entry);
 				}
@@ -2499,8 +2505,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			}
 		}
 
-		// 主要是构建 Chunk 与 Module 的关联关系
 		// 根据 ModuleGraph 和 Chunk 构建 ChunkGraph
+		// 即: 构建 Chunk 与 Module 的关联关系
 		buildChunkGraph(this, chunkGraphInit);
 
 		// 空调用

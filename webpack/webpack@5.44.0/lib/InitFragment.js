@@ -7,14 +7,18 @@ const extractFragmentIndex = (fragment, index) => [fragment, index];
 
 // 排序
 const sortFragmentWithIndex = ([a, i], [b, j]) => {
+	// 先根据 优先级 字段排序
 	const stageCmp = a.stage - b.stage;
 	if (stageCmp !== 0) return stageCmp;
+	// 再根据 位置 字段排序
 	const positionCmp = a.position - b.position;
 	if (positionCmp !== 0) return positionCmp;
+	// 最后根据 索引 排序
 	return i - j;
 };
 
 // 初始化代码片段
+// 作用: 将缓存的 初始化代码片段 按照 一定的排序规则 添加到源代码中
 class InitFragment {
 	constructor(content, stage, position, key, endContent) {
 		// 内容

@@ -23,6 +23,7 @@ const TypeWrapped = 11;
 const TypeTemplateString = 12;
 const TypeBigInt = 13;
 
+// 最基础的计算表达式
 class BasicEvaluatedExpression {
 	constructor() {
 		this.type = TypeUnknown;

@@ -5,11 +5,7 @@ const makeSerializable = require("../util/makeSerializable");
 const HarmonyImportDependency = require("./HarmonyImportDependency");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("./HarmonyAcceptImportDependency")} HarmonyAcceptImportDependency */
-
+// ES模块接受更新依赖
 // 热更新相关
 class HarmonyAcceptDependency extends NullDependency {
 	/**

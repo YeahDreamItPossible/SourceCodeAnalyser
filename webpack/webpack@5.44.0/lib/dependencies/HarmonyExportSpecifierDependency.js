@@ -4,14 +4,7 @@ const makeSerializable = require("../util/makeSerializable");
 const HarmonyExportInitFragment = require("./HarmonyExportInitFragment");
 const NullDependency = require("./NullDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").ExportsSpec} ExportsSpec */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../ModuleGraphConnection").ConnectionState} ConnectionState */
-
-// ES模块 导出标识符 依赖
+// ES模块导出标识符依赖
 // 当遇到 export 语句 且 导出具体的标识符 时
 class HarmonyExportSpecifierDependency extends NullDependency {
 	constructor(id, name) {
@@ -68,12 +61,6 @@ makeSerializable(
 HarmonyExportSpecifierDependency.Template = class HarmonyExportSpecifierDependencyTemplate extends (
 	NullDependency.Template
 ) {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(
 		dependency,
 		source,

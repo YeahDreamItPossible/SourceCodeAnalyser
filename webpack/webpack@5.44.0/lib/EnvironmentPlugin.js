@@ -3,8 +3,9 @@
 const DefinePlugin = require("./DefinePlugin");
 const WebpackError = require("./WebpackError");
 
-// 定义 进程环境变量process.env 
-// 是对 DefinePlugin 中 process.env 快捷方式 
+// 环境插件
+// 作用: 定义 进程 中环境变量 process.env
+// 底层是对 DefinePlugin 中 process.env 快捷方式 
 class EnvironmentPlugin {
 	constructor(...keys) {
 		if (keys.length === 1 && Array.isArray(keys[0])) {

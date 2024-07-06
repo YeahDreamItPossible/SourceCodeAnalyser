@@ -3,8 +3,7 @@
 const DependenciesBlock = require("./DependenciesBlock");
 const makeSerializable = require("./util/makeSerializable");
 
-// 异步依赖块
-// 异步模块
+// 异步依赖块(别名: 异步模块)
 class AsyncDependenciesBlock extends DependenciesBlock {
 	constructor(groupOptions, loc, request) {
 		super();
@@ -13,14 +12,14 @@ class AsyncDependenciesBlock extends DependenciesBlock {
 		} else if (!groupOptions) {
 			groupOptions = { name: undefined };
 		}
-		// 
+		// 选项
 		this.groupOptions = groupOptions;
 		// 位置信息
 		this.loc = loc;
 		// 模块请求路径
 		this.request = request;
-		// TODO: 父模块
-		/** @type {DependenciesBlock} */
+		// 父依赖块
+		// DependenciesBlock
 		this.parent = undefined;
 	}
 

@@ -3,7 +3,7 @@
 const Dependency = require("../Dependency");
 const DependencyTemplate = require("../DependencyTemplate");
 
-// 
+// 空依赖
 class NullDependency extends Dependency {
 	get type() {
 		return "null";
