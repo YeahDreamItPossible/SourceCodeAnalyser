@@ -228,7 +228,9 @@ const toCacheVersion = code => {
 };
 
 // 命名空间
+// 值依赖前缀
 const VALUE_DEP_PREFIX = "webpack/DefinePlugin ";
+// 值依赖主键
 const VALUE_DEP_MAIN = "webpack/DefinePlugin";
 
 // 定义插件
@@ -275,6 +277,7 @@ class DefinePlugin {
 						buildInfo.valueDependencies.set(VALUE_DEP_MAIN, mainValue);
 					});
 
+					// 设置 module.buildInfo.valueDependencies
 					const addValueDependency = key => {
 						const { buildInfo } = parser.state.module;
 						buildInfo.valueDependencies.set(
