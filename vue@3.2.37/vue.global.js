@@ -6322,12 +6322,18 @@ var Vue = (function (exports) {
 		return {
 			app: null,
 			config: {
+				// 自定义是否是原生标签
 				isNativeTag: NO,
 				performance: false,
+				// 全局属性
 				globalProperties: {},
+				// 选项合并策略
 				optionMergeStrategies: {},
+				// 自定义全局错误处理函数
 				errorHandler: undefined,
+				// 自定义全局警告处理函数
 				warnHandler: undefined,
+				// 自定义运行时编译器选项
 				compilerOptions: {}
 			},
 			mixins: [],
