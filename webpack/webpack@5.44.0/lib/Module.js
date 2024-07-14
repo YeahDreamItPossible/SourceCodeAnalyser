@@ -103,8 +103,7 @@ class Module extends DependenciesBlock {
 		this.buildMeta = undefined;
 		// 构建信息
 		this.buildInfo = undefined;
-		// 属于当前模块的依赖集合
-		// Array<Dependency>
+		// 属于当前模块的演示依赖集合
 		this.presentationalDependencies = undefined;
 	}
 
@@ -442,12 +441,8 @@ class Module extends DependenciesBlock {
 		}
 	}
 
-	/**
-	 * @param {Dependency} presentationalDependency dependency being tied to module.
-	 * This is a Dependency without edge in the module graph. It's only for presentation.
-	 * @returns {void}
-	 */
-	// 添加依赖
+	// 添加演示依赖(该依赖在 ModuleGraph 不存在依赖关系)
+	// 示例: ConstDependency(常量依赖) ProvidedDependency(提供依赖)
 	addPresentationalDependency(presentationalDependency) {
 		if (this.presentationalDependencies === undefined) {
 			this.presentationalDependencies = [];
@@ -455,10 +450,7 @@ class Module extends DependenciesBlock {
 		this.presentationalDependencies.push(presentationalDependency);
 	}
 
-	/**
-	 * Removes all dependencies and blocks
-	 * @returns {void}
-	 */
+	// 清空所有的演示依赖
 	clearDependenciesAndBlocks() {
 		if (this.presentationalDependencies !== undefined) {
 			this.presentationalDependencies.length = 0;

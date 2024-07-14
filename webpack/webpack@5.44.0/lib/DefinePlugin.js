@@ -193,7 +193,7 @@ const toCode = (
 	return code + "";
 };
 
-// 将 代码 转换成 字符串
+// 在不依赖运行环境前提下 将 代码 转换成 字符串
 const toCacheVersion = code => {
 	if (code === null) {
 		return "null";
@@ -238,7 +238,7 @@ const VALUE_DEP_MAIN = "webpack/DefinePlugin";
 // 原理: 在 compiler.hooks.normalModuleFactory 钩子
 class DefinePlugin {
 	constructor(definitions) {
-		// Recode<String, CodeValue>
+		// Record<String, CodeValue>
 		this.definitions = definitions;
 	}
 
@@ -338,10 +338,12 @@ class DefinePlugin {
 						let recurse = false;
 						let recurseTypeof = false;
 						if (!isTypeof) {
+							// 
 							parser.hooks.canRename.for(key).tap("DefinePlugin", () => {
 								addValueDependency(originalKey);
 								return true;
 							});
+							// 
 							parser.hooks.evaluateIdentifier
 								.for(key)
 								.tap("DefinePlugin", expr => {
@@ -370,6 +372,8 @@ class DefinePlugin {
 									res.setRange(expr.range);
 									return res;
 								});
+							// 核心
+							// 当检测到表达式中含有 Key 时 返回 ConstDependency 示例
 							parser.hooks.expression.for(key).tap("DefinePlugin", expr => {
 								addValueDependency(originalKey);
 								const strCode = toCode(
@@ -380,6 +384,7 @@ class DefinePlugin {
 									runtimeTemplate,
 									!parser.isAsiPosition(expr.range[0])
 								);
+								// 返回 ConstDependency 实例 并将该 实例 村粗到 parser.state.module.addPresentationalDependency 中
 								if (/__webpack_require__\s*(!?\.)/.test(strCode)) {
 									return toConstantDependency(parser, strCode, [
 										RuntimeGlobals.require

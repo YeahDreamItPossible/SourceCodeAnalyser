@@ -7,6 +7,8 @@ const NullDependency = require("./NullDependency");
 
 // TODO:
 // 缓存的常量依赖
+// 作用: 在源代码中 替换掉固定位置的字符串 或者 在特定位置插入字符串 并在代码中添加 插入字符串 的变脸声明
+// 使用场景: NodeStuffPlugin
 class CachedConstDependency extends NullDependency {
 	constructor(expression, range, identifier) {
 		super();

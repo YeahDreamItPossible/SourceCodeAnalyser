@@ -90,12 +90,21 @@
 // onAfterAppear: TransitionHookValidator,
 // onAppearCancelled: TransitionHookValidator
 
-// shapeFlag 打补丁标识
+// vnode.type
+// Text
+// Comment
+// Static
+// 
+
+// patchFlag 对比更新标志
+// 
+
+// shapeFlag 结构标志
 // 元素节点
 // ELEMENT.shapeFlag = 1
 // 函数式组件 2
 // FUNCTIONAL_COMPONENT.shapeFlag = 1 << 1,
-// 状态式组件 4
+// 状态式组件(选项式组件) 4
 // STATEFUL_COMPONENT.shapeFlag = 1 << 2,
 // 文本节点 8
 // TEXT_CHILDREN.shapeFlag = 1 << 3,
@@ -107,7 +116,7 @@
 // TELEPORT.shapeFlag = 1 << 6,
 // Suspense组件 128
 // SUSPENSE.shapeFlag = 1 << 7,
-// 256
+// 组件是否应该保持激活 256
 // COMPONENT_SHOULD_KEEP_ALIVE.shapeFlag = 1 << 8,
 // 512
 // COMPONENT_KEPT_ALIVE.shapeFlag = 1 << 9
@@ -135,27 +144,66 @@
  * 依赖中绑定副作用域
  */
 
+/**
+ * setup 函数相当于 生命周期
+ * 在 beforeCreate 和 created 之前启动
+ */
+
+/**
+ * 在Vue 3的上下文中，"patch" 这个词在Vue的虚拟DOM更新过程中扮演着至关重要的角色，
+ * 但直接翻译成“补丁”在Vue语境中可能不够准确或贴合。
+ * 在Vue 3（特别是使用了Composition API和Proxy响应式系统后）的虚拟DOM实现中，
+ * "patch" 更准确地可以理解为“差异比对并更新DOM”的过程。
+ * 因此，结合Vue的语境，"patch" 可以翻译为“差异更新”或“比对更新”。
+ * 这个翻译更能够体现Vue在渲染过程中，通过比较新旧虚拟DOM树之间的差异，并仅将必要的更改应用到真实DOM上的机制。
+ * Vue 3的虚拟DOM更新流程大致如下：
+ * 渲染函数：Vue组件的渲染函数（或模板）被编译成渲染函数，该函数返回一个虚拟DOM树。
+ * 虚拟DOM树：每次组件状态更新时，都会重新执行渲染函数生成新的虚拟DOM树。
+ * 差异比对（Patching）：Vue使用高效的算法（如Vue 3中的patch函数）来比较新旧虚拟DOM树之间的差异。
+ * DOM更新：基于差异比对的结果，Vue会计算出必要的DOM操作，并仅对实际发生变化的DOM部分进行更新，从而提高性能。
+ * 因此，在Vue 3的语境中，当我们谈论“patch”时，我们实际上是在谈论Vue如何智能地识别并应用DOM的变更，以响应组件状态的更新。
+ * 这个过程被形象地称为“差异更新”或“比对更新”。
+ */
+
+// patch 对比更新
+// setup 初始化函数(设置函数)
+// Teleport 跨组件渲染
+// Suspense 异步组件
+// KeepAlive 保持活跃组件
+
+
+// 创建组件的方式
+// 1. 选项式组件(以 配置 的方式)
+// 2. 函数式组件(以 函数 的方式)
+
 var Vue = (function (exports) {
 	'use strict';
 
 	// 高阶函数: 
-	// 在函数内部创建map Map<String, Boolean>
-	// 返回一个函数 通过调用这个函数来判断val 是否存在该map中
+	// 作用: 返回一个函数 通过调用这个函数来判断某个val 是否存在该缓存中
+	// 原理: 
+	// 1. 在函数内部创建缓存对象 Map<String, Boolean>
+	// 2. 存储 分割字符串后的 所有字符序列 
+	// 2. 通过 返回函数 来判断某个 val 是否存在该缓存中
 	function makeMap(str, expectsLowerCase) {
+		// 创建缓存对象 Map<String, Boolean>
 		const map = Object.create(null);
+		// 分割字符串
 		const list = str.split(',');
+		// 存储 单个字符串
 		for (let i = 0; i < list.length; i++) {
 			map[list[i]] = true;
 		}
+		// 返回函数(该函数用来判断当前值是否存在缓存中)
 		return expectsLowerCase ? val => !!map[val.toLowerCase()] : val => !!map[val];
 	}
 
-	// 标识: 标识元素patch类型
+	// 标识: 标识元素对比更新标志(PatchFlag)
 	const PatchFlagNames = {
-		[1 /* TEXT */]: `TEXT`,
-		[2 /* CLASS */]: `CLASS`,
-		[4 /* STYLE */]: `STYLE`,
-		[8 /* PROPS */]: `PROPS`,
+		[1 /* TEXT */]: `TEXT`, // 文本对比更新
+		[2 /* CLASS */]: `CLASS`, // class属性对比更新
+		[4 /* STYLE */]: `STYLE`, // style属性对比更新
+		[8 /* PROPS */]: `PROPS`, // props属性对比更新
 		[16 /* FULL_PROPS */]: `FULL_PROPS`,
 		[32 /* HYDRATE_EVENTS */]: `HYDRATE_EVENTS`,
 		[64 /* STABLE_FRAGMENT */]: `STABLE_FRAGMENT`,
@@ -495,7 +543,7 @@ var Vue = (function (exports) {
 		'onVnodeBeforeUpdate,onVnodeUpdated,' +
 		'onVnodeBeforeUnmount,onVnodeUnmounted');
 
-	// 是否是内置指令
+	// 断言: 是否是内置指令
 	const isBuiltInDirective = makeMap('bind,cloak,else-if,else,for,html,if,model,on,once,pre,show,slot,text,memo');
 	
 	// 高阶函数: 缓存函数 cache<String, Fn>
@@ -3581,6 +3629,7 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: Suspense结束 */
 
+	// 依赖注入
 	// 提供
 	function provide(key, value) {
 		if (!currentInstance) {
@@ -3603,7 +3652,6 @@ var Vue = (function (exports) {
 			provides[key] = value;
 		}
 	}
-
 	// 注入
 	function inject(key, defaultValue, treatDefaultAsFactory = false) {
 		// fallback to `currentRenderingInstance` so that this can be called in
@@ -4759,7 +4807,8 @@ var Vue = (function (exports) {
 		[bar, this.y]
 	])
 	*/
-	// 验证指令名(防止与内置指令重名)
+	// 验证指令名是否合法
+	// 指令名 不能是 内置指令名
 	function validateDirectiveName(name) {
 		if (isBuiltInDirective(name)) {
 			warn$1('Do not use built-in directive ids as custom directive id: ' + name);
@@ -6320,7 +6369,7 @@ var Vue = (function (exports) {
   // 创建应用上下文(任何组件均可访问到)
 	function createAppContext() {
 		return {
-			app: null,
+			app: null, // 当前根引用
 			config: {
 				// 自定义是否是原生标签
 				isNativeTag: NO,
@@ -6336,10 +6385,10 @@ var Vue = (function (exports) {
 				// 自定义运行时编译器选项
 				compilerOptions: {}
 			},
-			mixins: [],
-			components: {},
-			directives: {},
-			provides: Object.create(null),
+			mixins: [], // 混合(兼容v2)
+			components: {}, // 全局组件
+			directives: {}, // 全局指令
+			provides: Object.create(null), // 全局提供(依赖注入)
 			optionsCache: new WeakMap(),
 			propsCache: new WeakMap(),
 			emitsCache: new WeakMap()
@@ -6348,60 +6397,50 @@ var Vue = (function (exports) {
 
   // 高阶函数: 
 	let uid = 0;
+	// 创建 app api
 	function createAppAPI(render, hydrate) {
-		// 这里主要主要是返回一个纯净的app实例(可以当做一个模版)
-		// 仅仅是绑定用户的入参 rootComponent 和 rootProps
+		// 作用: 主要是创建 根应用(root app)
 		return function createApp(rootComponent, rootProps = null) {
       // rootComponent 可能是函数式组件 也可能是选项式组件
 			if (!isFunction(rootComponent)) {
 				rootComponent = Object.assign({}, rootComponent);
 			}
+			// rootProps 类型必须是对象
 			if (rootProps != null && !isObject(rootProps)) {
 				warn$1(`root props passed to app.mount() must be an object.`);
 				rootProps = null;
 			}
-
-      // 创建应用上下文
+      // 创建应用上下文 AppContext
 			const context = createAppContext();
-
-      // 安装的插件 防止重复安装
+      // 安装的插件(防止重复安装)
 			const installedPlugins = new Set();
-
       // 标识: 标记当前应用是否已挂载
 			let isMounted = false;
 
 			const app = (context.app = {
         // 标识: 根应用 uid 理论上是0
 				_uid: uid++,
-
         // 用户传入的root component
 				_component: rootComponent,
-
         // 用户传入的root props
 				_props: rootProps,
-
 				// 容器
 				_container: null,
-
         // 应用上下文
 				_context: context,
-
 				// 根组件实例
 				_instance: null,
-				
         // 版本
         version,
-				
         get config() {
 					return context.config;
 				},
-
+				// app.config 是只读的
 				set config(v) {
 					{
 						warn$1(`app.config cannot be replaced. Modify individual options instead.`);
 					}
 				},
-
         // 使用插件
 				// 1. installedPlugins添加该插件
 				// 2. 插件(app, ...options)
@@ -6423,7 +6462,6 @@ var Vue = (function (exports) {
 					}
 					return app;
 				},
-
         // 全局混合
 				// app._context.mixins属性添加该mixin
 				mixin(mixin) {
@@ -6438,7 +6476,6 @@ var Vue = (function (exports) {
 					}
 					return app;
 				},
-
         // 注册全局组件
 				// app._context.components<Id, Component>属性添加组件
 				component(name, component) {
@@ -6454,7 +6491,6 @@ var Vue = (function (exports) {
 					context.components[name] = component;
 					return app;
 				},
-
         // 注册全局指令
 				// app._context.directives<Id, Directive>属性添加组件
 				directive(name, directive) {
@@ -6470,9 +6506,9 @@ var Vue = (function (exports) {
 					context.directives[name] = directive;
 					return app;
 				},
-
         // 挂载应用
 				mount(rootContainer, isHydrate, isSVG) {
+					// 当前应用未被挂载
 					if (!isMounted) {
             // 标识：容器(DOM) __vue_app__ 标识应用已挂载
 						// 如果容器已被挂载 则警告
@@ -6513,6 +6549,7 @@ var Vue = (function (exports) {
 						}
 						return getExposeProxy(vnode.component) || vnode.component.proxy;
 					}
+					// 当前应用已被挂载
 					else {
 						warn$1(`App has already been mounted.\n` +
 							`If you want to remount the same app, move your app creation logic ` +
@@ -6520,7 +6557,6 @@ var Vue = (function (exports) {
 							`mount - e.g. \`const createMyApp = () => createApp(App)\``);
 					}
 				},
-
         // 卸载应用
 				unmount() {
 					if (isMounted) {
@@ -6535,7 +6571,6 @@ var Vue = (function (exports) {
 						warn$1(`Cannot unmount an app that is not mounted.`);
 					}
 				},
-
         // 全局提供
 				// app._context.provides<Key, Value>属性添加键值对
 				provide(key, value) {
@@ -7037,8 +7072,10 @@ var Vue = (function (exports) {
 	const queuePostRenderEffect = queueEffectWithSuspense;
 	
   // 创建自定义渲染器
-	// 这里的options 主要是与 DOM 增删改查的api 以及 DOM props(包括DOM attrs 和 vue directives)
-	// 可以通过自定义options 实现一套运行在某个环境的渲染器
+	// options 功能分为两类:
+	// 1. 浏览器 DOM API(增删改查)
+	// 2. 自定义对DOM Props(attrs class style directives) patch
+	// 可以通过自定义 options 实现一套运行在特定环境中的渲染器
 	function createRenderer(options) {
 		return baseCreateRenderer(options);
 	}
@@ -7059,6 +7096,8 @@ var Vue = (function (exports) {
 		}
 		const { insert: hostInsert, remove: hostRemove, patchProp: hostPatchProp, createElement: hostCreateElement, createText: hostCreateText, createComment: hostCreateComment, setText: hostSetText, setElementText: hostSetElementText, parentNode: hostParentNode, nextSibling: hostNextSibling, setScopeId: hostSetScopeId = NOOP, cloneNode: hostCloneNode, insertStaticContent: hostInsertStaticContent } = options;
 		
+		// vnode diff 核心
+		// 对新旧 vnode 树 进行广度优先遍历
 		// 通过打补丁的方式 将vnode映射到真实dom中
 		const patch = (n1, n2, container, anchor = null, parentComponent = null, parentSuspense = null, isSVG = false, slotScopeIds = null, optimized = isHmrUpdating ? false : !!n2.dynamicChildren) => {
 			// n1 旧vnode
@@ -7080,12 +7119,15 @@ var Vue = (function (exports) {
 			}
 			const { type, ref, shapeFlag } = n2;
 			switch (type) {
+				// 文本节点
 				case Text:
 					processText(n1, n2, container, anchor);
 					break;
+				// 注释节点
 				case Comment:
 					processCommentNode(n1, n2, container, anchor);
 					break;
+				// 静态节点
 				case Static:
 					if (n1 == null) {
 						mountStaticNode(n2, container, anchor, isSVG);
@@ -7094,22 +7136,28 @@ var Vue = (function (exports) {
 						patchStaticNode(n1, n2, container, isSVG);
 					}
 					break;
+				// 片段
 				case Fragment:
 					processFragment(n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized);
 					break;
 				default:
+					// 元素节点
 					if (shapeFlag & 1 /* ELEMENT */) {
 						processElement(n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized);
 					}
+					// 组件
 					else if (shapeFlag & 6 /* COMPONENT */) {
 						processComponent(n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized);
 					}
+					// Teleport组件
 					else if (shapeFlag & 64 /* TELEPORT */) {
 						type.process(n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized, internals);
 					}
+					// Suspense组件
 					else if (shapeFlag & 128 /* SUSPENSE */) {
 						type.process(n1, n2, container, anchor, parentComponent, parentSuspense, isSVG, slotScopeIds, optimized, internals);
 					}
+					// 
 					else {
 						warn$1('Invalid VNode type:', type, `(${typeof type})`);
 					}
@@ -7122,10 +7170,12 @@ var Vue = (function (exports) {
 
 		// 加工文本节点
 		const processText = (n1, n2, container, anchor) => {
+			// 当 旧vnode 不存在时
 			if (n1 == null) {
 				// 创建文本,并插入到父元素中
 				hostInsert((n2.el = hostCreateText(n2.children)), container, anchor);
 			}
+			// 当 旧vnode 存在时
 			else {
 				// 更新文本
 				const el = (n2.el = n1.el);
@@ -7327,9 +7377,11 @@ var Vue = (function (exports) {
 			let vnodeHook;
 			// disable recurse in beforeUpdate hooks
 			parentComponent && toggleRecurse(parentComponent, false);
+			// 调用 vnode.onVnodeBeforeUpdate
 			if ((vnodeHook = newProps.onVnodeBeforeUpdate)) {
 				invokeVNodeHook(vnodeHook, parentComponent, n2, n1);
 			}
+			// 调用 指令 的 beforeUpdate
 			if (dirs) {
 				invokeDirectiveHook(n2, n1, parentComponent, 'beforeUpdate');
 			}
@@ -8156,7 +8208,7 @@ var Vue = (function (exports) {
 			const shouldInvokeVnodeHook = !isAsyncWrapper(vnode);
 			let vnodeHook;
 
-			// vnode.onVnodeBeforeUnmount
+			// 调用 vnode.onVnodeBeforeUnmount
 			if (shouldInvokeVnodeHook &&
 				(vnodeHook = props && props.onVnodeBeforeUnmount)) {
 				invokeVNodeHook(vnodeHook, parentComponent, vnode);
@@ -8274,7 +8326,7 @@ var Vue = (function (exports) {
 
 			const { bum, scope, update, subTree, um } = instance;
 
-			// 调用beforeUnmount hook
+			// 调用组件 beforeUnmount hook
 			if (bum) {
 				invokeArrayFns(bum);
 			}
@@ -8318,6 +8370,7 @@ var Vue = (function (exports) {
 			}
 		};
 
+		// 卸载所有的元素
 		const unmountChildren = (children, parentComponent, parentSuspense, doRemove = false, optimized = false, start = 0) => {
 			for (let i = start; i < children.length; i++) {
 				unmount(children[i], parentComponent, parentSuspense, doRemove, optimized);
@@ -8334,13 +8387,16 @@ var Vue = (function (exports) {
 			return hostNextSibling((vnode.anchor || vnode.el));
 		};
 
+		// 渲染
 		const render = (vnode, container, isSVG) => {
+			// 当 vnode 不存在时 表示要卸载
 			if (vnode == null) {
 				// 卸载容器
 				if (container._vnode) {
 					unmount(container._vnode, null, null, true);
 				}
 			}
+			// 当 vnode 存在时 表示要挂载
 			else {
 				// 挂载
 				patch(container._vnode || null, vnode, container, null, null, null, isSVG);
@@ -8699,10 +8755,14 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: vnode开始 */
 
-	// 标识:
+	// 标识: 虚拟DOM类型(vnode.type)
+	// 
 	const Fragment = Symbol('Fragment');
+	// 文本VNode
 	const Text = Symbol('Text');
+	// 注释VNode
 	const Comment = Symbol('Comment');
+	// 静态VNode
 	const Static = Symbol('Static');
 
 	// Since v-if and v-for are the two possible ways node structure can dynamically
@@ -8797,7 +8857,7 @@ var Vue = (function (exports) {
 		return value ? value.__v_isVNode === true : false;
 	}
 
-	// 断言: n1 n2类型是否相同
+	// 断言: 判断n1 n2类型是否相同
 	function isSameVNodeType(n1, n2) {
 		if (n2.shapeFlag & 6 /* COMPONENT */ &&
 			hmrDirtyComponents.has(n2.type)) {
@@ -8807,15 +8867,16 @@ var Vue = (function (exports) {
 		return n1.type === n2.type && n1.key === n2.key;
 	}
 
-	// vnode转换器(在调用Vue.h之前 对参数进行预处理)
+	// vnode参数转换器
+	// 在调用Vue.h之前 对参数进行预处理
 	let vnodeArgsTransformer;
-	// 设置vnode转换器
+	// 设置 vnode 参数转换器
 	function transformVNodeArgs(transformer) {
 		vnodeArgsTransformer = transformer;
 	}
 
 	// 等同于 createVNode
-	// 函数包装: 在创建vnode之前对vnode参数进行预处理
+	// 函数包装: 在创建 vnode 之前对 vnode 参数进行预处理
 	const createVNodeWithArgsTransform = (...args) => {
 		return _createVNode(...(vnodeArgsTransformer
 			? vnodeArgsTransformer(args, currentRenderingInstance)
@@ -8824,9 +8885,10 @@ var Vue = (function (exports) {
 
 	const InternalObjectKey = `__vInternal`;
 
-	// 正常化: 根据props.key来正常化创建vnode.key
+	// 标准化 key 字段
 	const normalizeKey = ({ key }) => key != null ? key : null;
 	// 正常化: 根据props.ref来正常化创建vnode.ref
+	// 标准化 
 	const normalizeRef = ({ ref, ref_key, ref_for }) => {
 		return (ref != null
 			? isString(ref) || isRef(ref) || isFunction(ref)
@@ -8835,49 +8897,34 @@ var Vue = (function (exports) {
 			: null);
 	};
 
-	// 创建最基础的vnode
+	// 创建: 创建基础虚拟节点
 	function createBaseVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, shapeFlag = type === Fragment ? 0 : 1 /* ELEMENT */, isBlockNode = false, needFullChildrenNormalization = false) {
 		const vnode = {
-			// 标识: 标记当前是vnode
-			__v_isVNode: true,
-			// 标识: vnode 不能被响应式
-			__v_skip: true,
-			// 类型: VNodeTypes | ClassComponent || HTMLElement Name
-			type,
-			// 属性
-			props,
-			key: props && normalizeKey(props),
-
-			ref: props && normalizeRef(props),
-
-			scopeId: currentScopeId,
-			slotScopeIds: null,
-
-			// 子元素(vnode)
-			children,
-			// 当前组件实例
-			component: null,
-
+			__v_isVNode: true, // 标识: 标记当前是vnode
+			__v_skip: true, // 标识: vnode 不能被响应式
+			type, // 类型: VNodeTypes | ClassComponent || HTMLElement Name
+			props, // 属性
+			key: props && normalizeKey(props), // vnode.key
+			ref: props && normalizeRef(props), // 模板引用对象
+			scopeId: currentScopeId, //
+			slotScopeIds: null, //
+			children, // 子元素
+			component: null, // 当前组件实例
 			suspense: null,
 			ssContent: null,
 			ssFallback: null,
-
-			// 指令
-			dirs: null,
-			// 过渡hook
-			transition: null,
-			// 当前元素
-			el: null,
-			anchor: null,
-			target: null,
-			targetAnchor: null,
-			staticCount: 0,
-			shapeFlag,
-			patchFlag,
+			dirs: null, // 指令
+			transition: null, // 过渡hook
+			el: null, // 当前 vnode 渲染后的元素
+			anchor: null, // 
+			target: null, // 
+			targetAnchor: null, //
+			staticCount: 0, // 
+			shapeFlag, // 结构标志
+			patchFlag, // 对比更新标志
 			dynamicProps,
 			dynamicChildren: null,
-			// 应用上下文
-			appContext: null
+			appContext: null // 应用上下文
 		};
 		if (needFullChildrenNormalization) {
 			normalizeChildren(vnode, children);
@@ -8919,9 +8966,8 @@ var Vue = (function (exports) {
 	// 创建vnode
 	const createVNode = (createVNodeWithArgsTransform);
 
-	// 创建vnode(内部实现)
-	// 在创建vnode之前 先对vnode 参数进行预处理
-	// 函数包装: 主要是内部处理 type shapeFlag
+	// 创建vnode的内部实现
+	// 在创建 vnode 之前 先对 type shapeFlag 参数进行预处理
 	function _createVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, isBlockNode = false) {
 		// type字段必须存在
 		if (!type || type === NULL_DYNAMIC_COMPONENT) {
@@ -8931,7 +8977,7 @@ var Vue = (function (exports) {
 			type = Comment;
 		}
 
-		// 当type是vnode类型时 返回复制后的vnode
+		// 当 type 是 vnode 类型时 返回复制后的vnode
 		if (isVNode(type)) {
 			// createVNode receiving an existing vnode. This happens in cases like
 			// <component :is="vnode"/>
@@ -8954,7 +9000,6 @@ var Vue = (function (exports) {
 		}
 
 		// class component normalization.
-		// 类组件
 		if (isClassComponent(type)) {
 			type = type.__vccOpts;
 		}
@@ -9134,16 +9179,19 @@ var Vue = (function (exports) {
 		return child.el === null || child.memo ? child : cloneVNode(child);
 	}
 
-	// 正常化vnode.children 并根据vnode.children来调整vnode.shapeFlag
+	// 正常化vnode.children 并根据 vnode.children来调整vnode.shapeFlag
 	function normalizeChildren(vnode, children) {
 		let type = 0;
 		const { shapeFlag } = vnode;
+		// 子元素 不存在
 		if (children == null) {
 			children = null;
 		}
+		// 子元素 是 数组类型
 		else if (isArray(children)) {
 			type = 16 /* ARRAY_CHILDREN */;
 		}
+		// 子元素 是 对象类型
 		else if (typeof children === 'object') {
 			if (shapeFlag & (1 /* ELEMENT */ | 64 /* TELEPORT */)) {
 				// Normalize slot to plain children for plain element and Teleport
@@ -9176,10 +9224,12 @@ var Vue = (function (exports) {
 				}
 			}
 		}
+		// 子元素 是 函数形式
 		else if (isFunction(children)) {
 			children = { default: children, _ctx: currentRenderingInstance };
 			type = 32 /* SLOTS_CHILDREN */;
 		}
+		// 子元素 是 字符串形式
 		else {
 			children = String(children);
 			// force teleport children to array so it can be moved around
@@ -9248,19 +9298,19 @@ var Vue = (function (exports) {
 		// inherit parent app context - or - if root, adopt from root vnode
 		const appContext = (parent ? parent.appContext : vnode.appContext) || emptyAppContext;
 		const instance = {
-			uid: uid$1++,
-			vnode,
-			type,
-			parent,
-			appContext,
-			root: null,
-			next: null,
-			subTree: null,
-			effect: null,
-			update: null,
-			scope: new EffectScope(true /* detached */),
-			render: null,
-			proxy: null,
+			uid: uid$1++, // 
+			vnode, // vnode
+			type,  // 
+			parent, // 
+			appContext, // 应用上下文
+			root: null, // 根组件
+			next: null, // 
+			subTree: null, // 子树
+			effect: null,  // 渲染副作用
+			update: null,  // 
+			scope: new EffectScope(true /* detached */), // 副作用作用域
+			render: null, // 渲染器
+			proxy: null, // 
 			exposed: null,
 			exposeProxy: null,
 			withProxy: null,
@@ -9268,27 +9318,27 @@ var Vue = (function (exports) {
 			accessCache: null,
 			renderCache: [],
 			// local resolved assets
-			components: null,
-			directives: null,
+			components: null, // 局部组件
+			directives: null, // 局部指令
 			// resolved props and emits options
 			propsOptions: normalizePropsOptions(type, appContext),
 			emitsOptions: normalizeEmitsOptions(type, appContext),
 			// emit
-			emit: null,
+			emit: null, // emit
 			emitted: null,
 			// props default value
 			propsDefaults: EMPTY_OBJ,
 			// inheritAttrs
 			inheritAttrs: type.inheritAttrs,
 			// state
-			ctx: EMPTY_OBJ,
-			data: EMPTY_OBJ,
-			props: EMPTY_OBJ,
-			attrs: EMPTY_OBJ,
-			slots: EMPTY_OBJ,
-			refs: EMPTY_OBJ,
-			setupState: EMPTY_OBJ,
-			setupContext: null,
+			ctx: EMPTY_OBJ, // 上下文
+			data: EMPTY_OBJ, // 
+			props: EMPTY_OBJ, // 
+			attrs: EMPTY_OBJ, // 
+			slots: EMPTY_OBJ, // 
+			refs: EMPTY_OBJ, // 
+			setupState: EMPTY_OBJ, //
+			setupContext: null, // 
 			// suspense related
 			suspense,
 			suspenseId: suspense ? suspense.pendingId : 0,
@@ -9296,27 +9346,28 @@ var Vue = (function (exports) {
 			asyncResolved: false,
 			// lifecycle hooks
 			// not using enums here because it results in computed properties
-			isMounted: false,
-			isUnmounted: false,
-			isDeactivated: false,
-			bc: null,
-			c: null,
-			bm: null,
-			m: null,
-			bu: null,
-			u: null,
-			um: null,
-			bum: null,
-			da: null,
-			a: null,
-			rtg: null,
-			rtc: null,
-			ec: null,
-			sp: null
+			isMounted: false, // 标识: 组件是否被挂载
+			isUnmounted: false, // 标识: 组件是否被卸载
+			isDeactivated: false, // 标识: 组件是否失活
+			bc: null, // beforeCreate
+			c: null, // create
+			bm: null, // beforeMount
+			m: null, // mount
+			bu: null, // beforeUpdate
+			u: null, // updated
+			um: null, // unmount
+			bum: null, // beforeUnmount
+			da: null, // 
+			a: null, //
+			rtg: null, //
+			rtc: null, //
+			ec: null, //
+			sp: null  // 
 		};
 		{
 			instance.ctx = createDevRenderContext(instance);
 		}
+		// 在组件上绑定根应用
 		instance.root = parent ? parent.root : instance;
 		instance.emit = emit$1.bind(null, instance);
 		// apply custom element special handling
@@ -9340,10 +9391,10 @@ var Vue = (function (exports) {
 		currentInstance = null;
 	};
 
-	// 断言: 是否是内置组件名
+	// 断言: 是否是内置组件名(slot | component)
 	const isBuiltInTag = /*#__PURE__*/ makeMap('slot,component');
-
-	// 验证组件名(非内置标签 or 非原生标签)
+	// 验证 组件名 是否合法
+	// 组件名 不能是内置组件名 or 原生HTMLTag
 	function validateComponentName(name, config) {
 		const appIsNativeTag = config.isNativeTag || NO;
 		if (isBuiltInTag(name) || appIsNativeTag(name)) {
@@ -9391,15 +9442,18 @@ var Vue = (function (exports) {
 		var _a;
 		const Component = instance.type;
 		{
+			// 验证当前组件名是否合法
 			if (Component.name) {
 				validateComponentName(Component.name, instance.appContext.config);
 			}
+			// 验证当前组件使用的所有局部组件名是否合法
 			if (Component.components) {
 				const names = Object.keys(Component.components);
 				for (let i = 0; i < names.length; i++) {
 					validateComponentName(names[i], instance.appContext.config);
 				}
 			}
+			// 验证当前组件内使用的指令名是否合法
 			if (Component.directives) {
 				const names = Object.keys(Component.directives);
 				for (let i = 0; i < names.length; i++) {
@@ -9430,7 +9484,7 @@ var Vue = (function (exports) {
 			const setupResult = callWithErrorHandling(setup, instance, 0 /* SETUP_FUNCTION */, [shallowReadonly(instance.props), setupContext]);
 			resetTracking();
 			unsetCurrentInstance();
-			// setup 返回Promise
+			// 初始化函数返回Promise
 			if (isPromise(setupResult)) {
 				setupResult.then(unsetCurrentInstance, unsetCurrentInstance);
 				if (isSSR) {
@@ -9466,19 +9520,19 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 处理 setup 函数的结果
+	// 处理 初始化函数 结果
 	// 返回值只能是: render函数 ｜ 响应式对象
 	function handleSetupResult(instance, setupResult, isSSR) {
-		// 返回render函数
+		// 如果 初始化函数 返回 函数 则绑定 instance.render 
 		if (isFunction(setupResult)) {
 			{
 				instance.render = setupResult;
 			}
 		}
-		// 返回对象
+		// 如果 初始化函数 返回 对象 则绑定 instance.setupState
 		else if (isObject(setupResult)) {
+			// 初始化函数 不能 返回 vnode 对象
 			if (isVNode(setupResult)) {
-				// 警告: setup函数不能返回vnode对象
 				warn$1(`setup() should not return VNodes directly - ` +
 					`return a render function instead.`);
 			}
@@ -9554,7 +9608,7 @@ var Vue = (function (exports) {
 			}
 		}
 
-		// support for 2.x options
+		// 兼容 vue2 options 选项
 		{
 			setCurrentInstance(instance);
 			pauseTracking();
@@ -9601,7 +9655,7 @@ var Vue = (function (exports) {
 		);
 	}
 
-	// 创建setup上下文(返回{attr, slots, emit, expose})
+	// 创建初始化函数上下文 SetupContext
 	function createSetupContext(instance) {
 		const expose = exposed => {
 			if (instance.exposed) {
@@ -9815,12 +9869,11 @@ var Vue = (function (exports) {
 		return [awaitable, () => setCurrentInstance(ctx)];
 	}
 
-	/**
-	 * Vue.h 返回vnode
-	 * 内部 正常化props和children 最终调用 createVNode
-	 */
+	// Vue.h
+	// 返回 创建的 vnode
 	function h(type, propsOrChildren, children) {
 		const l = arguments.length;
+		// 根据 参数 个数来 正常化 props 和 children 并创建 vnode
 		if (l === 2) {
 			if (isObject(propsOrChildren) && !isArray(propsOrChildren)) {
 				// 没有props
@@ -10088,19 +10141,24 @@ var Vue = (function (exports) {
 	const compatUtils = (null);
 
 	const svgNS = 'http://www.w3.org/2000/svg';
+	// 浏览器环境中 document
 	const doc = (typeof document !== 'undefined' ? document : null);
+	// 浏览器环境中 创建 模板标签节点
 	const templateContainer = doc && /*#__PURE__*/ doc.createElement('template');
-	// 与原生DOM
+	// 原生DOM API(增删改查)
 	const nodeOps = {
+		// 插入元素
 		insert: (child, parent, anchor) => {
 			parent.insertBefore(child, anchor || null);
 		},
+		// 移除元素
 		remove: child => {
 			const parent = child.parentNode;
 			if (parent) {
 				parent.removeChild(child);
 			}
 		},
+		// 创建元素节点
 		createElement: (tag, isSVG, is, props) => {
 			const el = isSVG
 				? doc.createElementNS(svgNS, tag)
@@ -10110,20 +10168,29 @@ var Vue = (function (exports) {
 			}
 			return el;
 		},
+		// 创建文本节点
 		createText: text => doc.createTextNode(text),
+		// 创建注释节点
 		createComment: text => doc.createComment(text),
+		// 设置 文本节点 内容
 		setText: (node, text) => {
 			node.nodeValue = text;
 		},
+		// 设置 元素节点 文本内容
 		setElementText: (el, text) => {
 			el.textContent = text;
 		},
+		// 返回 某个节点的父节点
 		parentNode: node => node.parentNode,
+		// 返回 某个节点的兄弟节点
 		nextSibling: node => node.nextSibling,
+		// 查找 满足匹配器的元素
 		querySelector: selector => doc.querySelector(selector),
+		// 设置 元素Id
 		setScopeId(el, id) {
 			el.setAttribute(id, '');
 		},
+		// 克隆元素
 		cloneNode(el) {
 			const cloned = el.cloneNode(true);
 			// #3072
@@ -10140,6 +10207,7 @@ var Vue = (function (exports) {
 			}
 			return cloned;
 		},
+		// 插入静态内容
 		// __UNSAFE__
 		// Reason: innerHTML.
 		// Static content here can only come from compiled templates.
@@ -10474,6 +10542,7 @@ var Vue = (function (exports) {
 	}
 
 	const nativeOnRE = /^on[a-z]/;
+	// 对 元素 属性打补丁
 	const patchProp = (el, key, prevValue, nextValue, isSVG = false, prevChildren, parentComponent, parentSuspense, unmountChildren) => {
 		if (key === 'class') {
 			patchClass(el, nextValue, isSVG);
@@ -11279,6 +11348,7 @@ var Vue = (function (exports) {
 	}
 	// We are exporting the v-model runtime directly as vnode hooks so that it can
 	// be tree-shaken in case v-model is never used.
+	// 
 	const vModelText = {
 		created(el, { modifiers: { lazy, trim, number } }, vnode) {
 			el._assign = getModelAssigner(vnode);
@@ -11565,9 +11635,13 @@ var Vue = (function (exports) {
 		};
 	};
 
+	// 指令v-show
+	// 原理: 通过手动修改 el.style.display 属性来控制元素显隐
 	const vShow = {
 		beforeMount(el, { value }, { transition }) {
+			// 将指令(v-show)的值绑定在el._vod上
 			el._vod = el.style.display === 'none' ? '' : el.style.display;
+			// 优先vnode.transiion
 			if (transition && value) {
 				transition.beforeEnter(el);
 			}
@@ -11603,7 +11677,7 @@ var Vue = (function (exports) {
 			setDisplay(el, value);
 		}
 	};
-	
+	// 通过 el.style.display 来控制元素显隐
 	function setDisplay(el, value) {
 		el.style.display = value ? el._vod : 'none';
 	}
@@ -11611,10 +11685,10 @@ var Vue = (function (exports) {
 	// 渲染器选项(与 DOM 操作相关)
 	const rendererOptions = /*#__PURE__*/ extend({ patchProp }, nodeOps);
 
-  // 渲染器
+  // 当前运行的渲染器
 	let renderer;
+	// 标识: 是否是服务端渲染
 	let enabledHydration = false;
-
 	// 保证渲染器存在(如果不存在 则创建并保存该渲染器, 如果存在 则直接返回)
 	function ensureRenderer() {
     // 缓存
@@ -11642,19 +11716,22 @@ var Vue = (function (exports) {
 		ensureHydrationRenderer().hydrate(...args);
 	});
 
-	// 创建app实例
+	// 创建app实例(用于浏览器)
 	const createApp = ((...args) => {
 		const app = ensureRenderer().createApp(...args);
 		{
-      // app.config 扩展 isNativeTag 属性
+      // 扩展 app.config.isNativeTag 属性
 			injectNativeTagCheck(app);
       // 开发环境下警告 app.config下的 isCustomElement compilerOptions
 			injectCompilerOptionsCheck(app);
 		}
-		// 增强app.mount方法
+		// 重写 app.mount 方法
+		// 1. 标准化容器参数(normalize container)
+		// 2. 移除 容器 中的所有子元素
+		// 2. 对 容器 设置标识
 		const { mount } = app;
 		app.mount = (containerOrSelector) => {
-      // container<DOM>
+      // 标准化容器参数(normalize container)
 			const container = normalizeContainer(containerOrSelector);
 			if (!container)
 				return;
@@ -11681,7 +11758,7 @@ var Vue = (function (exports) {
 		return app;
 	});
 
-	// 创建app实例(服务端渲染)
+	// 创建app实例(用于服务端)
 	const createSSRApp = ((...args) => {
 		const app = ensureHydrationRenderer().createApp(...args);
 		{
@@ -11698,7 +11775,8 @@ var Vue = (function (exports) {
 		return app;
 	});
 
-  // app.config 扩展 isNativeTag 属性(该属性不可被更改)
+  // 扩展app.config.isNativeTag 属性(该属性不可被更改)
+	// 作用: 判断某个 标签 是否是 HTMLTag | SVGTag
 	function injectNativeTagCheck(app) {
 		Object.defineProperty(app.config, 'isNativeTag', {
 			value: (tag) => isHTMLTag(tag) || isSVGTag(tag),
@@ -11706,12 +11784,14 @@ var Vue = (function (exports) {
 		});
 	}
 
-  // 开发环境下警告: 
+  // 在构建环境为开发环境 且构建版本是只包含运行时版本时警告: 
   // 1. app.config.isCustomElement已被废弃 可用app.config.compilerOptions.isCustomElement替代
-  // 2. app.config.compilerOptions仅仅用于完整构建版本
+  // 2. app.config.compilerOptions只能用于完整构建版本
 	function injectCompilerOptionsCheck(app) {
+		// 当构建版本是只包含运行时版本时
 		if (isRuntimeOnly()) {
 			const isCustomElement = app.config.isCustomElement;
+			// app.config.isCustomElement已被废弃 可用app.config.compilerOptions.isCustomElement替代
 			Object.defineProperty(app.config, 'isCustomElement', {
 				get() {
 					return isCustomElement;
@@ -11721,6 +11801,7 @@ var Vue = (function (exports) {
 						`\`compilerOptions.isCustomElement\` instead.`);
 				}
 			});
+			// app.config.compilerOptions只能用于完整构建版本
 			const compilerOptions = app.config.compilerOptions;
 			const msg = `The \`compilerOptions\` config option is only respected when using ` +
 				`a build of Vue.js that includes the runtime compiler (aka "full build"). ` +

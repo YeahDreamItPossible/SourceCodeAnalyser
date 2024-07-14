@@ -4,7 +4,7 @@ const ConstDependency = require("./dependencies/ConstDependency");
 const ProvidedDependency = require("./dependencies/ProvidedDependency");
 const { approve } = require("./javascript/JavascriptParserHelpers");
 
-// 根据键值对定义 自动加载模块
+// 根据键值对定义 自动加载模块 来替代通过 import 或者 require 的方式手动加载模块
 class ProvidePlugin {
 	// Record<string, string | string[]>
 	constructor(definitions) {

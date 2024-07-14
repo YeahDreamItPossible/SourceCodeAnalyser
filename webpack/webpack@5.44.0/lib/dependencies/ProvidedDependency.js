@@ -4,16 +4,6 @@ const InitFragment = require("../InitFragment");
 const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 
-/** @typedef {import("webpack-sources").ReplaceSource} ReplaceSource */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../Dependency")} Dependency */
-/** @typedef {import("../Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("../DependencyTemplate").DependencyTemplateContext} DependencyTemplateContext */
-/** @typedef {import("../DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("../ModuleGraph")} ModuleGraph */
-/** @typedef {import("../RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("../util/Hash")} Hash */
-
 /**
  * @param {string[]|null} path the property path array
  * @returns {string} the converted path
@@ -23,7 +13,9 @@ const pathToString = path =>
 		? path.map(part => `[${JSON.stringify(part)}]`).join("")
 		: "";
 
-// TODO:
+// 提供依赖
+// 根据键值对定义 自动加载模块 来替代通过 import 或者 require 的方式手动加载模块
+// 使用场景: ProvidePlugin
 class ProvidedDependency extends ModuleDependency {
 	constructor(request, identifier, path, range) {
 		super(request);
@@ -72,12 +64,6 @@ makeSerializable(
 );
 
 class ProvidedDependencyTemplate extends ModuleDependency.Template {
-	/**
-	 * @param {Dependency} dependency the dependency for which the template should be applied
-	 * @param {ReplaceSource} source the current replace source which can be modified
-	 * @param {DependencyTemplateContext} templateContext the context object
-	 * @returns {void}
-	 */
 	apply(
 		dependency,
 		source,
@@ -90,6 +76,7 @@ class ProvidedDependencyTemplate extends ModuleDependency.Template {
 		}
 	) {
 		const dep = /** @type {ProvidedDependency} */ (dependency);
+		// 依赖
 		initFragments.push(
 			new InitFragment(
 				`/* provided dependency */ var ${

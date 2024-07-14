@@ -5,7 +5,7 @@ const NullDependency = require("./NullDependency");
 
 // 常量依赖
 // 作用: 在源代码中 替换掉固定位置的字符串 或者 在特定位置插入字符串
-// 使用场景: DefinePlugin 
+// 使用场景: DefinePlugin NodeStuffPlugin
 class ConstDependency extends NullDependency {
 	constructor(expression, range, runtimeRequirements) {
 		super();

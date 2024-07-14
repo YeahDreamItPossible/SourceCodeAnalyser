@@ -120,6 +120,9 @@ class VariableInfo {
  * 语句是执行特定任务的代码片段, 它可能包含关键字、变量、操作符、表达式等
  * 用途:
  * 语句用于声明变量、赋值、执行函数、进行条件判断、循环等
+ * 
+ * 说明:
+ * 能直接放到 return 关键字后的 字符串 就是表达式
  */
 
 /**
@@ -238,6 +241,27 @@ class VariableInfo {
  * export * from '...'
  */
 
+/**
+ * JavascriptParser.hooks 分类
+ * 1. 针对与 语句(statement)
+ * statement 
+ * statementIf
+ * preStatement
+ * blockPreStatement
+ * 
+ * 2. 针对于 表达式(expression)
+ * expression
+ * expressionMemberChain
+ * expressionConditionalOperator
+ * expressionLogicalOperator
+ * 
+ * 3. 针对于 表达式计算(evaluate)
+ * evaluate  		// 必须返回 BasicEvaluatedExpression 的实例
+ * evaluateTypeof
+ * evaluateIdentifier
+ * evaluateCallExpressionMember
+ */
+
 const joinRanges = (startRange, endRange) => {
 	if (!endRange) return startRange;
 	if (!startRange) return endRange;
@@ -288,30 +312,38 @@ class JavascriptParser extends Parser {
 	constructor(sourceType = "auto") {
 		super();
 		this.hooks = Object.freeze({
-			// 当计算 typeof 自由变量的表达式 时
-			// 即: 当代码片段中有有计算 typeof 自由变量 表达式时
+			// 当代码片段中有有计算 typeof 自由变量 表达式时
 			// 自由变量: 在 A 中作用域要用到的变量 x.并没有在 A 中声明,要到别的作用域中找到他,这个变量 x 就是自由变量
-			// 示例: const val = typeof name
+			// 示例: 
+			// const val = typeof name => evaluateTypeof.for('name').tap('...')
 			evaluateTypeof: new HookMap(() => new SyncBailHook(["expression"])),
-			// 当计算 特定表达式类型的表达式 时
+			// 当计算 特定表达式类型的表达式 时 必须返回 BasicEvaluatedExpression 的实例
 			// 当代码片段中有 以上表达式类型(ExpressionType) 时
+			// 示例: 
+			// const a = new String('Hello') => evaluate.for('NewExpression').tap('...')
+			// const val = name + '...'      => evaluate.for('Identifier').tap('...')
 			evaluate: new HookMap(() => new SyncBailHook(["expression"])),
 			// 当计算 特定自由变量的表达式 时
 			// 当表达式中包含 自由变量 时
-			// 示例: name += 1 => evaluateIdentifier.for('name').tap(...)
+			// 示例: 
+			// name += 1 => evaluateIdentifier.for('name').tap(...)
 			evaluateIdentifier: new HookMap(() => new SyncBailHook(["expression"])),
 			// TODO:
-			// 当计算 特定自由变量的表达式 时
+			// 当计算 含有特定已经被定义的变量的表达式 时
 			// 评估 定义标识符
-			// 当代码片段中有有 已有定义 标识符时
+			// 示例:
+			// 
 			evaluateDefinedIdentifier: new HookMap(
 				() => new SyncBailHook(["expression"])
 			),
 			// 当计算 特定成员函数调用的表达式 时
-			// 示例: if (u.vb()) {} => evaluateCallExpressionMember.for('vb').tap('...') 
+			// 示例: 
+			// const val = u.vb() => evaluateCallExpressionMember.for('vb').tap('...') 
 			evaluateCallExpressionMember: new HookMap(
 				() => new SyncBailHook(["expression", "param"])
 			),
+			// TODO:
+			// 
 			/** @type {HookMap<SyncBailHook<[ExpressionNode | DeclarationNode | PrivateIdentifierNode, number], boolean | void>>} */
 			isPure: new HookMap(
 				() => new SyncBailHook(["expression", "commentsStartPosition"])
@@ -328,6 +360,7 @@ class JavascriptParser extends Parser {
 			// 当遍历 if 语句时
 			// 当代码片段中包含 if 语句时
 			statementIf: new SyncBailHook(["statement"]),
+			// TODO:
 			// 当代码片段中包含 clss 表达式时
 			// SyncBailHook<[ExpressionNode, ClassExpressionNode | ClassDeclarationNode], boolean | void>
 			classExtendsExpression: new SyncBailHook([
@@ -342,7 +375,9 @@ class JavascriptParser extends Parser {
 				"element",
 				"classDefinition"
 			]),
-			/** @type {HookMap<SyncBailHook<[LabeledStatementNode], boolean | void>>} */
+			// 当代码块中含有 label 关键字 时
+			// 示例:
+			// label 'outter' => hookMap.for('outter').tap('...')
 			label: new HookMap(() => new SyncBailHook(["statement"])),
 			// 当块预遍历 import 语句时
 			// 代码片段中每个包含 静态import 语句时调用
@@ -355,10 +390,10 @@ class JavascriptParser extends Parser {
 				"exportName",
 				"identifierName"
 			]),
+			// TODO:
 			// 为代码片段中每个 import 语句中导出的函数被调用 时调用
-			// SyncBailHook<[ExpressionNode], boolean | void>
 			importCall: new SyncBailHook(["expression"]),
-			// 为代码片段中每个出现 export 语句时调用
+			// 当代码片段中出现 export 语句时调用
 			export: new SyncBailHook(["statement"]),
 			// 当代码片段中有 export * from '' 语句时
 			exportImport: new SyncBailHook(["statement", "source"]),
@@ -407,35 +442,38 @@ class JavascriptParser extends Parser {
 			// 在进入模式(enterPattern)时调用
 			/** @type {HookMap<SyncBailHook<[IdentifierNode], boolean | void>>} */
 			pattern: new HookMap(() => new SyncBailHook(["pattern"])),
-			// 是否可以重命名给
+			// 返回 Boolean 来表示 是否可以重命名自由变量
+			// 示例: var a = b => canRename.for('b').tap('...')
 			canRename: new HookMap(() => new SyncBailHook(["initExpression"])),
-			// 当重命名给新的标识符时
-			// 示例: var a = b
+			// 当代码片段中 包含重命名给新的标识符 时
+			// 示例: var a = b => rename.for('b').tap('...')
 			rename: new HookMap(() => new SyncBailHook(["initExpression"])),
 			// 当解析 赋值表达式 时
-			// 示例: a += 2
-			// HookMap<SyncBailHook<[import("estree").AssignmentExpression], boolean | void>>
+			// 示例: 
+			// a += 2  => assign.for('a').tap('...')
 			assign: new HookMap(() => new SyncBailHook(["expression"])),
 			/** @type {HookMap<SyncBailHook<[import("estree").AssignmentExpression, string[]], boolean | void>>} */
 			assignMemberChain: new HookMap(
 				() => new SyncBailHook(["expression", "members"])
 			),
 			// 当分析 typeof 关键字时
-			// 示例: typeof obj
-			// HookMap<SyncBailHook<[ExpressionNode], boolean | void>>
+			// 示例: 
+			// typeof obj
 			typeof: new HookMap(() => new SyncBailHook(["expression"])),
 			// 当分析 await 表达式时
 			topLevelAwait: new SyncBailHook(["expression"]),
-			// 当分析函数调用时
-			// 示例: sayHello()
+			// 当分析函数调用时(针对于调用的函数名)
+			// 示例: 
+			// sayHello()  => call.for('sayHello').tap('...')
 			call: new HookMap(() => new SyncBailHook(["expression"])),
-			/** Something like "a.b()" */
-			/** @type {HookMap<SyncBailHook<[CallExpressionNode, string[]], boolean | void>>} */
+			// 当代码片段中包含 成员链函数调用 时(针对于函数的调用者)
+			// 示例:
+			// myObj.anyFunc()  =>  callMemberChain.for('myObj').tap('...')
 			callMemberChain: new HookMap(
 				() => new SyncBailHook(["expression", "members"])
 			),
-			/** Something like "a.b().c.d" */
-			/** @type {HookMap<SyncBailHook<[ExpressionNode, string[], CallExpressionNode, string[]], boolean | void>>} */
+			// 示例:
+			// a.b().c.d
 			memberChainOfCallMemberChain: new HookMap(
 				() =>
 					new SyncBailHook([
@@ -445,8 +483,8 @@ class JavascriptParser extends Parser {
 						"members"
 					])
 			),
-			/** Something like "a.b().c.d()"" */
-			/** @type {HookMap<SyncBailHook<[ExpressionNode, string[], CallExpressionNode, string[]], boolean | void>>} */
+			// 示例:
+			// a.b().c.d()
 			callMemberChainOfCallMemberChain: new HookMap(
 				() =>
 					new SyncBailHook([
@@ -464,8 +502,8 @@ class JavascriptParser extends Parser {
 			// 当分析 含有特定自由变量的表达式 时
 			// 示例: vb += '...' => expression.for('vb').tap('...')
 			expression: new HookMap(() => new SyncBailHook(["expression"])),
-			// TODO:
 			// 当分析 成员链表达式 时
+			// 示例: a.b => expressionMemberChain.for('a').tap('...')
 			expressionMemberChain: new HookMap(
 				() => new SyncBailHook(["expression", "members"])
 			),
@@ -2952,6 +2990,7 @@ class JavascriptParser extends Parser {
 			}
 			const callee = this.evaluateExpression(expression.callee);
 			if (callee.isIdentifier()) {
+				// (myObj.anyFunc())
 				const result1 = this.callHooksForInfo(
 					this.hooks.callMemberChain,
 					callee.rootInfo,
@@ -2959,6 +2998,7 @@ class JavascriptParser extends Parser {
 					callee.getMembers()
 				);
 				if (result1 === true) return;
+				// (sayHello())
 				const result2 = this.callHooksForInfo(
 					this.hooks.call,
 					callee.identifier,
@@ -3079,12 +3119,14 @@ class JavascriptParser extends Parser {
 		this.callHooksForName(this.hooks.expression, "this", expression);
 	}
 
-	// TODO:
+	// 遍历 含有标识符 的表达式
+	// 调用 parser.hooks.expression.for('identifier')
 	walkIdentifier(expression) {
 		this.callHooksForName(this.hooks.expression, expression.name, expression);
 	}
 
 	// 遍历 元属性(import.meta)
+	// 调用 parser.hooks.expression.for('identifier')
 	walkMetaProperty(metaProperty) {
 		this.hooks.expression.for(getRootName(metaProperty)).call(metaProperty);
 	}
@@ -3151,7 +3193,7 @@ class JavascriptParser extends Parser {
 	}
 
 	// 最终调用
-	// 返回 特定钩子映射中 某个具名钩子调用后的返回值
+	// 如果 钩子存在 返回 特定钩子映射中 某个具名钩子调用后的返回值
 	// 即: hookMap.for(name).call(....)
 	callHooksForInfoWithFallback(hookMap, info, fallback, defined, ...args) {
 		let name;
@@ -3277,8 +3319,8 @@ class JavascriptParser extends Parser {
 		this.scope = oldScope;
 	}
 
-	// 设置 parser.scope.isStrict
 	// 检查当前JS文件是否是严格模式(use strict)或者use asm
+	// 设置 parser.scope.isStrict | parser.scope.isAsmJs
 	detectMode(statements) {
 		const isLiteral =
 			statements.length >= 1 &&
@@ -3383,7 +3425,8 @@ class JavascriptParser extends Parser {
 		this.enterPattern(pattern.left, onIdent);
 	}
 
-	// 计算表达式(主要是调用 表达式类型 对应的钩子 返回钩子计算后的结果)
+	// 计算表达式
+	// 主要是调用 表达式类型 对应的钩子(parser.hooks.evaluate.for('ExpressionType')) 返回钩子计算后的结果
 	// 返回 BasicEvaluatedExpression 的实例
 	evaluateExpression(expression) {
 		try {
@@ -3544,6 +3587,14 @@ class JavascriptParser extends Parser {
 		this.statementPath = [];
 		this.prevStatement = undefined;
 
+		/**
+		 * 1. 预遍历语句: 绑定作用域
+		 * 		1.1 先预遍历 所有的语句()   作用: 绑定全局作用域
+		 * 		1.2 再预遍历 含有块作用域的关键字 的语句(export import const let class) 作用: 绑定块作用域
+		 * 2. 遍历语句
+		 * 		遍历所有的表达式(在表达式中 调用 相关钩子)
+		 */
+
 		// HarmonyDetectionParserPlugin
 		// UseStrictPlugin
 		// DefinePlugin
@@ -3577,7 +3628,7 @@ class JavascriptParser extends Parser {
 		return state;
 	}
 
-	// 计算源代码 并返回 BasicEvaluatedExpression 的实例
+	// 计算包含表达式的源代码(非语句) 并返回 BasicEvaluatedExpression 的实例
 	evaluate(source) {
 		// 1. 分析 源代码 后返回对应的 ast
 		const ast = JavascriptParser._parse("(" + source + ")", {
@@ -3726,6 +3777,7 @@ class JavascriptParser extends Parser {
 		);
 	}
 
+	// 
 	getTagData(name, tag) {
 		const info = this.scope.definitions.get(name);
 		if (info instanceof VariableInfo) {
@@ -3737,6 +3789,10 @@ class JavascriptParser extends Parser {
 		}
 	}
 
+	// 设置标签变量信息
+	// CompatibilityPlugin
+	// HarmonyImportDependencyParserPlugin
+	// InnerGraph
 	tagVariable(name, tag, data) {
 		const oldInfo = this.scope.definitions.get(name);
 		/** @type {VariableInfo} */

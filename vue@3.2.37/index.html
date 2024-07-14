@@ -6,7 +6,9 @@
   <title>Document</title>
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <Hello />
+  </div>
 
   <script src="./vue.global.js"></script>
   <script>
@@ -17,12 +19,24 @@
       //     Vue.h('Hello', '...')
       //   ])
       // }
-      // el: '#app',
-      template: `<div>app <Hello /></div>`
+      el: '#app',
+      // template: `<div>app <Hello /></div>`
     })
     const Hello = app.component('Hello', {
       render () {
-        return Vue.h('div', 'Hello')
+        let flag = Vue.ref(true)
+        return Vue.h('div', {
+          onClick (e) {
+            console.log('Hello')
+            console.log(e.target)
+            console.log(flag.value)
+            flag.value = !flag.value
+          },
+          class: 'Hello',
+          style: {
+            color: flag.value ? '#ff0000' : 'blue'
+          }
+        }, 'Hello')
       }
     })
     app.mount('#app')

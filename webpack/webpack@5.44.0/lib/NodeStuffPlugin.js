@@ -28,13 +28,16 @@ class NodeStuffPlugin {
 
 					let localOptions = options;
 					if (parserOptions.node) {
+						// 将 NodeStuffPlugin.options 和 Webpack.options.node 合并
 						localOptions = { ...localOptions, ...parserOptions.node };
 					}
 
+					// 兼容 node 环境下 global 变量
 					if (localOptions.global) {
 						parser.hooks.expression
 							.for("global")
 							.tap("NodeStuffPlugin", expr => {
+								// 默认将 global 替换成 __webpack_require__.g
 								const dep = new ConstDependency(
 									RuntimeGlobals.global,
 									expr.range,
@@ -64,6 +67,7 @@ class NodeStuffPlugin {
 						setModuleConstant(expressionName, () => value);
 
 					const context = compiler.context;
+					// 兼容 node 环境下 __filename 变量
 					if (localOptions.__filename) {
 						if (localOptions.__filename === "mock") {
 							setConstant("__filename", "/index.js");
@@ -80,6 +84,8 @@ class NodeStuffPlugin {
 								return evaluateToString(resource.path)(expr);
 							});
 					}
+
+					// 兼容 node 环境下 __dirname 变量
 					if (localOptions.__dirname) {
 						if (localOptions.__dirname === "mock") {
 							setConstant("__dirname", "/");
@@ -95,6 +101,8 @@ class NodeStuffPlugin {
 								return evaluateToString(parser.state.module.context)(expr);
 							});
 					}
+
+					// 不再支持 requrie.extensions 
 					parser.hooks.expression
 						.for("require.extensions")
 						.tap(
