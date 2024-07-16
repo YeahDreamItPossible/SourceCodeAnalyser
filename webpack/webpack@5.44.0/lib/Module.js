@@ -104,6 +104,7 @@ class Module extends DependenciesBlock {
 		// 构建信息
 		this.buildInfo = undefined;
 		// 属于当前模块的演示依赖集合
+		// 示例: ConstDependency ProvideDependency
 		this.presentationalDependencies = undefined;
 	}
 

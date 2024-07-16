@@ -49,6 +49,7 @@ const PATH_NAME_NORMALIZE_REPLACE_REGEX = /[^a-zA-Z0-9_!§$()=\-^°]+/g;
 const MATCH_PADDED_HYPHENS_REPLACE_REGEX = /^-|-$/g;
 
 // 模板
+// 作用: 在渲染 chunk 时 渲染默认内容
 class Template {
 	// 返回 标准化的函数字符串
 	static getFunctionContent(fn) {

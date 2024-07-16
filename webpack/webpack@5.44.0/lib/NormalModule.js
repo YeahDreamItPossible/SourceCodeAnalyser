@@ -176,7 +176,7 @@ makeSerializable(
  * @property {HookMap<AsyncSeriesBailHook<[string, NormalModule], string | Buffer>>} readResourceForScheme
  */
 
-// WeakMap<Compilation, NormalModuleCompilationHooks>
+// WeakMap<Compilation, Hooks>
 const compilationHooksMap = new WeakMap();
 
 /**
