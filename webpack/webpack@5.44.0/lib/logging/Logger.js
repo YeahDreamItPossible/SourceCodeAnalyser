@@ -1,6 +1,6 @@
 "use strict";
 
-// 输出类型
+// 日志输出类型
 const LogType = Object.freeze({
 	error: ("error"), // message, c style arguments
 	warn: ("warn"), // message, c style arguments
@@ -26,13 +26,17 @@ const LogType = Object.freeze({
 exports.LogType = LogType;
 
 // 标识符
+// 日志对象标识
 const LOG_SYMBOL = Symbol("webpack logger raw log method");
+// 
 const TIMERS_SYMBOL = Symbol("webpack logger times");
+// 
 const TIMERS_AGGREGATES_SYMBOL = Symbol("webpack logger aggregated times");
 
 // 日志输出
 class WebpackLogger {
 	constructor(log, getChildLogger) {
+		// 日志对象
 		this[LOG_SYMBOL] = log;
 		this.getChildLogger = getChildLogger;
 	}

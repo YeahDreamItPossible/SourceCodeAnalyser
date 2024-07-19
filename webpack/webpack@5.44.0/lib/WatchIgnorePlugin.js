@@ -13,6 +13,7 @@ const validate = createSchemaValidation(
 
 const IGNORE_TIME_ENTRY = "ignore";
 
+// 带有忽视作用的观察文件系统
 class IgnoringWatchFileSystem {
 	constructor(wfs, paths) {
 		this.wfs = wfs;
@@ -81,6 +82,8 @@ class IgnoringWatchFileSystem {
 }
 
 // 配置 观察模式 下 应忽视的文件
+// 作用:
+// 
 class WatchIgnorePlugin {
 	constructor(options) {
 		validate(options);

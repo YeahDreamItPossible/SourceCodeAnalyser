@@ -4,6 +4,9 @@ const asyncLib = require("neo-async");
 const getLazyHashedEtag = require("./cache/getLazyHashedEtag");
 const mergeEtags = require("./cache/mergeEtags");
 
+// 多项缓存
+// 作用:
+// 1. 存储 ItemCacheFacade
 class MultiItemCache {
 	constructor(items) {
 		// Array<ItemCacheFacade>
@@ -24,7 +27,7 @@ class MultiItemCache {
 		next(0);
 	}
 
-	// 
+	// 以 Promise 的方式读取缓存
 	getPromise() {
 		const next = i => {
 			return this._items[i].getPromise().then(result => {
@@ -35,6 +38,7 @@ class MultiItemCache {
 		return next(0);
 	}
 
+	// 存储缓存
 	store(data, callback) {
 		asyncLib.each(
 			this._items,
@@ -43,6 +47,7 @@ class MultiItemCache {
 		);
 	}
 
+	// 以 Promise 的方式存储缓存
 	storePromise(data) {
 		return Promise.all(this._items.map(item => item.storePromise(data))).then(
 			() => {}
@@ -50,13 +55,16 @@ class MultiItemCache {
 	}
 }
 
+// 单项缓存
+// 作用:
+// 1.
 class ItemCacheFacade {
 	constructor(cache, name, etag) {
 		// Cache 实例
 		this._cache = cache;
-		// 
+		// 缓存名称(实际上是 缓存标识)
 		this._name = name;
-		// 
+		// 缓存电子标签
 		this._etag = etag;
 	}
 
@@ -123,7 +131,10 @@ class ItemCacheFacade {
 	}
 }
 
-// 外观模式
+// 缓存(外观模式)
+// 作用: 主要是对 Cache 类功能扩展
+// 1. 增加缓存标识(name)
+// 2. 允许同时存储多项缓存
 class CacheFacade {
 	constructor(cache, name) {
 		// 缓存

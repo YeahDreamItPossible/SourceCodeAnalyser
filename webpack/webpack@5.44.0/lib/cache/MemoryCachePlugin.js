@@ -2,10 +2,15 @@
 
 const Cache = require("../Cache");
 
-// 根据 Webpack.options.cache.type = memory 使用该插件
 // 内存缓存策略
+// 作用: 
+// 在编译过程中 缓存生成的 Module 和 Chunk
+// 使用: 
+// 当 Webpack.options.cache.type = memory 且 Webpack.options.cache.maxGenerations !==  Infinity 时
+// 或者当 Webpack.options.cache.type = filesystem 且 Webpack.options.cache.maxGenerations !==  Infinity 时
 class MemoryCachePlugin {
 	apply(compiler) {
+		// 缓存对象
 		const cache = new Map();
 
 		// 存储
@@ -20,18 +25,24 @@ class MemoryCachePlugin {
 		compiler.cache.hooks.get.tap(
 			{ name: "MemoryCachePlugin", stage: Cache.STAGE_MEMORY },
 			(identifier, etag, gotHandlers) => {
+				// 从内存中读取缓存
 				const cacheEntry = cache.get(identifier);
+				// 当缓存不存在时(之前缓存过 后来被清除)
 				if (cacheEntry === null) {
 					return null;
-				} else if (cacheEntry !== undefined) {
-					// 验证
+				} 
+				// 当缓存存在时
+				else if (cacheEntry !== undefined) {
+					// 当缓存存在时 判断缓存中电子标签 与 当前电子标签 是否一致
 					return cacheEntry.etag === etag ? cacheEntry.data : null;
 				}
-				// 重新存储
+				// 第一次存储
 				gotHandlers.push((result, callback) => {
 					if (result === undefined) {
+						// 当结果不存在时 表示要清除当前缓存
 						cache.set(identifier, null);
 					} else {
+						// 存储
 						cache.set(identifier, { etag, data: result });
 					}
 					return callback();

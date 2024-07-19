@@ -69,11 +69,6 @@ const objectToString = (object, excludeContext) => {
 };
 
 class ResolverCachePlugin {
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		const cache = compiler.getCache("ResolverCachePlugin");
 		/** @type {FileSystemInfo} */

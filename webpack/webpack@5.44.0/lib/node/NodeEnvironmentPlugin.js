@@ -6,7 +6,10 @@ const createConsoleLogger = require("../logging/createConsoleLogger");
 const NodeWatchFileSystem = require("./NodeWatchFileSystem");
 const nodeConsole = require("./nodeConsole");
 
-// 绑定compiler文件系统api
+// Node 环境插件
+// 作用:
+// 1. 绑定 compiler 文件系统api
+// 2. 绑定 compiler.infrastructureLogger
 class NodeEnvironmentPlugin {
 	// Webpack.options.infrastructureLogger
 	constructor(options) {

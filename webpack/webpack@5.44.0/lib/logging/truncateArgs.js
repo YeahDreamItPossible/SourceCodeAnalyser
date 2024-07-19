@@ -1,10 +1,6 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
+// 数组求和
 const arraySum = array => {
 	let sum = 0;
 	for (const item of array) sum += item;

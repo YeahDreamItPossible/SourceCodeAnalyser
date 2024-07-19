@@ -1,17 +1,6 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/** @typedef {import("../Cache").Etag} Etag */
-
 class MergedEtag {
-	/**
-	 * @param {Etag} a first
-	 * @param {Etag} b second
-	 */
 	constructor(a, b) {
 		this.a = a;
 		this.b = b;
@@ -25,11 +14,7 @@ class MergedEtag {
 const dualObjectMap = new WeakMap();
 const objectStringMap = new WeakMap();
 
-/**
- * @param {Etag} a first
- * @param {Etag} b second
- * @returns {Etag} result
- */
+// 合并电子标签
 const mergeEtags = (a, b) => {
 	if (typeof a === "string") {
 		if (typeof b === "string") {

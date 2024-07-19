@@ -7,7 +7,7 @@ const identifierUtils = require("./util/identifier");
 // 告知 webpack 生成带有相对路径的记录(records)使得可以移动上下文目录。
 // 默认 optimization.portableRecords 被禁用
 // 如果下列至少一个选项在 webpack 中被设置
-// Wepback.Config.recordsPath || Webpack.options.recordsInputPath || Webpack.options.recordsOutputPath
+// Wepback.options.recordsPath || Webpack.options.recordsInputPath || Webpack.options.recordsOutputPath
 // 该选项也会自动启用
 class RecordIdsPlugin {
 	constructor(options) {

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const NormalModule = require("../NormalModule");
@@ -10,7 +5,9 @@ const LazySet = require("../util/LazySet");
 const LoaderDependency = require("./LoaderDependency");
 const LoaderImportDependency = require("./LoaderImportDependency");
 
-// TODO:
+// 加载器插件
+// 作用:
+// 
 class LoaderPlugin {
 	constructor(options = {}) {
 		// Webpack.options.experiments.executeModule

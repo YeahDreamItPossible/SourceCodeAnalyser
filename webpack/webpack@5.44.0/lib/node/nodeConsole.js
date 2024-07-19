@@ -3,6 +3,8 @@
 const util = require("util");
 const truncateArgs = require("../logging/truncateArgs");
 
+// node 环境下 创建日志对象
+// 作用: 在 node 环境中 不同的输出类型 会有不同的颜色提示
 module.exports = ({ colors, appendOnly, stream }) => {
 	let currentStatusMessage = undefined;
 	let hasStatusMessage = false;

@@ -6,6 +6,9 @@ const {
 	makeWebpackErrorCallback
 } = require("./HookWebpackError");
 
+// 作用: 
+// 1. 保证 某个函数 必须调用 N 次后 再执行回调函数
+// 2. 如果 某个函数 在执行过程中出错 则直接执行回调函数
 const needCalls = (times, callback) => {
 	return err => {
 		if (--times === 0) {
@@ -19,26 +22,30 @@ const needCalls = (times, callback) => {
 };
 
 // 缓存
+// 作用:
+// 调用缓存钩子
 class Cache {
 	constructor() {
 		this.hooks = {
-			// AsyncSeriesBailHook<[string, Etag | null, GotHandler[]], any>
+			// 读取缓存
 			get: new AsyncSeriesBailHook(["identifier", "etag", "gotHandlers"]),
-			// AsyncParallelHook<[string, Etag | null, any]>
+			// 缓存
 			store: new AsyncParallelHook(["identifier", "etag", "data"]),
 			// AsyncParallelHook<[Iterable<string>]>
+			// 缓存构建依赖
 			storeBuildDependencies: new AsyncParallelHook(["dependencies"]),
-			// SyncHook<[]>
+			//
 			beginIdle: new SyncHook([]),
-			// AsyncParallelHook<[]>
+			//
 			endIdle: new AsyncParallelHook([]),
-			// AsyncParallelHook<[]>
+			// 关闭时 清楚缓存
 			shutdown: new AsyncParallelHook([])
 		};
 	}
 
 	// 读取缓存
 	get(identifier, etag, callback) {
+		// 获取缓存函数队列
 		const gotHandlers = [];
 		this.hooks.get.callAsync(identifier, etag, gotHandlers, (err, result) => {
 			if (err) {
@@ -48,7 +55,7 @@ class Cache {
 			if (result === null) {
 				result = undefined;
 			}
-			// 重新存储
+			// 按序依次调用 获取缓存函数队列 并最终调用回调函数
 			if (gotHandlers.length > 1) {
 				const innerCallback = needCalls(gotHandlers.length, () =>
 					callback(null, result)
@@ -74,12 +81,7 @@ class Cache {
 		);
 	}
 
-	/**
-	 * After this method has succeeded the cache can only be restored when build dependencies are
-	 * @param {Iterable<string>} dependencies list of all build dependencies
-	 * @param {CallbackCache<void>} callback signals when the dependencies are stored
-	 * @returns {void}
-	 */
+	// 缓存 构建依赖
 	storeBuildDependencies(dependencies, callback) {
 		this.hooks.storeBuildDependencies.callAsync(
 			dependencies,
@@ -87,10 +89,12 @@ class Cache {
 		);
 	}
 
+	// 开始空闲
 	beginIdle() {
 		this.hooks.beginIdle.call();
 	}
 
+	// 结束 闲置
 	endIdle(callback) {
 		this.hooks.endIdle.callAsync(
 			makeWebpackErrorCallback(callback, "Cache.hooks.endIdle")
@@ -105,9 +109,14 @@ class Cache {
 	}
 }
 
+// 优先级
+// 内存缓存优先级
 Cache.STAGE_MEMORY = -10;
+// 默认缓存优先级
 Cache.STAGE_DEFAULT = 0;
+// 磁盘缓存优先级
 Cache.STAGE_DISK = 10;
+// 网络缓存优先级
 Cache.STAGE_NETWORK = 20;
 
 module.exports = Cache;

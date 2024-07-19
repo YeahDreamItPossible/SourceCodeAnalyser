@@ -334,7 +334,7 @@ class WebpackOptionsApply extends OptionsApply {
 		}
 		// CommonJS 模块
 		new CommonJsPlugin().apply(compiler);
-		//
+		// 加载器插件
 		new LoaderPlugin({
 			enableExecuteModule: options.experiments.executeModule
 		}).apply(compiler);
@@ -595,18 +595,17 @@ class WebpackOptionsApply extends OptionsApply {
 			options.snapshot.immutablePaths
 		).apply(compiler);
 
+		// 在编译过程中 缓存 生成的 Module 和 Chunk
 		if (options.cache && typeof options.cache === "object") {
 			const cacheOptions = options.cache;
 			switch (cacheOptions.type) {
 				case "memory": {
 					if (isFinite(cacheOptions.maxGenerations)) {
-						//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 						const MemoryWithGcCachePlugin = require("./cache/MemoryWithGcCachePlugin");
 						new MemoryWithGcCachePlugin({
 							maxGenerations: cacheOptions.maxGenerations
 						}).apply(compiler);
 					} else {
-						//@ts-expect-error https://github.com/microsoft/TypeScript/issues/41697
 						const MemoryCachePlugin = require("./cache/MemoryCachePlugin");
 						new MemoryCachePlugin().apply(compiler);
 					}

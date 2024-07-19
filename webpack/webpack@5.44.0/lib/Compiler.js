@@ -57,6 +57,10 @@ const includesHash = (filename, hashes) => {
 };
 
 // 编译器
+// 作用:
+// 1. 绑定 compiler 的文件系统 日志系统 缓存系统
+// 2. 绑定 compiler 的路径解析器
+// 3. 对 编译过程 任务调度
 class Compiler {
 	constructor(context) {
 		this.hooks = Object.freeze({
@@ -229,9 +233,10 @@ class Compiler {
 		// Loader Path + Module Path 均为相对路径
 		this.requestShortener = new RequestShortener(context, this.root);
 
-		// 缓存
+		// 缓存对象(文件缓存)
+		// 与 Webpack.options.cache 相关
 		this.cache = new Cache();
-
+		// 编译路径
 		this.compilerPath = "";
 
 		// 标识: 标识compiler是否正在运行

@@ -1,45 +1,28 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
-/**
- * @template T
- */
+// 数组队列
+// 作用:
+// 
 class ArrayQueue {
-	/**
-	 * @param {Iterable<T>=} items The initial elements.
-	 */
 	constructor(items) {
-		/** @private @type {T[]} */
+		// Array<T>
 		this._list = items ? Array.from(items) : [];
-		/** @private @type {T[]} */
+		// Array<T>
 		this._listReversed = [];
 	}
 
-	/**
-	 * Returns the number of elements in this queue.
-	 * @returns {number} The number of elements in this queue.
-	 */
+	// 返回队列中元素总数
 	get length() {
 		return this._list.length + this._listReversed.length;
 	}
 
-	/**
-	 * Empties the queue.
-	 */
+	// 清空队列
 	clear() {
 		this._list.length = 0;
 		this._listReversed.length = 0;
 	}
 
-	/**
-	 * Appends the specified element to this queue.
-	 * @param {T} item The element to add.
-	 * @returns {void}
-	 */
+	// 入队
 	enqueue(item) {
 		this._list.push(item);
 	}
@@ -48,6 +31,7 @@ class ArrayQueue {
 	 * Retrieves and removes the head of this queue.
 	 * @returns {T | undefined} The head of the queue of `undefined` if this queue is empty.
 	 */
+	// 出队
 	dequeue() {
 		// NOTE: 没看懂 队列长度为16
 		if (this._listReversed.length === 0) {
@@ -62,11 +46,7 @@ class ArrayQueue {
 		return this._listReversed.pop();
 	}
 
-	/**
-	 * Finds and removes an item
-	 * @param {T} item the item
-	 * @returns {void}
-	 */
+	// 删除某个元素
 	delete(item) {
 		const i = this._list.indexOf(item);
 		if (i >= 0) {
@@ -77,6 +57,7 @@ class ArrayQueue {
 		}
 	}
 
+	// 迭代器
 	[Symbol.iterator]() {
 		let i = -1;
 		let reversed = false;

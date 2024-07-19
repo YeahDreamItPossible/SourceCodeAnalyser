@@ -55,7 +55,9 @@ const builtins = [
 	"pnpapi"
 ];
 
-// Webpack.options.externalsPresets.node
+// 根据 Webpack.options.externalsPresets.node 选项注册该插件
+// Node环境目标插件
+// 作用: 在 node 环境中 将 node.js 的内置模块视为 external 模块
 class NodeTargetPlugin {
 	apply(compiler) {
 		new ExternalsPlugin("node-commonjs", builtins).apply(compiler);

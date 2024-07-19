@@ -260,6 +260,7 @@ class Hook {
 					continue;
 				}
 			}
+			// 优先级数字越小 优先被调用
 			if (xStage > stage) {
 				continue;
 			}

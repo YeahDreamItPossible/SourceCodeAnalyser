@@ -1,12 +1,10 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const ModuleDependency = require("./ModuleDependency");
 
+// 加载器依赖
+// 作用:
+// 
 class LoaderDependency extends ModuleDependency {
 	/**
 	 * @param {string} request request string

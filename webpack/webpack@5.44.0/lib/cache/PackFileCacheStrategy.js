@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const FileSystemInfo = require("../FileSystemInfo");
@@ -835,21 +830,8 @@ const allowCollectingMemory = buf => {
 	return buf;
 };
 
+// 包文件缓存策略
 class PackFileCacheStrategy {
-	/**
-	 * @param {Object} options options
-	 * @param {Compiler} options.compiler the compiler
-	 * @param {IntermediateFileSystem} options.fs the filesystem
-	 * @param {string} options.context the context directory
-	 * @param {string} options.cacheLocation the location of the cache data
-	 * @param {string} options.version version identifier
-	 * @param {Logger} options.logger a logger
-	 * @param {SnapshotOptions} options.snapshot options regarding snapshotting
-	 * @param {number} options.maxAge max age of cache items
-	 * @param {boolean} options.profile track and log detailed timing information for individual cache items
-	 * @param {boolean} options.allowCollectingMemory allow to collect unused memory created during deserialization
-	 * @param {false | "gzip" | "brotli"} options.compression compression used
-	 */
 	constructor({
 		compiler,
 		fs,
@@ -869,14 +851,26 @@ class PackFileCacheStrategy {
 			immutablePaths: snapshot.immutablePaths,
 			logger: logger.getChildLogger("webpack.FileSystemInfo")
 		});
+		// 编译器
 		this.compiler = compiler;
+		// 上下文路径
 		this.context = context;
+		// 文件缓存路径
+		// Webpack.options.cache.cacheLocation
 		this.cacheLocation = cacheLocation;
+		// Webpack.options.cache.version
 		this.version = version;
 		this.logger = logger;
+		// 允许未使用的缓存留在文件系统缓存中的时间 以 ms 为单位
+		// 默认为一个月 5184000000
 		this.maxAge = maxAge;
+		// Webpack.options.cache.profile
+		// 是否跟踪并记录各个 'filesystem' 缓存项的详细时间信息
 		this.profile = profile;
+		// Webpack.options.cache.allowCollectingMemory
 		this.allowCollectingMemory = allowCollectingMemory;
+		// 用于缓存文件的压缩类型
+		// Webpack.options.cache.compression
 		this.compression = compression;
 		this._extension =
 			compression === "brotli"
@@ -884,6 +878,7 @@ class PackFileCacheStrategy {
 				: compression === "gzip"
 				? ".pack.gz"
 				: ".pack";
+		// Webpack.options.snapshot
 		this.snapshot = snapshot;
 		/** @type {Set<string>} */
 		this.buildDependencies = new Set();
@@ -907,9 +902,7 @@ class PackFileCacheStrategy {
 		return this.packPromise;
 	}
 
-	/**
-	 * @returns {Promise<Pack>} the pack
-	 */
+	// 返回 Promise
 	_openPack() {
 		const { logger, profile, cacheLocation, version } = this;
 		/** @type {Snapshot} */

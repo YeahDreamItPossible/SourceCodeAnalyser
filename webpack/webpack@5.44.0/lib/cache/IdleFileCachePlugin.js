@@ -1,24 +1,15 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Cache = require("../Cache");
 const ProgressPlugin = require("../ProgressPlugin");
 
-/** @typedef {import("../Compiler")} Compiler */
-
+// 缓存构建依赖的 Key 标识
 const BUILD_DEPENDENCIES_KEY = Symbol();
 
+// 空闲时间段文件缓存插件
+// 作用:
+// 当编译器闲置时候，将缓存数据以异步的方式存储到缓存文件中
 class IdleFileCachePlugin {
-	/**
-	 * @param {TODO} strategy cache strategy
-	 * @param {number} idleTimeout timeout
-	 * @param {number} idleTimeoutForInitialStore initial timeout
-	 * @param {number} idleTimeoutAfterLargeChanges timeout after changes
-	 */
 	constructor(
 		strategy,
 		idleTimeout,
@@ -26,31 +17,39 @@ class IdleFileCachePlugin {
 		idleTimeoutAfterLargeChanges
 	) {
 		this.strategy = strategy;
+		// 缓存存储发生的时间间隔 以 ms 为单位
+		// Webpack.options.cache.idleTimeout
 		this.idleTimeout = idleTimeout;
+		// 初始缓存存储发生后的时间段 以 ms 为单位
+		// Webpack.options.cache.idleTimeoutForInitialStore
 		this.idleTimeoutForInitialStore = idleTimeoutForInitialStore;
+		// 是当检测到较大的更改时 缓存存储应在此之后发生的时间段 以 ms 为单位
+		// Webpack.options.cache.idleTimeoutAfterLargeChanges
 		this.idleTimeoutAfterLargeChanges = idleTimeoutAfterLargeChanges;
 	}
 
-	/**
-	 * Apply the plugin
-	 * @param {Compiler} compiler the compiler instance
-	 * @returns {void}
-	 */
 	apply(compiler) {
 		let strategy = this.strategy;
+		// 缓存存储发生的时间间隔
 		const idleTimeout = this.idleTimeout;
+		// 初始缓存存储发生后的时间段
 		const idleTimeoutForInitialStore = Math.min(
 			idleTimeout,
 			this.idleTimeoutForInitialStore
 		);
+		// 是当检测到较大的更改时 缓存存储应在此之后发生的时间段
 		const idleTimeoutAfterLargeChanges = this.idleTimeoutAfterLargeChanges;
 		const resolvedPromise = Promise.resolve();
 
+		// 
 		let timeSpendInBuild = 0;
+		// 
 		let timeSpendInStore = 0;
+		// 
 		let avgTimeSpendInStore = 0;
 
 		/** @type {Map<string | typeof BUILD_DEPENDENCIES_KEY, () => Promise>} */
+		// Map<String, Fn>
 		const pendingIdleTasks = new Map();
 
 		// 存储

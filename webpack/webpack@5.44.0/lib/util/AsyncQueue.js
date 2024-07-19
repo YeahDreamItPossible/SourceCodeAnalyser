@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { SyncHook, AsyncSeriesHook } = require("tapable");
@@ -16,23 +11,8 @@ const DONE_STATE = 2;
 
 let inHandleResult = 0;
 
-/**
- * @template T
- * @callback Callback
- * @param {WebpackError=} err
- * @param {T=} result
- */
 
-/**
- * @template T
- * @template K
- * @template R
- */
 class AsyncQueueEntry {
-	/**
-	 * @param {T} item the item
-	 * @param {Callback<R>} callback the callback
-	 */
 	constructor(item, callback) {
 		this.item = item;
 		/** @type {typeof QUEUED_STATE | typeof PROCESSING_STATE | typeof DONE_STATE} */
@@ -51,6 +31,7 @@ class AsyncQueueEntry {
  * @template K
  * @template R
  */
+// 异步队列
 class AsyncQueue {
 	/**
 	 * @param {Object} options options object

@@ -3,7 +3,9 @@
 const { LogType } = require("./Logger");
 
 // 返回 过滤函数
+// 作用: 将 不同类型的值标准化后 返回过滤函数
 const filterToFunction = item => {
+	// 正则匹配
 	if (typeof item === "string") {
 		const regExp = new RegExp(
 			`[\\\\/]${item.replace(
@@ -14,12 +16,14 @@ const filterToFunction = item => {
 		);
 		return ident => regExp.test(ident);
 	}
+	// 对象形式
 	if (item && typeof item === "object" && typeof item.test === "function") {
 		return ident => item.test(ident);
 	}
 	if (typeof item === "function") {
 		return item;
 	}
+	// 默认 Boolean
 	if (typeof item === "boolean") {
 		return () => item;
 	}
@@ -37,6 +41,10 @@ const LogLevel = {
 	verbose: 1
 };
 
+// 创建 logger
+// 作用:
+// 1. 默认在浏览器环境中 使用 console 输出日志
+// 2. 创建日志对象时 默认该 logger 输出级别(只有当 日记输出级别 大于 默认输出级别时 才会输出日志)
 module.exports = ({ level = "info", debug = false, console }) => {
 	const debugFilters =
 		typeof debug === "boolean"
@@ -44,9 +52,13 @@ module.exports = ({ level = "info", debug = false, console }) => {
 			: ([])
 					.concat(debug)
 					.map(filterToFunction);
+
+	// 日志级别
 	const loglevel = LogLevel[`${level}`] || 0;
 
 	const logger = (name, type, args) => {
+		// 标准化参数
+		// 作用: 在参数数组中向头部添加 logger.name 参数 用于区分日志对象
 		const labeledArgs = () => {
 			if (Array.isArray(args)) {
 				if (args.length > 0 && typeof args[0] === "string") {
@@ -58,13 +70,13 @@ module.exports = ({ level = "info", debug = false, console }) => {
 				return [];
 			}
 		};
+
+		// 标识: 是否是 debug 模式
 		const debug = debugFilters.some(f => f(name));
 		switch (type) {
 			case LogType.debug:
 				if (!debug) return;
-				// eslint-disable-next-line node/no-unsupported-features/node-builtins
 				if (typeof console.debug === "function") {
-					// eslint-disable-next-line node/no-unsupported-features/node-builtins
 					console.debug(...labeledArgs());
 				} else {
 					console.log(...labeledArgs());
@@ -93,9 +105,7 @@ module.exports = ({ level = "info", debug = false, console }) => {
 			case LogType.groupCollapsed:
 				if (!debug && loglevel > LogLevel.log) return;
 				if (!debug && loglevel > LogLevel.verbose) {
-					// eslint-disable-next-line node/no-unsupported-features/node-builtins
 					if (typeof console.groupCollapsed === "function") {
-						// eslint-disable-next-line node/no-unsupported-features/node-builtins
 						console.groupCollapsed(...labeledArgs());
 					} else {
 						console.log(...labeledArgs());
@@ -105,9 +115,7 @@ module.exports = ({ level = "info", debug = false, console }) => {
 			// falls through
 			case LogType.group:
 				if (!debug && loglevel > LogLevel.log) return;
-				// eslint-disable-next-line node/no-unsupported-features/node-builtins
 				if (typeof console.group === "function") {
-					// eslint-disable-next-line node/no-unsupported-features/node-builtins
 					console.group(...labeledArgs());
 				} else {
 					console.log(...labeledArgs());
@@ -115,9 +123,7 @@ module.exports = ({ level = "info", debug = false, console }) => {
 				break;
 			case LogType.groupEnd:
 				if (!debug && loglevel > LogLevel.log) return;
-				// eslint-disable-next-line node/no-unsupported-features/node-builtins
 				if (typeof console.groupEnd === "function") {
-					// eslint-disable-next-line node/no-unsupported-features/node-builtins
 					console.groupEnd();
 				}
 				break;
@@ -133,24 +139,18 @@ module.exports = ({ level = "info", debug = false, console }) => {
 				break;
 			}
 			case LogType.profile:
-				// eslint-disable-next-line node/no-unsupported-features/node-builtins
 				if (typeof console.profile === "function") {
-					// eslint-disable-next-line node/no-unsupported-features/node-builtins
 					console.profile(...labeledArgs());
 				}
 				break;
 			case LogType.profileEnd:
-				// eslint-disable-next-line node/no-unsupported-features/node-builtins
 				if (typeof console.profileEnd === "function") {
-					// eslint-disable-next-line node/no-unsupported-features/node-builtins
 					console.profileEnd(...labeledArgs());
 				}
 				break;
 			case LogType.clear:
 				if (!debug && loglevel > LogLevel.log) return;
-				// eslint-disable-next-line node/no-unsupported-features/node-builtins
 				if (typeof console.clear === "function") {
-					// eslint-disable-next-line node/no-unsupported-features/node-builtins
 					console.clear();
 				}
 				break;

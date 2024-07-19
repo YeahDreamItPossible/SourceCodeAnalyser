@@ -333,6 +333,9 @@ const deprecatedNormalModuleLoaderHook = util.deprecate(
 );
 
 // TODO webpack 6: remove
+// webpack 6 将会移除
+// compilation.moduleTemplates.asset 已被移除
+// compilation.moduleTemplates.webassembly 已被移除
 const defineRemovedModuleTemplates = moduleTemplates => {
 	Object.defineProperties(moduleTemplates, {
 		asset: {
@@ -397,6 +400,8 @@ const compareErrors = concatComparators(byModule, byLocation, byMessage);
 // 编译过程
 class Compilation {
 	constructor(compiler) {
+		// compilation.hooks.normalModuleLoader 已被废弃
+		// 可用 NormalModule.getCompilationHooks(compilation).loader 替代
 		const getNormalModuleLoader = () => deprecatedNormalModuleLoaderHook(this);
 		const processAssetsHook = new AsyncSeriesHook(["assets"]);
 
@@ -939,7 +944,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.resolverFactory = compiler.resolverFactory;
 		// 输入文件系统
 		this.inputFileSystem = compiler.inputFileSystem;
-		// 
+		// TODO: 文件系统
 		this.fileSystemInfo = new FileSystemInfo(this.inputFileSystem, {
 			managedPaths: compiler.managedPaths,
 			immutablePaths: compiler.immutablePaths,
@@ -955,8 +960,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.valueCacheVersions = new Map();
 		// 路径缩短器
 		this.requestShortener = compiler.requestShortener;
+		// 
 		this.compilerPath = compiler.compilerPath;
-
+		// 日志对象
 		this.logger = this.getLogger("webpack.Compilation");
 
 		// Webpack.options
@@ -980,7 +986,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			this.outputOptions,
 			this.requestShortener
 		);
-		/** @type {{javascript: ModuleTemplate}} */
+		// this.moduleTemplates.javascript 属性即将废弃
 		this.moduleTemplates = {
 			javascript: new ModuleTemplate(this.runtimeTemplate, this)
 		};
@@ -1003,7 +1009,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// AsyncQueue<Module, Module, Module>
 		this.processDependenciesQueue = new AsyncQueue({
 			name: "processDependencies",
+			// 并行
 			parallelism: options.parallelism || 100,
+			// 处理器
 			processor: this._processModuleDependencies.bind(this)
 		});
 		// 添加模块队列
@@ -1058,13 +1066,13 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// 入口点<入口名, Entrypoint>
 		// Map<EntrypointName, Entrypoint>
 		this.entrypoints = new Map();
-		/** @type {Entrypoint[]} */
+		// 异步入口点 Array<Entrypoint>
 		this.asyncEntrypoints = [];
 
 		// Set<Chunk>
 		this.chunks = new Set();
 		arrayToSetDeprecation(this.chunks, "Compilation.chunks");
-		// ChunkGroup[]
+		// 块组 Array<ChunkGroup>
 		this.chunkGroups = [];
 		// Map<ChunkGroupName, ChunkGroup>
 		this.namedChunkGroups = new Map();
@@ -1081,38 +1089,42 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		//
 		// Array<String>
 		this.additionalChunkAssets = [];
-		// 资源
+		// 编译完成后输出的资源
 		// Object<Filename, Source>
 		this.assets = {};
-		// 资源信息
+		// 编译完成后输出的资源信息
 		// Map<Filename, AssetInfo>
 		this.assetsInfo = new Map();
 		// 
 		// Map<string, Map<string, Set<string>>>
 		this._assetsRelatedIn = new Map();
 
-		// 收集错误和警告
-		// WebpackError[]
+		// 当前编译过程中出现的错误 Array<WebpackError>
 		this.errors = [];
-		// WebpackError[]
+		// 当前编译过程中出现的警告 Array<WebpackError>
 		this.warnings = [];
-		// Array<Compilation>
+		// 子编译过程 Array<Compilation>
 		this.children = [];
 		// Map<string, LogEntry[]>
 		this.logging = new Map();
 
-		// 根据 依赖 知道对应的 模块工厂
+		// 依赖工厂
+		// 根据 依赖 找到对应的 模块工厂
 		// 通过 模块工厂 来创建对应的 模块实例
 		// Map<DependencyConstructor, ModuleFactory>
 		this.dependencyFactories = new Map();
+		// 依赖模板
 		// 根据 依赖 找到对应的 依赖模板
 		// 通过 依赖模板 来获取 转换后的依赖代码
 		// 例如: import ... from ... => const ... = __webpack_require__('...')
 		// Map<DependencyConstructor, DependencyTemplate>
 		this.dependencyTemplates = new DependencyTemplates();
+		// 
 		this.childrenCounters = {};
-		/** @type {Set<number|string>} */
+		// 
+		// Set<number|string>
 		this.usedChunkIds = null;
+		// 
 		/** @type {Set<number>} */
 		this.usedModuleIds = null;
 		/** @type {boolean} */
@@ -1129,24 +1141,23 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.buildTimeExecutedModules = new WeakSet();
 		// Map<Module, Callback[]>
 		this._rebuildingModules = new Map();
-		/** @type {Set<string>} */
+		// 当前编译过程结束后输出的文件名
+		// Set<Filename>
 		this.emittedAssets = new Set();
-		/** @type {Set<string>} */
+		// 当前编译过程结束后输出的文件名(与上次输出结果对比 有改变)
+		// Set<Filename>
 		this.comparedForEmitAssets = new Set();
 
-		// 文件依赖
-		// Set<string>
+		// 文件依赖(整个编译过程中)
 		this.fileDependencies = new LazySet();
 		// 上下文依赖
-		// Set<string>
 		this.contextDependencies = new LazySet();
 		// 缺失的依赖
-		// Set<string>
 		this.missingDependencies = new LazySet();
 		// 打包依赖
-		// Set<string>
 		this.buildDependencies = new LazySet();
-		// Compilation.prototype.compilationDependencies 将在 webpack 6 移除
+		// Compilation.compilationDependencies 将在 webpack 6 移除
+		// Compilation.compilationDependencies 已被 compilation.fileDependencies 替代
 		this.compilationDependencies = {
 			add: util.deprecate(
 				item => this.fileDependencies.add(item),
@@ -1155,11 +1166,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			)
 		};
 
-		// 缓存
-		// 模块缓存
+		// 缓存对象(底层仍然是调用 compiler.cache.hooks )
+		// 模块缓存对象
 		this._modulesCache = this.getCache("Compilation/modules");
-		// 
+		// 资源缓存对象
 		this._assetsCache = this.getCache("Compilation/assets");
+		// 代码生成缓存对象
 		this._codeGenerationCache = this.getCache("Compilation/codeGeneration");
 	}
 
@@ -1355,7 +1367,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			currentProfile.markRestoringStart();
 		}
 
-		// 根据Webpack.options.Cache.type来缓存module
+		// 根据 Webpack.options.Cache.type 不同的值 使用不同的插件来读取 缓存的 Module
 		this._modulesCache.get(identifier, null, (err, cacheModule) => {
 			if (err) return callback(new ModuleRestoreError(module, err));
 
@@ -1445,6 +1457,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						if (currentProfile !== undefined) {
 							currentProfile.markStoringStart();
 						}
+						// 缓存当前 Module
+						// 根据 Webpack.options.Cache.type 不同的值 使用不同的缓存策略
 						this._modulesCache.store(module.identifier(), null, module, err => {
 							if (currentProfile !== undefined) {
 								currentProfile.markStoringEnd();
@@ -2958,6 +2972,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				)
 			)
 		);
+		// 读取缓存
 		cache.get((err, cachedResult) => {
 			if (err) return callback(err);
 			let result;
@@ -2988,6 +3003,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				results.add(module, runtime, result);
 			}
 			if (!cachedResult) {
+				// 重新存储缓存
 				cache.store(result, err => callback(err, codeGenerated));
 			} else {
 				callback(null, codeGenerated);
