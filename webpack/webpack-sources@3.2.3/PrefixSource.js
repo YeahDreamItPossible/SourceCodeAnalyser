@@ -5,6 +5,7 @@ const RawSource = require("./RawSource");
 const streamChunks = require("./helpers/streamChunks");
 const { getMap, getSourceAndMap } = require("./helpers/getFromStreamChunks");
 
+// 
 const REPLACE_REGEX = /\n(?=.|\s)/g;
 
 // 前缀源代码
@@ -28,9 +29,11 @@ class PrefixSource extends Source {
 		return this._source;
 	}
 
+	// 返回源代码
 	source() {
 		const node = this._source.source();
 		const prefix = this._prefix;
+		// 返回带有前缀的源代码
 		return prefix + node.replace(REPLACE_REGEX, "\n" + prefix);
 	}
 
