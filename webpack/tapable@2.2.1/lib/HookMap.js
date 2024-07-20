@@ -46,15 +46,15 @@ class HookMap {
 	}
 }
 
-// hookMap.tap方法已经被 hookMap.for 替代
+// hookMap.tap 方法已经被 hookMap.for 替代
 HookMap.prototype.tap = util.deprecate(function(key, options, fn) {
 	return this.for(key).tap(options, fn);
 }, "HookMap#tap(key,…) is deprecated. Use HookMap#for(key).tap(…) instead.");
-// hookMap.tapAsync方法已经被 hookMap.for 替代
+// hookMap.tapAsync 方法已经被 hookMap.for 替代
 HookMap.prototype.tapAsync = util.deprecate(function(key, options, fn) {
 	return this.for(key).tapAsync(options, fn);
 }, "HookMap#tapAsync(key,…) is deprecated. Use HookMap#for(key).tapAsync(…) instead.");
-// hookMap.tapPromise方法已经被 hookMap.for 替代
+// hookMap.tapPromise 方法已经被 hookMap.for 替代
 HookMap.prototype.tapPromise = util.deprecate(function(key, options, fn) {
 	return this.for(key).tapPromise(options, fn);
 }, "HookMap#tapPromise(key,…) is deprecated. Use HookMap#for(key).tapPromise(…) instead.");

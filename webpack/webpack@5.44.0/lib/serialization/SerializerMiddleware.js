@@ -1,102 +1,64 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const memoize = require("../util/memoize");
 
+// 标识
 const LAZY_TARGET = Symbol("lazy serialization target");
 const LAZY_SERIALIZED_VALUE = Symbol("lazy serialization data");
 
-/**
- * @template DeserializedType
- * @template SerializedType
- */
+// 串行器中间件基类
 class SerializerMiddleware {
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @param {DeserializedType} data data
-	 * @param {Object} context context object
-	 * @returns {SerializedType|Promise<SerializedType>} serialized data
-	 */
+	// 序列化
 	serialize(data, context) {
 		const AbstractMethodError = require("../AbstractMethodError");
 		throw new AbstractMethodError();
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @param {SerializedType} data data
-	 * @param {Object} context context object
-	 * @returns {DeserializedType|Promise<DeserializedType>} deserialized data
-	 */
+	// 反序列化
 	deserialize(data, context) {
 		const AbstractMethodError = require("../AbstractMethodError");
 		throw new AbstractMethodError();
 	}
 
-	/**
-	 * @param {any | function(): Promise<any> | any} value contained value or function to value
-	 * @param {SerializerMiddleware<any, any>} target target middleware
-	 * @param {object=} options lazy options
-	 * @param {any=} serializedValue serialized value
-	 * @returns {function(): Promise<any> | any} lazy function
-	 */
+	// 创建 懒函数
 	static createLazy(value, target, options = {}, serializedValue) {
 		if (SerializerMiddleware.isLazy(value, target)) return value;
 		const fn = typeof value === "function" ? value : () => value;
+		// 设置 懒函数目标
 		fn[LAZY_TARGET] = target;
-		/** @type {any} */ (fn).options = options;
+		// 设置 懒函数选项
+		(fn).options = options;
+		// 设置 懒函数序列化值
 		fn[LAZY_SERIALIZED_VALUE] = serializedValue;
 		return fn;
 	}
 
-	/**
-	 * @param {function(): Promise<any> | any} fn lazy function
-	 * @param {SerializerMiddleware<any, any>=} target target middleware
-	 * @returns {boolean} true, when fn is a lazy function (optionally of that target)
-	 */
+	// 是否是懒函数
 	static isLazy(fn, target) {
 		if (typeof fn !== "function") return false;
 		const t = fn[LAZY_TARGET];
 		return target ? t === target : !!t;
 	}
 
-	/**
-	 * @param {function(): Promise<any> | any} fn lazy function
-	 * @returns {object} options
-	 */
+	// 返回 懒函数选项
 	static getLazyOptions(fn) {
 		if (typeof fn !== "function") return undefined;
 		return /** @type {any} */ (fn).options;
 	}
 
-	/**
-	 * @param {function(): Promise<any> | any} fn lazy function
-	 * @returns {any} serialized value
-	 */
+	// 返回 懒函数序列化值
 	static getLazySerializedValue(fn) {
 		if (typeof fn !== "function") return undefined;
 		return fn[LAZY_SERIALIZED_VALUE];
 	}
 
-	/**
-	 * @param {function(): Promise<any> | any} fn lazy function
-	 * @param {any} value serialized value
-	 * @returns {void}
-	 */
+	
+	// 设置 懒函数序列化值
 	static setLazySerializedValue(fn, value) {
 		fn[LAZY_SERIALIZED_VALUE] = value;
 	}
 
-	/**
-	 * @param {function(): Promise<any> | any} lazy lazy function
-	 * @param {function(any): Promise<any> | any} serialize serialize function
-	 * @returns {function(): Promise<any> | any} new lazy
-	 */
+	// 
 	static serializeLazy(lazy, serialize) {
 		const fn = memoize(() => {
 			const r = lazy();
@@ -111,11 +73,7 @@ class SerializerMiddleware {
 		return fn;
 	}
 
-	/**
-	 * @param {function(): Promise<any> | any} lazy lazy function
-	 * @param {function(any): Promise<any> | any} deserialize deserialize function
-	 * @returns {function(): Promise<any> | any} new lazy
-	 */
+	// 
 	static deserializeLazy(lazy, deserialize) {
 		const fn = memoize(() => {
 			const r = lazy();
@@ -130,10 +88,7 @@ class SerializerMiddleware {
 		return fn;
 	}
 
-	/**
-	 * @param {function(): Promise<any> | any} lazy lazy function
-	 * @returns {function(): Promise<any> | any} new lazy
-	 */
+	// 
 	static unMemoizeLazy(lazy) {
 		if (!SerializerMiddleware.isLazy(lazy)) return lazy;
 		const fn = () => {

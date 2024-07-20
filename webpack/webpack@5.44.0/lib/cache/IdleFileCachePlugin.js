@@ -6,7 +6,7 @@ const ProgressPlugin = require("../ProgressPlugin");
 // 缓存构建依赖的 Key 标识
 const BUILD_DEPENDENCIES_KEY = Symbol();
 
-// 空闲时间段文件缓存插件
+// 在空闲时间段文件缓存插件
 // 作用:
 // 当编译器闲置时候，将缓存数据以异步的方式存储到缓存文件中
 class IdleFileCachePlugin {

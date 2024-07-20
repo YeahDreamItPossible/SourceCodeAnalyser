@@ -83,6 +83,7 @@ const readUInt64LE = Buffer.prototype.readBigUInt64LE
  * @param {function(string | false, Buffer[]): Promise<void>} writeFile writes a file
  * @returns {Promise<SerializeResult>} resulting file pointer and promise
  */
+// 
 const serialize = async (middleware, data, name, writeFile) => {
 	/** @type {(Buffer[] | Buffer | SerializeResult | Promise<SerializeResult>)[]} */
 	const processedData = [];
@@ -383,19 +384,16 @@ const deserialize = async (middleware, name, readFile) => {
  * @typedef {true} SerializedType
  * @extends {SerializerMiddleware<DeserializedType, SerializedType>}
  */
+// 文件序列化中间件
+// 作用:
+// 
 class FileMiddleware extends SerializerMiddleware {
-	/**
-	 * @param {IntermediateFileSystem} fs filesystem
-	 */
 	constructor(fs) {
 		super();
+		// 文件系统
 		this.fs = fs;
 	}
-	/**
-	 * @param {DeserializedType} data data
-	 * @param {Object} context context object
-	 * @returns {SerializedType|Promise<SerializedType>} serialized data
-	 */
+	
 	serialize(data, context) {
 		const { filename, extension = "" } = context;
 		return new Promise((resolve, reject) => {

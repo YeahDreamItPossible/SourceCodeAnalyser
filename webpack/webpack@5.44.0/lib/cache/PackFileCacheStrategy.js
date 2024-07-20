@@ -73,21 +73,23 @@ const MIN_CONTENT_SIZE = 1024 * 1024; // 1 MB
 const CONTENT_COUNT_TO_MERGE = 10;
 const MAX_ITEMS_IN_FRESH_PACK = 50000;
 
+// 
 class PackItemInfo {
-	/**
-	 * @param {string} identifier identifier of item
-	 * @param {string | null} etag etag of item
-	 * @param {any} value fresh value of item
-	 */
 	constructor(identifier, etag, value) {
+		// 标识符
 		this.identifier = identifier;
+		// 电子标签
 		this.etag = etag;
+		//
 		this.location = -1;
+		//
 		this.lastAccess = Date.now();
+		// 
 		this.freshValue = value;
 	}
 }
 
+// 
 class Pack {
 	constructor(logger, maxAge) {
 		/** @type {Map<string, PackItemInfo>} */
@@ -103,11 +105,7 @@ class Pack {
 		this.maxAge = maxAge;
 	}
 
-	/**
-	 * @param {string} identifier unique name for the resource
-	 * @param {string | null} etag etag of the resource
-	 * @returns {any} cached content
-	 */
+	// 
 	get(identifier, etag) {
 		const info = this.itemInfo.get(identifier);
 		this.requests.push(identifier);
@@ -895,6 +893,7 @@ class PackFileCacheStrategy {
 		this.storePromise = Promise.resolve();
 	}
 
+	// 
 	_getPack() {
 		if (this.packPromise === undefined) {
 			this.packPromise = this.storePromise.then(() => this._openPack());
@@ -1063,12 +1062,7 @@ class PackFileCacheStrategy {
 			});
 	}
 
-	/**
-	 * @param {string} identifier unique name for the resource
-	 * @param {Etag | null} etag etag of the resource
-	 * @param {any} data cached content
-	 * @returns {Promise<void>} promise
-	 */
+	// 缓存
 	store(identifier, etag, data) {
 		return this._getPack().then(pack => {
 			pack.set(identifier, etag === null ? null : etag.toString(), data);
@@ -1080,6 +1074,7 @@ class PackFileCacheStrategy {
 	 * @param {Etag | null} etag etag of the resource
 	 * @returns {Promise<any>} promise to the cached content
 	 */
+	// 再次存储
 	restore(identifier, etag) {
 		return this._getPack()
 			.then(pack =>
@@ -1095,6 +1090,7 @@ class PackFileCacheStrategy {
 			});
 	}
 
+	// 存储 构建依赖
 	storeBuildDependencies(dependencies) {
 		this.newBuildDependencies.addAll(dependencies);
 	}
@@ -1272,6 +1268,7 @@ class PackFileCacheStrategy {
 			}));
 	}
 
+	// 清空
 	clear() {
 		this.fileSystemInfo.clear();
 		this.buildDependencies.clear();

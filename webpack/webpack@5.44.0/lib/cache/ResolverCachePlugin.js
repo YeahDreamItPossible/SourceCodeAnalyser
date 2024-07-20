@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const LazySet = require("../util/LazySet");
@@ -14,6 +9,7 @@ const makeSerializable = require("../util/makeSerializable");
 /** @typedef {import("../FileSystemInfo")} FileSystemInfo */
 /** @typedef {import("../FileSystemInfo").Snapshot} Snapshot */
 
+// 缓存入口
 class CacheEntry {
 	constructor(result, snapshot) {
 		this.result = result;
@@ -49,11 +45,8 @@ const addAllToSet = (set, otherSet) => {
 	}
 };
 
-/**
- * @param {Object} object an object
- * @param {boolean} excludeContext if true, context is not included in string
- * @returns {string} stringified version
- */
+// 将 对象 按照特定格式转换成 字符串
+// excludeContext = true 则表示要 排除 context 字段
 const objectToString = (object, excludeContext) => {
 	let str = "";
 	for (const key in object) {
@@ -68,13 +61,18 @@ const objectToString = (object, excludeContext) => {
 	return str;
 };
 
+// 路径解析器缓存插件
 class ResolverCachePlugin {
 	apply(compiler) {
 		const cache = compiler.getCache("ResolverCachePlugin");
 		/** @type {FileSystemInfo} */
 		let fileSystemInfo;
+		// 解析请求的快照
+		// Webpack.options.snapshot.resolve
 		let snapshotOptions;
+		// 
 		let realResolves = 0;
+		// 
 		let cachedResolves = 0;
 		let cacheInvalidResolves = 0;
 		let concurrentResolves = 0;
@@ -167,6 +165,7 @@ class ResolverCachePlugin {
 		compiler.resolverFactory.hooks.resolver.intercept({
 			factory(type, hook) {
 				/** @type {Map<string, (function(Error=, Object=): void)[]>} */
+				// Map<String, Fn>
 				const activeRequests = new Map();
 				hook.tap(
 					"ResolverCachePlugin",

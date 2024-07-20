@@ -1,16 +1,19 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
+// 串行器
+// 作用:
+// 依次执行 中间件队列 并以 Promise 的方式返回结果
 class Serializer {
 	constructor(middlewares, context) {
+		// 序列化 中间件
 		this.serializeMiddlewares = middlewares.slice();
+		// 反序列化 中间件
 		this.deserializeMiddlewares = middlewares.slice().reverse();
+		// 上下文
 		this.context = context;
 	}
 
+	// 依次执行 序列化中间件队列 并以 Promise 的方式返回结果
 	serialize(obj, context) {
 		const ctx = { ...context, ...this.context };
 		let current = obj;
@@ -30,6 +33,7 @@ class Serializer {
 		return current;
 	}
 
+	// 依次执行 反序列化中间件队列 并以 Promise 的方式返回结果
 	deserialize(value, context) {
 		const ctx = { ...context, ...this.context };
 		/** @type {any} */

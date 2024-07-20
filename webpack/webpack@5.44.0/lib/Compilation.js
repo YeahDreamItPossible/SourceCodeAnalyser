@@ -1261,12 +1261,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					args,
 					trace
 				};
-				// 空调用
+				// 日志输出
 				if (this.hooks.log.call(name, logEntry) === undefined) {
 					if (logEntry.type === LogType.profileEnd) {
-						// eslint-disable-next-line node/no-unsupported-features/node-builtins
 						if (typeof console.profileEnd === "function") {
-							// eslint-disable-next-line node/no-unsupported-features/node-builtins
 							console.profileEnd(`[${name}] ${logEntry.args[0]}`);
 						}
 					}
@@ -1279,9 +1277,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					}
 					logEntries.push(logEntry);
 					if (logEntry.type === LogType.profile) {
-						// eslint-disable-next-line node/no-unsupported-features/node-builtins
 						if (typeof console.profile === "function") {
-							// eslint-disable-next-line node/no-unsupported-features/node-builtins
 							console.profile(`[${name}] ${logEntry.args[0]}`);
 						}
 					}

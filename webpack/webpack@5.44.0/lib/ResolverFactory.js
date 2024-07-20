@@ -10,6 +10,7 @@ const {
 
 const EMPTY_RESOLVE_OPTIONS = {};
 
+// 
 const convertToResolveOptions = resolveOptionsWithDepType => {
 	const { dependencyType, plugins, ...remaining } = resolveOptionsWithDepType;
 
@@ -37,15 +38,26 @@ const convertToResolveOptions = resolveOptionsWithDepType => {
 	);
 };
 
-// 解析器工厂
+// 路径解析器工厂
+// 作用:
+// 根据 特定的类型 返回 特定的路径解析器
+
+// 路径解析器分类:
+// 标准路径解析器 normal resolver
+// 上下文路径解析器 context resolver
+// 加载器路径解析器 loader resolver
+
+// 路径解析器作用:
+// 将资源路径 转换成 特定的路径
+// 标准路径解析器: 将 模块请求路径 转换成 绝对路径
 module.exports = class ResolverFactory {
 	constructor() {
 		this.hooks = Object.freeze({
-			// HookMap<SyncWaterfallHook<[ResolveOptionsWithDependencyType]>>
+			// 合并 resolve.options 并返回合并后的 resolve.options
 			resolveOptions: new HookMap(
 				() => new SyncWaterfallHook(["resolveOptions"])
 			),
-			// HookMap<SyncHook<[Resolver, ResolveOptions, ResolveOptionsWithDependencyType]>>
+			// 
 			resolver: new HookMap(
 				() => new SyncHook(["resolver", "resolveOptions", "userResolveOptions"])
 			)
@@ -56,7 +68,7 @@ module.exports = class ResolverFactory {
 	}
 
 	/**
-	 * 根据 类型Type 返回对应的 Resovler Resovler
+	 * 根据 类型(Type) 返回对应的路径解析器(Resovler)
 	 * type: context || normal || loader
 	 */ 
 	get(type, resolveOptions = EMPTY_RESOLVE_OPTIONS) {
@@ -89,9 +101,11 @@ module.exports = class ResolverFactory {
 	}
 
 	/**
-	 * 创建 特定类型Type 的 Resolver
-	 * 底层仍然是通过ResolverFactory.createResolver(resolveOptions)
-	 * normal || context || loader
+	 * 创建 特定类型 的 路径解析器
+	 * 底层仍然是通过 ResolverFactory.createResolver(resolveOptions)
+	 * 1. 合并 resolveOptions (hooks.resolveOptions.for(type).call('...'))
+	 * 2. 创建 Resolver
+	 * 3. hooks.resolver.for(type).call('...'))
 	 */
 	_create(type, resolveOptionsWithDepType) {
 		// ResolveOptionsWithDependencyType

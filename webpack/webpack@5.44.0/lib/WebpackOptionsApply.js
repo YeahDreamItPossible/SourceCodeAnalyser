@@ -664,6 +664,7 @@ class WebpackOptionsApply extends OptionsApply {
 					throw new Error(`Unknown cache type ${cacheOptions.type}`);
 			}
 		}
+		// 
 		new ResolverCachePlugin().apply(compiler);
 
 		// options.ignoreWarnings 用户筛选warnings的条件数组
@@ -682,6 +683,7 @@ class WebpackOptionsApply extends OptionsApply {
 		compiler.resolverFactory.hooks.resolveOptions
 			.for("normal")
 			.tap("WebpackOptionsApply", resolveOptions => {
+				// 将 Webpack.options.resolve 选项 与 用户自定义 resolve 选项合并
 				resolveOptions = cleverMerge(options.resolve, resolveOptions);
 				resolveOptions.fileSystem = compiler.inputFileSystem;
 				return resolveOptions;
@@ -690,6 +692,7 @@ class WebpackOptionsApply extends OptionsApply {
 		compiler.resolverFactory.hooks.resolveOptions
 			.for("context")
 			.tap("WebpackOptionsApply", resolveOptions => {
+				// 将 Webpack.options.resolve 选项 与 用户自定义 resolve 选项合并
 				resolveOptions = cleverMerge(options.resolve, resolveOptions);
 				resolveOptions.fileSystem = compiler.inputFileSystem;
 				resolveOptions.resolveToContext = true;
@@ -699,6 +702,7 @@ class WebpackOptionsApply extends OptionsApply {
 		compiler.resolverFactory.hooks.resolveOptions
 			.for("loader")
 			.tap("WebpackOptionsApply", resolveOptions => {
+				// 将 Webpack.options.resolveLoader 选项 与 用户自定义 resolve 选项合并
 				resolveOptions = cleverMerge(options.resolveLoader, resolveOptions);
 				resolveOptions.fileSystem = compiler.inputFileSystem;
 				return resolveOptions;

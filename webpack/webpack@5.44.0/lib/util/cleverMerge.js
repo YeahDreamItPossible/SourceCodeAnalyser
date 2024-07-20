@@ -251,9 +251,12 @@ const getValueType = value => {
  * @param {O} second second object
  * @returns {T & O | T | O} merged object of first and second object
  */
+// 合并对象
 const cleverMerge = (first, second) => {
+	// 当某个值是 undefined 时 直接返回另外的值
 	if (second === undefined) return first;
 	if (first === undefined) return second;
+	// 当某个值不是对象 或者 是 null 时 直接返回当前值
 	if (typeof second !== "object" || second === null) return second;
 	if (typeof first !== "object" || first === null) return first;
 
