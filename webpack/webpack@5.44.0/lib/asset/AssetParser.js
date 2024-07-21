@@ -2,9 +2,11 @@
 
 const Parser = require("../Parser");
 
-// Webpack.options.module.Rule.type = 'asset'
-// Webpack.options.module.Rule.type = 'asset/resource'
-// Webpack.options.module.Rule.type = 'asset/inline'
+// 根据 Webpack.options.module.Rule.type = 'asset' | 'asset/resource' | 'asset/inline' 注册该插件
+// 资源语法分析器
+// 作用:
+// asset/inline   => 将资源作为一个Data URL(Base64编码的URL)直接嵌入到生成的文件中
+// asset/resource => 将 资源文件 复制到输出目录 并返回一个（相对于输出目录的）URL
 class AssetParser extends Parser {
 	constructor(dataUrlCondition) {
 		super();
@@ -19,6 +21,7 @@ class AssetParser extends Parser {
 		state.module.buildInfo.strict = true;
 		state.module.buildMeta.exportsType = "default";
 
+		// module.buildInfo.dataUrl 表示当前模块是否是以 Data URL 的方式被引入
 		if (typeof this.dataUrlCondition === "function") {
 			state.module.buildInfo.dataUrl = this.dataUrlCondition(source, {
 				filename: state.module.matchResource || state.module.resource,

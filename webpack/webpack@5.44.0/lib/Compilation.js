@@ -1261,7 +1261,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					args,
 					trace
 				};
-				// 日志输出
+				// 日志输出(仅输出 profile )
 				if (this.hooks.log.call(name, logEntry) === undefined) {
 					if (logEntry.type === LogType.profileEnd) {
 						if (typeof console.profileEnd === "function") {
@@ -1272,6 +1272,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						logEntries = this.logging.get(name);
 						if (logEntries === undefined) {
 							logEntries = [];
+							// 存储日志信息
 							this.logging.set(name, logEntries);
 						}
 					}

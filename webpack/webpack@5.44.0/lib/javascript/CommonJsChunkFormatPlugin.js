@@ -26,9 +26,10 @@ const {
 // 	var __webpack_exports__ = (__webpack_exec__("./src/index.js"));
 // })();
 
-// 非初始化块时Chunk格式
-// Webpack.options.output.chunkFormat = 'commonjs'
-// 以 commonjs 的方式导出
+// 根据 Webpack.options.output.chunkFormat = 'commonjs' 注册该插件
+// CommonJS中块格式化插件
+// 作用:
+// 以 commonjs 的方式导出非初始化块
 class CommonJsChunkFormatPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

@@ -6,7 +6,8 @@ const StartupChunkDependenciesPlugin = require("../runtime/StartupChunkDependenc
 const ImportScriptsChunkLoadingRuntimeModule = require("./ImportScriptsChunkLoadingRuntimeModule");
 
 // 根据 Webpack.options.output.chunkLoading = 'import-scripts' 注册该插件
-// 利用 Worker importScripts 属性
+// 作用:
+// 在 webworker 中 利用 Worker importScripts 属性来加载非初始化块
 class ImportScriptsChunkLoadingPlugin {
 	apply(compiler) {
 		new StartupChunkDependenciesPlugin({

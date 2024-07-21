@@ -12,9 +12,11 @@ const getEnabledTypes = compiler => {
 	return set;
 };
 
-// 保证 chunk load(块加载) 插件
-// jsonp | import | require | node-async | import-scripts
 // 根据 Webpack.options.output.enabledChunkLoadingTypes 值注册不同的插件
+// jsonp | import | require | node-async | import-scripts
+// 保证块加载插件
+// 作用:
+// 保证 块(chunk) 在不同的环境 以不同的方式加载
 // 在 web 环境中 以 jsonp 的方式加载
 // 在 node 环境中 以 require 同步加载 或者 以 async-node 的方式异步加载
 // 在 webworker 环境中 以 import-scripts 的方式加载

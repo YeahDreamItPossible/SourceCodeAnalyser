@@ -5,6 +5,7 @@ const StartupChunkDependenciesPlugin = require("../runtime/StartupChunkDependenc
 
 // 根据 Webpack.options.output.enabledChunkLoadingTypes = 'require' 
 // 或   Webpack.options.output.enabledChunkLoadingTypes = 'async-node' 时注册插件
+// 作用:
 // 在 node 环境中 以 同步或者异步的方式 加载非初始化块
 class CommonJsChunkLoadingPlugin {
 	constructor(options) {

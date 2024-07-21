@@ -1,6 +1,7 @@
 "use strict";
 
 // TODO:
+// 作用:
 // 
 class AddManagedPathsPlugin {
 	constructor(managedPaths, immutablePaths) {

@@ -14,9 +14,9 @@ const validate = createSchemaValidation(
 	}
 );
 
-// 给 compiler.hooks.compilation 注册事件
-// 给 normalModuleFactory.hooks.createParser 注册事件
-// 给 normalMOduleFactory.hooks.createGenerator 注册事件
+// JSON模块插件
+// 作用:
+// 注册 JSON模块类型的 语法分析器 代码生成器
 class JsonModulesPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

@@ -4,6 +4,9 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const JsonpChunkLoadingRuntimeModule = require("./JsonpChunkLoadingRuntimeModule");
 
 // 根据 Webpack.options.output.enabledChunkLoadingTypes = 'jsonp' 时 注册插件
+// Jsonp块加载插件
+// 作用:
+// 在 web 环境中 以 jsonp 的方式加载非初始化块
 class JsonpChunkLoadingPlugin {
 	apply(compiler) {
 		compiler.hooks.thisCompilation.tap(

@@ -57,10 +57,10 @@ const compilationHooksMap = new WeakMap();
  * 3. 分块中 引导程序的代码生成
  */
 
-// 给 compiler.hooks.compilation 注册事件
-// 给 normalModuleFactory.hooks.createParser 注册事件
-// 给 normalMOduleFactory.hooks.createGenerator 注册事件
-// ...
+// Js模块插件
+// 作用:
+// 1. 注册 Js模块类型的 语法分析器 代码生成器
+// 2. 
 class JavascriptModulesPlugin {
 	// 获取 渲染 钩子
 	static getCompilationHooks(compilation) {

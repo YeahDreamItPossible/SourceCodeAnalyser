@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Sergey Melyukov @smelukov
-*/
-
 "use strict";
 
 const mimeTypes = require("mime-types");
@@ -12,18 +7,6 @@ const Generator = require("../Generator");
 const RuntimeGlobals = require("../RuntimeGlobals");
 const createHash = require("../util/createHash");
 const { makePathsRelative } = require("../util/identifier");
-
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../../declarations/WebpackOptions").AssetGeneratorOptions} AssetGeneratorOptions */
-/** @typedef {import("../../declarations/WebpackOptions").RawPublicPath} RawPublicPath */
-/** @typedef {import("../Compilation")} Compilation */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../Generator").GenerateContext} GenerateContext */
-/** @typedef {import("../Generator").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("../Module")} Module */
-/** @typedef {import("../NormalModule")} NormalModule */
-/** @typedef {import("../RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("../util/Hash")} Hash */
 
 const mergeMaybeArrays = (a, b) => {
 	const set = new Set();
@@ -77,26 +60,24 @@ const mergeRelatedInfo = (a, b) => {
 const JS_TYPES = new Set(["javascript"]);
 const JS_AND_ASSET_TYPES = new Set(["javascript", "asset"]);
 
+// 根据 Webpack.options.module.Rule.type = 'asset' | 'asset/resource' | 'asset/inline' 注册该插件
+// 资源代码生成器
+// 作用:
+// asset/inline   => 将资源作为一个Data URL(Base64编码的URL)直接嵌入到生成的文件中
+// asset/resource => 将 资源文件 复制到输出目录 并返回一个（相对于输出目录的）URL
 class AssetGenerator extends Generator {
-	/**
-	 * @param {AssetGeneratorOptions["dataUrl"]=} dataUrlOptions the options for the data url
-	 * @param {string=} filename override for output.assetModuleFilename
-	 * @param {RawPublicPath=} publicPath override for output.assetModulePublicPath
-	 * @param {boolean=} emit generate output asset
-	 */
 	constructor(dataUrlOptions, filename, publicPath, emit) {
 		super();
+		// 
 		this.dataUrlOptions = dataUrlOptions;
+		// 
 		this.filename = filename;
+		// 
 		this.publicPath = publicPath;
+		// 
 		this.emit = emit;
 	}
 
-	/**
-	 * @param {NormalModule} module module for which the code should be generated
-	 * @param {GenerateContext} generateContext context for generate
-	 * @returns {Source} generated code
-	 */
 	generate(
 		module,
 		{ runtime, chunkGraph, runtimeTemplate, runtimeRequirements, type, getData }
@@ -108,6 +89,7 @@ class AssetGenerator extends Generator {
 				runtimeRequirements.add(RuntimeGlobals.module);
 
 				const originalSource = module.originalSource();
+				// 当以 Data URL 的方式引入当前模块时
 				if (module.buildInfo.dataUrl) {
 					let encodedSource;
 					if (typeof this.dataUrlOptions === "function") {
@@ -178,6 +160,8 @@ class AssetGenerator extends Generator {
 							encoding ? `;${encoding}` : ""
 						},${encodedContent}`;
 					}
+
+					// 生成 Data URL
 					return new RawSource(
 						`${RuntimeGlobals.module}.exports = ${JSON.stringify(
 							encodedSource
@@ -250,6 +234,7 @@ class AssetGenerator extends Generator {
 						data.set("assetInfo", assetInfo);
 					}
 
+					// 引入 资源URL
 					return new RawSource(
 						`${
 							RuntimeGlobals.module
@@ -260,10 +245,6 @@ class AssetGenerator extends Generator {
 		}
 	}
 
-	/**
-	 * @param {NormalModule} module fresh module
-	 * @returns {Set<string>} available types (do not mutate)
-	 */
 	getTypes(module) {
 		if ((module.buildInfo && module.buildInfo.dataUrl) || this.emit === false) {
 			return JS_TYPES;
@@ -272,11 +253,6 @@ class AssetGenerator extends Generator {
 		}
 	}
 
-	/**
-	 * @param {NormalModule} module the module
-	 * @param {string=} type source type
-	 * @returns {number} estimate size of the module
-	 */
 	getSize(module, type) {
 		switch (type) {
 			case "asset": {
@@ -309,10 +285,6 @@ class AssetGenerator extends Generator {
 		}
 	}
 
-	/**
-	 * @param {Hash} hash hash that will be modified
-	 * @param {UpdateHashContext} updateHashContext context for updating hash
-	 */
 	updateHash(hash, { module }) {
 		hash.update(module.buildInfo.dataUrl ? "data-url" : "resource");
 	}

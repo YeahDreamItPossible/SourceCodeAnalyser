@@ -4,20 +4,14 @@ const { RawSource } = require("webpack-sources");
 const Generator = require("../Generator");
 const RuntimeGlobals = require("../RuntimeGlobals");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../Generator").GenerateContext} GenerateContext */
-/** @typedef {import("../NormalModule")} NormalModule */
-
 const TYPES = new Set(["javascript"]);
 
-// 导出资源的源代码 通过raw-loader实现
-// Webpack.options.module.Rule.type = 'asset/source' 
+// 根据 Webpack.options.module.Rule.type = 'asset/source' 注册该插件
+// 源码资源代码生成器
+// 作用:
+// 导出资源的源代码(即: module.exprots = JSON.stringify('...') )
+// webpack5之前通过raw-loader实现
 class AssetSourceGenerator extends Generator {
-	/**
-	 * @param {NormalModule} module module for which the code should be generated
-	 * @param {GenerateContext} generateContext context for generate
-	 * @returns {Source} generated code
-	 */
 	generate(module, { chunkGraph, runtimeTemplate, runtimeRequirements }) {
 		runtimeRequirements.add(RuntimeGlobals.module);
 

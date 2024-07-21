@@ -180,14 +180,17 @@ const createTrace = (fs, outputPath) => {
 	};
 };
 
+// 标识
 const pluginName = "ProfilingPlugin";
 
-// 生成 Chrome 配置文件
-
+// 谷歌性能分析插件
+// 作用:
+// 生成 Chrome 性能分析文件 用于分析构建性能
 class ProfilingPlugin {
 	constructor(options = {}) {
 		validate(options);
-		// 输出文件
+		// 输出文件名
+		// Webpack.options.outputPath
 		this.outputPath = options.outputPath || "events.json";
 	}
 

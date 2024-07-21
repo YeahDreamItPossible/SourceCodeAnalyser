@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra and Zackary Jackson @ScriptedAlchemy
-*/
-
 "use strict";
 
 const isValidExternalsType = require("../../schemas/plugins/container/ExternalsType.check.js");
@@ -23,6 +18,8 @@ const validate = createSchemaValidation(
 );
 
 // 模块联邦插件
+// 作用:
+// 运训
 class ModuleFederationPlugin {
 	constructor(options) {
 		validate(options);

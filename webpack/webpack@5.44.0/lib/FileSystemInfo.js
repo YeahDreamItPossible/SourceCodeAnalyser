@@ -777,13 +777,6 @@ const toExistence = entry => {
 // 
 // 以 缓存的方式 来访问有关文件系统的信息
 class FileSystemInfo {
-	/**
-	 * @param {InputFileSystem} fs file system
-	 * @param {Object} options options
-	 * @param {Iterable<string>=} options.managedPaths paths that are only managed by a package manager
-	 * @param {Iterable<string>=} options.immutablePaths paths that are immutable
-	 * @param {Logger=} options.logger logger used to log invalid snapshots
-	 */
 	constructor(fs, { managedPaths = [], immutablePaths = [], logger } = {}) {
 		this.fs = fs;
 		this.logger = logger;

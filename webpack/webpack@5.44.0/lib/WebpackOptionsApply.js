@@ -313,7 +313,7 @@ class WebpackOptionsApply extends OptionsApply {
 
 		// 运行时插件
 		new RuntimePlugin().apply(compiler);
-		// 异步模块插件
+		// 推断异步模块插件
 		new InferAsyncModulesPlugin().apply(compiler);
 
 		new DataUriPlugin().apply(compiler);

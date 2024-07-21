@@ -1,20 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const InitFragment = require("../InitFragment");
 const RuntimeGlobals = require("../RuntimeGlobals");
 const Template = require("../Template");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../Generator").GenerateContext} GenerateContext */
-
-/**
- * @typedef {GenerateContext} Context
- */
+// Await依赖初始化代码片段
+// 作用:
+// 
 class AwaitDependenciesInitFragment extends InitFragment {
 	/**
 	 * @param {Set<string>} promises the promises that should be awaited
@@ -37,10 +29,6 @@ class AwaitDependenciesInitFragment extends InitFragment {
 		return new AwaitDependenciesInitFragment(promises);
 	}
 
-	/**
-	 * @param {Context} context context
-	 * @returns {string|Source} the source code that will be included as initialization code
-	 */
 	getContent({ runtimeRequirements }) {
 		runtimeRequirements.add(RuntimeGlobals.module);
 		const promises = this.promises;

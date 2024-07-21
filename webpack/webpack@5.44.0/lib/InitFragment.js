@@ -2,7 +2,7 @@
 
 const { ConcatSource } = require("webpack-sources");
 
-// 
+// 提取代码片段和索引
 const extractFragmentIndex = (fragment, index) => [fragment, index];
 
 // 排序
@@ -18,7 +18,8 @@ const sortFragmentWithIndex = ([a, i], [b, j]) => {
 };
 
 // 初始化代码片段
-// 作用: 将缓存的 初始化代码片段 按照 一定的排序规则 添加到源代码中
+// 作用: 
+// 将缓存的 初始化代码片段 按照 一定的排序规则 添加到源代码中
 class InitFragment {
 	constructor(content, stage, position, key, endContent) {
 		// 内容
@@ -48,6 +49,7 @@ class InitFragment {
 		if (initFragments.length > 0) {
 			// Sort fragments by position. If 2 fragments have the same position,
 			// use their index.
+			// 排序
 			const sortedFragments = initFragments
 				.map(extractFragmentIndex)
 				.sort(sortFragmentWithIndex);
@@ -80,6 +82,7 @@ class InitFragment {
 				keyedFragments.set(fragment.key || Symbol(), fragment);
 			}
 
+			// 将 代码片段 融合进 Source 中
 			const concatSource = new ConcatSource();
 			const endContents = [];
 			for (let fragment of keyedFragments.values()) {
@@ -97,6 +100,8 @@ class InitFragment {
 			for (const content of endContents.reverse()) {
 				concatSource.add(content);
 			}
+
+			// 返回 融合后的 Source
 			return concatSource;
 		} else {
 			return source;

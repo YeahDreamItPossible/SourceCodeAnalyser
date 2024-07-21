@@ -202,10 +202,13 @@ class Compiler {
 		// 
 		// Webpack.options.snap.immutablePaths
 		this.immutablePaths = new Set();
+		// 
 		// Set<string>
 		this.modifiedFiles = undefined;
+		// 
 		// Set<string>
 		this.removedFiles = undefined;
+		// 
 		// Map<string, FileSystemInfoEntry | "ignore" | null>
 		this.fileTimestamps = undefined;
 		// Map<string, FileSystemInfoEntry | "ignore" | null>
