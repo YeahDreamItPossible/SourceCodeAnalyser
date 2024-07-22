@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -12,6 +7,8 @@ const Template = require("../Template");
 /** @typedef {import("./RemoteModule")} RemoteModule */
 
 // 远程运行时模块
+// 作用:
+// 
 class RemoteRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("remotes loading");

@@ -19,6 +19,9 @@ const validate = createSchemaValidation(
 const PLUGIN_NAME = "ContainerPlugin";
 
 // 容器插件
+// 作用:
+// 新增 容器入口 并将此次编译结果作为单独的容器 供其他容器使用
+// 即: 新增编译入口 并将当前编译的结果 作为一个单独的应用 供别的应用使用
 class ContainerPlugin {
 	constructor(options) {
 		validate(options);

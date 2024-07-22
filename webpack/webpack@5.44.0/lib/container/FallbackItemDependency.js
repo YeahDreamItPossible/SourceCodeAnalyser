@@ -4,6 +4,8 @@ const ModuleDependency = require("../dependencies/ModuleDependency");
 const makeSerializable = require("../util/makeSerializable");
 
 // 回退项依赖
+// 作用:
+// 
 class FallbackItemDependency extends ModuleDependency {
 	constructor(request) {
 		super(request);

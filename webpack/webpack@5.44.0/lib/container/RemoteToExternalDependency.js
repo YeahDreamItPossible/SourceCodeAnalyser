@@ -4,6 +4,8 @@ const ModuleDependency = require("../dependencies/ModuleDependency");
 const makeSerializable = require("../util/makeSerializable");
 
 // 远程 外部扩展 依赖
+// 作用:
+// 
 class RemoteToExternalDependency extends ModuleDependency {
 	constructor(request) {
 		super(request);

@@ -23,8 +23,11 @@ const RemoteToExternalDependency = require("./RemoteToExternalDependency");
 
 const TYPES = new Set(["remote", "share-init"]);
 const RUNTIME_REQUIREMENTS = new Set([RuntimeGlobals.module]);
+
 // 实例: import module from 'remote_app/MyComponent'
 // 远程模块
+// 作用:
+// 
 class RemoteModule extends Module {
 	/**
 	 * @param {string} request request string

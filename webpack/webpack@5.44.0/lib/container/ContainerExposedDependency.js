@@ -1,13 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra, Zackary Jackson @ScriptedAlchemy, Marais Rossouw @maraisr
-*/
-
 "use strict";
 
 const ModuleDependency = require("../dependencies/ModuleDependency");
 const makeSerializable = require("../util/makeSerializable");
 
+// 容器导出依赖
+// 作用:
+// 
 class ContainerExposedDependency extends ModuleDependency {
 	/**
 	 * @param {string} exposedName public name

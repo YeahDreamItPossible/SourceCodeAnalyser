@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra and Zackary Jackson @ScriptedAlchemy
-*/
-
 "use strict";
 
 const { parseOptions } = require("../container/options");
@@ -18,7 +13,9 @@ const { isRequiredVersion } = require("./utils");
 /** @typedef {import("../../declarations/plugins/sharing/SharePlugin").SharedConfig} SharedConfig */
 /** @typedef {import("../Compiler")} Compiler */
 
-// 工厂插件
+// 共享插件
+// 作用:
+// 
 class SharePlugin {
 	/**
 	 * @param {SharePluginOptions} options options

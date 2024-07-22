@@ -1,23 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra, Zackary Jackson @ScriptedAlchemy, Marais Rossouw @maraisr
-*/
-
 "use strict";
 
 const ModuleFactory = require("../ModuleFactory");
 const ContainerEntryModule = require("./ContainerEntryModule");
 
-/** @typedef {import("../ModuleFactory").ModuleFactoryCreateData} ModuleFactoryCreateData */
-/** @typedef {import("../ModuleFactory").ModuleFactoryResult} ModuleFactoryResult */
-/** @typedef {import("./ContainerEntryDependency")} ContainerEntryDependency */
-
+// 容器入口模块工厂
+// 作用:
+// 创建 容器入口模块
 module.exports = class ContainerEntryModuleFactory extends ModuleFactory {
-	/**
-	 * @param {ModuleFactoryCreateData} data data object
-	 * @param {function(Error=, ModuleFactoryResult=): void} callback callback
-	 * @returns {void}
-	 */
 	create({ dependencies: [dependency] }, callback) {
 		const dep = /** @type {ContainerEntryDependency} */ (dependency);
 		callback(null, {

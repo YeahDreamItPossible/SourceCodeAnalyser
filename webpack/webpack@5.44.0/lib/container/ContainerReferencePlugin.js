@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra and Zackary Jackson @ScriptedAlchemy
-*/
-
 "use strict";
 
 const ExternalsPlugin = require("../ExternalsPlugin");
@@ -32,7 +27,9 @@ const validate = createSchemaValidation(
 
 const slashCode = "/".charCodeAt(0);
 
-// 
+// 容器关联插件
+// 作用:
+// 在 模块联邦 中
 class ContainerReferencePlugin {
 	constructor(options) {
 		validate(options);

@@ -82,6 +82,8 @@ const getEnabledTypes = compiler => {
 // this | window | global
 // commonjs | commonjs2 | module | amd | amd-require | umd | umd2
 // system | json | commonjs-module
+// 作用:
+// 
 class EnableLibraryPlugin {
 	constructor(type) {
 		this.type = type;

@@ -6,7 +6,6 @@ const createSchemaValidation = require("../util/create-schema-validation");
 const ContainerPlugin = require("./ContainerPlugin");
 const ContainerReferencePlugin = require("./ContainerReferencePlugin");
 
-
 // 验证 ModuleFederation options 是否合法
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/container/ModuleFederationPlugin.check.js"),
@@ -19,7 +18,8 @@ const validate = createSchemaValidation(
 
 // 模块联邦插件
 // 作用:
-// 运训
+// 1. 允许将 满足匹配要求的某些模块 编译成单独的应用 供其他应用加载使用
+// 2. 允许从 远程应用 中加载远程模块 直接使用
 class ModuleFederationPlugin {
 	constructor(options) {
 		validate(options);
@@ -29,6 +29,7 @@ class ModuleFederationPlugin {
 	apply(compiler) {
 		const { _options: options } = this;
 		const library = options.library || { type: "var", name: options.name };
+		// 远程库类型
 		const remoteType =
 			options.remoteType ||
 			(options.library && isValidExternalsType(options.library.type)

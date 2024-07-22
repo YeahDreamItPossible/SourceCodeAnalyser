@@ -4,6 +4,8 @@ const Dependency = require("../Dependency");
 const makeSerializable = require("../util/makeSerializable");
 
 // 容器入口依赖
+// 作用:
+// 容器 编译入口
 class ContainerEntryDependency extends Dependency {
 	constructor(name, exposes, shareScope) {
 		super();

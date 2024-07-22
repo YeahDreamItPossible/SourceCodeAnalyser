@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra, Zackary Jackson @ScriptedAlchemy, Marais Rossouw @maraisr
-*/
-
 "use strict";
 
 const { OriginalSource, RawSource } = require("webpack-sources");
@@ -13,21 +8,6 @@ const Template = require("../Template");
 const makeSerializable = require("../util/makeSerializable");
 const ContainerExposedDependency = require("./ContainerExposedDependency");
 
-/** @typedef {import("../../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("../ChunkGraph")} ChunkGraph */
-/** @typedef {import("../ChunkGroup")} ChunkGroup */
-/** @typedef {import("../Compilation")} Compilation */
-/** @typedef {import("../Module").CodeGenerationContext} CodeGenerationContext */
-/** @typedef {import("../Module").CodeGenerationResult} CodeGenerationResult */
-/** @typedef {import("../Module").LibIdentOptions} LibIdentOptions */
-/** @typedef {import("../Module").NeedBuildContext} NeedBuildContext */
-/** @typedef {import("../RequestShortener")} RequestShortener */
-/** @typedef {import("../ResolverFactory").ResolverWithOptions} ResolverWithOptions */
-/** @typedef {import("../WebpackError")} WebpackError */
-/** @typedef {import("../util/Hash")} Hash */
-/** @typedef {import("../util/fs").InputFileSystem} InputFileSystem */
-/** @typedef {import("./ContainerEntryDependency")} ContainerEntryDependency */
-
 /**
  * @typedef {Object} ExposeOptions
  * @property {string[]} import requests to exposed modules (last one is exported)
@@ -36,6 +16,9 @@ const ContainerExposedDependency = require("./ContainerExposedDependency");
 
 const SOURCE_TYPES = new Set(["javascript"]);
 
+// 容器入口模块
+// 作用:
+// 
 class ContainerEntryModule extends Module {
 	/**
 	 * @param {string} name container entry name

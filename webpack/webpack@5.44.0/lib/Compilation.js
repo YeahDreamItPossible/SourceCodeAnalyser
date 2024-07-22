@@ -4204,11 +4204,13 @@ This prevents using hashes of each other and should be avoided.`);
 		return { path: newPath, info: assetInfo };
 	}
 
-	// 通过options.ignoreWarnings 筛选过滤后的warnings
+	// 返回编译过程中出现的警告
+	// 通过 Webpack.options.ignoreWarnings 筛选 返回过滤后的 warnings
 	getWarnings() {
 		return this.hooks.processWarnings.call(this.warnings);
 	}
 
+	// 返回编译过程中出现的错误
 	getErrors() {
 		return this.hooks.processErrors.call(this.errors);
 	}

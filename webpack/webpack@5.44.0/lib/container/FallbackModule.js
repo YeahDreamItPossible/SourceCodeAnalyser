@@ -25,6 +25,9 @@ const FallbackItemDependency = require("./FallbackItemDependency");
 const TYPES = new Set(["javascript"]);
 const RUNTIME_REQUIREMENTS = new Set([RuntimeGlobals.module]);
 
+// 回退模块
+// 作用:
+// 
 class FallbackModule extends Module {
 	/**
 	 * @param {string[]} requests list of requests to choose one

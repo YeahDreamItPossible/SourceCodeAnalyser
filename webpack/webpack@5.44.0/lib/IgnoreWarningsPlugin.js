@@ -1,6 +1,8 @@
 "use strict";
 
-// 根据 特定的匹配规则 来忽视webpack警告
+// 忽视警告插件
+// 作用:
+// 根据 自定义的匹配规则 来忽视编译过程中出现的 webpack 警告
 class IgnoreWarningsPlugin {
 	constructor(ignoreWarnings) {
 		// Webpack.options.ignoreWarnings

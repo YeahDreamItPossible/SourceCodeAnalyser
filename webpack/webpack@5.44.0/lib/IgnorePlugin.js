@@ -13,6 +13,7 @@ const validate = createSchemaValidation(
 );
 
 // 忽视插件
+// 作用:
 // 如果 NormalModuleFactory | ContextModuleFactory 在 beforeResolve 时
 // 如果 满足 匹配规则 则会跳过构建
 class IgnorePlugin {

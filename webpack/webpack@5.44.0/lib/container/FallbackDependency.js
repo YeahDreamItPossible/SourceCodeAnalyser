@@ -4,6 +4,8 @@ const Dependency = require("../Dependency");
 const makeSerializable = require("../util/makeSerializable");
 
 // 回退依赖
+// 作用:
+// 
 class FallbackDependency extends Dependency {
 	constructor(requests) {
 		super();
