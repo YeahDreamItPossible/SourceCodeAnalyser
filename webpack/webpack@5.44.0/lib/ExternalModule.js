@@ -355,8 +355,9 @@ const getSourceForDefaultCase = (optional, request, runtimeTemplate) => {
 };
 
 // 外部扩展模块
+// 作用:
 // 与 Webpack.options.externals 和 Webpack.options.externalsType 相关
-// 主要是从生成的 bundle 中排除依赖
+// 根据 自定义的外部扩展模块 构建类型 生成对应的构建代码
 class ExternalModule extends Module {
 	constructor(request, type, userRequest) {
 		super("javascript/dynamic", null);
@@ -403,6 +404,7 @@ class ExternalModule extends Module {
 		return "external " + JSON.stringify(this.request);
 	}
 
+	// 是否需要构建
 	needBuild(context, callback) {
 		return callback(null, !this.buildMeta);
 	}
@@ -566,10 +568,7 @@ class ExternalModule extends Module {
 		}
 	}
 
-	/**
-	 * @param {CodeGenerationContext} context context for code generation
-	 * @returns {CodeGenerationResult} result
-	 */
+	// 代码生成
 	codeGeneration({
 		runtimeTemplate,
 		moduleGraph,

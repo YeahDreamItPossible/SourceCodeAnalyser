@@ -32,16 +32,10 @@ class ContainerEntryModule extends Module {
 		this._shareScope = shareScope;
 	}
 
-	/**
-	 * @returns {Set<string>} types available (do not mutate)
-	 */
 	getSourceTypes() {
 		return SOURCE_TYPES;
 	}
 
-	/**
-	 * @returns {string} a unique identifier of the module
-	 */
 	identifier() {
 		return `container entry (${this._shareScope}) ${JSON.stringify(
 			this._exposes
@@ -64,11 +58,7 @@ class ContainerEntryModule extends Module {
 		return `webpack/container/entry/${this._name}`;
 	}
 
-	/**
-	 * @param {NeedBuildContext} context context info
-	 * @param {function(WebpackError=, boolean=): void} callback callback function, returns true, if the module needs a rebuild
-	 * @returns {void}
-	 */
+	// 是否需要构建
 	needBuild(context, callback) {
 		return callback(null, !this.buildMeta);
 	}
@@ -81,6 +71,7 @@ class ContainerEntryModule extends Module {
 	 * @param {function(WebpackError=): void} callback callback function
 	 * @returns {void}
 	 */
+	// 开始构建
 	build(options, compilation, resolver, fs, callback) {
 		this.buildMeta = {};
 		this.buildInfo = {
@@ -114,10 +105,7 @@ class ContainerEntryModule extends Module {
 		callback();
 	}
 
-	/**
-	 * @param {CodeGenerationContext} context context for code generation
-	 * @returns {CodeGenerationResult} result
-	 */
+	// 代码生成
 	codeGeneration({ moduleGraph, chunkGraph, runtimeTemplate }) {
 		const sources = new Map();
 		const runtimeRequirements = new Set([

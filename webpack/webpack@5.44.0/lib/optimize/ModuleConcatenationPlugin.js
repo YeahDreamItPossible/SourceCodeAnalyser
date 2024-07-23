@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const asyncLib = require("neo-async");
@@ -44,10 +39,23 @@ const formatBailoutReason = msg => {
 	return "ModuleConcatenation bailout: " + msg;
 };
 
-// 告诉 webpack 在模块图中查找可以安全连接到单个模块的片段。
-// 此优化首先需要 optimization.providedExports 与 optimization.usedExports 设置为启用。 
+/**
+ * 摇树优化(Tree Shaking):
+ * 依赖于 ES2015 模块语法的 静态结构 特性，移除 JavaScript 上下文中的死代码
+ */
+
+/**
+ * 死代码(dead code):
+ * 是指程序中一段已经不会被执行的代码，通常是因为重构、优化或者逻辑错误导致的。
+ */
+
+// 根据 Webpack.options.optimization.concatenateModules = true 注册该插件
 // 默认情况下，optimization.concatenateModules 在 production 模式 下启用，而在其它情况下被禁用
-// 根据 Webpack.options.optimization.concatenateModules 注册该插件
+// 此优化首先需要 optimization.providedExports 与 optimization.usedExports 设置为启用。 
+// 模块链接插件
+// 作用:
+// Tree Shaking
+// 告诉 webpack 在模块图中查找可以安全连接到单个模块的片段。
 class ModuleConcatenationPlugin {
 	constructor(options) {
 		if (typeof options !== "object") options = {};

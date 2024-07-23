@@ -4,11 +4,9 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
-/** @typedef {import("./RemoteModule")} RemoteModule */
-
 // 远程运行时模块
 // 作用:
-// 
+// 生成 引用远程模块的 运行时代码
 class RemoteRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("remotes loading");

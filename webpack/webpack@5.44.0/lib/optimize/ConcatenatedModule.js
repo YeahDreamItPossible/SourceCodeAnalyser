@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const eslintScope = require("eslint-scope");
@@ -641,6 +636,9 @@ const getPathInAst = (ast, node) => {
 
 const TYPES = new Set(["javascript"]);
 
+// 连接模块
+// 作用:
+// 
 class ConcatenatedModule extends Module {
 	/**
 	 * @param {Module} rootModule the root module of the concatenation
@@ -706,9 +704,6 @@ class ConcatenatedModule extends Module {
 		return Array.from(this._modules);
 	}
 
-	/**
-	 * @returns {string} a unique identifier of the module
-	 */
 	identifier() {
 		return this._identifier;
 	}

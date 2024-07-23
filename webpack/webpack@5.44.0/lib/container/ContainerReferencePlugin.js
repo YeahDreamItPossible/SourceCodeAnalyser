@@ -15,6 +15,7 @@ const { parseOptions } = require("./options");
 /** @typedef {import("../../declarations/plugins/container/ContainerReferencePlugin").RemotesConfig} RemotesConfig */
 /** @typedef {import("../Compiler")} Compiler */
 
+// 验证 ContainerReferencePlugin.options 合法性
 const validate = createSchemaValidation(
 	require("../../schemas/plugins/container/ContainerReferencePlugin.check.js"),
 	() =>
@@ -27,14 +28,15 @@ const validate = createSchemaValidation(
 
 const slashCode = "/".charCodeAt(0);
 
-// 容器关联插件
+// 容器引用插件
 // 作用:
-// 在 模块联邦 中
+// 将 特定的容器引用 添加到作为 外部扩展的容器 中 并允许从这些远程容器中加载远程模块
 class ContainerReferencePlugin {
 	constructor(options) {
 		validate(options);
-
+		// 远程容器类型
 		this._remoteType = options.remoteType;
+		// 远程容器引用
 		this._remotes = parseOptions(
 			options.remotes,
 			item => ({
@@ -66,6 +68,7 @@ class ContainerReferencePlugin {
 			}
 		}
 
+		// 外部扩展
 		new ExternalsPlugin(remoteType, remoteExternals).apply(compiler);
 
 		compiler.hooks.compilation.tap(

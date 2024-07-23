@@ -3,9 +3,11 @@
 const asyncLib = require("neo-async");
 const Queue = require("./util/Queue");
 
+// 根据 Webpack.options.optimization.providedExports = true 注册该插件
+// 标记依赖导出插件
+// 作用:
 // 告知 webpack 去确定那些由模块提供的导出内容，为 export * from ... 生成更多高效的代码。
 // 默认 optimization.providedExports 会被启用。
-// 根据 Webpack.options.optimization.providedExports 注册该插件
 class FlagDependencyExportsPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(

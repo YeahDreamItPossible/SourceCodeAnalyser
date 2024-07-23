@@ -3138,7 +3138,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			new Set([RuntimeGlobals.requireScope])
 		);
 
-		// 运行时模块不要 ids
+		// 运行时模块不需要 ids
 		// runtime modules don't need ids
 		chunkGraph.setModuleId(module, "");
 

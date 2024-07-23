@@ -5,7 +5,7 @@ const makeSerializable = require("../util/makeSerializable");
 
 // 容器入口依赖
 // 作用:
-// 容器 编译入口
+// 容器入口依赖 存储着 当前容器编译 的入口 和 导出
 class ContainerEntryDependency extends Dependency {
 	constructor(name, exposes, shareScope) {
 		super();

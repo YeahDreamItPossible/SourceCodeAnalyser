@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const TupleSet = require("./TupleSet");
@@ -10,6 +5,7 @@ const TupleSet = require("./TupleSet");
 /**
  * @template {any[]} T
  */
+// 元组队列
 class TupleQueue {
 	/**
 	 * @param {Iterable<T>=} items The initial elements.

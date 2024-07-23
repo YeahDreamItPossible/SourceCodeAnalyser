@@ -31,11 +31,16 @@ const resolveLayer = (obj, layer) => {
 	return result;
 };
 
-// 外部扩展模块插件
+// 外部扩展模块工厂插件
+// 作用:
+// 给 normalModuleFactory.hooks.factorize 注册事件
+// 当依赖请求路径 满足 外部扩展依赖匹配规则时 返回 外部扩展模块(ExternalModule) 实例
 class ExternalModuleFactoryPlugin {
 	constructor(type, externals) {
+		// 外部依赖的构建类型
 		// Webpack.options.externalsType
 		this.type = type;
+		// 外部依赖
 		// Webpack.options.externals
 		this.externals = externals;
 	}
@@ -101,13 +106,13 @@ class ExternalModuleFactoryPlugin {
 				};
 
 				const handleExternals = (externals, callback) => {
-					// Webpack.options.externals = 'String'
+					// Webpack.options.externals = String
 					if (typeof externals === "string") {
 						if (externals === dependency.request) {
 							return handleExternal(dependency.request, undefined, callback);
 						}
 					} 
-					// Webpack.options.externals = 'Array'
+					// Webpack.options.externals = Array
 					else if (Array.isArray(externals)) {
 						let i = 0;
 						const next = () => {
@@ -135,13 +140,13 @@ class ExternalModuleFactoryPlugin {
 						next();
 						return;
 					} 
-					// Webpack.options.externals = 'RegExp'
+					// Webpack.options.externals = RegExp
 					else if (externals instanceof RegExp) {
 						if (externals.test(dependency.request)) {
 							return handleExternal(dependency.request, undefined, callback);
 						}
 					} 
-					// Webpack.options.externals = 'Function'
+					// Webpack.options.externals = Function
 					else if (typeof externals === "function") {
 						const cb = (err, value, type) => {
 							if (err) return callback(err);
