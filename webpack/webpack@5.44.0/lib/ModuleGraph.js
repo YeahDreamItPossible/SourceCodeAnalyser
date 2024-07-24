@@ -54,23 +54,27 @@ const getConnectionsByOriginModule = set => {
 
 
 /**
- * 描述模块间的引用关系
- * 当前Module 与 被它引用的子Modules
- * 当前Module 与 引用它的父Modules
+ * 模块图
+ * 作用:
+ * 以 模块 为核心 描述模块间的引用关系
+ * 1. 当前Module 与 被它引用的 子Modules
+ * 2. 当前Module 与 引用它的 父Modules
  */
 class ModuleGraphModule {
 	constructor() {
-		// 存放 ModuleGraphConnection
+		// 描述 当前Module 与 引用当前Module的 父Module 的引用关系
 		// 引用 当前Module 的 ModuleGraphConnection
+		// Set<ModuleGraphConnection>
 		this.incomingConnections = new SortableSet();
-		// 存放 ModuleGraphConnection
+		// 描述 当前Module 与 当前Module引用的 子Module 的引用关系
 		// 当前Module 引用的 ModuleGraphConnection
+		// Set<ModuleGraphConnection>
 		this.outgoingConnections = undefined;
 		// 父模块
 		// 当前Module 是由哪些模块引入的 称引入当前模块为父模块(issuer)
 		this.issuer = undefined;
-		// TODO:
-		/** @type {(string | OptimizationBailoutFunction)[]} */
+		// 该模块中副作用信息
+		// Array<String | Fn>
 		this.optimizationBailout = [];
 		// 导出信息
 		// exports<ExportsInfo>
@@ -95,8 +99,10 @@ class ModuleGraphModule {
  */
 class ModuleGraph {
 	constructor() {
+		// 当前依赖 与 引用当前依赖的模块 的引用关系
 		// Map<Dependency, ModuleGraphConnection>
 		this._dependencyMap = new Map();
+		// 当前模块 与 引用当前模块的模块 的引用关系
 		// Map<Module, ModuleGraphModule>
 		this._moduleMap = new Map();
 		// 全局搜索未发现使用
@@ -106,6 +112,7 @@ class ModuleGraph {
 		// Map<any, Object>
 		this._metaMap = new Map();
 
+		// 缓存
 		// Caching
 		this._cacheModuleGraphModuleKey1 = undefined;
 		this._cacheModuleGraphModuleValue1 = undefined;
@@ -398,23 +405,23 @@ class ModuleGraph {
 		mgm.profile = profile;
 	}
 
-	// 设置 ModuleGraphModule.issuer
+	// 返回 ModuleGraphModule.issuer
 	getIssuer(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.issuer;
 	}
 
-	// 返回 ModuleGraphModule.issuer
+	// 设置 ModuleGraphModule.issuer
 	setIssuer(module, issuer) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.issuer = issuer;
 	}
 
-	// 设置 ModuleGraphModule.issuer
+	// 首次设置 ModuleGraphModule.issuer
 	setIssuerIfUnset(module, issuer) {
 		// 根据 Module 找到对应的 ModuleGraphModule
 		const mgm = this._getModuleGraphModule(module);
-		// 设置 ModuleGraphModule.issuer
+		// 如果 ModuleGraphModule.issuer 之前未设置 则首次设置
 		if (mgm.issuer === undefined) mgm.issuer = issuer;
 	}
 
@@ -546,7 +553,7 @@ class ModuleGraph {
 		return false;
 	}
 
-	// 当前 ModuModuleGraphModulele 是否是异步
+	// 当前 ModuleGraphModule 是否是异步
 	isAsync(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.async;

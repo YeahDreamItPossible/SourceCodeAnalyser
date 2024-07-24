@@ -1,8 +1,6 @@
 "use strict";
 
-/**
- * @template {any[]} T
- */
+// 元组Set
 class TupleSet {
 	constructor(init) {
 		this._map = new Map();

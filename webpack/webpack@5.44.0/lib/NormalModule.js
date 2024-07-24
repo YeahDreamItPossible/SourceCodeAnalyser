@@ -886,11 +886,11 @@ class NormalModule extends Module {
 		this.buildInfo = {
 			cacheable: false, // 表示当前 Module 能否被缓存
 			parsed: true, // 表示当前 Module 已经被语法分析过
-			fileDependencies: undefined, // 
-			contextDependencies: undefined, // 
-			missingDependencies: undefined, //
-			buildDependencies: undefined, //
-			valueDependencies: undefined, //
+			fileDependencies: undefined, // 文件依赖
+			contextDependencies: undefined, // 上下文依赖
+			missingDependencies: undefined, // 缺失的依赖集合
+			buildDependencies: undefined, // 构建依赖
+			valueDependencies: undefined, // 值依赖(如: 常量)
 			hash: undefined, // 对 source 进行hash
 			assets: undefined, // 
 			assetsInfo: undefined //
@@ -1201,6 +1201,7 @@ class NormalModule extends Module {
 	 * @param {string=} type the source type for which the size should be estimated
 	 * @returns {number} the estimated size of the module (must be non-zero)
 	 */
+	// 
 	size(type) {
 		const cachedSize =
 			this._sourceSizes === undefined ? undefined : this._sourceSizes.get(type);
@@ -1248,12 +1249,7 @@ class NormalModule extends Module {
 		}
 	}
 
-	/**
-	 * @param {Hash} hash the hash used to track dependencies
-	 * @param {UpdateHashContext} context context
-	 * @returns {void}
-	 */
-	// 
+	// 更新hash
 	updateHash(hash, context) {
 		hash.update(this.buildInfo.hash);
 		this.generator.updateHash(hash, {

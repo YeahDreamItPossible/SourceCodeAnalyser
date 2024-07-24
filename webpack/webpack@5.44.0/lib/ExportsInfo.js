@@ -5,6 +5,7 @@ const SortableSet = require("./util/SortableSet");
 const makeSerializable = require("./util/makeSerializable");
 const { forEachRuntime } = require("./util/runtime");
 
+// 使用状态
 const UsageState = Object.freeze({
 	Unused: (0),
 	OnlyPropertiesUsed: (1),
@@ -766,6 +767,9 @@ class ExportsInfo {
 	}
 }
 
+// 单项导出信息
+// 作用:
+// 
 class ExportInfo {
 	/**
 	 * @param {string} name the original name of the export

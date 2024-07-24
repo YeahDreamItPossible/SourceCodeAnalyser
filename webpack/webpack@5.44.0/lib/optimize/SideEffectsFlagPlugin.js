@@ -27,10 +27,14 @@ const globToRegexp = (glob, cache) => {
 	return regexp;
 };
 
+// 根据 Webpack.options.optimization.sideEffects 注册该插件
+// 副作用标志插件:
+// 作用:
+// 当 Webpack.options.optimization.sideEffects = true 时 表示启用该插件
+// 启用该插件后 当模块只包含无副作用的语句时 此模块也会被标记为无副作用
 // 告诉 webpack 去辨识 package.json 中的 sideEffects 标记或规则，
-// 以跳过那些当导出不被使用且被标记为不包含副作用的模块。
+// 以跳过那些 当导出不被使用且被标记为不包含副作用的模块。
 // 根据 模块 是否具有副作用 绑定 ModuleGraph._metaMap
-// 根据 Webpack.options.optimization.sideEffects 注册该持剑
 class SideEffectsFlagPlugin {
 	constructor(analyseSource = true) {
 		// Webpack.options.optimization.sideEffects
@@ -51,7 +55,7 @@ class SideEffectsFlagPlugin {
 
 				/**
 				 * 根据 package.json 中的 sideEffects 字段 判断该模块路径是否有副作用
-				 * 然后设置 Module.factoryMeta.sideEffectFree
+				 * 然后设置 Module.prototype.factoryMeta.sideEffectFree
 				 */
 				normalModuleFactory.hooks.module.tap(
 					"SideEffectsFlagPlugin",
@@ -84,8 +88,8 @@ class SideEffectsFlagPlugin {
 				);
 
 				/**
-				 * 根据 路径解析器 对 模块 解析后返回的数据 判断该模块是否有副作用
-				 * 然后设置 Module.factoryMeta.sideEffectFree
+				 * 根据 路径解析器 对 模块 解析后返回的数据(resolvedData.setttings.sideEffects) 判断该模块是否有副作用
+				 * 然后设置 Module.prototype.factoryMeta.sideEffectFree
 				 */
 				normalModuleFactory.hooks.module.tap(
 					"SideEffectsFlagPlugin",
@@ -191,6 +195,7 @@ class SideEffectsFlagPlugin {
 						);
 						parser.hooks.finish.tap("SideEffectsFlagPlugin", () => {
 							if (sideEffectsStatement === undefined) {
+								// 标记模块无副作用
 								parser.state.module.buildMeta.sideEffectFree = true;
 							} else {
 								const { loc, type } = sideEffectsStatement;

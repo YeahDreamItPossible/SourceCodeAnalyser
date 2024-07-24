@@ -7,7 +7,9 @@ const getIgnoredModule = memoize(() => {
 	return new RawModule("/* (ignored) */", `ignored`, `(ignored)`);
 });
 
-// 依赖: 用来描述 当前引用依赖 的位置信息 和 引用模块信息
+// 依赖: 
+// 作用:
+// 用来描述 当前引用依赖 的位置信息 和 引用模块信息
 class Dependency {
 	constructor() {
 		// 引用当前依赖的 模块

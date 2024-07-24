@@ -85,6 +85,7 @@ class WeakTupleNode {
  * @template {any[]} T
  * @template V
  */
+// 弱元组映射
 class WeakTupleMap {
 	constructor() {
 		this._node = new WeakTupleNode();

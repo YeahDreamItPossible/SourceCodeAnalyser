@@ -10,6 +10,11 @@ const { compareChunksById } = require("./util/comparators");
 const makeSerializable = require("./util/makeSerializable");
 
 /**
+ * factoryMeta(工厂元信息):
+ * sideEffectFree: 表示该模块是否具有副作用 当 true 时 标记当前模块无副作用
+ */
+
+/**
  * BuildMeta(打包元信息)
  * moduleArgument:
  * exportsArgument:
@@ -19,11 +24,11 @@ const makeSerializable = require("./util/makeSerializable");
  * defaultObject: 导出对象( false | redirect | redirect-warn )
  * strictHarmonyModule:
  * async: 是否时异步模块
- * sideEffectFree: 是否具有副作用
+ * sideEffectFree: 表示该模块是否具有副作用 当 true 时 标记当前模块无副作用
  */
 
 /**
- * BuildInfo(打包信息)
+ * BuildInfo(构建信息)
  * strict: 是否使用严格模式
  * topLevelDeclarations:
  * module: Webpack.options.output.module
@@ -78,7 +83,7 @@ class Module extends DependenciesBlock {
 		// 必须得 Webpack.options.experiments.layers = true 时
 		// Webpack.options.Entry.layer 或者 Webpack.options.module.Rule.layer 配置
 		this.layer = layer;
-		// 标识: 标识当前module是否需要Id
+		// 标识: 标识当前 module 是否需要 Id(运行时模块不需要id)
 		this.needId = true;
 		// 模块唯一标识符
 		this.debugId = debugId++;
@@ -511,6 +516,7 @@ class Module extends DependenciesBlock {
 	 * @param {ModuleGraph} moduleGraph the module graph
 	 * @returns {boolean} true, if the module is optional
 	 */
+	// 
 	isOptional(moduleGraph) {
 		let hasConnections = false;
 		for (const r of moduleGraph.getIncomingConnections(this)) {
@@ -714,12 +720,7 @@ class Module extends DependenciesBlock {
 		return type ? sources.get(type) : sources.get(first(this.getSourceTypes()));
 	}
 
-	/* istanbul ignore next */
-	/**
-	 * @abstract
-	 * @param {string=} type the source type for which the size should be estimated
-	 * @returns {number} the estimated size of the module (must be non-zero)
-	 */
+	// 抽象方法
 	size(type) {
 		const AbstractMethodError = require("./AbstractMethodError");
 		throw new AbstractMethodError();

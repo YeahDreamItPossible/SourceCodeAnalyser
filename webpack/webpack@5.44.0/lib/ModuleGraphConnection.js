@@ -43,10 +43,13 @@ const intersectConnectionStates = (a, b) => {
 };
 
 /**
- * 描述当前模块的引用关系(通过 Dependency 来获取对应的 Module 和 父Module)
+ * 模块图连接
+ * 作用:
+ * 以 依赖 为核心 描述当前依赖的引用关系
+ * 1. 引用当前依赖的模块(根据 Dependency 找到对应的 Module)
+ * 2. 引用当前依赖的模块 的 父模块(根据 Module 找到对应的 父Module)
  * Dependency 与 Module 的引用关系(当前依赖Dependency 与 引用当前依赖Dependency的Module)
  * Module 与 Module 的引用关系(使用当前依赖的Module 与 引用 使用当前依赖的Module 的父Module)
- * 
  */
 class ModuleGraphConnection {
 	constructor(
@@ -57,27 +60,26 @@ class ModuleGraphConnection {
 		weak = false,
 		condition = undefined
 	) {
+		// 当前依赖Dependency
+		this.dependency = dependency;
+		// 引用当前依赖的Module(已经被加工过)
+		this.resolvedModule = module;
+		// 引用当前依赖的Module
+		this.module = module;
 		// 引用 当前Module 的 父Module
 		this.originModule = originModule;
 		// 引用 当前Module 的 父Module(该父Module已经被加工过)
 		this.resolvedOriginModule = originModule;
-		// 当前依赖Dependency
-		this.dependency = dependency;
-		// 当前Module(已经被加工过)
-		this.resolvedModule = module;
-		// 当前Module
-		this.module = module;
-		// 标识 当前 connection 是否是可选的
+		// 标识: 当前 connection 是否是可选的
 		// 根据 dep.weak 决定
 		this.weak = weak;
-		// 标识 当前 connection 是否是可选的
+		// 标识: 当前 connection 是否是可选的
 		// 根据 dep.condition  决定
 		this.conditional = !!condition;
-		// 标识: 当前 connection 是否激活
+		// 标识: 当前 connection 是否激活(当前依赖 与 当前模块 是否存在引用关系)
 		this._active = condition !== false;
 		// 条件
 		// 根据 dep.getCondition 决定
-		// function(ModuleGraphConnection, RuntimeSpec): ConnectionState
 		this.condition = condition || undefined;
 		// 
 		this.explanations = undefined;
@@ -87,7 +89,7 @@ class ModuleGraphConnection {
 		}
 	}
 
-	// 克隆
+	// 返回 克隆的 ModuleGraphConnection
 	clone() {
 		const clone = new ModuleGraphConnection(
 			this.resolvedOriginModule,
@@ -131,8 +133,7 @@ class ModuleGraphConnection {
 		return Array.from(this.explanations).join(" ");
 	}
 
-	// ModuleGraphConnection.prototype.active 属性被移除
-	// ModuleGraphConnection.prototype.getActiveState 替代
+	// ModuleGraphConnection.prototype.active 属性被已被 ModuleGraphConnection.prototype.getActiveState 替代
 	get active() {
 		throw new Error("Use getActiveState instead");
 	}
@@ -143,7 +144,7 @@ class ModuleGraphConnection {
 		return this.condition(this, runtime) !== false;
 	}
 
-	// 返回当前Connection 是否是激活的
+	// 返回 当前Connection 是否是激活的
 	isTargetActive(runtime) {
 		if (!this.conditional) return this._active;
 		return this.condition(this, runtime) === true;
@@ -151,18 +152,18 @@ class ModuleGraphConnection {
 
 	// 返回当前Connection 是否激活
 	getActiveState(runtime) {
+		// 当当前 Connection 是
 		if (!this.conditional) return this._active;
 		return this.condition(this, runtime);
 	}
 
-	// 设置当前Connection是否激活
+	// 设置当前 Connection 是否激活
 	setActive(value) {
 		this.conditional = false;
 		this._active = value;
 	}
 
-	// ModuleGraphConnection.prototype.active 属性被移除
-	// ModuleGraphConnection.prototype.setActive 替代
+	// ModuleGraphConnection.prototype.active 属性已被 ModuleGraphConnection.prototype.setActive 替代
 	set active(value) {
 		throw new Error("Use setActive instead");
 	}
