@@ -21,22 +21,29 @@ class FlagDependencyExportsPlugin {
 						const logger = compilation.getLogger(
 							"webpack.FlagDependencyExportsPlugin"
 						);
+						// 需要重新被缓存的模块数量
 						let statRestoredFromCache = 0;
+						// 没有声明导出标识符的模块数量
 						let statNoExports = 0;
+						// 不需要缓存的模块数量
 						let statFlaggedUncached = 0;
+						// 
 						let statNotCached = 0;
+						// 被解析的模块数量
 						let statQueueItemsProcessed = 0;
 
 						/** @type {Queue<Module>} */
 						const queue = new Queue();
 
 						// Step 1: Try to restore cached provided export info from cache
+						// 
 						logger.time("restore cached provided exports");
 						asyncLib.each(
 							modules,
 							(module, callback) => {
 								const exportsInfo = moduleGraph.getExportsInfo(module);
 								if (!module.buildMeta || !module.buildMeta.exportsType) {
+									// 当模块没有 任何导出语句 时
 									if (exportsInfo.otherExportsInfo.provided !== null) {
 										// It's a module without declared exports
 										statNoExports++;
@@ -80,28 +87,25 @@ class FlagDependencyExportsPlugin {
 								logger.timeEnd("restore cached provided exports");
 								if (err) return callback(err);
 
-								/** @type {Set<Module>} */
+								// 需要被缓存的模块
+								// Set<Module>
 								const modulesToStore = new Set();
 
-								/** @type {Map<Module, Set<Module>>} */
+								// Map<Module, Set<Module>>
 								const dependencies = new Map();
 
-								/** @type {Module} */
 								let module;
 
-								/** @type {ExportsInfo} */
 								let exportsInfo;
 
-								/** @type {Map<Dependency, ExportsSpec>} */
+								// 
+								// Map<Dependency, ExportsSpec>
 								const exportsSpecsFromDependencies = new Map();
 
 								let cacheable = true;
 								let changed = false;
 
-								/**
-								 * @param {DependenciesBlock} depBlock the dependencies block
-								 * @returns {void}
-								 */
+								// 处理 依赖块 和 依赖中的 导出信息
 								const processDependenciesBlock = depBlock => {
 									for (const dep of depBlock.dependencies) {
 										processDependency(dep);
@@ -111,21 +115,14 @@ class FlagDependencyExportsPlugin {
 									}
 								};
 
-								/**
-								 * @param {Dependency} dep the dependency
-								 * @returns {void}
-								 */
+								// 处理 依赖 中的导出信息
 								const processDependency = dep => {
 									const exportDesc = dep.getExports(moduleGraph);
 									if (!exportDesc) return;
 									exportsSpecsFromDependencies.set(dep, exportDesc);
 								};
 
-								/**
-								 * @param {Dependency} dep dependency
-								 * @param {ExportsSpec} exportDesc info
-								 * @returns {void}
-								 */
+								// 处理 依赖 中的导出信息
 								const processExportsSpec = (dep, exportDesc) => {
 									const exports = exportDesc.exports;
 									const globalCanMangle = exportDesc.canMangle;
@@ -283,6 +280,7 @@ class FlagDependencyExportsPlugin {
 									}
 								};
 
+								// 
 								const notifyDependencies = () => {
 									const deps = dependencies.get(module);
 									if (deps !== undefined) {
@@ -342,6 +340,8 @@ class FlagDependencyExportsPlugin {
 								asyncLib.each(
 									modulesToStore,
 									(module, callback) => {
+										// 当 模块 不需要缓存时 或者 模块构建hash 不存在时
+										// 则 不需要缓存模块
 										if (
 											module.buildInfo.cacheable !== true ||
 											typeof module.buildInfo.hash !== "string"
@@ -349,6 +349,7 @@ class FlagDependencyExportsPlugin {
 											// not cacheable
 											return callback();
 										}
+										// 缓存模块
 										cache.store(
 											module.identifier(),
 											module.buildInfo.hash,
@@ -368,7 +369,7 @@ class FlagDependencyExportsPlugin {
 					}
 				);
 
-				/** @type {WeakMap<Module, any>} */
+				// WeakMap<Module, any>
 				const providedExportsCache = new WeakMap();
 				compilation.hooks.rebuildModule.tap(
 					"FlagDependencyExportsPlugin",

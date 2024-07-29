@@ -54,24 +54,25 @@ const getConnectionsByOriginModule = set => {
 
 
 /**
- * 模块图
+ * 模块图模块
  * 作用:
- * 以 模块 为核心 描述模块间的引用关系
- * 1. 当前Module 与 被它引用的 子Modules
- * 2. 当前Module 与 引用它的 父Modules
+ * 以 模块 为核心 描述模块间的相互引用关系
+ * 1. 当前模块 与 被它引用的 子模块 间的相互引用关系
+ * 2. 当前模块 与 引用它的 父模块 间的相互引用关系
+ * 在 ModuleGraph 中 通过 Module 找到对应的 ModuleGraphModule
  */
 class ModuleGraphModule {
 	constructor() {
-		// 描述 当前Module 与 引用当前Module的 父Module 的引用关系
-		// 引用 当前Module 的 ModuleGraphConnection
+		// 描述 当前模块 与 引用当前模块的父模块 间的相互引用关系
+		// 引用 当前模块 的 ModuleGraphConnection
 		// Set<ModuleGraphConnection>
 		this.incomingConnections = new SortableSet();
-		// 描述 当前Module 与 当前Module引用的 子Module 的引用关系
-		// 当前Module 引用的 ModuleGraphConnection
+		// 描述 当前模块 与 当前模块引用的 子模块 间的相互引用关系
+		// 当前模块 引用的 ModuleGraphConnection
 		// Set<ModuleGraphConnection>
 		this.outgoingConnections = undefined;
 		// 父模块
-		// 当前Module 是由哪些模块引入的 称引入当前模块为父模块(issuer)
+		// 当前模块 是由哪些模块引入的 称引入当前模块为父模块(issuer)
 		this.issuer = undefined;
 		// 该模块中副作用信息
 		// Array<String | Fn>
@@ -93,9 +94,16 @@ class ModuleGraphModule {
 }
 
 /**
+ * 当调用 ModuleGraph 的方法时
+ * 如果 参数 是 Depedency 那返回值 肯定与 ModuleGraphConnection 相关
+ * 如果 参数 是 Module    那返回值 肯定与 ModuleGraphModule 相关
+ */
+
+/**
  * 模块图
- * Module 与 Dependency 的引用关系
- * Module 与 Module 的引用关系
+ * 作用:
+ * 描述 模块Module 与 依赖Dependency 的引用关系
+ * 描述 模块Module 与 模块Module 的引用关系
  */
 class ModuleGraph {
 	constructor() {
@@ -109,7 +117,8 @@ class ModuleGraph {
 		// Map<Module, Set<ModuleGraphConnection>>
 		this._originMap = new Map();
 		// 元信息
-		// Map<any, Object>
+		// 存储当前模块中被替换的信息
+		// Map<Any, Object>
 		this._metaMap = new Map();
 
 		// 缓存
@@ -125,7 +134,7 @@ class ModuleGraph {
 		this._cache = undefined;
 	}
 
-	// 根据 Module 来返回 ModuleGraphModule
+	// 根据 Module 来返回对应的 ModuleGraphModule
 	_getModuleGraphModule(module) {
 		if (this._cacheModuleGraphModuleKey1 === module)
 			return this._cacheModuleGraphModuleValue1;
@@ -143,7 +152,7 @@ class ModuleGraph {
 		return mgm;
 	}
 
-	// 设置dependency的父module 和 父dependenciesBlock
+	// 设置依赖的父Module 和 父DependenciesBlock
 	// Dependency._parentModule  
 	// Dependency.__parentDependenciesBlock
 	setParents(dependency, block, module) {
@@ -190,7 +199,7 @@ class ModuleGraph {
 	}
 
 	// 更新 ModuleGraphConnection 中 Dependency 与 Module 关联关系
-	// 更新 Module 与 ModuleGraphModule 关联关系
+	// 更新 ModuleGraphModule 中 Module 与 Module 的关联关系
 	updateModule(dependency, module) {
 		const connection = this._dependencyMap.get(dependency);
 		if (connection.module === module) return;
@@ -205,8 +214,10 @@ class ModuleGraph {
 		targetMgm.incomingConnections.add(newConnection);
 	}
 
-	// 根据 Dependency 移除对应 ModuleGraphConnection
-	// 根据 ModuleGraphModule.module 和 ModuleGraphModule.orginModule 移除 与 ModuleGraphModule 关联关系
+	// 移除 Dependency 与 Module 的关联关系 和 Module 和 Module 的关联关系
+	// 1. 移除 ModuleGraphConnection 中 Dependency 与 Module 的关联关系
+	// 2. 移除 ModuleGraphModule 中 Dependency.module 与 Module 的关联关系
+	// 3. 移除 ModuleGraphModule 中 Dependency.originModule 与 Module 的关联关系
 	removeConnection(dependency) {
 		// 根据 Dependency 找到对应的 ModuleGraphConnection
 		const connection = this._dependencyMap.get(dependency);
@@ -230,7 +241,7 @@ class ModuleGraph {
 		connection.addExplanation(explanation);
 	}
 
-	// 复制 ModuleGraphModule 属性到 ModuleGraphModule 属性 
+	// 复制 旧ModuleGraphModule 属性到 新ModuleGraphModule 属性 
 	cloneModuleAttributes(sourceModule, targetModule) {
 		const oldMgm = this._getModuleGraphModule(sourceModule);
 		const newMgm = this._getModuleGraphModule(targetModule);
@@ -260,12 +271,14 @@ class ModuleGraph {
 		}
 	}
 
-	// 将 旧 ModuleGraphModule.outgoingConnections 和 ModuleGraphModule.incomingConnections 通过过滤器过滤后 移动新 ModuleGraphModule
+	// 将 旧ModuleGraphModule.outgoingConnections 和 旧ModuleGraphModule.outgoingConnections 
+	// 通过过滤器过滤后 
+	// 移动到 新ModuleGraphModule.incomingConnections 和 新ModuleGraphModule.incomingConnections 
 	moveModuleConnections(oldModule, newModule, filterConnection) {
 		if (oldModule === newModule) return;
 		const oldMgm = this._getModuleGraphModule(oldModule);
 		const newMgm = this._getModuleGraphModule(newModule);
-		// Outgoing connections
+		// 将 旧ModuleGraphModule.outgoingConnections 通过过滤器过滤后 移动到 新ModuleGraphModule.outgoingConnections
 		const oldConnections = oldMgm.outgoingConnections;
 		if (oldConnections !== undefined) {
 			if (newMgm.outgoingConnections === undefined) {
@@ -280,7 +293,7 @@ class ModuleGraph {
 				}
 			}
 		}
-		// Incoming connections
+		// 将 旧ModuleGraphModule.incomingConnections 通过过滤器过滤后 移动到 新ModuleGraphModule.incomingConnections
 		const oldConnections2 = oldMgm.incomingConnections;
 		const newConnections2 = newMgm.incomingConnections;
 		for (const connection of oldConnections2) {
@@ -292,12 +305,9 @@ class ModuleGraph {
 		}
 	}
 
-	/**
-	 * @param {Module} oldModule the old referencing module
-	 * @param {Module} newModule the new referencing module
-	 * @param {function(ModuleGraphConnection): boolean} filterConnection filter predicate for replacement
-	 * @returns {void}
-	 */
+	// 将 旧ModuleGraphModule.outgoingConnections 和 旧ModuleGraphModule.outgoingConnections 
+	// 通过过滤器过滤后 
+	// 移动到 新ModuleGraphModule.incomingConnections 和 新ModuleGraphModule.incomingConnections
 	copyOutgoingModuleConnections(oldModule, newModule, filterConnection) {
 		if (oldModule === newModule) return;
 		const oldMgm = this._getModuleGraphModule(oldModule);
@@ -323,17 +333,13 @@ class ModuleGraph {
 		}
 	}
 
-	/**
-	 * @param {Module} module the referenced module
-	 * @param {string} explanation an explanation why it's referenced
-	 * @returns {void}
-	 */
+	// 添加额外的解释
 	addExtraReason(module, explanation) {
 		const connections = this._getModuleGraphModule(module).incomingConnections;
 		connections.add(new ModuleGraphConnection(null, null, module, explanation));
 	}
 
-	// 返回 ModuleGraphConnection.resolvedModule
+	// 返回 moduleGraphModule.resolvedModule
 	getResolvedModule(dependency) {
 		const connection = this._dependencyMap.get(dependency);
 		return connection !== undefined ? connection.resolvedModule : null;
@@ -346,7 +352,7 @@ class ModuleGraph {
 		return connection;
 	}
 
-	// 返回 ModuleGraphConnection.module
+	// 返回 moduleGraphModule.module
 	getModule(dependency) {
 		// 根据 Dependency 找到对应的 ModuleGraphConnection
 		const connection = this._dependencyMap.get(dependency);
@@ -354,7 +360,7 @@ class ModuleGraph {
 		return connection !== undefined ? connection.module : null;
 	}
 
-	// 返回 ModuleGraphConnection.originModule
+	// 返回 moduleGraphModule.originModule
 	getOrigin(dependency) {
 		// 根据 Dependency 找到对应的 ModuleGraphConnection
 		const connection = this._dependencyMap.get(dependency);
@@ -362,110 +368,100 @@ class ModuleGraph {
 		return connection !== undefined ? connection.originModule : null;
 	}
 
-	// 返回 ModuleGraphConnection.resolvedOriginModule
+	// 返回 moduleGraphModule.resolvedOriginModule
 	getResolvedOrigin(dependency) {
 		// 根据 Module 找到对应的 ModuleGraphConnection
 		const connection = this._dependencyMap.get(dependency);
 		return connection !== undefined ? connection.resolvedOriginModule : null;
 	}
 
-	// 返回 ModuleGraphModule.incomingConnections
+	// 返回 moduleGraphModule.incomingConnections
 	getIncomingConnections(module) {
 		const connections = this._getModuleGraphModule(module).incomingConnections;
 		return connections;
 	}
 
-	// 返回 ModuleGraphModule.outgoingConnections
+	// 返回 moduleGraphModule.outgoingConnections
 	getOutgoingConnections(module) {
 		// 根据 Module 找到对应的 ModuleGraphModule
 		const connections = this._getModuleGraphModule(module).outgoingConnections;
 		return connections === undefined ? EMPTY_SET : connections;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {readonly Map<Module, readonly ModuleGraphConnection[]>} reasons why a module is included, in a map by source module
-	 */
+	// 返回 moduleGraphModule.incomingConnections
+	// Map<Module, ModuleGraphConnection[]> reasons why a module is included, in a map by source module
 	getIncomingConnectionsByOriginModule(module) {
 		const connections = this._getModuleGraphModule(module).incomingConnections;
 		return connections.getFromUnorderedCache(getConnectionsByOriginModule);
 	}
 
-	// 返回 ModuleGraphModule.profile
+	// 返回 moduleGraphModule.profile
 	getProfile(module) {
 		// 根据 Module 返回对应的 ModuleGraphModule
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.profile;
 	}
 
-	// 设置 ModuleGraphModule.profile
+	// 设置 moduleGraphModule.profile
 	setProfile(module, profile) {
 		// 根据 Module 返回对应的 ModuleGraphModule
 		const mgm = this._getModuleGraphModule(module);
 		mgm.profile = profile;
 	}
 
-	// 返回 ModuleGraphModule.issuer
+	// 返回 moduleGraphModule.issuer
 	getIssuer(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.issuer;
 	}
 
-	// 设置 ModuleGraphModule.issuer
+	// 设置 moduleGraphModule.issuer
 	setIssuer(module, issuer) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.issuer = issuer;
 	}
 
-	// 首次设置 ModuleGraphModule.issuer
+	// 设置 moduleGraphModule.issuer
 	setIssuerIfUnset(module, issuer) {
 		// 根据 Module 找到对应的 ModuleGraphModule
 		const mgm = this._getModuleGraphModule(module);
-		// 如果 ModuleGraphModule.issuer 之前未设置 则首次设置
+		// 如果 ModuleGraphModule.issuer 之前未设置 则设置
 		if (mgm.issuer === undefined) mgm.issuer = issuer;
 	}
 
-	// 返回 ModuleGraphModule.optimizationBailout
+	// 当前模块副作用
+	// 返回 moduleGraphModule.optimizationBailout
 	getOptimizationBailout(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.optimizationBailout;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {true | string[] | null} the provided exports
-	 */
+	// 
 	getProvidedExports(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.exports.getProvidedExports();
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {string | string[]} exportName a name of an export
-	 * @returns {boolean | null} true, if the export is provided by the module.
-	 * null, if it's unknown.
-	 * false, if it's not provided.
-	 */
+	// 当前模块是否导出某标识符
 	isExportProvided(module, exportName) {
 		const mgm = this._getModuleGraphModule(module);
 		const result = mgm.exports.isExportProvided(exportName);
 		return result === undefined ? null : result;
 	}
 
-	// 返回 ModuleGraphModule.exports
+	// 返回 moduleGraphModule.exports
 	getExportsInfo(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.exports;
 	}
 	
-	// 返回 ModuleGraphModule.exports.[某个属性]
+	// 返回 moduleGraphModule.exports.[某个属性]
 	getExportInfo(module, exportName) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.exports.getExportInfo(exportName);
 	}
 
-	// 返回 ModuleGraphModule.exports.[某个属性] 该属性是只读的 不允许修改
+	// 返回 moduleGraphModule.exports.[某个属性] 该属性是只读的 不允许修改
 	getReadOnlyExportInfo(module, exportName) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.exports.getReadOnlyExportInfo(exportName);
@@ -486,25 +482,25 @@ class ModuleGraph {
 		return mgm.exports.getUsedExports(runtime);
 	}
 
-	// 返回 ModuleGraphModule.preOrderIndex
+	// 返回 moduleGraphModule.preOrderIndex
 	getPreOrderIndex(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.preOrderIndex;
 	}
 
-	// 返回 ModuleGraphModule.postOrderIndex
+	// 返回 moduleGraphModule.postOrderIndex
 	getPostOrderIndex(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.postOrderIndex;
 	}
 
-	// 设置 ModuleGraphModule.preOrderIndex
+	// 设置 moduleGraphModule.preOrderIndex
 	setPreOrderIndex(module, index) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.preOrderIndex = index;
 	}
 
-	// 返回 是否成功设置 ModuleGraphModule.preOrderIndex
+	// 返回 是否成功设置 moduleGraphModule.preOrderIndex
 	setPreOrderIndexIfUnset(module, index) {
 		const mgm = this._getModuleGraphModule(module);
 		if (mgm.preOrderIndex === null) {
@@ -514,13 +510,13 @@ class ModuleGraph {
 		return false;
 	}
 
-	// 设置 ModuleGraphModule.postOrderIndex
+	// 设置 moduleGraphModule.postOrderIndex
 	setPostOrderIndex(module, index) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.postOrderIndex = index;
 	}
 
-	// 返回 是否成功设置 ModuleGraphModule.postOrderIndex
+	// 返回 是否成功设置 moduleGraphModule.postOrderIndex
 	setPostOrderIndexIfUnset(module, index) {
 		const mgm = this._getModuleGraphModule(module);
 		if (mgm.postOrderIndex === null) {
@@ -530,19 +526,19 @@ class ModuleGraph {
 		return false;
 	}
 
-	// 返回 ModuleGraphModule.depth
+	// 返回 moduleGraphModule.depth
 	getDepth(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.depth;
 	}
 
-	// 设置 ModuleGraphModule.depth
+	// 设置 moduleGraphModule.depth
 	setDepth(module, depth) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.depth = depth;
 	}
 
-	// 是否成功设置 ModuleGraphModule.depth
+	// 是否成功设置 moduleGraphModule.depth
 	// ModuleGraphModule.depth 如果低于预期 则设置 
 	setDepthIfLower(module, depth) {
 		const mgm = this._getModuleGraphModule(module);
@@ -553,13 +549,13 @@ class ModuleGraph {
 		return false;
 	}
 
-	// 当前 ModuleGraphModule 是否是异步
+	// 当前 moduleGraphModule 是否是异步
 	isAsync(module) {
 		const mgm = this._getModuleGraphModule(module);
 		return mgm.async;
 	}
 
-	// 设置 ModuleGraphModule.async
+	// 设置 moduleGraphModule.async
 	setAsync(module) {
 		const mgm = this._getModuleGraphModule(module);
 		mgm.async = true;
@@ -590,13 +586,7 @@ class ModuleGraph {
 		this._cache = undefined;
 	}
 
-	/**
-	 * @template {any[]} T
-	 * @template V
-	 * @param {(moduleGraph: ModuleGraph, ...args: T) => V} fn computer
-	 * @param {T} args arguments
-	 * @returns {V} computed value or cached
-	 */
+	// 缓存 fn 计算后的值
 	cached(fn, ...args) {
 		if (this._cache === undefined) return fn(this, ...args);
 		return this._cache.provide(fn, ...args, () => fn(this, ...args));

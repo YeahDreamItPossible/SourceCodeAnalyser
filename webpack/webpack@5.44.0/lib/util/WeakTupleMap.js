@@ -1,16 +1,13 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const isWeakKey = thing => typeof thing === "object" && thing !== null;
 
 class WeakTupleNode {
 	constructor() {
+		// 
 		this.f = 0;
 		/** @type {any} */
+		// 值
 		this.v = undefined;
 		/** @type {Map<object, WeakTupleNode> | undefined} */
 		this.m = undefined;

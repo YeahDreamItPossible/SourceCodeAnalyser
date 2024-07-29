@@ -11,6 +11,7 @@ const { getEntryRuntime, mergeRuntimeOwned } = require("./util/runtime");
 
 const { NO_EXPORTS_REFERENCED, EXPORTS_OBJECT_REFERENCED } = Dependency;
 
+// TODO:
 // 根据 Webpack.options.optimization.usedExports = true 注册该插件
 // 标记依赖使用插件
 // 作用:
@@ -34,6 +35,7 @@ class FlagDependencyUsagePlugin {
 						"webpack.FlagDependencyUsagePlugin"
 					);
 
+					// 
 					// Map<ExportsInfo, Module>
 					const exportInfoToModuleMap = new Map();
 

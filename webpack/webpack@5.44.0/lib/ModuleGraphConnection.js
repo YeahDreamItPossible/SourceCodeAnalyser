@@ -1,25 +1,21 @@
 "use strict";
 
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
-/**
- * Module itself is not connected, but transitive modules are connected transitively.
- */
+// 模块本身没有连接，但传递模块是传递连接的
 const TRANSITIVE_ONLY = Symbol("transitive only");
 
-/**
- * While determining the active state, this flag is used to signal a circular connection.
- */
+// 在确定活动状态时，此标志用于表示循环连接。
 const CIRCULAR_CONNECTION = Symbol("circular connection");
 
-/** @typedef {boolean | typeof TRANSITIVE_ONLY | typeof CIRCULAR_CONNECTION} ConnectionState */
-
 /**
- * @param {ConnectionState} a first
- * @param {ConnectionState} b second
- * @returns {ConnectionState} merged
+ * ConnectionState(连接状态):
+ * Boolean
+ * TRANSITIVE_ONLY
+ * CIRCULAR_CONNECTION
  */
+
+// 合并 连接状态
 const addConnectionStates = (a, b) => {
+	// 只要有 一个链接 
 	if (a === true || b === true) return true;
 	if (a === false) return b;
 	if (b === false) return a;
@@ -28,11 +24,7 @@ const addConnectionStates = (a, b) => {
 	return a;
 };
 
-/**
- * @param {ConnectionState} a first
- * @param {ConnectionState} b second
- * @returns {ConnectionState} intersected
- */
+// 相交 连接状态
 const intersectConnectionStates = (a, b) => {
 	if (a === false || b === false) return false;
 	if (a === true) return b;
@@ -46,10 +38,9 @@ const intersectConnectionStates = (a, b) => {
  * 模块图连接
  * 作用:
  * 以 依赖 为核心 描述当前依赖的引用关系
- * 1. 引用当前依赖的模块(根据 Dependency 找到对应的 Module)
- * 2. 引用当前依赖的模块 的 父模块(根据 Module 找到对应的 父Module)
- * Dependency 与 Module 的引用关系(当前依赖Dependency 与 引用当前依赖Dependency的Module)
- * Module 与 Module 的引用关系(使用当前依赖的Module 与 引用 使用当前依赖的Module 的父Module)
+ * 1. 当前依赖Dependency 与 引用当前依赖的模块Module 的引用关系
+ * 2. 引用当前依赖的模块Module 与 引用当前依赖的模块的父模块Module 的引用关系
+ * 在 ModuleGraph 中 通过 Dependency 找到对应的 ModuleGraphConnection
  */
 class ModuleGraphConnection {
 	constructor(
@@ -60,28 +51,28 @@ class ModuleGraphConnection {
 		weak = false,
 		condition = undefined
 	) {
-		// 当前依赖Dependency
+		// 当前依赖
 		this.dependency = dependency;
-		// 引用当前依赖的Module(已经被加工过)
+		// 引用当前依赖的模块(已经被加工过)
 		this.resolvedModule = module;
-		// 引用当前依赖的Module
+		// 引用当前依赖的模块
 		this.module = module;
-		// 引用 当前Module 的 父Module
+		// 引用 当前模块 的 父模块
 		this.originModule = originModule;
-		// 引用 当前Module 的 父Module(该父Module已经被加工过)
+		// 引用 当前模块 的 父模块(该父模块已经被加工过)
 		this.resolvedOriginModule = originModule;
-		// 标识: 当前 connection 是否是可选的
+		// 标识: 当前连接 是否是可选的
 		// 根据 dep.weak 决定
 		this.weak = weak;
-		// 标识: 当前 connection 是否是可选的
+		// 标识: 当前连接 是否激活(当前依赖 与 当前模块 是否存在引用关系)
+		this._active = condition !== false;
+		// 标识: 当前连接 是否是可选的
 		// 根据 dep.condition  决定
 		this.conditional = !!condition;
-		// 标识: 当前 connection 是否激活(当前依赖 与 当前模块 是否存在引用关系)
-		this._active = condition !== false;
-		// 条件
+		// 条件(判断当前连接是否是激活的)
 		// 根据 dep.getCondition 决定
 		this.condition = condition || undefined;
-		// 
+		// 解释(为什么关联的解释)
 		this.explanations = undefined;
 		if (explanation) {
 			this.explanations = new Set();
@@ -119,7 +110,7 @@ class ModuleGraphConnection {
 		}
 	}
 
-	// 添加解释(explanation: String)
+	// 添加解释
 	addExplanation(explanation) {
 		if (this.explanations === undefined) {
 			this.explanations = new Set();
@@ -169,14 +160,11 @@ class ModuleGraphConnection {
 	}
 }
 
-/** @typedef {typeof TRANSITIVE_ONLY} TRANSITIVE_ONLY */
-/** @typedef {typeof CIRCULAR_CONNECTION} CIRCULAR_CONNECTION */
-
 module.exports = ModuleGraphConnection;
 module.exports.addConnectionStates = addConnectionStates;
-module.exports.TRANSITIVE_ONLY = /** @type {typeof TRANSITIVE_ONLY} */ (
+module.exports.TRANSITIVE_ONLY = (
 	TRANSITIVE_ONLY
 );
-module.exports.CIRCULAR_CONNECTION = /** @type {typeof CIRCULAR_CONNECTION} */ (
+module.exports.CIRCULAR_CONNECTION = (
 	CIRCULAR_CONNECTION
 );

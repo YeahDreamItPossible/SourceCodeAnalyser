@@ -3,6 +3,9 @@
 const { getEntryRuntime, mergeRuntimeOwned } = require("./util/runtime");
 
 // TODO:
+// 标记所有模块为已使用插件
+// 作用:
+// 
 // 与 DllPlugin 相关
 // 当 DllPlugin.options.entryOnly !== true 时
 class FlagAllModulesAsUsedPlugin {

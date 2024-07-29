@@ -52,6 +52,7 @@ makeSerializable(
 // 导出信息
 class ExportsInfo {
 	constructor() {
+		// 存储着 导出标识符 以及 其对应的 ExportInfo
 		// Map<String, ExportInfo>
 		this._exports = new Map();
 		//
@@ -61,17 +62,15 @@ class ExportsInfo {
 		// 标识: this._exports 是否已经排序过
 		this._exportsAreOrdered = false;
 		// 
-		/** @type {ExportsInfo=} */
 		this._redirectTo = undefined;
 	}
-
 	
-	// 所有拥有的输出
+	// 所有的导出项信息
 	get ownedExports() {
 		return this._exports.values();
 	}
-
 	
+	// 排序后的所有的导出项信息
 	get orderedOwnedExports() {
 		if (!this._exportsAreOrdered) {
 			this._sortExports();
@@ -82,6 +81,7 @@ class ExportsInfo {
 	/**
 	 * @returns {Iterable<ExportInfo>} all exports in any order
 	 */
+	// 
 	get exports() {
 		if (this._redirectTo !== undefined) {
 			const map = new Map(this._redirectTo._exports);
@@ -131,10 +131,12 @@ class ExportsInfo {
 			for (const entry of exports.values()) {
 				namesInOrder.push(entry.name);
 			}
+			// 对 导出标识符 进行排序
 			namesInOrder.sort();
 			let i = 0;
 			for (const entry of exports.values()) {
 				const name = namesInOrder[i];
+				// 保证标识符 顺序一致
 				if (entry.name !== name) break;
 				i++;
 			}
@@ -160,6 +162,7 @@ class ExportsInfo {
 		return true;
 	}
 
+	// 
 	setHasProvideInfo() {
 		for (const exportInfo of this._exports.values()) {
 			if (exportInfo.provided === undefined) {
@@ -181,6 +184,7 @@ class ExportsInfo {
 		}
 	}
 
+	// 
 	setHasUseInfo() {
 		for (const exportInfo of this._exports.values()) {
 			exportInfo.setHasUseInfo();
@@ -414,6 +418,7 @@ class ExportsInfo {
 	 * @param {RuntimeSpec} runtime the runtime
 	 * @returns {boolean} true, when the module exports are used in any way
 	 */
+	// 
 	isUsed(runtime) {
 		if (this._redirectTo !== undefined) {
 			if (this._redirectTo.isUsed(runtime)) {
@@ -767,7 +772,7 @@ class ExportsInfo {
 	}
 }
 
-// 单项导出信息
+// 导出项信息
 // 作用:
 // 
 class ExportInfo {
@@ -776,7 +781,7 @@ class ExportInfo {
 	 * @param {ExportInfo=} initFrom init values from this ExportInfo
 	 */
 	constructor(name, initFrom) {
-		// 
+		// 导出标识符
 		this.name = name;
 		/** @private @type {string | null} */
 		this._usedName = initFrom ? initFrom._usedName : null;
@@ -798,6 +803,7 @@ class ExportInfo {
 		 * undefined: it was not determined if it is provided
 		 * @type {boolean | null | undefined}
 		 */
+		// 标识:
 		this.provided = initFrom ? initFrom.provided : undefined;
 		/**
 		 * is the export a terminal binding that should be checked for export star conflicts
@@ -810,6 +816,7 @@ class ExportInfo {
 		 * undefined: it was not determined if it can be mangled
 		 * @type {boolean | undefined}
 		 */
+		// 标识:
 		this.canMangleProvide = initFrom ? initFrom.canMangleProvide : undefined;
 		/**
 		 * true: it can be mangled
@@ -822,6 +829,7 @@ class ExportInfo {
 		this.exportsInfoOwned = false;
 		/** @type {ExportsInfo=} */
 		this.exportsInfo = undefined;
+		// 
 		/** @type {Map<any, { connection: ModuleGraphConnection | null, export: string[], priority: number }>=} */
 		this._target = undefined;
 		if (initFrom && initFrom._target) {
@@ -858,6 +866,7 @@ class ExportInfo {
 		throw new Error("REMOVED");
 	}
 
+	// 
 	get canMangle() {
 		switch (this.canMangleProvide) {
 			case undefined:
@@ -883,6 +892,7 @@ class ExportInfo {
 	 * @param {RuntimeSpec} runtime only apply to this runtime
 	 * @returns {boolean} true, when something changed
 	 */
+	// 
 	setUsedInUnknownWay(runtime) {
 		let changed = false;
 		if (
@@ -1150,6 +1160,7 @@ class ExportInfo {
 	 * @param {string} name the new name
 	 * @returns {void}
 	 */
+	// 
 	setUsedName(name) {
 		this._usedName = name;
 	}

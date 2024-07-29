@@ -17,6 +17,7 @@ const { compareSelect, compareStringsNumeric } = require("../util/comparators");
  * @param {ExportsInfo} exportsInfo exports info
  * @returns {boolean} mangle is possible
  */
+// 
 const canMangle = exportsInfo => {
 	if (exportsInfo.otherExportsInfo.getUsed(undefined) !== UsageState.Unused)
 		return false;
@@ -118,8 +119,11 @@ const mangleExportsInfo = (deterministic, exportsInfo) => {
 	}
 };
 
-// 控制 导出 信息
+// TODO:
 // 根据 Webpack.options.optimization.mangleExports 注册该插件
+// 
+// 作用:
+// 控制导出处理
 class MangleExportsPlugin {
 	constructor(deterministic) {
 		// Boolean

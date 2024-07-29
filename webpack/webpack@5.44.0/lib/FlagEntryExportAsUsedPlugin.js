@@ -3,6 +3,8 @@
 const { getEntryRuntime } = require("./util/runtime");
 
 // TODO:
+// 标记入口导出未已使用插件
+// 作用:
 // 
 class FlagEntryExportAsUsedPlugin {
 	constructor(nsObjectUsed, explanation) {
