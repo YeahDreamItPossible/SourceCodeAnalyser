@@ -51,34 +51,40 @@ const ChunkFilesSet = createArrayToSetDeprecationSet("chunk.files");
 
 let debugId = 1000;
 
-// 块(Chunk): 是对 Module 使用的描述
-// Chunk 是 Module 的封装单元 当 构建完成 时 Chunk 被渲染成 Bundle 
-// Chunk 分类:
-// RuntimeChunk 运行时块(包含 webpack 在运行环境运行时所需的代码, 主要是用于处理模块的加载和依赖关系)
-// EntrypointChunk 入口块(由 Webpack.options.Entry 生成的块, 是打包过程的入口点, 包含了应用程序的入口点模块及其依赖)
+/**
+ * Chunk 分类:
+ * RuntimeChunk 运行时块(包含 webpack 在运行环境运行时所需的代码, 主要是用于处理模块的加载和依赖关系)
+ * EntrypointChunk 入口块(由 Webpack.options.Entry 生成的块, 是打包过程的入口点, 包含了应用程序的入口点模块及其依赖)
+ */
+
+// 块
+// 作用:
+// 块 是 模块(Module) 的封装单元 当 构建完成 时 块(Chunk) 被渲染成 捆(Bundle)
 class Chunk {
 	constructor(name) {
-		// 标识符(与 Webpack.options.optimization.chunkIds 相关)
+		// 标识符
+		// 与 Webpack.options.optimization.chunkIds 相关
 		this.id = null;
 		// [ chunk.id ] (与 FlagIncludedChunksPlugin 相关)
 		this.ids = null;
 		// 调试debug(唯一标识符)
 		this.debugId = debugId++;
-		// 标识: chunk名
+		// 标识: 块名
 		this.name = name;
 		// 设置 chunk id 的提示(与 SplitChunksPlugin.options.CacheGroup.idHint 相关)
 		// Set<String>
 		this.idNameHints = new SortableSet();
-		// 标识: 标识当前 Chunk 能否被合并
+		// 标识: 标识当前 块 能否被合并
 		// RuntimeChunk.preventIntegration = true
 		this.preventIntegration = false;
 		// 包含 当前块 的 块组
 		// Set<ChunkGroup>
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
-		// 当前块关联的运行时块名称(与 Webpack.options.Entry.runtime 相关)
+		// 当前块关联的运行时块名称
+		// 与 Webpack.options.Entry.runtime 相关
 		this.runtime = undefined;
 		// 输出文件名模板
-		// Webpack.options.Entry.filename
+		// 与 Webpack.options.Entry.filename 相关
 		this.filenameTemplate = undefined;
 		// 输出文件名 
 		// 示例: app.67f6cda2.js
@@ -88,9 +94,9 @@ class Chunk {
 		// 示例: app.ef02ca859b.js
 		// Set<string>
 		this.auxiliaryFiles = new Set();
-		// 标识: 标识当前chunk是否已被渲染输出
+		// 标识: 标识当前块是否已被渲染输出
 		this.rendered = false;
-		// 当前 Chunk 完整hash值
+		// 当前块完整哈希值
 		this.hash = undefined;
 		// Record<String, String>
 		this.contentHash = Object.create(null);

@@ -7,7 +7,12 @@ const getIgnoredModule = memoize(() => {
 	return new RawModule("/* (ignored) */", `ignored`, `(ignored)`);
 });
 
-// 依赖: 
+/**
+ * 依赖类型(DependencyType) 与 依赖分类(DependencyCategory):
+ * 
+ */
+
+// 依赖
 // 作用:
 // 用来描述 当前引用依赖 的位置信息 和 引用模块信息
 class Dependency {
@@ -43,13 +48,15 @@ class Dependency {
 	}
 
 	// 返回 Dependency 的类型
-	// javacript/auto javascript/dynamic 
+	// javacript/auto javascript/dynamic
+	// 作用: 
 	get type() {
 		return "unknown";
 	}
 
 	// 返回 Dependency 的分类
 	// commonjs | amd | esm | self
+	// 作用:
 	get category() {
 		return "unknown";
 	}

@@ -51,6 +51,18 @@ const makeSerializable = require("./util/makeSerializable");
  * sideEffectFree:
  */
 
+/**
+ * 模块分类:
+ * 标准模块(NormalModule):
+ * 运行时模块(RuntimeModule):
+ * 上下文模块(ContextModule):
+ * 动态链接模块(DllModule):
+ * (ExternalModule):
+ * (RawModule):
+ * 回退模块(FallbackModule):
+ * 异步依赖块(AsyncDependenciesBlock)
+ */
+
 const EMPTY_RESOLVE_OPTIONS = {};
 
 let debugId = 1000;
@@ -71,6 +83,8 @@ const deprecatedNeedRebuild = util.deprecate(
 );
 
 // 模块
+// 作用:
+// 
 class Module extends DependenciesBlock {
 	constructor(type, context = null, layer = null) {
 		super();

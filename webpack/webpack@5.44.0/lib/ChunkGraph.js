@@ -208,6 +208,9 @@ class ChunkGraphChunk {
 	}
 }
 
+// 块图
+// 作用:
+// 
 class ChunkGraph {
 	constructor(moduleGraph) {
 		// 记录当前 Module 属于哪些 Chunk

@@ -53,6 +53,8 @@ const getProperty = (moduleGraph, module, exportName, property, runtime) => {
 };
 
 // 导出信息依赖
+// 作用:
+// 
 class ExportsInfoDependency extends NullDependency {
 	constructor(range, exportName, property) {
 		super();

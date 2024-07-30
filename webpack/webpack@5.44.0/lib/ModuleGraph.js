@@ -102,6 +102,7 @@ class ModuleGraphModule {
 /**
  * 模块图
  * 作用:
+ * 以 模块 为核心
  * 描述 模块Module 与 依赖Dependency 的引用关系
  * 描述 模块Module 与 模块Module 的引用关系
  */

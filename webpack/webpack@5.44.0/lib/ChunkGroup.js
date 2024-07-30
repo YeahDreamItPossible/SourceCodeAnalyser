@@ -33,7 +33,9 @@ const sortOrigin = (a, b) => {
 	return compareLocations(a.loc, b.loc);
 };
 
-// 块组(ChunkGroup): 用来对 Chunk 的逻辑分组 和 使用描述
+// 快组:
+// 作用:
+// 用来对 Chunk 的使用描述 和 逻辑分组
 class ChunkGroup {
 	constructor(options) {
 		if (typeof options === "string") {

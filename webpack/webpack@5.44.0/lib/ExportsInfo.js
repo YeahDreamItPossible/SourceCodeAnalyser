@@ -155,7 +155,7 @@ class ExportsInfo {
 		this._exportsAreOrdered = true;
 	}
 
-	// 设置 this._redirectTo
+	// 设置 this._redirectTo 并返回是否设置成功
 	setRedirectNamedTo(exportsInfo) {
 		if (this._redirectTo === exportsInfo) return false;
 		this._redirectTo = exportsInfo;

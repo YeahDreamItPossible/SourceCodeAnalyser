@@ -2,7 +2,9 @@
 
 const makeSerializable = require("./util/makeSerializable");
 
-// 依赖块(模块基类)
+// 依赖块(别名: 模块基类)
+// 作用:
+// 存储依赖 和 依赖块(异步模块)
 class DependenciesBlock {
 	constructor() {
 		// 依赖
