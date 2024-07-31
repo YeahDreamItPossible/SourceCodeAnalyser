@@ -51,7 +51,9 @@ const isNotAEntryModule = (chunkGraph, chunk) => {
 /** @type {WeakSet<Chunk>} */
 const recordedChunks = new WeakSet();
 
-// TODO:
+// 当前插件已被 SplitChunkPlugin 插件替代
+// 分割插件
+// 作用:
 class AggressiveSplittingPlugin {
 	/**
 	 * @param {AggressiveSplittingPluginOptions=} options options object

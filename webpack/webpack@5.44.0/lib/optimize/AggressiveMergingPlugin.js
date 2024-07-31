@@ -2,7 +2,8 @@
 
 const { STAGE_ADVANCED } = require("../OptimizationStages");
 
-// 遗弃 被 SplitChunkPlugin 替代
+// 当前插件已被 SplitChunkPlugin 替代
+// 作用:
 // 合并 Chunk
 class AggressiveMergingPlugin {
 	constructor(options) {

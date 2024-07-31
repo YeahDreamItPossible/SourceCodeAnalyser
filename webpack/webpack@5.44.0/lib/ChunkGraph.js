@@ -153,26 +153,28 @@ const isAvailableChunk = (a, b) => {
 	return true;
 };
 
-// 当前 Module 属于哪些 Chunk
-// Module => ChunkGraphModule
+// 块图模块
+// 作用:
+// 以 模块 为核心 描述 当前模块 属于哪些 块
+// 在 ChunkGraph 中 根据 Module 找到对应的 ChunkGraphModule
 class ChunkGraphModule {
 	constructor() {
-		// 包含当前 Module 的 块
+		// 包含 当前模块 的 块
 		// Set<Chunk>
 		this.chunks = new SortableSet();
-		// 包含当前 Module 的 入口块
+		// 包含 当前模块 的 入口块
 		// Set<Chunk>
 		this.entryInChunks = undefined;
-		// 包含当前 Module 的 运行时块
+		// 包含 当前模块 的 运行时块
 		// Set<Chunk>
 		this.runtimeInChunks = undefined;
 
 		// Map<RuntimeChunk, ModuleHashInfo>
 		this.hashes = undefined;
 
-		// Module.id
+		// 模块Id
 		this.id = null;
-		// 运行时所需要的与 webpack 相关的变量
+		// 当前模块 在运行时所需要的 webpack 相关的变量 ??
 		// RuntimeSpecMap<Set<string>> | undefined
 		this.runtimeRequirements = undefined;
 		// RuntimeSpecMap<string>
@@ -182,14 +184,16 @@ class ChunkGraphModule {
 	}
 }
 
-// 当前 Chunk 中所包含的 Module
-// Chunk => ChunkGraphChunk
+// 块图块
+// 作用:
+// 以 块 为核心 描述 当前块 中所包含的 模块
+// 在 ChunkGraph 中 根据 Chunk 找到对应的 ChunkGraphChunk
 class ChunkGraphChunk {
 	constructor() {
-		// 当前 Chunk 所包含的Module
+		// 当前块 所包含的模块
 		// Set<Module>
 		this.modules = new SortableSet();
-		// 当前 Chunk 所包含的 RuntimeModule
+		// 当前块 所包含的 运行时模块
 		// Set<RuntimeModule>
 		this.runtimeModules = new SortableSet();
 		// 入口Module 与 入口点
@@ -200,9 +204,10 @@ class ChunkGraphChunk {
 		/** @type {Set<RuntimeModule> | undefined} */
 		this.fullHashModules = undefined;
 
-		// 运行时所需要的与 webpack 相关的变量
+		// 当前块 在运行时所需要的 webpack 相关的变量
 		// 示例: __webpack_require__ __webpack_require__.o
 		this.runtimeRequirements = undefined;
+		// 当前块 在运行时所需要的 webpack 相关的变量 ??
 		// Set<string>
 		this.runtimeRequirementsInTree = new Set();
 	}
@@ -210,22 +215,24 @@ class ChunkGraphChunk {
 
 // 块图
 // 作用:
-// 
+// 以 块 为核心 描述 块 的引用关系
+// 1. 以 块 为核心 描述 当前块 与其 当前块引用的模块 的引用关系
+// 2. 以 模块 为核心 描述 模块 与其 当前模块属于哪些块 的引用关系
 class ChunkGraph {
 	constructor(moduleGraph) {
-		// 记录当前 Module 属于哪些 Chunk
+		// 记录 当前模块 属于哪些 块
 		// WeakMap<Module, ChunkGraphModule>
 		this._modules = new WeakMap();
-		// 记录当前 Chunk 有哪些 Module
+		// 记录 当前块 有哪些 模块
 		// WeakMap<Chunk, ChunkGraphChunk>
 		this._chunks = new WeakMap();
-		// 记录当前异步 Module 属于那些 ChunkGroup
+		// 记录 当前异步模块 属于哪些 块组
 		// WeakMap<AsyncDependenciesBlock, ChunkGroup>
 		this._blockChunkGroups = new WeakMap();
-		//
+		// 运行时块Id
 		// Map<String, String | number>
 		this._runtimeIds = new Map();
-		// ModuleGraph
+		// 模块图
 		this.moduleGraph = moduleGraph;
 		// 
 		this._getGraphRoots = this._getGraphRoots.bind(this);
@@ -282,6 +289,7 @@ class ChunkGraph {
 	 * @param {SortableSet<Module>} set the sortable Set to get the roots of
 	 * @returns {Module[]} the graph roots
 	 */
+	// 以 数组 的形式返回 
 	_getGraphRoots(set) {
 		const { moduleGraph } = this;
 		return Array.from(
@@ -306,7 +314,7 @@ class ChunkGraph {
 		).sort(compareModulesByIdentifier);
 	}
 
-	// 绑定 单个Module 与 单个Chunk 关联关系
+	// 绑定 单个模块 与 单个块 的关联关系
 	connectChunkAndModule(chunk, module) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -314,7 +322,7 @@ class ChunkGraph {
 		cgc.modules.add(module);
 	}
 
-	// 解除 单个Module 与 单个Chunk 关联关系
+	// 解除 单个模块 与 单个块 关联关系
 	disconnectChunkAndModule(chunk, module) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -322,7 +330,7 @@ class ChunkGraph {
 		cgm.chunks.delete(chunk);
 	}
 
-	// 解除 某个Chunk 与 所有Module 的关联关系
+	// 解除 单个块 与 所有模块 的关联关系
 	disconnectChunk(chunk) {
 		// 根据 Chunk 找到对应的 ChunkGraphChunk
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -1554,13 +1562,11 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 
 // WeakMap<Module, ChunkGraph>
 const chunkGraphForModuleMap = new WeakMap();
-
 // WeakMap<Chunk, ChunkGraph>
 const chunkGraphForChunkMap = new WeakMap();
 
 /** @type {Map<string, (module: Module) => ChunkGraph>} */
 const deprecateGetChunkGraphForModuleMap = new Map();
-
 // TODO remove in webpack 6
 /** @type {Map<string, (chunk: Chunk) => ChunkGraph>} */
 const deprecateGetChunkGraphForChunkMap = new Map();

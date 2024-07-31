@@ -53,18 +53,23 @@ let debugId = 1000;
 
 /**
  * Chunk 分类:
- * RuntimeChunk 运行时块(包含 webpack 在运行环境运行时所需的代码, 主要是用于处理模块的加载和依赖关系)
- * EntrypointChunk 入口块(由 Webpack.options.Entry 生成的块, 是打包过程的入口点, 包含了应用程序的入口点模块及其依赖)
+ * RuntimeChunk 运行时块
+ * (包含 webpack 在运行环境运行时所需的代码, 主要是用于处理模块的加载和依赖关系)
+ * EntrypointChunk 入口块
+ * (由 Webpack.options.Entry 生成的块, 是打包过程的入口点, 包含了应用程序的入口点模块及其依赖)
  */
 
 // 块
 // 作用:
-// 块 是 模块(Module) 的封装单元 当 构建完成 时 块(Chunk) 被渲染成 捆(Bundle)
+// 块 是 模块(Module) 的封装单元 描述了对 模块 的使用信息
+// 当 构建完成 时 块(Chunk) 被渲染成 捆(Bundle)
+// 存储着 对应的模块信息 以及入口信息 和 对应的出口信息
 class Chunk {
 	constructor(name) {
-		// 标识符
-		// 与 Webpack.options.optimization.chunkIds 相关
+		// 当前块Id
+		// 根据 Webpack.options.optimization.chunkIds 配置 使用对应的算法得到对应的 Id
 		this.id = null;
+		// 
 		// [ chunk.id ] (与 FlagIncludedChunksPlugin 相关)
 		this.ids = null;
 		// 调试debug(唯一标识符)
@@ -74,19 +79,19 @@ class Chunk {
 		// 设置 chunk id 的提示(与 SplitChunksPlugin.options.CacheGroup.idHint 相关)
 		// Set<String>
 		this.idNameHints = new SortableSet();
-		// 标识: 标识当前 块 能否被合并
+		// 标识: 标识 当前块 能否被合并
 		// RuntimeChunk.preventIntegration = true
 		this.preventIntegration = false;
-		// 包含 当前块 的 块组
+		// 块组(包含当前块的快组)
 		// Set<ChunkGroup>
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
-		// 当前块关联的运行时块名称
+		// 运行时块名称(如果当前块需要额外的运行时块时)
 		// 与 Webpack.options.Entry.runtime 相关
 		this.runtime = undefined;
 		// 输出文件名模板
 		// 与 Webpack.options.Entry.filename 相关
 		this.filenameTemplate = undefined;
-		// 输出文件名 
+		// 输出文件名(根据 Webpack.options.Entry.filename 得到的文件名) 
 		// 示例: app.67f6cda2.js
 		// Set<String>
 		this.files = new ChunkFilesSet();
@@ -98,11 +103,12 @@ class Chunk {
 		this.rendered = false;
 		// 当前块完整哈希值
 		this.hash = undefined;
+		// 内容哈希
 		// Record<String, String>
 		this.contentHash = Object.create(null);
-		// 当前 Chunk 渲染hash值(默认对this.hash截取前20位)
+		// 当前块 渲染哈希值(默认对 this.hash 截取前20位)
 		this.renderedHash = undefined;
-		// 
+		// 原因(描述当前块存在的原因)
 		// String
 		this.chunkReason = undefined;
 		// 
@@ -508,7 +514,7 @@ class Chunk {
 		}
 	}
 
-	// 以 Set 形式返回所有的异步 Chunk
+	// 以 Set 形式返回所有的异步块
 	getAllAsyncChunks() {
 		const queue = new Set();
 		const chunks = new Set();

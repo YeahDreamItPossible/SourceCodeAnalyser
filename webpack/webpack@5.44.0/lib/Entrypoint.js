@@ -2,10 +2,17 @@
 
 const ChunkGroup = require("./ChunkGroup");
 
+/**
+ * 入口点分类:
+ * InitialEntrypoint(初始入口点):
+ * 当 构建完成 时 首次加载 bundle 时必须要加载的块
+ * AsyncEntrypint(异步入口点):
+ * 当 某个块 在运行时 需要要额外异步加载的块
+ */
+
 // 入口点
-// 入口点分类
-// InitialEntrypoint 初始入口点
-// AsyncEntrypint 异步入口点
+// 作用:
+// 当前构建的入口
 class Entrypoint extends ChunkGroup {
 	constructor(entryOptions, initial = true) {
 		if (typeof entryOptions === "string") {
