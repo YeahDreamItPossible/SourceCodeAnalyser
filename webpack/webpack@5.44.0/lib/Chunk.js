@@ -52,6 +52,11 @@ const ChunkFilesSet = createArrayToSetDeprecationSet("chunk.files");
 let debugId = 1000;
 
 /**
+ * 块出现的原因:
+ * 我们书写的模块是零散的 需要用 块 来对这些模块的引用关系进行系统的记录
+ */
+
+/**
  * Chunk 分类:
  * RuntimeChunk 运行时块
  * (包含 webpack 在运行环境运行时所需的代码, 主要是用于处理模块的加载和依赖关系)
@@ -63,7 +68,8 @@ let debugId = 1000;
 // 作用:
 // 块 是 模块(Module) 的封装单元 描述了对 模块 的使用信息
 // 当 构建完成 时 块(Chunk) 被渲染成 捆(Bundle)
-// 存储着 对应的模块信息 以及入口信息 和 对应的出口信息
+// 块 存储着 入口信息 和 对应的出口信息
+// 在 ChunkGraph 中 能够 根据 块 找到对应的 模块信息 
 class Chunk {
 	constructor(name) {
 		// 当前块Id
@@ -115,7 +121,7 @@ class Chunk {
 		this.extraAsync = false;
 	}
 
-	// 返回 当前 Chunk 的入口模块(Entry Module)
+	// 返回 当前块 的 所有入口模块
 	get entryModule() {
 		const entryModules = Array.from(
 			ChunkGraph.getChunkGraphForChunk(
@@ -135,7 +141,7 @@ class Chunk {
 		}
 	}
 
-	// 返回 当前 Chunk 是否包含 Entry Module
+	// 返回 当前块 是否有 入口模块
 	hasEntryModule() {
 		return (
 			ChunkGraph.getChunkGraphForChunk(
@@ -146,8 +152,7 @@ class Chunk {
 		);
 	}
 
-	// 返回 ChunkGraphChunk 是否成功包含当前 Module
-	// ChunkGraphChunk.modules 是否包含当前 Module
+	// 绑定 当前块 与 当前模块 的关联关系
 	addModule(module) {
 		// 根据 Module 找到对应的 ChunkGraph
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
@@ -162,7 +167,7 @@ class Chunk {
 		return true;
 	}
 
-	// 解除 Module 与 Chunk 的关联关系
+	// 解除 当前块 与 当前模块 的关联关系
 	removeModule(module) {
 		ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -171,7 +176,7 @@ class Chunk {
 		).disconnectChunkAndModule(this, module);
 	}
 
-	// 返回当前Chunk包含Module的数量
+	// 返回 当前块 包含 模块 的数量
 	getNumberOfModules() {
 		return ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -180,7 +185,7 @@ class Chunk {
 		).getNumberOfChunkModules(this);
 	}
 
-	// 返回当前 Chunk 包含的所有 Module
+	// 返回 当前块 包含的 所有模块
 	get modulesIterable() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -203,7 +208,7 @@ class Chunk {
 		return chunkGraph.compareChunks(this, otherChunk);
 	}
 
-	// 返回当前Chunk是否包含当前Module
+	// 返回 当前块 是否包含 当前模块
 	containsModule(module) {
 		return ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -212,7 +217,7 @@ class Chunk {
 		).isModuleInChunk(module, this);
 	}
 
-	//  以 Set 形式返回当前 Chunk 下的所有 Module
+	//  以 Set 形式返回 当前块 下的 所有模块
 	getModules() {
 		return ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -221,7 +226,7 @@ class Chunk {
 		).getChunkModules(this);
 	}
 
-	// 移除当前 Chunk 与对应 Module 的关联关系
+	// 移除 当前块 与对应 所有模块 的关联关系
 	remove() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -232,19 +237,20 @@ class Chunk {
 		this.disconnectFromGroups();
 	}
 
-	// 移除当前 Chunk 与当前 Module 的关联关系
-	// 绑定另外一个 Chunk 与当前 Module 的关联关系
+	// 重新绑定 当前模块 与 另一个块 的关联关系
 	moveModule(module, otherChunk) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
 			"Chunk.moveModule",
 			"DEP_WEBPACK_CHUNK_MOVE_MODULE"
 		);
+		// 移除 当前块 与 当前模块 的关联关系
 		chunkGraph.disconnectChunkAndModule(this, module);
+		// 绑定 当前模块 与 另一个块 的关联关系
 		chunkGraph.connectChunkAndModule(otherChunk, module);
 	}
 
-	// 返回当前 Chunk 和另外一个 Chunk 是否已经被成功合并
+	// 返回 当前块 和 另外一个块 是否已经被成功合并
 	integrate(otherChunk) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -259,7 +265,7 @@ class Chunk {
 		}
 	}
 
-	// 返回当前 Chunk 能否与另一个 Chunk 进行合并
+	// 返回 当前块 能否与 另外一个块 进行合并
 	canBeIntegrated(otherChunk) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -269,7 +275,7 @@ class Chunk {
 		return chunkGraph.canChunksBeIntegrated(this, otherChunk);
 	}
 
-	// 当前块是否是 空块
+	// 返回 当前块 是否是 空块
 	// 即: 当前 Chunk 是否包含 Module
 	isEmpty() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
@@ -280,7 +286,7 @@ class Chunk {
 		return chunkGraph.getNumberOfChunkModules(this) === 0;
 	}
 
-	// 返回当前 Chunk 下所有 Module 的大小之和
+	// 返回 当前块 下 所有模块 的大小之和
 	modulesSize() {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -290,7 +296,7 @@ class Chunk {
 		return chunkGraph.getChunkModulesSize(this);
 	}
 
-	// 返回当前 Chunk 的大小
+	// 返回 当前块 的大小
 	size(options = {}) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,
@@ -300,7 +306,7 @@ class Chunk {
 		return chunkGraph.getChunkSize(this, options);
 	}
 
-	// 返回当前 Chunk 与另外一个 Chunk 合并后的 Chunk 大小
+	// 返回 当前块 与 另外一个块 合并后的 块 大小
 	integratedSize(otherChunk, options) {
 		const chunkGraph = ChunkGraph.getChunkGraphForChunk(
 			this,

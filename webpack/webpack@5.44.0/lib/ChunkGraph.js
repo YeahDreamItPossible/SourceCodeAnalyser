@@ -23,23 +23,12 @@ const {
 	forEachRuntime
 } = require("./util/runtime");
 
-/** @typedef {import("./AsyncDependenciesBlock")} AsyncDependenciesBlock */
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./ChunkGroup")} ChunkGroup */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-/** @typedef {import("./RuntimeModule")} RuntimeModule */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
 /** @type {ReadonlySet<string>} */
 const EMPTY_SET = new Set();
 
 const ZERO_BIG_INT = BigInt(0);
 
 const compareModuleIterables = compareIterables(compareModulesByIdentifier);
-
-/** @typedef {(c: Chunk, chunkGraph: ChunkGraph) => boolean} ChunkFilterPredicate */
-/** @typedef {(m: Module) => boolean} ModuleFilterPredicate */
 
 // 模块哈希信息
 class ModuleHashInfo {
@@ -50,8 +39,6 @@ class ModuleHashInfo {
 		this.renderedHash = renderedHash;
 	}
 }
-
-/** @template T @typedef {(set: SortableSet<T>) => T[]} SetToArrayFunction<T> */
 
 // 返回 类Set值 的 Set 形式
 const getArray = set => {
@@ -200,8 +187,8 @@ class ChunkGraphChunk {
 		// Map<EntryModule, Entrypoint>
 		this.entryModules = new Map();
 
-		// TODO:
-		/** @type {Set<RuntimeModule> | undefined} */
+		// 当前块 所包含的 运行时模块(该运行时模块 需要完整的哈希值)
+		// Set<RuntimeModule>
 		this.fullHashModules = undefined;
 
 		// 当前块 在运行时所需要的 webpack 相关的变量
@@ -212,6 +199,13 @@ class ChunkGraphChunk {
 		this.runtimeRequirementsInTree = new Set();
 	}
 }
+
+/**
+ * 块图:
+ * 单个块 与 模块 之间是复杂的 一对多关系
+ * 单个模块 与 块 之间也是复杂的 一对多关系
+ * 多个块 与 多个模块 之间是复杂的 多对多关系
+ */
 
 // 块图
 // 作用:
@@ -322,7 +316,7 @@ class ChunkGraph {
 		cgc.modules.add(module);
 	}
 
-	// 解除 单个模块 与 单个块 关联关系
+	// 解除 单个模块 与 单个块 的关联关系
 	disconnectChunkAndModule(chunk, module) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -346,7 +340,7 @@ class ChunkGraph {
 		ChunkGraph.clearChunkGraphForChunk(chunk);
 	}
 
-	// 单向绑定 Chunk 与 Module 的关联关系
+	// 单向绑定 单个块 与 所有模块 的关联关系
 	attachModules(chunk, modules) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		for (const module of modules) {
@@ -354,11 +348,7 @@ class ChunkGraph {
 		}
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {Iterable<RuntimeModule>} modules the runtime modules
-	 * @returns {void}
-	 */
+	// 单向绑定 单个块 与 所有运行时模块 的关联关系
 	attachRuntimeModules(chunk, modules) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		for (const module of modules) {
@@ -366,11 +356,7 @@ class ChunkGraph {
 		}
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {Iterable<RuntimeModule>} modules the modules that require a full hash
-	 * @returns {void}
-	 */
+	// 单向绑定 单个块 与 所有运行时模块(该运行时模块 需要完整的哈希值) 的关联关系
 	attachFullHashModules(chunk, modules) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		if (cgc.fullHashModules === undefined) cgc.fullHashModules = new Set();
@@ -379,11 +365,7 @@ class ChunkGraph {
 		}
 	}
 
-	/**
-	 * @param {Module} oldModule the replaced module
-	 * @param {Module} newModule the replacing module
-	 * @returns {void}
-	 */
+	// 替换掉 某个模块 与 所有块 的关联关系
 	replaceModule(oldModule, newModule) {
 		const oldCgm = this._getChunkGraphModule(oldModule);
 		const newCgm = this._getChunkGraphModule(newModule);
@@ -439,93 +421,75 @@ class ChunkGraph {
 		}
 	}
 
-	// 根据Chunk 找到 ChunkGraphChunk 然后判断ChunkGraphChunk是否含有Module
+	// 返回 当前块 中是否包含 某个模块
 	isModuleInChunk(module, chunk) {
+		// 根据 Chunk 找到对应的 ChunkGraphChunk 
 		const cgc = this._getChunkGraphChunk(chunk);
+		// 然后判断 ChunkGraphChunk 是否含有Module
 		return cgc.modules.has(module);
 	}
 
-	/**
-	 * @param {Module} module the checked module
-	 * @param {ChunkGroup} chunkGroup the checked chunk group
-	 * @returns {boolean} true, if the chunk contains the module
-	 */
-	// 判断 ChunkGroup 中是否含有 Module
+	// 返回 当前块组 中是否包含 某个模块
 	isModuleInChunkGroup(module, chunkGroup) {
+		// 遍历 当前块组 下的所有 块
 		for (const chunk of chunkGroup.chunks) {
+			// 判断 当前块组 下的某个 块 是否包含 当前模块
 			if (this.isModuleInChunk(module, chunk)) return true;
 		}
 		return false;
 	}
 
-	/**
-	 * @param {Module} module the checked module
-	 * @returns {boolean} true, if the module is entry of any chunk
-	 */
+	// 返回 当前模块 是否属于 入口块
 	isEntryModule(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.entryInChunks !== undefined;
 	}
 
-	// 返回当前Module 关联的所有Chunk
+	// 返回 当前模块 关联的所有 块
 	getModuleChunksIterable(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.chunks;
 	}
 
-	// 返回当前Module 关联的所有Chunk(根据特定排序方法排序后)
+	// 返回 当前模块 关联的所有 块(根据特定排序方法排序后)
 	getOrderedModuleChunksIterable(module, sortFn) {
 		const cgm = this._getChunkGraphModule(module);
 		cgm.chunks.sortWith(sortFn);
 		return cgm.chunks;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {Chunk[]} array of chunks (cached, do not modify)
-	 */
+	// 以 数组 的形式返回 当前模块 关联的所有 块
 	getModuleChunks(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.chunks.getFromCache(getArray);
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @returns {number} the number of chunk which contain the module
-	 */
+	// 返回 当前模块 关联的所有 块 的数量
 	getNumberOfModuleChunks(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.chunks.size;
 	}
-
-	/**
-	 * @param {Module} module the module
-	 * @returns {RuntimeSpecSet} runtimes
-	 */
-	// 
+	
+	// 以 数组 的形式返回 当前模块 关联的所有 块 ??
 	getModuleRuntimes(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.chunks.getFromUnorderedCache(getModuleRuntimes);
 	}
 
-	// 返回 当前 Chunk 包含的 Module 的数量
+	// 返回 当前块 包含的 所有模块 的数量
 	getNumberOfChunkModules(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules.size;
 	}
 
-	// 返回当前 Chunk 下的所有 Module
+	// 返回 当前块 包含的 所有模块
 	// ChunkGraphChunk.modules
 	getChunkModulesIterable(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {string} sourceType source type
-	 * @returns {Iterable<Module> | undefined} return the modules for this chunk
-	 */
+	// 返回 当前块 包含的过滤后的 模块
 	getChunkModulesIterableBySourceType(chunk, sourceType) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		const modulesWithSourceType = cgc.modules
@@ -534,25 +498,14 @@ class ChunkGraph {
 		return modulesWithSourceType;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {function(Module, Module): -1|0|1} comparator comparator function
-	 * @returns {Iterable<Module>} return the modules for this chunk
-	 */
-	// 返回当前 Chunk 下的所有 Module
-	// 返回 ChunkGraphChunk.modules
+	//  返回 当前块 包含的 所有模块(模块排序后)
 	getOrderedChunkModulesIterable(chunk, comparator) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		cgc.modules.sortWith(comparator);
 		return cgc.modules;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {string} sourceType source type
-	 * @param {function(Module, Module): -1|0|1} comparator comparator function
-	 * @returns {Iterable<Module> | undefined} return the modules for this chunk
-	 */
+	// 返回 当前块 包含的过滤后的 模块(模块排序后)
 	getOrderedChunkModulesIterableBySourceType(chunk, sourceType, comparator) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		const modulesWithSourceType = cgc.modules
@@ -563,18 +516,14 @@ class ChunkGraph {
 		return modulesWithSourceType;
 	}
 
-	// 以 Set 形式返回当前 Chunk 下的所有 Module
+	// 以 Set 形式返回 当前块 下的 所有模块
 	getChunkModules(chunk) {
 		// 根据 Chunk 找到对应的 ChunkGraphChunk
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules.getFromUnorderedCache(getArray);
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @param {function(Module, Module): -1|0|1} comparator comparator function
-	 * @returns {Module[]} return the modules for this chunk (cached, do not modify)
-	 */
+	// 以 数组 形式返回 当前块 下的 所有模块 ??
 	getOrderedChunkModules(chunk, comparator) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		const arrayFunction = createOrderedArrayFunction(comparator);
@@ -698,7 +647,7 @@ class ChunkGraph {
 		return false;
 	}
 
-	// 比较 ChunkA 和 ChunkB 下包含 Module 数量的大小
+	// 比较 ChunkA 和 ChunkB 下包含 模块 数量的大小
 	compareChunks(chunkA, chunkB) {
 		const cgcA = this._getChunkGraphChunk(chunkA);
 		const cgcB = this._getChunkGraphChunk(chunkB);
@@ -709,7 +658,7 @@ class ChunkGraph {
 		return compareModuleIterables(cgcA.modules, cgcB.modules);
 	}
 
-	// 返回当前 Chunk 下所有的 Module 的大小之和
+	// 返回 当前块 下 所有模块 的大小之和
 	getChunkModulesSize(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules.getFromUnorderedCache(getModulesSize);
@@ -719,6 +668,7 @@ class ChunkGraph {
 	 * @param {Chunk} chunk the chunk
 	 * @returns {Record<string, number>} total sizes of all modules in the chunk by source type
 	 */
+	// 返回 当前块 下 所有模块 的大小之和 ??
 	getChunkModulesSizes(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.modules.getFromUnorderedCache(getModulesSizes);
@@ -733,7 +683,7 @@ class ChunkGraph {
 		return cgc.modules.getFromUnorderedCache(this._getGraphRoots);
 	}
 
-	// 根据选项返回 Chunk 的大小
+	// 根据选项返回 当前块  的大小
 	getChunkSize(chunk, options = {}) {
 		// 根据 Chunk 找到对应的 ChunkGraphChunk
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -751,7 +701,7 @@ class ChunkGraph {
 		);
 	}
 
-	// 根据选项返回 ChunkA 与ChunkB 合并后的 Chunk 大小
+	// 根据选项返回 ChunkA 与 ChunkB 合并后的 Chunk 大小
 	getIntegratedChunksSize(chunkA, chunkB, options = {}) {
 		const cgcA = this._getChunkGraphChunk(chunkA);
 		const cgcB = this._getChunkGraphChunk(chunkB);
@@ -773,7 +723,7 @@ class ChunkGraph {
 		);
 	}
 
-	// 返回 两个 Chunk 能否被合成一个
+	// 返回 两个块 能否被合成一个
 	canChunksBeIntegrated(chunkA, chunkB) {
 		// 先判断 Chunk 是否是运行时块(运行时块不允许被合并)
 		if (chunkA.preventIntegration || chunkB.preventIntegration) {
@@ -858,19 +808,13 @@ class ChunkGraph {
 		ChunkGraph.clearChunkGraphForChunk(chunkB);
 	}
 
-	/**
-	 * @param {Module} module the checked module
-	 * @param {Chunk} chunk the checked chunk
-	 * @returns {boolean} true, if the chunk contains the module as entry
-	 */
+	// 返回 当前块 是否包含 当前入口模块
 	isEntryModuleInChunk(module, chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.entryModules.has(module);
 	}
 
-	// 绑定 Module 与 Chunk 关联关系
-	// Module => ChunkGraphModule
-	// Chunk => ChunkGraphChunk
+	// 绑定 单个模块 和 单个块 的关联关系(入口模块 入口块)
 	connectChunkAndEntryModule(chunk, module, entrypoint) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -881,11 +825,7 @@ class ChunkGraph {
 		cgc.entryModules.set(module, entrypoint);
 	}
 
-	/**
-	 * @param {Chunk} chunk the new chunk
-	 * @param {RuntimeModule} module the runtime module
-	 * @returns {void}
-	 */
+	// 绑定 单个模块 和 单个块 的关联关系(运行时模块 运行时块)
 	connectChunkAndRuntimeModule(chunk, module) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -896,22 +836,14 @@ class ChunkGraph {
 		cgc.runtimeModules.add(module);
 	}
 
-	/**
-	 * @param {Chunk} chunk the new chunk
-	 * @param {RuntimeModule} module the module that require a full hash
-	 * @returns {void}
-	 */
+	// 单向绑定 单个块 与 所有模块(该模块 需要完整的哈希值) 的关联关系
 	addFullHashModuleToChunk(chunk, module) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		if (cgc.fullHashModules === undefined) cgc.fullHashModules = new Set();
 		cgc.fullHashModules.add(module);
 	}
 
-	/**
-	 * @param {Chunk} chunk the new chunk
-	 * @param {Module} module the entry module
-	 * @returns {void}
-	 */
+	// 解除 单个模块 与 单个块 的关联关系(入口模块 入口块)
 	disconnectChunkAndEntryModule(chunk, module) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -922,11 +854,7 @@ class ChunkGraph {
 		cgc.entryModules.delete(module);
 	}
 
-	/**
-	 * @param {Chunk} chunk the new chunk
-	 * @param {RuntimeModule} module the runtime module
-	 * @returns {void}
-	 */
+	// 解除 单个模块 和 单个块 的关联关系(运行时模块 运行时块)
 	disconnectChunkAndRuntimeModule(chunk, module) {
 		const cgm = this._getChunkGraphModule(module);
 		const cgc = this._getChunkGraphChunk(chunk);
@@ -937,10 +865,7 @@ class ChunkGraph {
 		cgc.runtimeModules.delete(module);
 	}
 
-	/**
-	 * @param {Module} module the entry module, it will no longer be entry
-	 * @returns {void}
-	 */
+	// 解除 单个模块 与 所有入口块 的关联关系
 	disconnectEntryModule(module) {
 		const cgm = this._getChunkGraphModule(module);
 		for (const chunk of cgm.entryInChunks) {
@@ -950,10 +875,7 @@ class ChunkGraph {
 		cgm.entryInChunks = undefined;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk, for which all entries will be removed
-	 * @returns {void}
-	 */
+	// 解除 单个块 与 所有入口模块 的关联关系
 	disconnectEntries(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		for (const module of cgc.entryModules.keys()) {
@@ -966,43 +888,39 @@ class ChunkGraph {
 		cgc.entryModules.clear();
 	}
 
-	// 返回当前ChunkGraphChunk.entryModules
+	// 返回 当前块 包含的 所有入口模块 的数量
 	getNumberOfEntryModules(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.entryModules.size;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {number} the amount of entry modules in chunk
-	 */
+	// 返回 当前块 包含的 所有运行时模块 的数量
 	getNumberOfRuntimeModules(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.runtimeModules.size;
 	}
-
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {Iterable<Module>} iterable of modules (do not modify)
-	 */
-	// 根据 Chunk 来获取入口模块 EntryModule
+	
+	// 返回 当前块 包含的 所有入口模块
 	getChunkEntryModulesIterable(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.entryModules.keys();
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {Iterable<Chunk>} iterable of chunks
-	 */
+	// 以 Set 的形式返回 当前块 下的所有块
+	// 找到 当前块 下 所有块组 中的 入口块 下的所有块
 	getChunkEntryDependentChunksIterable(chunk) {
 		/** @type {Set<Chunk>} */
 		const set = new Set();
+		// 遍历包含 当前块 的 所有块组
 		for (const chunkGroup of chunk.groupsIterable) {
+			// 判断 当前块组 是否是 入口点 的实例
 			if (chunkGroup instanceof Entrypoint) {
+				// 返回 当前入口点 的 入口块
 				const entrypointChunk = chunkGroup.getEntrypointChunk();
 				const cgc = this._getChunkGraphChunk(entrypointChunk);
+				// 遍历 当前入口块 的 所有块组
 				for (const chunkGroup of cgc.entryModules.values()) {
+					// 遍历 当前入口块 的 某个块组 下的 所有块
 					for (const c of chunkGroup.chunks) {
 						if (c !== chunk && c !== entrypointChunk && !c.hasRuntime()) {
 							set.add(c);
@@ -1031,19 +949,13 @@ class ChunkGraph {
 		return false;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {Iterable<RuntimeModule>} iterable of modules (do not modify)
-	 */
+	// 返回 当前块 下的 所有运行时模块
 	getChunkRuntimeModulesIterable(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.runtimeModules;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {RuntimeModule[]} array of modules in order of execution
-	 */
+	// 返回 当前块 下的 所有运行时模块(该运行时模块排序后)
 	getChunkRuntimeModulesInOrder(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		const array = Array.from(cgc.runtimeModules);
@@ -1063,57 +975,36 @@ class ChunkGraph {
 		return array;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {Iterable<RuntimeModule> | undefined} iterable of modules (do not modify)
-	 */
+	// 返回 当前块 下的 所有运行时模块(该运行时模块需要完整哈希值)
 	getChunkFullHashModulesIterable(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.fullHashModules;
 	}
 
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {ReadonlySet<RuntimeModule> | undefined} set of modules (do not modify)
-	 */
+	// 返回 当前块 下的 所有运行时模块(该运行时模块需要完整哈希值)
 	getChunkFullHashModulesSet(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.fullHashModules;
 	}
 
-	/** @typedef {[Module, Entrypoint | undefined]} EntryModuleWithChunkGroup */
-
-	/**
-	 * @param {Chunk} chunk the chunk
-	 * @returns {Iterable<EntryModuleWithChunkGroup>} iterable of modules (do not modify)
-	 */
+	// 返回 当前块 下的 所有入口模块
 	getChunkEntryModulesWithChunkGroupIterable(chunk) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		return cgc.entryModules;
 	}
 
-	/**
-	 * @param {AsyncDependenciesBlock} depBlock the async block
-	 * @returns {ChunkGroup} the chunk group
-	 */
+	// 返回 当前异步依赖块 对应的 块组
 	getBlockChunkGroup(depBlock) {
 		return this._blockChunkGroups.get(depBlock);
 	}
 
-	/**
-	 * @param {AsyncDependenciesBlock} depBlock the async block
-	 * @param {ChunkGroup} chunkGroup the chunk group
-	 * @returns {void}
-	 */
+	// 绑定 当前异步依赖块 与 块组 的关联关系
 	connectBlockAndChunkGroup(depBlock, chunkGroup) {
 		this._blockChunkGroups.set(depBlock, chunkGroup);
 		chunkGroup.addBlock(depBlock);
 	}
 
-	/**
-	 * @param {ChunkGroup} chunkGroup the chunk group
-	 * @returns {void}
-	 */
+	// 清空 当前块组 下包含的所有 异步依赖块
 	disconnectChunkGroup(chunkGroup) {
 		for (const block of chunkGroup.blocksIterable) {
 			this._blockChunkGroups.delete(block);
@@ -1122,24 +1013,24 @@ class ChunkGraph {
 		chunkGroup._blocks.clear();
 	}
 
-	// 返回 ChunkGraphModule.id
+	// 返回 chunkGraphModule.id
 	getModuleId(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.id;
 	}
 
-	// 设置模块ID
+	// 设置 chunkGraphModule.id
 	setModuleId(module, id) {
 		const cgm = this._getChunkGraphModule(module);
 		cgm.id = id;
 	}
 
-	// 返回
+	// 返回 运行时Id
 	getRuntimeId(runtime) {
 		return this._runtimeIds.get(runtime);
 	}
 
-	// 设置运行时id
+	// 设置 运行时id
 	setRuntimeId(runtime, id) {
 		this._runtimeIds.set(runtime, id);
 	}
@@ -1151,6 +1042,7 @@ class ChunkGraph {
 	 * @param {RuntimeSpec} runtime the runtime
 	 * @returns {T} hash
 	 */
+	// 返回 模块哈希信息
 	_getModuleHashInfo(module, hashes, runtime) {
 		if (!hashes) {
 			throw new Error(
@@ -1197,18 +1089,14 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 		return hashes && hashes.has(runtime);
 	}
 
-	// 返回模块hash
+	// 返回 模块哈希
 	getModuleHash(module, runtime) {
 		const cgm = this._getChunkGraphModule(module);
 		const hashes = cgm.hashes;
 		return this._getModuleHashInfo(module, hashes, runtime).hash;
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {RuntimeSpec} runtime the runtime
-	 * @returns {string} hash
-	 */
+	// 返回 模块渲染哈希
 	getRenderedModuleHash(module, runtime) {
 		const cgm = this._getChunkGraphModule(module);
 		const hashes = cgm.hashes;

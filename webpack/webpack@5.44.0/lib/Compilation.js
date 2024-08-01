@@ -398,6 +398,8 @@ const byLocation = compareSelect(err => err.loc, compareLocations);
 const compareErrors = concatComparators(byModule, byLocation, byMessage);
 
 // 编译过程
+// 作用:
+// 
 class Compilation {
 	constructor(compiler) {
 		// compilation.hooks.normalModuleLoader 已被废弃

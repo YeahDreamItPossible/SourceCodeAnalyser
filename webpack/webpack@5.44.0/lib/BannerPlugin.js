@@ -29,6 +29,8 @@ const wrapComment = str => {
 		.trimRight()}\n */`;
 };
 
+// 头部横幅插件
+// 作用:
 // 给满足条件的chunk文件头部或者尾部添加banner注释
 class BannerPlugin {
 	constructor(options) {

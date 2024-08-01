@@ -82,6 +82,11 @@ const deprecatedNeedRebuild = util.deprecate(
 	"DEP_WEBPACK_MODULE_NEED_REBUILD"
 );
 
+/**
+ * 模块:
+ * 一切资源皆模块
+ */
+
 // 模块
 // 作用:
 // 

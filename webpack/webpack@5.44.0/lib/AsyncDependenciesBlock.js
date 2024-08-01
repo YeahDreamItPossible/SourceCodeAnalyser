@@ -5,7 +5,8 @@ const makeSerializable = require("./util/makeSerializable");
 
 // 异步依赖块(别名: 异步模块)
 // 作用:
-// 
+// 描述 当前依赖块 是通过异步的方式导入
+// 在 构建时 有可能需要也需要通过 异步 的方式导出
 class AsyncDependenciesBlock extends DependenciesBlock {
 	constructor(groupOptions, loc, request) {
 		super();
