@@ -12,9 +12,10 @@ const getRawModule = memoize(() => require("../RawModule"));
  * import { add } from '../plugins/loaders/first.js?auth=lee!../plugins/loaders/second.js?use=wang!./utils/math.js?ts=12345'
  * 
  */
+
 // 模块依赖
 // 作用:
-// 
+// 用来描述模块的路径信息
 class ModuleDependency extends Dependency {
 	constructor(request) {
 		super();

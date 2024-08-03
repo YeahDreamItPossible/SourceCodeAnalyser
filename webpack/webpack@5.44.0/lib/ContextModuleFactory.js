@@ -23,6 +23,8 @@ const { join } = require("./util/fs");
 const EMPTY_RESOLVE_OPTIONS = {};
 
 // 上下文模块工厂
+// 作用:
+// 
 module.exports = class ContextModuleFactory extends ModuleFactory {
 	constructor(resolverFactory) {
 		super();

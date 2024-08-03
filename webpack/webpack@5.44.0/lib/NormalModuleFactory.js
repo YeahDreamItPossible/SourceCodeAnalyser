@@ -130,7 +130,7 @@ const deprecationChangedHookMessage = (name, hook) => {
 /** @type {WeakMap<ModuleDependency, ModuleFactoryResult & { module: { restoreFromUnsafeCache: Function }}>} */
 const unsafeCacheDependencies = new WeakMap();
 
-/** @type {WeakMap<Module, object>} */
+// WeakMap<Module, object>
 const unsafeCacheData = new WeakMap();
 
 // 返回 RuleSetCompiler 的实例
@@ -164,6 +164,7 @@ const ruleSetCompiler = new RuleSetCompiler([
  * 2. 普通loader(loader)
  * 3. 后置loader(postLoaders)
  */
+
 /**
  * Loader<{ loader: String, options: String, ident: String }>
  * Loader.loader  资源加载器路径(绝对路径)
@@ -185,6 +186,11 @@ const ruleSetCompiler = new RuleSetCompiler([
  * 1. 根据模块加载路径来获取所有的loaders 并根据模块路径中的前缀(! !! -!)进行筛选
  * 2. 根据匹配规则来筛选匹配后的loaders
  */
+
+// 标准模块工厂
+// 作用:
+// 获取创建 标准模块 所需要的所有参数 并创建 标准模块 的实例
+// 但是对 标准目标 并没有经过 语法分析器 分析词法语法
 class NormalModuleFactory extends ModuleFactory {
 	constructor({
 		context,
@@ -231,7 +237,7 @@ class NormalModuleFactory extends ModuleFactory {
 				() => new SyncHook(["generator", "generatorOptions"])
 			)
 		});
-		// 路径解析器
+		// 路径解析器工厂
 		this.resolverFactory = resolverFactory;
 
 		// 模块匹配规则
@@ -713,6 +719,7 @@ class NormalModuleFactory extends ModuleFactory {
 		);
 	}
 
+	// 清除缓存
 	cleanupForCache() {
 		for (const module of this._restoredUnsafeCacheEntries) {
 			ChunkGraph.clearChunkGraphForModule(module);
@@ -1055,7 +1062,7 @@ If changing the source code is not an option there is also a resolve options cal
 		);
 	}
 
-	// 根据 特定类型(type) 返回对应的内置 语法分析器(parser) 并缓存该语法分析器
+	// 根据 特定类型 返回对应的内置 语法分析器 并缓存该语法分析器
 	getParser(type, parserOptions = EMPTY_PARSER_OPTIONS) {
 		let cache = this.parserCache.get(type);
 
@@ -1075,7 +1082,7 @@ If changing the source code is not an option there is also a resolve options cal
 	}
 
 	/**
-	 * 根据 特定类型(type) 返回对应的内置 语法分析器(parser)
+	 * 根据 特定类型 返回对应的内置 语法分析器
 	 * javascript/auto || javascript/dynamic || javascript/esm
 	 * asset || asset/inline || asset/resource || asset/source
 	 * webassembly/async || webassembly/sync
@@ -1095,9 +1102,7 @@ If changing the source code is not an option there is also a resolve options cal
 		return parser;
 	}
 
-	/**
-	 * 根据 特定类型(type) 返回对应的内置 代码生成器(generator) 并缓存该代码生成器
-	 */
+	// 根据 特定类型 返回对应的内置 代码生成器 并缓存该代码生成器
 	getGenerator(type, generatorOptions = EMPTY_GENERATOR_OPTIONS) {
 		let cache = this.generatorCache.get(type);
 
@@ -1117,7 +1122,7 @@ If changing the source code is not an option there is also a resolve options cal
 	}
 
 	/**
-	 * 根据 特定类型(type) 返回对应的内置 代码生成器(generator)
+	 * 根据 特定类型 返回对应的内置 代码生成器
 	 * asset || asset/inline || asset/resource || asset/source
 	 * webassembly/async || webassembly/sync
 	 * javascript/auto || javascript/dynamic || javascript/esm
@@ -1139,10 +1144,7 @@ If changing the source code is not an option there is also a resolve options cal
 		return generator;
 	}
 
-	/**
-	 * 根据 特定类型(type) 返回对应的 路径解析器(resolver)
-	 * noamal || loader
-	 */
+	// 根据 特定类型(ResolverType) 返回对应的 路径解析器(Resolver)
 	getResolver(type, resolveOptions) {
 		return this.resolverFactory.get(type, resolveOptions);
 	}

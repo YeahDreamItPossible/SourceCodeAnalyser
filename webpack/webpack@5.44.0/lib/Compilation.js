@@ -74,8 +74,6 @@ const processAsyncTree = require("./util/processAsyncTree");
 const { getRuntimeKey } = require("./util/runtime");
 const { isSourceEqual } = require("./util/source");
 
-/** @template T @typedef {import("tapable").AsArray<T>} AsArray<T> */
-/** @typedef {import("webpack-sources").Source} Source */
 /** @typedef {import("../declarations/WebpackOptions").EntryDescriptionNormalized} EntryDescription */
 /** @typedef {import("../declarations/WebpackOptions").OutputNormalized} OutputOptions */
 /** @typedef {import("../declarations/WebpackOptions").StatsOptions} StatsOptions */
@@ -107,19 +105,6 @@ const { isSourceEqual } = require("./util/source");
 /** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
 
 /**
- * @callback Callback
- * @param {WebpackError=} err
- * @returns {void}
- */
-
-/**
- * @callback ModuleCallback
- * @param {WebpackError=} err
- * @param {Module=} result
- * @returns {void}
- */
-
-/**
  * @callback ExecuteModuleCallback
  * @param {WebpackError=} err
  * @param {ExecuteModuleResult=} result
@@ -140,12 +125,6 @@ const { isSourceEqual } = require("./util/source");
  * @property {ChunkGroup} chunkGroup
  * @property {Set<Module>} availableModules
  * @property {boolean} needCopy
- */
-
-/**
- * @typedef {Object} DependenciesBlockLike
- * @property {Dependency[]} dependencies
- * @property {AsyncDependenciesBlock[]} blocks
  */
 
 /**
@@ -396,6 +375,19 @@ const byModule = compareSelect(
 const byLocation = compareSelect(err => err.loc, compareLocations);
 
 const compareErrors = concatComparators(byModule, byLocation, byMessage);
+
+/**
+ * 模块图(ModuleGraph) 构建发生在 添加模块 创建模块 构建模块 解析依赖 等的过程中
+ * 块图(ChunkGraph) 构建发生在 分块 的过程
+ * 在优化阶段
+ * 优化依赖  => 分块 => 优化模块 => 优化块 => 优化依赖树 => 优化块模块 => 优化模块Id => 优化块Id =>
+ * 
+ * 创建模块哈希 => 代码生成任务 => 
+ */
+
+/**
+ * 
+ */
 
 // 编译过程
 // 作用:
@@ -2321,7 +2313,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.moduleGraph.unfreeze();
 	}
 
-	// 冻结
+	// 冻结: compilation 对象停止接收新的模块时
 	seal(callback) {
 		const finalCallback = err => {
 			this.factorizeQueue.clear();
@@ -2335,7 +2327,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		const chunkGraph = new ChunkGraph(this.moduleGraph);
 		this.chunkGraph = chunkGraph;
 
-		// module 与 chunkGroup映射
+		// 构建 模块 与 模块图 的映射关系
 		for (const module of this.modules) {
 			ChunkGraph.setChunkGraphForModule(module, chunkGraph);
 		}
@@ -2371,7 +2363,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		 * 3. 根据 Webpack.options.Entry.runtime 来绑定 ChunkGroup._runtimeChunk
 		 */
 
-		// 模块图冻结
+		// 模块图 冻结
 		this.moduleGraph.freeze();
 		
 		// Map<Entrypoint, Module[]>
@@ -2564,7 +2556,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		this.hooks.afterOptimizeChunks.call(this.chunks, this.chunkGroups);
 
 		// 直接执行回调
-		// 在优化依赖树之前调用
+		// 在优化依赖树(DependencyTree)之前调用
 		this.hooks.optimizeTree.callAsync(this.chunks, this.modules, err => {
 			if (err) {
 				return finalCallback(
@@ -2573,11 +2565,11 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			}
 
 			// 空调用
-			// 在依赖树优化成功完成之后调用
+			// 在 依赖树 优化成功完成之后调用
 			this.hooks.afterOptimizeTree.call(this.chunks, this.modules);
 
 			// 直接执行回调
-			// 在树优化之后，chunk 模块优化开始时调用
+			// 在 依赖树 优化之后，块模块 优化开始时调用
 			this.hooks.optimizeChunkModules.callAsync(
 				this.chunks,
 				this.modules,
@@ -2597,7 +2589,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					const shouldRecord = this.hooks.shouldRecord.call() !== false;
 
 					// RecordIdsPlugin
-					// 根据compilation.records.modules设置ChunkGraphModule.id
+					// 根据 compilation.records.modules 设置 chunkGraphModule.id
 					this.hooks.reviveModules.call(this.modules, this.records);
 
 					// 空调用
@@ -2605,8 +2597,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					this.hooks.beforeModuleIds.call(this.modules);
 
 					// NamedModuleIdsPlugin
-					// 根据compilation.modules设置compilation.records.modules
-					// 同时设置 ChunkGraphModule.id
+					// 根据 compilation.modules 设置compilation.records.modules
+					// 同时设置 chunkGraphModule.id
 					this.hooks.moduleIds.call(this.modules);
 
 					// 空调用
@@ -2677,7 +2669,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					// 空调用
 					this.hooks.beforeCodeGeneration.call();
 
-					// 第一次代码生成主要是生成modules的code
+					// 第一次代码生成主要是 生成modules的code
 					this.codeGeneration(err => {
 						if (err) {
 							return finalCallback(err);
@@ -2860,10 +2852,11 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// 获取所有的代码生成任务
+	// 获取所有的 代码生成任务 队列
 	codeGeneration(callback) {
 		const { chunkGraph } = this;
 		this.codeGenerationResults = new CodeGenerationResults();
+		// 
 		// Array<{module: Module, hash: string, runtime: RuntimeSpec, runtimes: RuntimeSpec[]}>
 		const jobs = [];
 		for (const module of this.modules) {
@@ -2893,7 +2886,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		this._runCodeGenerationJobs(jobs, callback);
 	}
 
-	// 执行所有的 代码生成任务
+	// 执行所有的 代码生成任务 队列
 	_runCodeGenerationJobs(jobs, callback) {
 		let statModulesFromCache = 0;
 		let statModulesGenerated = 0;
@@ -2946,7 +2939,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 	/**
 	 * Module生成代码
-	 * 1. Module.codeGeneration 生成代码
+	 * 1. module.codeGeneration 生成代码
 	 * 2. 缓存生成的代码
 	 */
 	_codeGenerationModule(

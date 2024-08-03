@@ -637,9 +637,9 @@ class ModuleGraph {
 	}
 }
 
+// 缓存
 // WeakMap<Module, ModuleGraph>
 const moduleGraphForModuleMap = new WeakMap();
-
 // Map<string, (module: Module) => ModuleGraph>
 const deprecateMap = new Map();
 

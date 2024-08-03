@@ -34,7 +34,7 @@ const globToRegexp = (glob, cache) => {
 // 启用该插件后 当模块只包含无副作用的语句时 此模块也会被标记为无副作用
 // 告诉 webpack 去辨识 package.json 中的 sideEffects 标记或规则，
 // 以跳过那些 当导出不被使用且被标记为不包含副作用的模块。
-// 根据 模块 是否具有副作用 绑定 ModuleGraph._metaMap
+// 根据 模块 是否具有副作用 绑定 moduleGraph._metaMap
 class SideEffectsFlagPlugin {
 	constructor(analyseSource = true) {
 		// Webpack.options.optimization.sideEffects

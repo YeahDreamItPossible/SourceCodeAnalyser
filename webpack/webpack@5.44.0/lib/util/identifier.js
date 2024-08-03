@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const path = require("path");
@@ -79,7 +75,8 @@ const requestToAbsolute = (context, relativePath) => {
 
 // 缓存函数执行的结果
 const makeCacheable = fn => {
-	/** @type {WeakMap<object, Map<string, Map<string, string>>>} */
+	// 缓存
+	// WeakMap<object, Map<string, Map<string, string>>>
 	const cache = new WeakMap();
 
 	/**

@@ -89,7 +89,7 @@ const deprecatedNeedRebuild = util.deprecate(
 
 // 模块
 // 作用:
-// 
+// 描述当前资源信息
 class Module extends DependenciesBlock {
 	constructor(type, context = null, layer = null) {
 		super();

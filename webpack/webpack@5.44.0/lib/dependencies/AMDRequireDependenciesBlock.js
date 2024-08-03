@@ -1,13 +1,11 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const AsyncDependenciesBlock = require("../AsyncDependenciesBlock");
 const makeSerializable = require("../util/makeSerializable");
 
+// AMD 异步依赖块
+// 作用:
+// 
 class AMDRequireDependenciesBlock extends AsyncDependenciesBlock {
 	constructor(loc, request) {
 		super(null, loc, request);

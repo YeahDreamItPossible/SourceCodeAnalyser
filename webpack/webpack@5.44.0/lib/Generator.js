@@ -1,6 +1,8 @@
 "use strict";
 
 // 代码生成器
+// 作用:
+// 生成代码
 class Generator {
 	static byType(map) {
 		return new ByTypeGenerator(map);

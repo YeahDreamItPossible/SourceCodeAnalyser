@@ -38,18 +38,24 @@ const convertToResolveOptions = resolveOptionsWithDepType => {
 	);
 };
 
-// 路径解析器工厂
+/**
+ * 路径解析器分类:
+ * 标准路径解析器 NormalResolver
+ * 上下文路径解析器 ContextResolver
+ * 加载器路径解析器 LoaderResolver
+ */
+
+/**
+ * 路径解析器作用:
+ * 将 资源请求路径 转换成 特定的路径
+ * 标准路径解析器: 将 模块请求路径 转换成 绝对路径 (通过绝对或相对路径解析模块)
+ * 上下文路径解析器: 在给定的上下文中解析模块
+ * 加载器路径解析器: 解析 webpack loader
+ */
+
+// 路径解析器工厂:
 // 作用:
-// 根据 特定的类型 返回 特定的路径解析器
-
-// 路径解析器分类:
-// 标准路径解析器 normal resolver
-// 上下文路径解析器 context resolver
-// 加载器路径解析器 loader resolver
-
-// 路径解析器作用:
-// 将资源路径 转换成 特定的路径
-// 标准路径解析器: 将 模块请求路径 转换成 绝对路径
+// 根据 特定的类型(ResolverType) 返回特定的 路径解析器(Resolver)
 module.exports = class ResolverFactory {
 	constructor() {
 		this.hooks = Object.freeze({

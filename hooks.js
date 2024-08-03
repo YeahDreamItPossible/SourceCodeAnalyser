@@ -438,15 +438,22 @@ InitFragment => ConditionalInitFragment
 Dependency
 // 
 Dependency => LazyCompilationDependency
+// 
 Dependency => ProvideSharedDependency
+// 
 Dependency => DllEntryDependency
 // 上下文依赖
 Dependency => ContextDependency
+// 
 Dependency => FallbackDependency
+// 
 Dependency => ContainerEntryDependency
 // 空以来
 Dependency => NullDependency
-// 
+// 模块依赖
+Dependency => ModuleDependency
+// 上下文依赖
+Dependency => ContextDependency
 
 Dependency => NullDependency => CommonJsSelfReferenceDependency 
 // 模块装饰依赖
@@ -465,8 +472,8 @@ Dependency => NullDependency => HarmonyExportHeaderDependency
 Dependency => NullDependency => ConstDependency 
 // 缓存的常量依赖
 Dependency => NullDependency => CachedConstDependency 
-// 模块依赖
-Dependency => ModuleDependency
+
+
 // 工作线程依赖(当代码片段中含有 new Worker())
 Dependency => ModuleDependency => WorkerDependency
 // URL依赖(当代码片段中含有 new URL())
@@ -506,8 +513,7 @@ Dependency => ModuleDependency => RequireEnsureItemDependency
 Dependency => ModuleDependency => ContextElementDependency 
 // URL
 Dependency => ModuleDependency => URLDependency
-// 上下文依赖
-Dependency => ContextDependency
+
 // 动态导入 且导入路径包含动态表达式
 Dependency => ContextDependency => ImportContextDependency
 // 

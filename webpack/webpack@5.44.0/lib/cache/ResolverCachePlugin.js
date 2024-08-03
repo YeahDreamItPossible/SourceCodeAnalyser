@@ -3,12 +3,6 @@
 const LazySet = require("../util/LazySet");
 const makeSerializable = require("../util/makeSerializable");
 
-/** @typedef {import("enhanced-resolve/lib/Resolver")} Resolver */
-/** @typedef {import("../CacheFacade").ItemCacheFacade} ItemCacheFacade */
-/** @typedef {import("../Compiler")} Compiler */
-/** @typedef {import("../FileSystemInfo")} FileSystemInfo */
-/** @typedef {import("../FileSystemInfo").Snapshot} Snapshot */
-
 // 缓存入口
 class CacheEntry {
 	constructor(result, snapshot) {
@@ -29,12 +23,7 @@ class CacheEntry {
 
 makeSerializable(CacheEntry, "webpack/lib/cache/ResolverCachePlugin");
 
-/**
- * @template T
- * @param {Set<T> | LazySet<T>} set set to add items to
- * @param {Set<T> | LazySet<T>} otherSet set to add items from
- * @returns {void}
- */
+// 
 const addAllToSet = (set, otherSet) => {
 	if (set instanceof LazySet) {
 		set.addAll(otherSet);
@@ -62,6 +51,8 @@ const objectToString = (object, excludeContext) => {
 };
 
 // 路径解析器缓存插件
+// 作用:
+// 缓存 路径解析器 解析后的结果
 class ResolverCachePlugin {
 	apply(compiler) {
 		const cache = compiler.getCache("ResolverCachePlugin");

@@ -16,6 +16,8 @@ const deprecatedGetInitFragments = util.deprecate(
 const TYPES = new Set(["javascript"]);
 
 // JS类型 代码生成器
+// 作用:
+// 
 class JavascriptGenerator extends Generator {
 	// 返回当前生成器类型
 	getTypes(module) {

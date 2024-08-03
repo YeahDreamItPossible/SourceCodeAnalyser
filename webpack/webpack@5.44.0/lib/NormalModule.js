@@ -37,57 +37,12 @@ const { contextify, absolutify } = require("./util/identifier");
 const makeSerializable = require("./util/makeSerializable");
 const memoize = require("./util/memoize");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/LoaderContext").NormalModuleLoaderContext} NormalModuleLoaderContext */
-/** @typedef {import("../declarations/WebpackOptions").Mode} Mode */
-/** @typedef {import("../declarations/WebpackOptions").WebpackOptionsNormalized} WebpackOptions */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./Compiler")} Compiler */
-/** @typedef {import("./Dependency").UpdateHashContext} UpdateHashContext */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("./Generator")} Generator */
-/** @typedef {import("./Module").CodeGenerationContext} CodeGenerationContext */
-/** @typedef {import("./Module").CodeGenerationResult} CodeGenerationResult */
-/** @typedef {import("./Module").ConcatenationBailoutReasonContext} ConcatenationBailoutReasonContext */
-/** @typedef {import("./Module").LibIdentOptions} LibIdentOptions */
-/** @typedef {import("./Module").NeedBuildContext} NeedBuildContext */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-/** @typedef {import("./ModuleGraphConnection").ConnectionState} ConnectionState */
-/** @typedef {import("./NormalModuleFactory")} NormalModuleFactory */
-/** @typedef {import("./Parser")} Parser */
-/** @typedef {import("./RequestShortener")} RequestShortener */
-/** @typedef {import("./ResolverFactory").ResolverWithOptions} ResolverWithOptions */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("./logging/Logger").Logger} WebpackLogger */
-/** @typedef {import("./util/Hash")} Hash */
-/** @typedef {import("./util/fs").InputFileSystem} InputFileSystem */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
-/**
- * @typedef {Object} SourceMap
- * @property {number} version
- * @property {string[]} sources
- * @property {string} mappings
- * @property {string=} file
- * @property {string=} sourceRoot
- * @property {string[]=} sourcesContent
- * @property {string[]=} names
- */
-
 const getInvalidDependenciesModuleWarning = memoize(() =>
 	require("./InvalidDependenciesModuleWarning")
 );
 const getValidate = memoize(() => require("schema-utils").validate);
 
 const ABSOLUTE_PATH_REGEX = /^([a-zA-Z]:\\|\\\\|\/)/;
-
-/**
- * @typedef {Object} LoaderItem
- * @property {string} loader
- * @property {any} options
- * @property {string?} ident
- * @property {string?} type
- */
 
 /**
  * @param {string} context absolute context path
@@ -194,7 +149,12 @@ const compilationHooksMap = new WeakMap();
  * 2. 通过语法解析器(parser) 对代码语法解析
  * 3. 通过代码生成器(generator) 生成中间代码
  */
+
 // 标准模块
+// 作用:
+//  1. 通过所有的 加载器 返回处理后的 源代码
+//  2. 通过 语法解析器 对代码词法语法解析
+//  3. 通过 代码生成器 生成中间代码
 class NormalModule extends Module {
 	// 返回当前 compilation 对应的 hooks
 	static getCompilationHooks(compilation) {
