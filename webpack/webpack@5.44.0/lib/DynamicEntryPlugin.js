@@ -5,7 +5,12 @@ const EntryPlugin = require("./EntryPlugin");
 const EntryDependency = require("./dependencies/EntryDependency");
 
 // 动态入口插件
-// 当 Webpack.options.entry 值为函数时
+// 作用:
+// 当 Webpack.options.entry 值为函数时 注册动态入口插件
+// 执行 动态入口函数 后 
+// 并根据 入口选项 
+// 创建 入口依赖 
+// 并添加 编译入口 并开始编译 
 class DynamicEntryPlugin {
 	constructor(context, entry) {
 		// Webpack.options.context

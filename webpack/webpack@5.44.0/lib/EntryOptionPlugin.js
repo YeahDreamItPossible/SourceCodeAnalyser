@@ -1,6 +1,8 @@
 "use strict";
 
-// 根据 Webpack.options.entry 不同值 注册不同的插件
+// 入口选项插件
+// 作用:
+// 根据 Webpack.options.entry 不同值 注册不同的入口插件
 class EntryOptionPlugin {
 	apply(compiler) {
 		compiler.hooks.entryOption.tap("EntryOptionPlugin", (context, entry) => {
@@ -11,12 +13,13 @@ class EntryOptionPlugin {
 
 	// 使用 Webpack.options.Entry 值类型 注册入口插件
 	static applyEntryOption(compiler, context, entry) {
+		// 动态入口
 		if (typeof entry === "function") {
-			// 动态入口
 			const DynamicEntryPlugin = require("./DynamicEntryPlugin");
 			new DynamicEntryPlugin(context, entry).apply(compiler);
-		} else {
-			// 静态入口
+		} 
+		// 静态入口
+		else {
 			const EntryPlugin = require("./EntryPlugin");
 			// 单页面应用 或者 多页面应用
 			for (const name of Object.keys(entry)) {
@@ -33,7 +36,7 @@ class EntryOptionPlugin {
 		}
 	}
 
-	// 根据 Webpack.options.entry.descriptor 的值注册插件 并返回 Webpack.options.entry.descriptor
+	// 返回标准化后的 Webpack.options.Entry 选项 并根据不同的选项值注册不同的插件
 	static entryDescriptionToOptions(compiler, name, desc) {
 		const options = {
 			name,

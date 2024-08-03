@@ -157,7 +157,7 @@ class Compiler {
 			afterPlugins: new SyncHook(["compiler"]),
 			// 当设置完 resolver options 后
 			afterResolvers: new SyncHook(["compiler"]),
-			// 当对选项中的 entry 处理完后
+			// 对 Webpack.options.entry 选项进行处理
 			// EntryOptionPlugin
 			// DllPlugin
 			entryOption: new SyncBailHook(["context", "entry"])

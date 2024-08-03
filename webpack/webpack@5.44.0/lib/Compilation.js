@@ -1896,7 +1896,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		return this.addModuleTree({ context, dependency }, callback);
 	}
 
-	// 构建整个模块树
+	// 构建整个 模块树
 	addModuleTree({ context, dependency, contextInfo }, callback) {
 		if (
 			typeof dependency !== "object" ||
@@ -1941,7 +1941,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	// 为编译添加入口
+	// 添加 编译入口 并开始编译
 	addEntry(context, entry, optionsOrName, callback) {
 		const options =
 			typeof optionsOrName === "object"
@@ -1963,7 +1963,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		);
 	}
 
-	// 添加单项入口
+	// 添加 单项入口
 	_addEntryItem(context, entry, target, options, callback) {
 		const { name } = options;
 		let entryData =
