@@ -4,6 +4,8 @@ const Dependency = require("../Dependency");
 const makeSerializable = require("../util/makeSerializable");
 
 // 动态链接库入口依赖
+// 作用:
+// 标识该依赖是动态链接库构建入口
 class DllEntryDependency extends Dependency {
 	constructor(dependencies, name) {
 		super();

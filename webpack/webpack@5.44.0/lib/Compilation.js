@@ -1339,18 +1339,20 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.addModuleQueue.add(module, callback);
 	}
 
-	// 缓存module
-	// 1. 根据 Webpack.options.Cache.type 缓存模块
-	// 2. compilation.modules
-	// 3. compilation._modules
-	// 4. ModuleGraph.setModuleGraphForModule(module, this.moduleGraph)
+	// 添加模块
+	// 1. 在不同的缓存策略中 根据模块标识符 读取缓存的模块 如果读取到缓存的模块 则直接使用缓存的模块
+	// 2. 缓存模块到当前构建过程中: compilation.modules compilation._modules
+	// 3. 在模块图中 绑定 当前Module 与 ModuleGraph 的关联关系
 	_addModule(module, callback) {
+		// 获取模块标识符
 		const identifier = module.identifier();
 		const alreadyAddedModule = this._modules.get(identifier);
+		// 当前模块已被缓存
 		if (alreadyAddedModule) {
 			return callback(null, alreadyAddedModule);
 		}
 
+		// 性能分析: 记录模块
 		const currentProfile = this.profile
 			? this.moduleGraph.getProfile(module)
 			: undefined;
@@ -1358,7 +1360,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			currentProfile.markRestoringStart();
 		}
 
-		// 根据 Webpack.options.Cache.type 不同的值 使用不同的插件来读取 缓存的 Module
+		// 根据 Webpack.options.Cache.type 不同的值 使用不同的缓存策略来读取缓存的 模块
 		this._modulesCache.get(identifier, null, (err, cacheModule) => {
 			if (err) return callback(new ModuleRestoreError(module, err));
 
@@ -1367,13 +1369,17 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				currentProfile.markIntegrationStart();
 			}
 
+			// 当前模块之前已经被缓存 则更新缓存中的当前模块
 			if (cacheModule) {
 				cacheModule.updateCacheModule(module);
 
 				module = cacheModule;
 			}
+			// 缓存当前模块
 			this._modules.set(identifier, module);
 			this.modules.add(module);
+			// 在模块图中 绑定 当前Module 与 ModuleGraph 的关联关系
+			// ModuleGraph.setModuleGraphForModule(module, this.moduleGraph)
 			ModuleGraph.setModuleGraphForModule(module, this.moduleGraph);
 			if (currentProfile !== undefined) {
 				currentProfile.markIntegrationEnd();
@@ -1393,12 +1399,15 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		return this._modules.get(identifier);
 	}
 
-	// 构建模块队列中 添加模块构建任务
+	// 构建模块队列中 添加构建模块任务
 	buildModule(module, callback) {
 		this.buildQueue.add(module, callback);
 	}
 
 	// 构建模块
+	// 1. 先判断 当前模块 是否需要构建
+	// 2. 构建 当前模块
+	// 3. 缓存构建后的模块信息
 	// 1. 运行所有的Loader 返回source
 	// 2. 将 source 构建成 WebpackSource类的实例
 	// 3. 运行parser.parse(this._source.source) 给字段赋值 Module.dependencies Module.blocks Module.buildInfo Module.buildMeta
@@ -1410,6 +1419,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			currentProfile.markBuildingStart();
 		}
 
+		// 在构建模块时 先判断 当前模块 是否需要构建
+		// 原因: 某些类型的模块不需要经过构建 如运行时模块
 		module.needBuild(
 			{
 				fileSystemInfo: this.fileSystemInfo,
@@ -1418,6 +1429,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			(err, needBuild) => {
 				if (err) return callback(err);
 
+				// 当前模块 不需要经过构建
 				if (!needBuild) {
 					if (currentProfile !== undefined) {
 						currentProfile.markBuildingEnd();
@@ -1429,8 +1441,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 				// 空调用
 				this.hooks.buildModule.call(module);
+				// 缓存
 				this.builtModules.add(module);
 
+				// 构建模块
 				// 解析模块 获取source文件和dependencies
 				module.build(
 					this.options,
@@ -1448,17 +1462,19 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						if (currentProfile !== undefined) {
 							currentProfile.markStoringStart();
 						}
-						// 缓存当前 Module
-						// 根据 Webpack.options.Cache.type 不同的值 使用不同的缓存策略
+						// 缓存构建后的 模块
+						// 根据 Webpack.options.Cache.type 不同的值 使用不同的缓存策略缓存模块
 						this._modulesCache.store(module.identifier(), null, module, err => {
 							if (currentProfile !== undefined) {
 								currentProfile.markStoringEnd();
 							}
 							if (err) {
+								// 当 模块 构建失败时
 								this.hooks.failedModule.call(module, err);
 								return callback(new ModuleStoreError(module, err));
 							}
 							// 空调用
+							// 当 模块 被成功构建后
 							this.hooks.succeedModule.call(module);
 							return callback();
 						});
@@ -1473,7 +1489,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.processDependenciesQueue.add(module, callback);
 	}
 
-	// 非递归的解析模块中的依赖
+	// 非递归的解析模块中的依赖   
 	processModuleDependenciesNonRecursive(module) {
 		const processDependenciesBlock = block => {
 			if (block.dependencies) {
@@ -1489,7 +1505,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		processDependenciesBlock(module);
 	}
 
-	// 解析 Module.dependencies 和 Module.blocks 
+	// 解析 模块 中的依赖 和 异步模块
 	// 并处理依赖中包含的模块创建过程 handleModuleCreation
 	_processModuleDependencies(module, callback) {
 		/**
@@ -1637,10 +1653,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 	/**
 	 * 处理整个模块的创建过程
-	 * 1. 利用 NormalModuleFactory 创建 NormalModule
-	 * 2. 缓存 NormalModule 并构建 NormalModule的引用关系(ModuleGraph)
-	 * 3. 调用 NormalModule.build 来加工 NormalModule
-	 * 4. 解析 NormalModule 中的 dependenies 和 blocks
+	 * 创建模块 => 添加模块 => 构建模块 => 递归解析模块中依赖和异步模块
+	 * 1. 利用 模块工厂创建模块的方法(moduleFactory.create) 创建 Module 的实例
+	 * 2. 添加模块时 缓存当前模块
+	 * 3. 调用 模块的构建方法(module.build) 来构建模块
+	 * 4. 递归解析模块中依赖(Dependencies)和异步模块(Blocks)
 	 */
 	handleModuleCreation(
 		{
@@ -1812,7 +1829,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.factorizeQueue.add(options, callback);
 	}
 
-	// 通过调用 ModuleFactory.create() 来创建 Module
+	// 通过调用 模块工厂创建模块的方法(normalFactory.create) 来创建对应 模块 的实例
+	// 注意: 此时创建的 模块 并没有经过 词法语法分析 仅仅只是创建 Module 的实例
 	// 示例: 
 	// NormalModuleFactory.create() => NormalModule
 	// ContextModuleFactory.create() => ContextModule
@@ -1952,6 +1970,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this._addEntryItem(context, entry, "dependencies", options, callback);
 	}
 
+	// 添加 编译入口 并开始编译
 	// 与 模块联邦 相关 
 	addInclude(context, dependency, options, callback) {
 		this._addEntryItem(

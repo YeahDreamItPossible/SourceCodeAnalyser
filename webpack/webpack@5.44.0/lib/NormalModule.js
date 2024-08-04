@@ -302,7 +302,7 @@ class NormalModule extends Module {
 		return resource;
 	}
 
-	// 更新当前模块信息
+	// 将 缓存的模块信息 更新到当前模块中
 	updateCacheModule(module) {
 		super.updateCacheModule(module);
 		const m = /** @type {NormalModule} */ (module);

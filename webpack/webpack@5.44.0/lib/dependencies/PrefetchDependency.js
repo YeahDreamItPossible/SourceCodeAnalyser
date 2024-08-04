@@ -3,6 +3,8 @@
 const ModuleDependency = require("./ModuleDependency");
 
 // 预拉取依赖
+// 作用:
+// 
 class PrefetchDependency extends ModuleDependency {
 	constructor(request) {
 		super(request);

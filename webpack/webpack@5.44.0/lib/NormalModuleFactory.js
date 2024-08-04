@@ -190,7 +190,7 @@ const ruleSetCompiler = new RuleSetCompiler([
 // 标准模块工厂
 // 作用:
 // 获取创建 标准模块 所需要的所有参数 并创建 标准模块 的实例
-// 但是对 标准目标 并没有经过 语法分析器 分析词法语法
+// 但是对 标准模块 并没有经过 语法分析器 分析其词法语法
 class NormalModuleFactory extends ModuleFactory {
 	constructor({
 		context,
@@ -250,17 +250,23 @@ class NormalModuleFactory extends ModuleFactory {
 			}
 		]);
 
+		// 标识: 
 		this.unsafeCache = !!options.unsafeCache;
+		// 
 		this.cachePredicate =
 			typeof options.unsafeCache === "function"
 				? options.unsafeCache
 				: () => true;
+		// 上下文
 		this.context = context || "";
+		// 文件系统
 		this.fs = fs;
 
-		// 用户自定义语法解析器(Webpack.options.Module.parser)
+		// 用户自定义语法解析器
+		// Webpack.options.Module.parser
 		this._globalParserOptions = options.parser;
-		// 用户自定义代码生成器(Wepback.Config.Module.generator)
+		// 用户自定义代码生成器
+		// Wepback.Config.Module.generator
 		this._globalGeneratorOptions = options.generator;
 
 		// 缓存
@@ -344,7 +350,6 @@ class NormalModuleFactory extends ModuleFactory {
 		);
 
 		/**
-		 * 
 		 * 1. 根据 模块引入路径 来获取 所有的行内Loader 和 模块路径
 		 * 2. 将行内Loader的loader属性转换成绝对路径
 		 * 3. 将模块路径转换成绝对路径

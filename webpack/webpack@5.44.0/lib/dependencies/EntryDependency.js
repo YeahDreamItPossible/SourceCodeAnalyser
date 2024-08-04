@@ -4,6 +4,8 @@ const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 
 // 入口依赖
+// 作用:
+// 标识当前依赖是构建入口
 class EntryDependency extends ModuleDependency {
 	constructor(request) {
 		super(request);

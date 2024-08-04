@@ -5,12 +5,15 @@ const { SyncHook } = require("tapable");
 /**
  * rules: [{ conditions: [], effects: [], rules: [], oneOf: []}]
  * condition: { property: String, matchWhenEmpty: Boolean || Function, fn: Function}
- * 
  */
 
 /**
  * 模块匹配规则
  */
+
+// 规则集合编译器
+// 作用:
+// 
 class RuleSetCompiler {
 	constructor(plugins) {
 		this.hooks = Object.freeze({
@@ -37,6 +40,7 @@ class RuleSetCompiler {
 	/**
 	 * 
 	 */
+	// 编译
 	compile(ruleSet) {
 		// refs: Map<loader.ident, laoder.options>
 		const refs = new Map();
@@ -136,6 +140,7 @@ class RuleSetCompiler {
 
 	// 返回标准化后的规则
 	compileRule(path, rule, refs) {
+		// 当某个 规则 的值
 		const unhandledProperties = new Set(
 			Object.keys(rule).filter(key => rule[key] !== undefined)
 		);
@@ -147,7 +152,7 @@ class RuleSetCompiler {
 			oneOf: undefined // 
 		};
 
-		// 编译Webpack.options.Module.Rule.[xx]
+		// 编译 Webpack.options.Module.Rule.[xx]
 		this.hooks.rule.call(path, rule, unhandledProperties, compiledRule, refs);
 
 		// 编译Webpack.options.Module.Rule.rules

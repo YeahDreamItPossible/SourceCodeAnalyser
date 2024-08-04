@@ -18,13 +18,17 @@
  * Webpack.options.Module.Rule.compiler
  * Webpack.options.Module.Rule.issuerLayer
  */
+
+// 基础规则匹配器插件
+// 作用:
+// 
 class BasicMatcherRulePlugin {
 	constructor(ruleProperty, dataProperty, invert) {
-		// 规则属性
+		// 规则属性:
 		this.ruleProperty = ruleProperty;
-		// 
+		// 数据属性:
 		this.dataProperty = dataProperty || ruleProperty;
-		// 是否对满足匹配规则取反
+		// 标识: 是否对满足匹配规则取反
 		this.invert = invert || false;
 	}
 

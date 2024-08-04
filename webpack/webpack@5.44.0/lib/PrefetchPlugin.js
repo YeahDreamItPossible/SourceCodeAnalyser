@@ -2,6 +2,9 @@
 
 const PrefetchDependency = require("./dependencies/PrefetchDependency");
 
+// TODO:
+// 预获取插件
+// 作用:
 // 
 class PrefetchPlugin {
 	constructor(context, request) {

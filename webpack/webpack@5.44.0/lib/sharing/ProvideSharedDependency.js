@@ -1,13 +1,12 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const Dependency = require("../Dependency");
 const makeSerializable = require("../util/makeSerializable");
 
+// TODO:
+// 提供共享插件
+// 作用:
+// 
 class ProvideSharedDependency extends Dependency {
 	constructor(shareScope, name, version, request, eager) {
 		super();
