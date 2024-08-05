@@ -8,6 +8,18 @@ const { SyncHook } = require("tapable");
  */
 
 /**
+ * 规则集合:
+ * ruleSet: [
+ * 	{
+ * 		rules: Webpack.options.module.defaultRules // webpack内置模块规则
+ * 	},
+ *  {
+ * 		rules: Webpack.options.module.rules        // 用户自定义模块规则
+ *  }
+ * ]
+ */
+
+/**
  * 模块匹配规则
  */
 
@@ -45,7 +57,6 @@ class RuleSetCompiler {
 		// refs: Map<loader.ident, laoder.options>
 		const refs = new Map();
 		// 在创建NormalModuleFactory实例时 调用ruleSetCompiler.compile
-		// ruleSet: [{ rules: Webpack.options.defaultRules },{ rules: Wepback.Config.rules }]
 		// rules: [
 		//	{ 
 		//			rules: [], 
@@ -140,13 +151,14 @@ class RuleSetCompiler {
 
 	// 返回标准化后的规则
 	compileRule(path, rule, refs) {
-		// 当某个 规则 的值
+		// 当某个 规则 的值不是 undefined时
+		// 一旦 某个规则 已经被编译后 将会被删除
 		const unhandledProperties = new Set(
 			Object.keys(rule).filter(key => rule[key] !== undefined)
 		);
 
 		const compiledRule = {
-			conditions: [], // 条件
+			conditions: [], // 条件匹配
 			effects: [], // 副作用
 			rules: undefined, // 规则
 			oneOf: undefined // 
@@ -155,7 +167,8 @@ class RuleSetCompiler {
 		// 编译 Webpack.options.Module.Rule.[xx]
 		this.hooks.rule.call(path, rule, unhandledProperties, compiledRule, refs);
 
-		// 编译Webpack.options.Module.Rule.rules
+		// 单独对 rules 属性进行编译
+		// Webpack.options.Module.Rule.rules
 		if (unhandledProperties.has("rules")) {
 			unhandledProperties.delete("rules");
 			const rules = rule.rules;
@@ -164,7 +177,8 @@ class RuleSetCompiler {
 			compiledRule.rules = this.compileRules(`${path}.rules`, rules, refs);
 		}
 
-		// 编译Webpack.options.Module.Rule.oneOf
+		// 单独对 oneOf 属性进行编译
+		// Webpack.options.Module.Rule.oneOf
 		if (unhandledProperties.has("oneOf")) {
 			unhandledProperties.delete("oneOf");
 			const oneOf = rule.oneOf;
@@ -185,7 +199,7 @@ class RuleSetCompiler {
 	}
 
 	/**
-	 * 根据条件(condition)编译成对应的匹配规则
+	 * 根据 条件(condition) 编译成对应的匹配规则
 	 * 匹配规则: { matchWhenEmpty: Boolean || Function, fn: Function}
 	 * 条件condition:
 	 * 1. 字符串: 匹配输入必须以提供的字符串开始
@@ -194,7 +208,9 @@ class RuleSetCompiler {
 	 * 4. 条件数组: test 输入值
 	 * 5. 对象: 匹配所有属性
 	 */
+	// 编译 条件匹配
 	compileCondition(path, condition) {
+		// 空字符串条件匹配: 输入值 必须为 空字符串
 		if (condition === "") {
 			return {
 				matchWhenEmpty: true,
@@ -208,14 +224,14 @@ class RuleSetCompiler {
 				"Expected condition but got falsy value"
 			);
 		}
-		// 字符串匹配: 匹配输入必须以提供的字符串开始
+		// 字符串条件匹配: 输入值 必须 以该字符串开始
 		if (typeof condition === "string") {
 			return {
 				matchWhenEmpty: condition.length === 0,
 				fn: str => typeof str === "string" && str.startsWith(condition)
 			};
 		}
-		// 函数
+		// 函数条件匹配: 以 输入值 为该函数的参数 返回值必须为真值
 		if (typeof condition === "function") {
 			try {
 				return {
@@ -230,14 +246,14 @@ class RuleSetCompiler {
 				);
 			}
 		}
-		// 正则匹配
+		// 正则条件匹配: 输入值 必须满足该正则规则
 		if (condition instanceof RegExp) {
 			return {
 				matchWhenEmpty: condition.test(""),
 				fn: v => typeof v === "string" && condition.test(v)
 			};
 		}
-		// 条件数组匹配
+		// 数组条件匹配: 只需满足一个匹配条件即可
 		if (Array.isArray(condition)) {
 			const items = condition.map((c, i) =>
 				this.compileCondition(`${path}[${i}]`, c)
@@ -253,7 +269,7 @@ class RuleSetCompiler {
 			);
 		}
 
-		// 对象匹配
+		// 对象条件匹配: 需要满足对象中的所有匹配规则
 		const conditions = [];
 		for (const key of Object.keys(condition)) {
 			const value = condition[key];
@@ -317,7 +333,7 @@ class RuleSetCompiler {
 		return this.combineConditionsAnd(conditions);
 	}
 
-	// 当条件数组匹配时 只需满足至少一个匹配条件即可
+	// 当 数组条件匹配 时 只需满足一个匹配条件即可
 	combineConditionsOr(conditions) {
 		if (conditions.length === 0) {
 			return {
@@ -334,7 +350,7 @@ class RuleSetCompiler {
 		}
 	}
 
-	// 当对象匹配时 需要满足对象中的所有匹配规则
+	// 当 对象条件匹配 时 需要满足对象中的所有匹配规则
 	combineConditionsAnd(conditions) {
 		if (conditions.length === 0) {
 			return {

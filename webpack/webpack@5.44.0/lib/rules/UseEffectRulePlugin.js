@@ -10,6 +10,10 @@ const util = require("util");
  * Webpack.options.Module.Rule.use 
  * Webpack.options.Module.Rule.loader
  */
+
+// 使用副作用规则插件
+// 作用:
+// 
 class UseEffectRulePlugin {
 	apply(ruleSetCompiler) {
 		ruleSetCompiler.hooks.rule.tap(

@@ -4,12 +4,17 @@
  * 根据以下条件(condition)编译成对应的匹配规则条件
  * 匹配规则: { property: String, matchWhenEmpty: Boolean || Function, fn: Function}
  * 条件condition:
- * Webpack.options.Module.Rule.test 
+ 
+ */
+
+/**
+ * 规则属性 枚举:
+ * Webpack.options.Module.Rule.test ( => Webpack.options.Module.Rule.resource )
  * Webpack.options.Module.Rule.schema
  * Webpack.options.Module.Rule.mimetype
  * Webpack.options.Module.Rule.dependency
- * Webpack.options.Module.Rule.include
- * Webpack.options.Module.Rule.exclude
+ * Webpack.options.Module.Rule.include ( => Webpack.options.Module.Rule.resource )
+ * Webpack.options.Module.Rule.exclude ( => Webpack.options.Module.Rule.resource )
  * Webpack.options.Module.Rule.resouce
  * Webpack.options.Module.Rule.resourceQuery
  * Webpack.options.Module.Rule.resourceFragment
@@ -19,16 +24,22 @@
  * Webpack.options.Module.Rule.issuerLayer
  */
 
+/**
+ * 数据属性 枚举:
+ * ...规则属性枚举
+ * Webpack.options.Module.Rule.resource
+ */
+
 // 基础规则匹配器插件
 // 作用:
 // 
 class BasicMatcherRulePlugin {
 	constructor(ruleProperty, dataProperty, invert) {
-		// 规则属性:
+		// 规则属性: 标识 当前匹配规则 的匹配路径
 		this.ruleProperty = ruleProperty;
-		// 数据属性:
+		// 数据属性: 
 		this.dataProperty = dataProperty || ruleProperty;
-		// 标识: 是否对满足匹配规则取反
+		// 标识: 是否对 满足匹配规则 取反
 		this.invert = invert || false;
 	}
 
@@ -37,24 +48,27 @@ class BasicMatcherRulePlugin {
 			"BasicMatcherRulePlugin",
 			(path, rule, unhandledProperties, result) => {
 				if (unhandledProperties.has(this.ruleProperty)) {
-					// 防止某条Rule的属性被重复解析
+					// 删除 某个规则 防止被重复编译
 					unhandledProperties.delete(this.ruleProperty);
 					
+					// Webpack.options.module.rules.test 对应的值
 					const value = rule[this.ruleProperty];
+					// 
 					const condition = ruleSetCompiler.compileCondition(
-						// 例如: ruleSet[0].rules[0].test
+						// 路径示例: ruleSet[0].rules[0].test
 						`${path}.${this.ruleProperty}`,
+						// 值示例: Webpack.options.module.rules.test 对应的值
 						value
 					);
 					const fn = condition.fn;
 					result.conditions.push({
-						// 字段名
+						// 匹配字段名
 						property: this.dataProperty,
-						// 该字段是否需要匹配
+						// 当 字段为空 时 是否还要进行匹配
 						matchWhenEmpty: this.invert
 							? !condition.matchWhenEmpty
 							: condition.matchWhenEmpty,
-						// 该字段匹配函数
+						// 匹配函数
 						fn: this.invert ? v => !fn(v) : fn
 					});
 				}
