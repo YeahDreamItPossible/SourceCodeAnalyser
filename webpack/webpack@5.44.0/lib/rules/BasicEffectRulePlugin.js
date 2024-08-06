@@ -1,13 +1,6 @@
 "use strict";
 
 /**
- * 根据以下条件(condition)编译成对应的匹配规则副作用
- * 匹配规则: { type: String, value: String || Function || RegExp || Array }
- * 条件condition:
-
- */
-
-/**
  * 规则属性 枚举:
  * Webpack.options.Module.Rule.type
  * Webpack.options.Module.Rule.sideEffects
@@ -24,7 +17,7 @@
 
 // 基础副作用规则插件
 // 作用:
-// 
+// 创建 某个规则 的副作用
 class BasicEffectRulePlugin {
 	constructor(ruleProperty, effectType) {
 		// 规则属性

@@ -127,13 +127,13 @@ const deprecationChangedHookMessage = (name, hook) => {
 	);
 };
 
-/** @type {WeakMap<ModuleDependency, ModuleFactoryResult & { module: { restoreFromUnsafeCache: Function }}>} */
+// WeakMap<ModuleDependency, ModuleFactoryResult & { module: { restoreFromUnsafeCache: Function }}>
 const unsafeCacheDependencies = new WeakMap();
 
 // WeakMap<Module, object>
 const unsafeCacheData = new WeakMap();
 
-// 返回 RuleSetCompiler 的实例
+// 返回 规则集合编译器 的实例
 const ruleSetCompiler = new RuleSetCompiler([
 	new BasicMatcherRulePlugin("test", "resource"),
 	new BasicMatcherRulePlugin("scheme"),
@@ -201,6 +201,7 @@ class NormalModuleFactory extends ModuleFactory {
 		layers = false
 	}) {
 		super();
+		// beforeResolve => factorize => resolve => afterResolve => createModule => module
 		this.hooks = Object.freeze({
 			// 在解析之前
 			// 可以通过返回 false 来忽略依赖项
@@ -240,7 +241,7 @@ class NormalModuleFactory extends ModuleFactory {
 		// 路径解析器工厂
 		this.resolverFactory = resolverFactory;
 
-		// 模块匹配规则
+		// 编译所有的规则集合 并返回匹配器
 		this.ruleSet = ruleSetCompiler.compile([
 			{
 				rules: options.defaultRules
@@ -1067,7 +1068,7 @@ If changing the source code is not an option there is also a resolve options cal
 		);
 	}
 
-	// 根据 特定类型 返回对应的内置 语法分析器 并缓存该语法分析器
+	// 根据 特定类型 返回对应的 内置语法分析器 并缓存该语法分析器
 	getParser(type, parserOptions = EMPTY_PARSER_OPTIONS) {
 		let cache = this.parserCache.get(type);
 
@@ -1107,7 +1108,7 @@ If changing the source code is not an option there is also a resolve options cal
 		return parser;
 	}
 
-	// 根据 特定类型 返回对应的内置 代码生成器 并缓存该代码生成器
+	// 根据 特定类型 返回对应的 内置代码生成器 并缓存该代码生成器
 	getGenerator(type, generatorOptions = EMPTY_GENERATOR_OPTIONS) {
 		let cache = this.generatorCache.get(type);
 

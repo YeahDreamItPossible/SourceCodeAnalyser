@@ -1,13 +1,6 @@
 "use strict";
 
 /**
- * 根据以下条件(condition)编译成对应的匹配规则条件
- * 匹配规则: { property: String, matchWhenEmpty: Boolean || Function, fn: Function}
- * 条件condition:
- 
- */
-
-/**
  * 规则属性 枚举:
  * Webpack.options.Module.Rule.test ( => Webpack.options.Module.Rule.resource )
  * Webpack.options.Module.Rule.schema
@@ -32,7 +25,7 @@
 
 // 基础规则匹配器插件
 // 作用:
-// 
+// 创建 某个规则属性 的条件匹配(通过 规则属性 对 某个数据属性 进行条件匹配)
 class BasicMatcherRulePlugin {
 	constructor(ruleProperty, dataProperty, invert) {
 		// 规则属性: 标识 当前匹配规则 的匹配路径

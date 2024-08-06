@@ -3,11 +3,6 @@
 const { SyncHook } = require("tapable");
 
 /**
- * rules: [{ conditions: [], effects: [], rules: [], oneOf: []}]
- * condition: { property: String, matchWhenEmpty: Boolean || Function, fn: Function}
- */
-
-/**
  * 规则集合:
  * ruleSet: [
  * 	{
@@ -20,12 +15,54 @@ const { SyncHook } = require("tapable");
  */
 
 /**
- * 模块匹配规则
+ * 编译后的规则集合:
+ * rules: [
+ * 	{
+ * 		rules: [],
+ * 		oneOf: [],
+ * 		conditions: [ // 条件集合
+ * 			{
+ * 				property: String, // 匹配字段名
+ * 				matchWhenEmpty: Boolean || Function, // 当 字段为空 时 是否还要进行匹配
+ * 				fn: Function // 匹配函数
+ * 			}
+ * 		]，
+ * 		effects: [ // 副作用集合
+ * 			{ 
+ * 				type: String, // 副作用类型
+ * 				value: { 
+ * 					loader: String,  // 加载器 
+ * 					options: Object, // 加载器选项
+ * 					ident: String(唯一标识符) // 
+ * 				} 
+ * 			}
+ * 		]
+ * 	}
+ * ]
+ */
+
+/**
+ * 条件匹配：
+ * 对 某个字段 进行匹配 并返回 Boolean 表示是否满足匹配结果
+ * 副作用:
+ * 在 满足字段匹配 的基础上 返回匹配结果(例如成功匹配的 loader 信息)
+ * 在 执行匹配 时 只有满足所有的 条件匹配 时 才能返回 副作用
+ * 所谓的 副作用 是指在对 模块加工处理 时 需要的额外信息
+ */
+
+/**
+ * 总结:
+ * Webpack 对 模块 的匹配规则 实现原理:
+ * 将 部分属性 编译成 条件匹配
+ * 将 部分属性 编译成 副作用
+ * 在对 模块 进行匹配时 只有满足所有的 条件匹配 时 才能返回 副作用
+ * 该 副作用 在 模块构建 和 代码生成 的过程中 起标识性作用
  */
 
 // 规则集合编译器
 // 作用:
-// 
+// 将 所有的规则集合 编译成 匹配器
+// 调用 匹配器 的匹配方法 对 模块 进行匹配 并返回匹配结果
 class RuleSetCompiler {
 	constructor(plugins) {
 		this.hooks = Object.freeze({
@@ -49,21 +86,13 @@ class RuleSetCompiler {
 		}
 	}
 
-	/**
-	 * 
-	 */
-	// 编译
+	// 编译 所有的规则集合 后返回 匹配器
+	// 在创建 NormalModuleFactory 实例时 调用 ruleSetCompiler.compile
 	compile(ruleSet) {
-		// refs: Map<loader.ident, laoder.options>
+		// Map<loader.ident, laoder.options>
+		// loader.ident 一般是指 加载器 在 规则集合 中的路径
 		const refs = new Map();
-		// 在创建NormalModuleFactory实例时 调用ruleSetCompiler.compile
-		// rules: [
-		//	{ 
-		//			rules: [], 
-		//			oneOf: [], 
-		//			conditions: [{ property: String, matchWhenEmpty: Boolean || Function, fn: Function }], 
-		//			effects: [{ type: String, value: { loader: String, options: Object, ident: String(唯一标识符) } }]
-		// ]
+		// 编译后的规则集合
 		const rules = this.compileRules("ruleSet", ruleSet, refs);
 
 		/**
@@ -73,6 +102,8 @@ class RuleSetCompiler {
 		 * @returns {boolean} true, if the rule has matched
 		 */
 		const execRule = (data, rule, effects) => {
+			// 遍历所有的 条件匹配 必须满足所有的条件匹配
+			// 当 某个条件匹配 不满足时 直接返回
 			for (const condition of rule.conditions) {
 				const p = condition.property;
 				if (Array.isArray(p)) {
@@ -96,6 +127,7 @@ class RuleSetCompiler {
 				} else if (p in data) {
 					const value = data[p];
 					if (value !== undefined) {
+						// 当不满足 某个条件匹配 时 直接返回
 						if (!condition.fn(value)) return false;
 						continue;
 					}
@@ -104,6 +136,7 @@ class RuleSetCompiler {
 					return false;
 				}
 			}
+			// 当满足所有的 条件匹配 后 添加所有的副作用
 			for (const effect of rule.effects) {
 				if (typeof effect === "function") {
 					const returnedEffects = effect(data);
@@ -114,6 +147,7 @@ class RuleSetCompiler {
 					effects.push(effect);
 				}
 			}
+			// 递归
 			if (rule.rules) {
 				for (const childRule of rule.rules) {
 					execRule(data, childRule, effects);
@@ -129,6 +163,7 @@ class RuleSetCompiler {
 			return true;
 		};
 
+		// 返回 匹配器
 		return {
 			references: refs,
 			exec: data => {
@@ -367,7 +402,7 @@ class RuleSetCompiler {
 		}
 	}
 
-	// 抛出错误
+	// 抛出规则编译时错误
 	error(path, value, message) {
 		return new Error(
 			`Compiling RuleSet failed: ${message} (at ${path}: ${value})`

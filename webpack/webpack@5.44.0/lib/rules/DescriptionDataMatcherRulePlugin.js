@@ -2,17 +2,18 @@
 
 const RULE_PROPERTY = "descriptionData";
 
-/**
- * 根据条件(condition.descriptionData)编译成对应的匹配规则条件
- * 匹配规则: { property: String, matchWhenEmpty: Boolean || Function, fn: Function}\
- */
+// 作用:
+// 允许匹配来自 package.json 中的数据
+// 创建 某个规则属性 的条件匹配(通过 规则属性 对 某个数据属性 进行条件匹配)
 class DescriptionDataMatcherRulePlugin {
 	apply(ruleSetCompiler) {
 		ruleSetCompiler.hooks.rule.tap(
 			"DescriptionDataMatcherRulePlugin",
 			(path, rule, unhandledProperties, result) => {
 				if (unhandledProperties.has(RULE_PROPERTY)) {
+					// 删除 某个规则 防止被重复编译
 					unhandledProperties.delete(RULE_PROPERTY);
+
 					const value = rule[RULE_PROPERTY];
 					for (const property of Object.keys(value)) {
 						const dataProperty = property.split(".");

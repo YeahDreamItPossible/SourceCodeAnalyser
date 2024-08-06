@@ -13,7 +13,8 @@ const util = require("util");
 
 // 使用副作用规则插件
 // 作用:
-// 
+// 对 Webpack.options.module.Rule.use 和 Webpack.options.module.Rule.loader 字段解析 
+// 并返回 副作用规则
 class UseEffectRulePlugin {
 	apply(ruleSetCompiler) {
 		ruleSetCompiler.hooks.rule.tap(
@@ -31,6 +32,7 @@ class UseEffectRulePlugin {
 				};
 
 				// Webpack.options.Module.Rule.use 
+				// 返回 use 副作用
 				if (unhandledProperties.has("use")) {
 					unhandledProperties.delete("use");
 					unhandledProperties.delete("enforce");
@@ -53,6 +55,7 @@ class UseEffectRulePlugin {
 						}
 					};
 
+					// 
 					const useToEffectRaw = (path, defaultIdent, item) => {
 						if (typeof item === "string") {
 							return {
@@ -79,6 +82,7 @@ class UseEffectRulePlugin {
 									"DEP_WEBPACK_RULE_LOADER_OPTIONS_STRING"
 								)();
 							}
+
 							return {
 								type: enforce ? `use-${enforce}` : "use",
 								value: {
@@ -104,6 +108,7 @@ class UseEffectRulePlugin {
 						return [useToEffectRaw(path, "[[missing ident]]", items)];
 					};
 
+					// 当
 					const useToEffects = (path, items) => {
 						if (Array.isArray(items)) {
 							return items.map((item, idx) => {
@@ -114,13 +119,13 @@ class UseEffectRulePlugin {
 						return [useToEffect(path, path, items)];
 					};
 
-					// Webpack.options.Module.use 是Function
+					// 当 Webpack.options.Module.use 是 Function 时
 					if (typeof use === "function") {
 						result.effects.push(data =>
 							useToEffectsWithoutIdent(`${path}.use`, use(data))
 						);
 					} 
-					// Webpack.options.Module.use 是 Array
+					// 当 Webpack.options.Module.use 是 Array 时
 					else {
 						for (const effect of useToEffects(`${path}.use`, use)) {
 							result.effects.push(effect);
@@ -128,8 +133,10 @@ class UseEffectRulePlugin {
 					}
 				}
 
-				// Webpack.options.Module.Rule.loader
+				// 解析 Webpack.options.Module.Rule.loader
+				// 返回 loader 副作用
 				if (unhandledProperties.has("loader")) {
+					// 删除 某个规则 防止被重复编译
 					unhandledProperties.delete("loader");
 					unhandledProperties.delete("options");
 					unhandledProperties.delete("enforce");
@@ -139,7 +146,7 @@ class UseEffectRulePlugin {
 					const enforce = rule.enforce;
 
 					// Webpack.options.Module.Rule.loader属性不再支持以 ! 的方式使用多个loader
-					// 如果想要使用多个loader 使用Webpack.options.Module.Rule.use
+					// 如果想要使用多个 loader 使用 Webpack.options.Module.Rule.use
 					if (loader.includes("!")) {
 						throw ruleSetCompiler.error(
 							`${path}.loader`,
@@ -147,8 +154,8 @@ class UseEffectRulePlugin {
 							"Exclamation mark separated loader lists has been removed in favor of the 'use' property with arrays"
 						);
 					}
-					// Webpack.options.Module.Rule.loader属性不再支持以 ? 的方式传递参数
-					// 如果想要给loader传递参数 使用Webpack.options.Module.Rule.options
+					// Webpack.options.Module.Rule.loader 属性不再支持以 ? 的方式传递参数
+					// 如果想要给 loader 传递参数 使用 Webpack.options.Module.Rule.options
 					if (loader.includes("?")) {
 						throw ruleSetCompiler.error(
 							`${path}.loader`,
@@ -170,11 +177,11 @@ class UseEffectRulePlugin {
 						options && typeof options === "object" ? path : undefined;
 					references.set(ident, options);
 					result.effects.push({
-						type: enforce ? `use-${enforce}` : "use",
+						type: enforce ? `use-${enforce}` : "use", // 加载器类型
 						value: {
-							loader,
-							options,
-							ident
+							loader, // 加载器
+							options, // 加载器选项
+							ident   // 标识: 加载器在规则集合中的路径
 						}
 					});
 				}
