@@ -63,6 +63,7 @@ const { SyncHook } = require("tapable");
 // 作用:
 // 将 所有的规则集合 编译成 匹配器
 // 调用 匹配器 的匹配方法 对 模块 进行匹配 并返回匹配结果
+// 此时的 规则集合 只针对于 Webpack.options.module.rules 而不对 模块依赖请求路径 的行内加载器
 class RuleSetCompiler {
 	constructor(plugins) {
 		this.hooks = Object.freeze({

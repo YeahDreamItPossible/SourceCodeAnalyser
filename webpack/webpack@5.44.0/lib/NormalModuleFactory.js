@@ -59,12 +59,14 @@ const stringifyLoadersAndResource = (loaders, resource) => {
 	return str + resource;
 };
 
-// 根据 Loader.loader 路径 返回标准化后的 Loader 对象
+// 将 资源路径 处理 返回标准化后的 Loader 对象
 // Loader<{ loader: String, options: String }>
 const identToLoaderRequest = resultString => {
 	const idx = resultString.indexOf("?");
 	if (idx >= 0) {
+		// 加载器路径
 		const loader = resultString.substr(0, idx);
+		// 加载器选项字符串
 		const options = resultString.substr(idx + 1);
 		return {
 			loader,
@@ -127,9 +129,10 @@ const deprecationChangedHookMessage = (name, hook) => {
 	);
 };
 
+// 缓存 当前模块依赖 对应的 模块构建结果
 // WeakMap<ModuleDependency, ModuleFactoryResult & { module: { restoreFromUnsafeCache: Function }}>
 const unsafeCacheDependencies = new WeakMap();
-
+// 
 // WeakMap<Module, object>
 const unsafeCacheData = new WeakMap();
 
@@ -159,32 +162,63 @@ const ruleSetCompiler = new RuleSetCompiler([
 ]);
 
 /**
- * loader分类
- * 1. 前置loader(preLoader)
- * 2. 普通loader(loader)
- * 3. 后置loader(postLoaders)
+ * 按照 加载器 引入方式 分类:
+ * 
+ * 行内加载器(别名: 内联加载器):
+ * 在 不同的模块 引入依赖时语句中指定的加载器 使用 ! 将资源中的 loader 分开
+ * 只针对于 引入的模块
+ * 示例: import styles from 'style-loader?name=lee!./src/styles/global.css'
+ * 
+ * 配置加载器:
+ * 在 配置文件 中 对 模块规则 配置的匹配规则
+ * 针对于 全局模块
+ * 示例: Webpack.options.module.Rule.loader | Webpack.options.module.Rule.use
  */
 
 /**
+ * 根据 加载器 使用顺序 分类
+ * 前置加载器(preLoader)
+ * 
+ * 标准加载器(loader)
+ * 
+ * 后置加载器(postLoader)
+ */
+
+/**
+ * 加载器标准化
  * Loader<{ loader: String, options: String, ident: String }>
- * Loader.loader  资源加载器路径(绝对路径)
- * Loader.options 资源加载器选项
- * Loader.ident   资源加载器标识符(id)
+ * Loader.loader  加载器路径(绝对路径)
+ * Loader.options 加载器选项
+ * Loader.ident   加载器标识符
+ * 
+ * 配置加载器标识符:
+ * 在 规则集合 中的路径 示例: ruleSet[0].test
+ * 
+ * 行内加载器标识符：
+ * 行内加载器选项字符串 示例: name=Lee&age=12
  */
 
 /**
- * 正常模块工厂
+ * 加载器 解析的整个过程
+ * 1. 编译阶段
+ * 		1.1 在创建 标准模块工厂 的实例时 已经完成对 规则集合 的编译 返回 匹配器(此时完成对 配置加载器 的编译)
+ * 		1.2 在 hooks.resolve 阶段 根据 模块依赖请求路径 完成对路径中的 行内加载器 的编译 返回所有标准化的行内加载器
+ * 2. 匹配阶段
+ * 		2.1 在 hooks.resolve 阶段 先执行 匹配器 匹配函数 返回所有的副作用(返回筛选后的配置加载器)
+ * 		2.2 再根据 模块请求路径路径 禁用loader规则 来返回筛选后的所有行内加载器
+ * 		2.3 将筛选后的 所有行内加载器 合并到筛选后的 配置加载器 中
+ */
+
+/**
+ * 标准模块工厂
  * 获取创建 NormalModule 所需要的所有参数,并创建 NormalModule 的实例 
  * 主要参数如下:
- * 1. 所有的资源加载器(Loader)
- * 2. 特定类型的路径解析器(resolver)
+ * 1. 特定类型的路径解析器(resolver)
+ * 2. 所有的加载器(Loader)
  * 3. 特定类型的语法分析器(parser)
  * 4. 特定类型的代码生成器(generator)
  * 5. 解析后的模块路径
  * 6. ...
- * 在获取所有Loader的过程中
- * 1. 根据模块加载路径来获取所有的loaders 并根据模块路径中的前缀(! !! -!)进行筛选
- * 2. 根据匹配规则来筛选匹配后的loaders
  */
 
 // 标准模块工厂
@@ -241,7 +275,7 @@ class NormalModuleFactory extends ModuleFactory {
 		// 路径解析器工厂
 		this.resolverFactory = resolverFactory;
 
-		// 编译所有的规则集合 并返回匹配器
+		// 编译所有的规则集合 并返回 匹配器
 		this.ruleSet = ruleSetCompiler.compile([
 			{
 				rules: options.defaultRules
@@ -251,7 +285,8 @@ class NormalModuleFactory extends ModuleFactory {
 			}
 		]);
 
-		// 标识: 
+		// 标识: 是否缓存当前构建后的模块结果
+		// Webpack.options.module.Rule.unsafeCache
 		this.unsafeCache = !!options.unsafeCache;
 		// 
 		this.cachePredicate =
@@ -275,7 +310,8 @@ class NormalModuleFactory extends ModuleFactory {
 		this.parserCache = new Map();
 		// Map<Type, WeakMap<GeneratorOptions, Generator>
 		this.generatorCache = new Map();
-		/** @type {Set<Module>} */
+		// 缓存 当前模块
+		// Set<Module>
 		this._restoredUnsafeCacheEntries = new Set();
 
 		const cacheParseResource = parseResource.bindCache(
@@ -351,12 +387,16 @@ class NormalModuleFactory extends ModuleFactory {
 		);
 
 		/**
-		 * 1. 根据 模块引入路径 来获取 所有的行内Loader 和 模块路径
-		 * 2. 将行内Loader的loader属性转换成绝对路径
-		 * 3. 将模块路径转换成绝对路径
-		 * 4. 根据模块路径 和 自定义模块匹配规则 来获取匹配后的 Loader
-		 * 5. 将匹配Loader的loader属性转换成绝对路径
+		 * resolve hook 作用
+		 * 1. 根据 模块依赖请求路径 来获取 所有的行内加载器 和 模块请求路径
+		 * 2. 将 所有的行内加载器 属性标准化 并将 行内加载器请求路径 转换成 绝对路径
+		 * 3. 将 模块请求路径 转换成 绝对路径
+		 * 4. 执行 匹配器 匹配 返回所有的副作用(返回筛选后的配置加载器)
+		 * 5. 根据 模块请求路径路径 禁用loader规则 来返回筛选后的所有行内加载器
+		 * 6. 将筛选后的 所有行内加载器 合并到筛选后的 配置加载器 中
+		 * 7. 根据 解析后的模块类型 来返回对应的 语法分析器 和 代码生成器
 		 */
+		
 		// 获取创建 NormalModule 所需要的参数
 		this.hooks.resolve.tapAsync(
 			{
@@ -376,12 +416,15 @@ class NormalModuleFactory extends ModuleFactory {
 				} = data;
 				const dependencyType =
 					(dependencies.length > 0 && dependencies[0].category) || "";
+				// 获取 loader 类型的 路径解析器
 				const loaderResolver = this.getResolver("loader");
 
+				// 
 				/** @type {ResourceData | undefined} */
 				let matchResourceData = undefined;
-				// 用户自定义模块加载路径(该路径包括loader路径和模块路径)
+				// 模块依赖请求路径(该路径包括loader路径和模块路径)
 				let requestWithoutMatchResource = request;
+				// 正则匹配 模块依赖 的请求路径是否包含 !=! (好像已经废弃)
 				// 以 `(任意字符,除了!){1,}!=!` 开头
 				// MATCH_RESOURCE_REGEX = /^([^!]+)!=!/
 				const matchResourceMatch = MATCH_RESOURCE_REGEX.exec(request);
@@ -408,7 +451,7 @@ class NormalModuleFactory extends ModuleFactory {
 					);
 				}
 				
-				// 模块加载路径是否有禁用loader规则
+				// 模块依赖请求路径 是否有禁用loader规则
 				const firstChar = requestWithoutMatchResource.charCodeAt(0);
 				const secondChar = requestWithoutMatchResource.charCodeAt(1);
 				// 使用 -! 前缀，将禁用所有已配置的 preLoader 和 loader，但是不禁用 postLoaders
@@ -417,16 +460,17 @@ class NormalModuleFactory extends ModuleFactory {
 				const noAutoLoaders = noPreAutoLoaders || firstChar === 33; // startsWith "!"
 				// 使用 !! 前缀，将禁用所有已配置的 loader（preLoader, loader, postLoader）
 				const noPrePostAutoLoaders = firstChar === 33 && secondChar === 33;
-				// 模块引入路径中解析后的loaders路径
+				// 对 模块依赖请求路径 进行分割 得到包含 模块请求路径 和 所有加载器路径
 				const rawElements = requestWithoutMatchResource
 					.slice(
 						noPreAutoLoaders || noPrePostAutoLoaders ? 2 : noAutoLoaders ? 1 : 0
 					)
 					.split(/!+/);
-				// 模块路径(不包括loaders路径)
+				// 模块请求路径(不包括loaders路径)
 				const unresolvedResource = rawElements.pop();
-				// 正常化所有的loaders<Array<{ loader: String, options: String }>>
-				// 此时每个loader的loader是相对路径
+				// 标准化 加载器路径
+				// 标准化所有的 loaders<Array<{ loader: String, options: String }>>
+				// 此时每个loader的 路径 是相对路径
 				const elements = rawElements.map(identToLoaderRequest);
 
 				const resolveContext = {
@@ -445,7 +489,7 @@ class NormalModuleFactory extends ModuleFactory {
 				const continueCallback = needCalls(2, err => {
 					if (err) return callback(err);
 
-					// 转换行内Loader.options 并设置Loader.ident
+					// 设置行内加载器 ident 属性
 					try {
 						for (const item of loaders) {
 							if (typeof item.options === "string" && item.options[0] === "?") {
@@ -463,6 +507,7 @@ class NormalModuleFactory extends ModuleFactory {
 										"Invalid ident is provided by referenced loader"
 									);
 								}
+								// ident 一般指向 加载器选项字符串
 								item.ident = ident;
 							}
 						}
@@ -475,7 +520,7 @@ class NormalModuleFactory extends ModuleFactory {
 						return callback(null, dependencies[0].createIgnoredModule(context));
 					}
 
-					// 序列化后的模块路径
+					// 序列化后的 模块依赖请求路径(行内加载器请求绝对路径 + 模块依赖请求绝对路径)
 					const userRequest =
 						(matchResourceData !== undefined
 							? `${matchResourceData.resource}!=!`
@@ -483,7 +528,7 @@ class NormalModuleFactory extends ModuleFactory {
 						stringifyLoadersAndResource(loaders, resourceData.resource);
 					// 路径解析器返回的路径信息
 					const resourceDataForRules = matchResourceData || resourceData;
-					// 通过匹配规则Webpack.options.Module.Rule来获取匹配的loaders
+					// 通过 匹配器 匹配后返回的 副作用(即: 筛选过滤后的配置加载器)
 					const result = this.ruleSet.exec({
 						resource: resourceDataForRules.path,
 						realResource: resourceData.path,
@@ -500,13 +545,13 @@ class NormalModuleFactory extends ModuleFactory {
 						issuerLayer: contextInfo.issuerLayer || ""
 					});
 
-					// loaders分类
+					// 从配置加载器筛选后的所有的加载器
 					const settings = {};
-					// postLoader
+					// 从配置加载器筛选后的后置加载器
 					const useLoadersPost = [];
-					// 正常loader
+					// 从配置加载器筛选后的标准加载器
 					const useLoaders = [];
-					// preLoader
+					// 从配置加载器筛选后的前置加载器
 					const useLoadersPre = [];
 					// 筛选preLoader loader postLoader
 					for (const r of result) {
@@ -534,6 +579,7 @@ class NormalModuleFactory extends ModuleFactory {
 						}
 					}
 
+					// 从行内加载器筛选后的前置、标准、后置加载器
 					let postLoaders, normalLoaders, preLoaders;
 
 					const continueCallback = needCalls(3, err => {
@@ -541,7 +587,8 @@ class NormalModuleFactory extends ModuleFactory {
 							return callback(err);
 						}
 
-						// 合并Loader(筛选后的行内Loader + 匹配规则匹配的Loader)
+						// 将 行内加载器 合并到 配置加载器 中
+						// 此时的 loaders 包含 满足匹配条件的所有配置加载器 和 筛选后的所有行内加载器
 						const allLoaders = postLoaders;
 						if (matchResourceData === undefined) {
 							for (const loader of loaders) allLoaders.push(loader);
@@ -553,7 +600,7 @@ class NormalModuleFactory extends ModuleFactory {
 						for (const loader of preLoaders) allLoaders.push(loader);
 
 						let type = settings.type;
-						// 设置类型
+						// 设置模块类型
 						if (!type) {
 							const resource =
 								(matchResourceData && matchResourceData.resource) ||
@@ -580,26 +627,26 @@ class NormalModuleFactory extends ModuleFactory {
 						try {
 							Object.assign(data.createData, {
 								layer:
-									layer === undefined ? contextInfo.issuerLayer || null : layer,
+									layer === undefined ? contextInfo.issuerLayer || null : layer, // 图层
 								request: stringifyLoadersAndResource(
 									allLoaders,
 									resourceData.resource
-								),
-								userRequest,
-								rawRequest: request,
-								loaders: allLoaders,
-								resource: resourceData.resource,
+								), // 模块请求路径
+								userRequest,  // 模块用户请求路ing
+								rawRequest: request, // 模块原始路径
+								loaders: allLoaders, // 合并后的所有加载器
+								resource: resourceData.resource, // 资源路径(绝对路径)
 								matchResource: matchResourceData
 									? matchResourceData.resource
-									: undefined,
+									: undefined, // 
 								resourceResolveData: resourceData.data,
-								settings, // TODO:
-								type,
-								parser: this.getParser(type, settings.parser),
-								parserOptions: settings.parser,
-								generator: this.getGenerator(type, settings.generator),
-								generatorOptions: settings.generator,
-								resolveOptions
+								settings, // 
+								type, // 模块类型
+								parser: this.getParser(type, settings.parser), // 语法分析器
+								parserOptions: settings.parser, // 语法分析器选项
+								generator: this.getGenerator(type, settings.generator), // 代码生成器
+								generatorOptions: settings.generator, // 代码生成器选项
+								resolveOptions // 路径解析器选项
 							});
 						} catch (e) {
 							return callback(e);
@@ -607,7 +654,7 @@ class NormalModuleFactory extends ModuleFactory {
 						callback();
 					});
 
-					// 将所有的 后置Loader.loader 属性解析成绝对路径
+					// 将从配置加载器筛选后的所有的 后置Loader.loader 属性解析成绝对路径
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -619,7 +666,7 @@ class NormalModuleFactory extends ModuleFactory {
 							continueCallback(err);
 						}
 					);
-					// 将所有的 正常Loader.loader 属性解析成绝对路径
+					// 将从配置加载器筛选后的所有的 标准Loader.loader 属性解析成绝对路径
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -631,7 +678,7 @@ class NormalModuleFactory extends ModuleFactory {
 							continueCallback(err);
 						}
 					);
-					// 将所有的 前置Loader.loader 属性解析成绝对路径
+					// 将从配置加载器筛选后的所有的 前置Loader.loader 属性解析成绝对路径
 					this.resolveRequestArray(
 						contextInfo,
 						this.context,
@@ -654,6 +701,7 @@ class NormalModuleFactory extends ModuleFactory {
 					resolveContext,
 					(err, result) => {
 						if (err) return continueCallback(err);
+						// 注意此时 loaders 仅仅是所有满足匹配条件的配置加载器
 						loaders = result;
 						continueCallback();
 					}
@@ -688,7 +736,7 @@ class NormalModuleFactory extends ModuleFactory {
 
 				// resource without scheme and with path
 				else {
-					// 获取 resolver
+					// 获取 normal 类型的 路径解析器
 					const normalResolver = this.getResolver(
 						"normal",
 						dependencyType
@@ -737,13 +785,18 @@ class NormalModuleFactory extends ModuleFactory {
 	// 创建 NormalModule 的实例
 	create(data, callback) {
 		const dependencies = /** @type {ModuleDependency[]} */ (data.dependencies);
+		// 在解析之前 先从缓存中根据 模块依赖 读取当前缓存的模块构建结果
+		// 如果存在 模块构建结果 则直接返回 模块构建结果
 		if (this.unsafeCache) {
+			// 根据 模块依赖 读取缓存的 模块构建结果
 			const cacheEntry = unsafeCacheDependencies.get(dependencies[0]);
+			// 存在 模块构建结果
 			if (cacheEntry) {
 				const { module } = cacheEntry;
 				if (!this._restoredUnsafeCacheEntries.has(module)) {
 					const data = unsafeCacheData.get(module);
 					module.restoreFromUnsafeCache(data, this);
+					// 缓存 当前模块
 					this._restoredUnsafeCacheEntries.add(module);
 				}
 				return callback(null, cacheEntry);
@@ -772,6 +825,7 @@ class NormalModuleFactory extends ModuleFactory {
 		};
 
 		// 直接执行回调
+		// IgnorePlugin
 		this.hooks.beforeResolve.callAsync(resolveData, (err, result) => {
 			if (err) {
 				return callback(err, {
@@ -781,7 +835,8 @@ class NormalModuleFactory extends ModuleFactory {
 				});
 			}
 
-			// Ignored
+			// 当返回 false 时表示忽视 当前模块 的创建
+			// IgnorePlugin
 			if (result === false) {
 				return callback(null, {
 					fileDependencies,
@@ -812,6 +867,7 @@ class NormalModuleFactory extends ModuleFactory {
 					});
 				}
 
+				// 模块构建结果
 				const factoryResult = {
 					module,
 					fileDependencies,
@@ -840,10 +896,8 @@ class NormalModuleFactory extends ModuleFactory {
 		});
 	}
 
-	/**
-	 * 根据模块路径和上下文 返回模块的绝对路径 和绝对路径信息
-	 * 底层调用 Resolver.resolve
-	 */
+	// 通过 normal 类型的路径解析器  根据模块路径和上下文 返回模块的绝对路径 和绝对路径信息
+	// 底层调用 Resolver.resolve
 	resolveResource(
 		contextInfo,
 		context,
@@ -1004,10 +1058,8 @@ If changing the source code is not an option there is also a resolve options cal
 		);
 	}
 
-	/**
-	 * 将所有的 Loader.loader 属性解析成绝对路径
-	 * 底层调用 Resolver.resolve
-	 */
+	// 通过 loader 类型的路径解析器 将所有的 Loader.loader 属性解析成绝对路径
+	// 底层调用 Resolver.resolve
 	resolveRequestArray(
 		contextInfo,
 		context,
@@ -1053,12 +1105,12 @@ If changing the source code is not an option there is also a resolve options cal
 
 						const parsedResult = identToLoaderRequest(result);
 						const resolved = {
-							loader: parsedResult.loader,
-							options:
+							loader: parsedResult.loader, // 加载器路径(绝对路径)
+							options:	
 								item.options === undefined
 									? parsedResult.options
-									: item.options,
-							ident: item.options === undefined ? undefined : item.ident
+									: item.options,		// 加载器选项
+							ident: item.options === undefined ? undefined : item.ident // 
 						};
 						return callback(null, resolved);
 					}

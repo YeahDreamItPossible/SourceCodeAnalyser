@@ -20,18 +20,12 @@ class IgnorePlugin {
 	constructor(options) {
 		validate(options);
 		this.options = options;
-
 		this.checkIgnore = this.checkIgnore.bind(this);
 	}
 
-	/**
-	 * Note that if "contextRegExp" is given, both the "resourceRegExp"
-	 * and "contextRegExp" have to match.
-	 *
-	 * @param {ResolveData} resolveData resolve data
-	 * @returns {false|undefined} returns false when the request should be ignored, otherwise undefined
-	 */
+	// 根据 ResolveData 来返回是否需要构建 模块
 	checkIgnore(resolveData) {
+		// 如果 options.checkResource 存在 则优先级高
 		if (
 			"checkResource" in this.options &&
 			this.options.checkResource &&

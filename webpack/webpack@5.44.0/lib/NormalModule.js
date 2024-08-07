@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use strict";
 
 const parseJson = require("json-parse-better-errors");
@@ -91,6 +90,7 @@ const contextifySourceMap = (context, sourceMap, associatedObjectForCache) => {
  * @param {string | Buffer} input the input
  * @returns {string} the converted string
  */
+// 以 字符串 的形式
 const asString = input => {
 	if (Buffer.isBuffer(input)) {
 		return input.toString("utf-8");
@@ -123,13 +123,6 @@ makeSerializable(
 	"webpack/lib/NormalModule",
 	"NonErrorEmittedError"
 );
-
-/**
- * @typedef {Object} NormalModuleCompilationHooks
- * @property {SyncHook<[object, NormalModule]>} loader
- * @property {SyncHook<[LoaderItem[], NormalModule, object]>} beforeLoaders
- * @property {HookMap<AsyncSeriesBailHook<[string, NormalModule], string | Buffer>>} readResourceForScheme
- */
 
 // WeakMap<Compilation, Hooks>
 const compilationHooksMap = new WeakMap();
@@ -198,13 +191,14 @@ class NormalModule extends Module {
 	}) {
 		super(type, getContext(resource), layer);
 
+		// 请求路径
 		// 请求(Webpack 内部对 原始请求 内部处理后,  将loaders路径和资源路径组合后的绝对路径)
 		// 示例: 
 		// /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang! +
 		// /path/laoders/first.js???ruleSet[1].rules[0]!/path/loaders/second.js?ruleSet[1].rules[1]! +
 		// /path/math.js?ts=123
 		this.request = request;
-		// 用户请求(将 原始请求 分类后全部转换成 绝对路径)
+		// 用户请求路径(将 原始请求 分类后全部转换成 绝对路径)
 		// 示例: /path/loaders/first.js?auth=Lee!/path/loaders/second.js?user=Wang!/path/math.js?ts=123
 		this.userRequest = userRequest;
 		// 原始请求(资源加载路径)
@@ -232,11 +226,7 @@ class NormalModule extends Module {
 		// 匹配的路径资源
 		this.matchResource = matchResource;
 
-		/**
-		 * NormalModuleFactory 筛选后的loaders
-		 * 1. 模块加载路径解析出来的loaders
-		 * 2. 根据 Webpack.options.Module.Rule 匹配出来的loaders
-		 */
+		// 加载器(包括 满足匹配条件的配置加载器 和 筛选后的行内加载器)
 		this.loaders = loaders;
 		if (resolveOptions !== undefined) {
 			// already declared in super class
@@ -631,12 +621,9 @@ class NormalModule extends Module {
 		return new RawSource(content);
 	}
 
-	/**
-	 * 构建 NormalModule
-	 * 1. 运行所有的Loader 返回结果source
-	 * 2. 将 source 封装成 WebpackSource类的实例
-	 */
+	// 创建 加载器上下文 并运行所有的加载器 返回加载器的执行结果封装成 WebpackSource 的实例
 	doBuild(options, compilation, resolver, fs, callback) {
+		// 创建 加载器上下文
 		const loaderContext = this.createLoaderContext(
 			resolver,
 			options,
@@ -679,7 +666,7 @@ class NormalModule extends Module {
 				return callback(error);
 			}
 
-			// 将 source 创建成 一个 Source 实例
+			// 返回 WebpackSource 的实例
 			this._source = this.createSource(
 				options.context,
 				this.binary ? asBuffer(source) : asString(source),
@@ -706,7 +693,7 @@ class NormalModule extends Module {
 			return;
 		}
 
-		// 运行所有的 Loader 返回加载器返回的结果
+		// 运行所有的加载器 返回加载器的执行结果
 		runLoaders(
 			{
 				resource: this.resource,
@@ -833,6 +820,7 @@ class NormalModule extends Module {
 	 * 2. 将 source 封装成 WebpackSource类的实例
 	 * 3. this.parser.parse 对source(this._source.source) 进行分析
 	 */
+	// 构建 标准模块
 	build(options, compilation, resolver, fs, callback) {
 		this._forceBuild = false;
 		this._source = null;
@@ -1117,7 +1105,7 @@ class NormalModule extends Module {
 		this._forceBuild = true;
 	}
 
-	// 判断当前 NoramlModule 是否需要构建
+	// 判断当前 标准模块 是否需要构建(运行时模块不需要经过构建)
 	needBuild({ fileSystemInfo, valueCacheVersions }, callback) {
 		// build if enforced
 		if (this._forceBuild) return callback(null, true);
