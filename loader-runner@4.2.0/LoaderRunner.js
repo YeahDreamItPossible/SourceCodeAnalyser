@@ -303,24 +303,24 @@ exports.getContext = function getContext(resource) {
  * loader.pitch:
  * 通过读取 loaderContext.remainingReques t和 loaderContext.previousRequest 来修改 loaderContext.data
  * 如果某个 loader.pitch 函数有返回值时 准备阶段 结束(开始执行阶段)
+ * 并将 返回值 作为 loader.normal 的参数
  * loader.raw:
  * 表示是需要将loader.normal返回值 从 Buffer 转换成 String
  */
 
 /**
- * 单个 加载器 整个运行周期分为 加载阶段 和 运行阶段
+ * 单个 加载器 整个运行周期分为 加载阶段 和 准备阶段 和 执行阶段
  * 
  * 1. 加载阶段
  * 在 加载阶段 中
  * 优先以 cjs 的方式(require)加载 加载器 因为该加载方式是 同步 的
  * 其次以 esm 的方式(dynamic import)加载 加载器 因为该加载方式是 异步 的 
  * 
- * 2. 运行阶段
- * 运行阶段又分为 准备阶段 和 执行阶段
- * 2.1 准备阶段(pitch)
+ * 2. 准备阶段(pitch)
  * 按照 从左到右 的顺序 依次 运行每个 loader.pitch 
  * 如果某个 loader.pitch 有返回值时 准备阶段结束 开始执行阶段
- * 2.2 执行阶段(normal)
+ * 
+ * 3. 执行阶段(normal)
  * 按照 从右到左 的顺序 依次 执行每个 loader.normal
  * 每次运行 loader.normal 时 会将 上一个loader.normal的返回值 作为 下一个loader.normal 的参数
  */

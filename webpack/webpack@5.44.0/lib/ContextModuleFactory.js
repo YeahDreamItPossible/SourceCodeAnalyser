@@ -22,9 +22,15 @@ const { join } = require("./util/fs");
 
 const EMPTY_RESOLVE_OPTIONS = {};
 
+/**
+ * 通过 语法分析器 对 webpack 独特的 require.context API 生成依赖关系
+ * 根据 依赖 找到 上下文模块工厂
+ * 创建 上下文模块 的实例
+ */
+
 // 上下文模块工厂
 // 作用:
-// 
+// 创建 上下文模块 的实例
 module.exports = class ContextModuleFactory extends ModuleFactory {
 	constructor(resolverFactory) {
 		super();
@@ -145,6 +151,7 @@ module.exports = class ContextModuleFactory extends ModuleFactory {
 					resource = request;
 				}
 
+				// 返回 context 类型的 路径解析器
 				const contextResolver = this.resolverFactory.get(
 					"context",
 					dependencies.length > 0
@@ -155,6 +162,7 @@ module.exports = class ContextModuleFactory extends ModuleFactory {
 						  )
 						: resolveOptions
 				);
+				// 返回 loader 类型的 路径解析器
 				const loaderResolver = this.resolverFactory.get("loader");
 
 				asyncLib.parallel(

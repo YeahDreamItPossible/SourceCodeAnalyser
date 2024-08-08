@@ -1,18 +1,9 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const CachedConstDependency = require("./dependencies/CachedConstDependency");
 const ConstDependency = require("./dependencies/ConstDependency");
 const { evaluateToString } = require("./javascript/JavascriptParserHelpers");
 const { parseResource } = require("./util/identifier");
-
-/** @typedef {import("estree").Expression} ExpressionNode */
-/** @typedef {import("estree").Super} SuperNode */
-/** @typedef {import("./Compiler")} Compiler */
 
 const collectDeclaration = (declarations, pattern) => {
 	const stack = [pattern];
@@ -108,8 +99,9 @@ const getHoistedDeclarations = (branch, includeFunctionDeclarations) => {
 	return Array.from(declarations);
 };
 
-// TODO:
 // 常量插件
+// 作用:
+// 
 class ConstPlugin {
 	apply(compiler) {
 		const cachedParseResource = parseResource.bindCache(compiler.root);

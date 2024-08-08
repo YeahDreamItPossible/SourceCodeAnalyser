@@ -396,7 +396,7 @@ class NormalModule extends Module {
 		return new RawSource(content);
 	}
 
-	// 创建loader运行时上下文
+	// 创建 加载器上下文
 	createLoaderContext(resolver, options, compilation, fs) {
 		const { requestShortener } = compilation.runtimeTemplate;
 		const getCurrentLoaderName = () => {
@@ -631,6 +631,7 @@ class NormalModule extends Module {
 			fs
 		);
 
+		// 处理 加载器 的执行结果
 		const processResult = (err, result) => {
 			if (err) {
 				if (!(err instanceof Error)) {
@@ -713,7 +714,7 @@ class NormalModule extends Module {
 							});
 					} else {
 						loaderContext.addDependency(resource);
-						// 此时
+						// 通过 文件流 读取文件
 						fs.readFile(resource, callback);
 					}
 				}
@@ -802,7 +803,7 @@ class NormalModule extends Module {
 		return false;
 	}
 
-	// 根据 source 生成 hash
+	// 根据 源代码 生成哈希值 并绑定到 buildInfo.hash 上
 	_initBuildHash(compilation) {
 		const hash = createHash(compilation.outputOptions.hashFunction);
 		if (this._source) {
@@ -811,16 +812,15 @@ class NormalModule extends Module {
 		}
 		hash.update("meta");
 		hash.update(JSON.stringify(this.buildMeta));
+		// 构建信息哈希值
 		this.buildInfo.hash = /** @type {string} */ (hash.digest("hex"));
 	}
 
-	/**
-	 * 构建 NormalModule
-	 * 1. 运行所有的Loader 返回结果source
-	 * 2. 将 source 封装成 WebpackSource类的实例
-	 * 3. this.parser.parse 对source(this._source.source) 进行分析
-	 */
 	// 构建 标准模块
+	// 1. 运行所有加载器 返回加载器处理后的源代码 Source
+	// 2. 将 加载器处理后的源代码Source 封装成 WebpackSource 的实例
+	// 3. 对 源代码 通过 语法分析器 进行词法、语法分析
+	// 4. 创建 当前标准模块 的快照
 	build(options, compilation, resolver, fs, callback) {
 		this._forceBuild = false;
 		this._source = null;
@@ -855,6 +855,7 @@ class NormalModule extends Module {
 				return callback();
 			}
 
+			// 处理 代码分析器 报错
 			const handleParseError = e => {
 				const source = this._source.source();
 				const loaders = this.loaders.map(item =>
@@ -866,6 +867,7 @@ class NormalModule extends Module {
 				return callback();
 			};
 
+			// 处理 代码分析器 返回的结果
 			const handleParseResult = result => {
 				this.dependencies.sort(
 					concatComparators(
@@ -873,12 +875,13 @@ class NormalModule extends Module {
 						keepOriginalOrder(this.dependencies)
 					)
 				);
-				// this.buildInfo.hash
+				// 设置 this.buildInfo.hash
 				this._initBuildHash(compilation);
 				this._lastSuccessfulBuildMeta = this.buildMeta;
 				return handleBuildDone();
 			};
 
+			// 当 模块构建 完成后
 			const handleBuildDone = () => {
 				const snapshotOptions = compilation.options.snapshot.module;
 				if (!this.buildInfo.cacheable || !snapshotOptions) {
@@ -923,6 +926,7 @@ class NormalModule extends Module {
 						new InvalidDependenciesModuleWarning(this, nonAbsoluteDependencies)
 					);
 				}
+				// 创建 当前标准模块 的快照
 				// convert file/context/missingDependencies into filesystem snapshot
 				compilation.fileSystemInfo.createSnapshot(
 					startTime,
@@ -956,7 +960,7 @@ class NormalModule extends Module {
 
 			let result;
 			try {
-				// 运行parser
+				// 运行 代码分析器 对 源代码 进行表达式、语句分析
 				result = this.parser.parse(this._ast || this._source.source(), {
 					current: this,
 					module: this,

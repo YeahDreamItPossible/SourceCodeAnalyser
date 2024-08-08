@@ -1408,9 +1408,10 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	// 1. 先判断 当前模块 是否需要构建
 	// 2. 构建 当前模块
 	// 3. 缓存构建后的模块信息
-	// 1. 运行所有的Loader 返回source
-	// 2. 将 source 构建成 WebpackSource类的实例
-	// 3. 运行parser.parse(this._source.source) 给字段赋值 Module.dependencies Module.blocks Module.buildInfo Module.buildMeta
+	// 4. 运行所有加载器 返回加载器处理后的源代码 Source
+	// 5. 将 加载器处理后的源代码Source 封装成 WebpackSource 的实例
+	// 6. 对 源代码 通过 语法分析器 进行词法、语法分析
+	// 7. 创建 当前标准模块 的快照
 	_buildModule(module, callback) {
 		const currentProfile = this.profile
 			? this.moduleGraph.getProfile(module)
@@ -1490,6 +1491,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	}
 
 	// 非递归的解析模块中的依赖   
+	// 只解析 某个模块 中的依赖
 	processModuleDependenciesNonRecursive(module) {
 		const processDependenciesBlock = block => {
 			if (block.dependencies) {
@@ -1531,10 +1533,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		/** @type {Dependency[]} */
 		let listCacheValue;
 
-		/**
-		 * @param {Dependency} dep dependency
-		 * @returns {void}
-		 */
+		// 解析 依赖
 		const processDependency = dep => {
 			this.moduleGraph.setParents(dep, currentBlock, module);
 			const resourceIdent = dep.getResourceIdentifier();
@@ -1608,10 +1607,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			const queue = [module];
 			do {
 				const block = queue.pop();
+				// 模块中依赖
 				if (block.dependencies) {
 					currentBlock = block;
 					for (const dep of block.dependencies) processDependency(dep);
 				}
+				// 模块中的异步模块
 				if (block.blocks) {
 					for (const b of block.blocks) queue.push(b);
 				}
@@ -1620,6 +1621,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			return callback(e);
 		}
 
+		// 当前模块中没有依赖
 		if (sortedDependencies.length === 0) {
 			callback();
 			return;
@@ -2347,6 +2349,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.chunkGraph = chunkGraph;
 
 		// 构建 模块 与 模块图 的映射关系
+		// Module => ModuleGraph
 		for (const module of this.modules) {
 			ChunkGraph.setChunkGraphForModule(module, chunkGraph);
 		}
@@ -2371,10 +2374,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		this.logger.time("create chunks");
 
-		// 分块开始
-		// 空调用
-		this.hooks.beforeChunks.call();
-
 		/**
 		 * 分块的过程:
 		 * 1. 根据 Webpack.options.Entry 来创建对应的 Chunk 与 ChunkGroup
@@ -2382,6 +2381,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		 * 3. 根据 Webpack.options.Entry.runtime 来绑定 ChunkGroup._runtimeChunk
 		 */
 
+		// 分块开始
+		// 空调用
+		this.hooks.beforeChunks.call();
 		// 模块图 冻结
 		this.moduleGraph.freeze();
 		
@@ -2538,7 +2540,6 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		// 分块结束
 
 		this.logger.timeEnd("create chunks");
-
 		this.logger.time("optimize");
 
 		// 优化开始
