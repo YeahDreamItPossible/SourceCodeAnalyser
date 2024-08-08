@@ -176,7 +176,7 @@ const ruleSetCompiler = new RuleSetCompiler([
  */
 
 /**
- * 根据 加载器 使用顺序 分类
+ * 根据 加载器 使用顺序 分类：
  * 前置加载器(preLoader)
  * 
  * 标准加载器(loader)

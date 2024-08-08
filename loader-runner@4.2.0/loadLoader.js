@@ -1,10 +1,21 @@
 var LoaderLoadingError = require("./LoaderLoadingError");
 var url;
 
-// 通过cjs或者esm的方式加载loader
+/**
+ * 加载 加载器 并将 加载加载器的结果 绑定到 加载器 上
+ * 
+ * 加载 加载器 的方式:
+ * 1. 优先以 cjs 的方式(require)加载 加载器 因为该加载方式是 同步 的
+ * 2. 其次以 esm 的方式(dynamic import)加载 加载器 因为该加载方式是 异步 的 
+ * 
+ * 绑定 加载加载器的结果:
+ * 绑定 loader.normal loader.pitch loader.raw
+ */
+
+// 以 cjs 或者 esm 的方式加载 加载器
 module.exports = function loadLoader(loader, callback) {
 	if(loader.type === "module") {
-		// 1. 以esm的方式加载loader
+		// 1. 以 esm 的方式加载 加载器
 		try {
 			if(url === undefined) url = require("url");
 			var loaderUrl = url.pathToFileURL(loader.path);
@@ -19,7 +30,7 @@ module.exports = function loadLoader(loader, callback) {
 		}
 	} else {
 		try {
-			// 2. 通过cjs的方式加载loader
+			// 2. 通过 cjs 的方式加载 加载器
 			var module = require(loader.path);
 		} catch(e) {
 			// it is possible for node to choke on a require if the FD descriptor
@@ -40,10 +51,7 @@ module.exports = function loadLoader(loader, callback) {
 	}
 };
 
-/**
- * 将加载loader的结果绑定loader上
- * 绑定 loader.normal loader.pitch loader.raw
- */
+// 将 加载加载器的结果 绑定到 加载器上
 function handleResult(loader, module, callback) {
 	// 该module是以es6或者cjs加载返回的结果
 	if(typeof module !== "function" && typeof module !== "object") {
@@ -55,7 +63,7 @@ function handleResult(loader, module, callback) {
 	loader.normal = typeof module === "function" ? module : module.default;
 	loader.pitch = module.pitch;
 	loader.raw = module.raw;
-	// 保证loader.noraml和loader.pitch字段必须是函数
+	// 保证 loader.noraml 和 loader.pitch 字段必须是函数
 	if(typeof loader.normal !== "function" && typeof loader.pitch !== "function") {
 		return callback(new LoaderLoadingError(
 			"Module '" + loader.path + "' is not a loader (must have normal or pitch function)"

@@ -175,7 +175,7 @@ function runSyncOrAsync(fn, context, args, callback) {
 	}
 }
 
-// 转换loader.normal返回值
+// 转换 loader.normal 返回值
 function convertArgs(args, raw) {
 	if(!raw && Buffer.isBuffer(args[0]))
 		args[0] = utf8BufferToString(args[0]);
@@ -183,30 +183,23 @@ function convertArgs(args, raw) {
 		args[0] = Buffer.from(args[0], "utf-8");
 }
 
-/**
- * 按照从左到右的方式迭代 loaders.pitch
- * 如果某个loader.pitch有返回值 则停止迭代 然后从右到左开始迭代loader.normal
- * loader.pitch主要是通过读取loaderContext.remainingRequest和loaderContext.previousRequest来修改loaderContext.data
- */
+// 迭代 准备阶段时的 加载器 
+// 如果某个 loader.pitch 函数有返回值时 准备阶段 结束(开始执行阶段)
+// loader.pitch 主要是通过读取 loaderContext.remainingReques t和 loaderContext.previousRequest 来修改 loaderContext.data
 function iteratePitchingLoaders(options, loaderContext, callback) {
-	// 所有的loaders都被运行
-	// pitch阶段结束时 开始 迭代loader.normal
+	// 当 索引超出加载器的长度 时 准备阶段 结束 开始执行阶段
 	if(loaderContext.loaderIndex >= loaderContext.loaders.length)
 		return processResource(options, loaderContext, callback);
 
 	var currentLoaderObject = loaderContext.loaders[loaderContext.loaderIndex];
 
-	// 如果当前loader.pitch已经被运行 则继续下一个
+	// 如果 当前loader.pitch 已经被运行 则继续下一个加载器
 	if(currentLoaderObject.pitchExecuted) {
 		loaderContext.loaderIndex++;
 		return iteratePitchingLoaders(options, loaderContext, callback);
 	}
 
-	/**
-	 * 1. 通过以cjs或者esm的方式来加载loader模块
-	 * 2. 并将loader模块加载后的结果 来绑定loader.normal loader.pitch loader.raw
-	 * 3. 运行loader.pitch
-	 */
+	// 加载 加载器 并运行 loader.pitch
 	loadLoader(currentLoaderObject, function(err) {
 		if(err) {
 			loaderContext.cacheable(false);
@@ -214,9 +207,9 @@ function iteratePitchingLoaders(options, loaderContext, callback) {
 		}
 		var fn = currentLoaderObject.pitch;
 
-		// 标识: 标识当前loader.pitch已经被运行
+		// 标识: 标识当前 loader.pitch 已经被运行
 		currentLoaderObject.pitchExecuted = true;
-		// loader.pitch不存在
+		// 如果当前 loader.pitch 不存在时 则直接迭代下一个加载器
 		if(!fn) return iteratePitchingLoaders(options, loaderContext, callback);
 
 		runSyncOrAsync(
@@ -233,12 +226,11 @@ function iteratePitchingLoaders(options, loaderContext, callback) {
 				});
 
 				if(hasArg) {
-					// 当loader.pitch函数有返回值时 
-					// loader pitch 结束(开始迭代loader.normal)
+					// 当 loader.pitch 函数有返回值时 准备阶段 结束(开始执行阶段)
 					loaderContext.loaderIndex--;
 					iterateNormalLoaders(options, loaderContext, args, callback);
 				} else {
-					// 继续下一个loader.pitch
+					// 继续下一个加载器
 					iteratePitchingLoaders(options, loaderContext, callback);
 				}
 			}
@@ -264,36 +256,36 @@ function processResource(options, loaderContext, callback) {
 	}
 }
 
-// 迭代 loader.normal
+// 迭代 执行阶段时的 加载器 
 function iterateNormalLoaders(options, loaderContext, args, callback) {
 	if(loaderContext.loaderIndex < 0)
 		return callback(null, args);
 
 	var currentLoaderObject = loaderContext.loaders[loaderContext.loaderIndex];
 
-	// iterate
+	// 如果 当前loader.normal 已经被运行 则继续下一个加载器
 	if(currentLoaderObject.normalExecuted) {
 		loaderContext.loaderIndex--;
 		return iterateNormalLoaders(options, loaderContext, args, callback);
 	}
 
 	var fn = currentLoaderObject.normal;
-	// 标识: 标识当前loader.normal已经被运行
+	// 标识: 标识 当前loader.normal 已经被运行
 	currentLoaderObject.normalExecuted = true;
-	// loader.normal不存在
+	// 如果当前 loader.normal 不存在时 则直接迭代下一个加载器
 	if(!fn) {
 		return iterateNormalLoaders(options, loaderContext, args, callback);
 	}
 
-	// loader.normal返回值默认是Buffer
-	// loader.raw = true时 会强制将该返回值转换成String
+	// loader.normal 返回值默认是 Buffer
+	// loader.raw = true时 会强制将该返回值转换成 String
 	convertArgs(args, currentLoaderObject.raw);
 
 	runSyncOrAsync(fn, loaderContext, args, function(err) {
 		if(err) return callback(err);
 
 		var args = Array.prototype.slice.call(arguments, 1);
-		// 默认将上一个loader.noraml传递个下一个loader.normal
+		// 默认将 上一个loader.noraml的返回值 传递个 下一个loader.normal
 		iterateNormalLoaders(options, loaderContext, args, callback);
 	});
 }
@@ -305,25 +297,41 @@ exports.getContext = function getContext(resource) {
 };
 
 /**
- * loader.normal 指向loader函数
- * loader.pitch
- * loader.raw 表示是需要将loader.normal返回值Buffer转换成String
+ * 加载器属性描述:
+ * loader.normal:
+ * 指向loader函数
+ * loader.pitch:
+ * 通过读取 loaderContext.remainingReques t和 loaderContext.previousRequest 来修改 loaderContext.data
+ * 如果某个 loader.pitch 函数有返回值时 准备阶段 结束(开始执行阶段)
+ * loader.raw:
+ * 表示是需要将loader.normal返回值 从 Buffer 转换成 String
  */
 
 /**
- * 单个loader整个运行周期分为加载阶段和运行阶段
- * 1. 在loader加载阶段时
- * 1.1 或者通过cjs的方式来加载loader
- * 2.1 或者通过esm的方式来加载loader
- * 将loader加载的返回值 绑定loader.normal loader.pitch loader.raw
- * 2. 在loader运行阶段分为pitch阶段和normal阶段
- * 2.1 在pitch阶段时
- * 2.1.1 按照从左到右的顺序依次运行loader.pitch
- * 2.1.2 如果某个loader.pitch有返回值 则停止迭代loader.pitch 开始normal阶段
- * 2.2 在normal阶段
- * 2.2.1 按照从右到左的顺序依次执行loader.normal
- * 2.2.2 每次运行loader.normal时 会将上一个loader.normal的返回值作为下一个loader.normal的参数
+ * 单个 加载器 整个运行周期分为 加载阶段 和 运行阶段
+ * 
+ * 1. 加载阶段
+ * 在 加载阶段 中
+ * 优先以 cjs 的方式(require)加载 加载器 因为该加载方式是 同步 的
+ * 其次以 esm 的方式(dynamic import)加载 加载器 因为该加载方式是 异步 的 
+ * 
+ * 2. 运行阶段
+ * 运行阶段又分为 准备阶段 和 执行阶段
+ * 2.1 准备阶段(pitch)
+ * 按照 从左到右 的顺序 依次 运行每个 loader.pitch 
+ * 如果某个 loader.pitch 有返回值时 准备阶段结束 开始执行阶段
+ * 2.2 执行阶段(normal)
+ * 按照 从右到左 的顺序 依次 执行每个 loader.normal
+ * 每次运行 loader.normal 时 会将 上一个loader.normal的返回值 作为 下一个loader.normal 的参数
  */
+
+/**
+ * 加载器的执行顺序:
+ * 在 准备阶段 时 是按照 从左到右 依次执行
+ * 在 执行阶段 是 是按照 从左到左 依次执行
+ */
+
+
 // 运行所有的loaders
 exports.runLoaders = function runLoaders(options, callback) {
 	// read options
@@ -358,6 +366,7 @@ exports.runLoaders = function runLoaders(options, callback) {
 
 	// 扩展 loaderContext
 	loaderContext.context = contextDirectory;
+	// 索引
 	loaderContext.loaderIndex = 0;
 	loaderContext.loaders = loaders;
 	loaderContext.resourcePath = resourcePath;
@@ -427,10 +436,8 @@ exports.runLoaders = function runLoaders(options, callback) {
 			}).concat(loaderContext.resource || "").join("!");
 		}
 	});
-	/**
-	 * 被解析后的资源路径(包括loader路径和资源路径)
-	 * 但是该资源路径不包括已经被解析的loader路径
-	 */
+	// 被解析后的资源路径(包括loader路径和资源路径)
+	// 但是该资源路径不包括已经被解析的loader路径
 	Object.defineProperty(loaderContext, "remainingRequest", {
 		enumerable: true,
 		get: function() {
@@ -441,6 +448,7 @@ exports.runLoaders = function runLoaders(options, callback) {
 			}).concat(loaderContext.resource || "").join("!");
 		}
 	});
+	// 
 	Object.defineProperty(loaderContext, "currentRequest", {
 		enumerable: true,
 		get: function() {
@@ -449,6 +457,7 @@ exports.runLoaders = function runLoaders(options, callback) {
 			}).concat(loaderContext.resource || "").join("!");
 		}
 	});
+	// 
 	Object.defineProperty(loaderContext, "previousRequest", {
 		enumerable: true,
 		get: function() {
@@ -464,6 +473,7 @@ exports.runLoaders = function runLoaders(options, callback) {
 			return entry.options && typeof entry.options === "object" ? entry.options : entry.query;
 		}
 	});
+	// 
 	Object.defineProperty(loaderContext, "data", {
 		enumerable: true,
 		get: function() {

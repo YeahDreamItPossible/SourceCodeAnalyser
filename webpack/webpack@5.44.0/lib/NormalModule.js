@@ -621,7 +621,7 @@ class NormalModule extends Module {
 		return new RawSource(content);
 	}
 
-	// 创建 加载器上下文 并运行所有的加载器 返回加载器的执行结果封装成 WebpackSource 的实例
+	// 创建 加载器上下文 后运行所有的加载器 并返回加载器的执行结果封装成 WebpackSource 的实例
 	doBuild(options, compilation, resolver, fs, callback) {
 		// 创建 加载器上下文
 		const loaderContext = this.createLoaderContext(
