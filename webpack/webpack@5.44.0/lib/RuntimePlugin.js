@@ -76,6 +76,8 @@ const TREE_DEPENDENCIES = {
 };
 
 // 运行时插件
+// 作用:
+// 添加 运行时模块 的实例
 class RuntimePlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap("RuntimePlugin", compilation => {

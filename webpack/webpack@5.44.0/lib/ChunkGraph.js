@@ -1152,6 +1152,7 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 	 * @param {Set<string>} items runtime requirements to be added (ownership of this Set is given to ChunkGraph)
 	 * @returns {void}
 	 */
+	// 设置 当前块 运行时所需要的 webpack 变量
 	addChunkRuntimeRequirements(chunk, items) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		const runtimeRequirements = cgc.runtimeRequirements;

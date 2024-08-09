@@ -377,6 +377,23 @@ const byLocation = compareSelect(err => err.loc, compareLocations);
 const compareErrors = concatComparators(byModule, byLocation, byMessage);
 
 /**
+ * 编译过程可以分为以下几个流程
+ * 1. 模块的构建
+ * 创建模块 并在构建模块的过程中 递归的解析模块中的依赖 构建 模块 与 依赖的图谱关系(ModuleGraph)
+ * 2. 分块
+ * 根据 入口 进行分块 并构建 块 与 模块 的图谱关系(ChunkGraph)
+ * 3. 模块Id 模块哈希值 块Id 块哈希值
+ * 
+ * 4. 优化
+ * 优化模块 优化块 优化块中模块
+ * 5. 模块代码生成
+ * 
+ * 6. 块代码生成
+ * 
+ * 7. 文件输出
+ */
+
+/**
  * 模块图(ModuleGraph) 构建发生在 添加模块 创建模块 构建模块 解析依赖 等的过程中
  * 块图(ChunkGraph) 构建发生在 分块 的过程
  * 在优化阶段
@@ -1073,7 +1090,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		// Map<ChunkName, Chunk>
 		this.namedChunks = new Map();
 
-		// 缓存的模块 Set<Module>
+		// 缓存的模块
+		// Set<Module>
 		this.modules = new Set();
 		arrayToSetDeprecation(this.modules, "Compilation.modules");
 		// 缓存模块 Map<ModuleId, Module>
@@ -2693,7 +2711,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					// 空调用
 					this.hooks.beforeCodeGeneration.call();
 
-					// 第一次代码生成主要是 生成modules的code
+					// 第一次代码生成主要是 生成最终的(通过模块工厂创建的)模块代码
+					// 不包含 运行时模块
 					this.codeGeneration(err => {
 						if (err) {
 							return finalCallback(err);
@@ -2823,7 +2842,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 								// 在创建 chunk asset 之前
 								this.hooks.beforeChunkAssets.call();
 
-								// 生成chunk的code
+								// 生成最终的块代码
 								this.createChunkAssets(err => {
 									this.logger.timeEnd("create chunk assets");
 									if (err) {
@@ -2961,11 +2980,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		);
 	}
 
-	/**
-	 * Module生成代码
-	 * 1. module.codeGeneration 生成代码
-	 * 2. 缓存生成的代码
-	 */
+	// 调用 module.codeGeneration 生成最终的模块代码 并缓存生成最终的模块代码
 	_codeGenerationModule(
 		module,
 		runtime,
@@ -2996,7 +3011,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				try {
 					codeGenerated = true;
 					this.codeGeneratedModules.add(module);
-					// 重点看
+					// 生成最终的模块代码
 					result = module.codeGeneration({
 						chunkGraph,
 						moduleGraph,
@@ -3042,7 +3057,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return treeEntries;
 	}
 
-	// 处理 模块 及 块 运行时所需要的 运行时变量
+	// 处理 模块 及 块 运行时所需要的 运行时变量(webpack 变量)
 	processRuntimeRequirements({
 		chunkGraph = this.chunkGraph,
 		modules = this.modules,
@@ -3073,6 +3088,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 						const hook = runtimeRequirementInModule.get(r);
 						if (hook !== undefined) hook.call(module, set, context);
 					}
+
+					// 存储 当前模块 运行时所需要的 webpack 变量
 					chunkGraph.addModuleRuntimeRequirements(module, runtime, set);
 				}
 			}
@@ -3093,6 +3110,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				this.hooks.runtimeRequirementInChunk.for(r).call(chunk, set, context);
 			}
 
+			// 存储 当前块 运行时所需要的 webpack 变量
 			chunkGraph.addChunkRuntimeRequirements(chunk, set);
 		}
 
@@ -3110,6 +3128,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				context
 			);
 
+			// 根据不同的 webpack 变量添加不同的运行时模块
 			for (const r of set) {
 				this.hooks.runtimeRequirementInTree
 					.for(r)
@@ -3416,7 +3435,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		this.children.sort(byNameOrHash);
 	}
 
-	// 
+	// 归纳所有的依赖
 	summarizeDependencies() {
 		for (
 			let indexChildren = 0;
@@ -3496,16 +3515,20 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return moduleHashDigest;
 	}
 
-	// 返回运行时模块 代码生成任务
+	// 生成整个 编译过程 中的完整哈希值 并返回运行时模块 代码生成任务
 	createHash() {
 		this.logger.time("hashing: initialize hash");
 		const chunkGraph = this.chunkGraph;
 		const runtimeTemplate = this.runtimeTemplate;
 		const outputOptions = this.outputOptions;
+		// 哈希函数
 		const hashFunction = outputOptions.hashFunction;
+		// 哈希编码
 		const hashDigest = outputOptions.hashDigest;
+		// 哈希摘要的前缀长度
 		const hashDigestLength = outputOptions.hashDigestLength;
 		const hash = createHash(hashFunction);
+		// 哈希盐值
 		if (outputOptions.hashSalt) {
 			hash.update(outputOptions.hashSalt);
 		}
@@ -3543,8 +3566,10 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		 * Chunks need to be in deterministic order since we add hashes to full chunk
 		 * during these hashing.
 		 */
+		// 包含 运行时块 的 块
 		// Array<RuntimeChunk>
 		const unorderedRuntimeChunks = [];
+		// 不包含 运行时块 的 块
 		// Array<Chunk>
 		const otherChunks = [];
 		for (const c of this.chunks) {
@@ -3570,6 +3595,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		let remaining = 0;
 		for (const info of runtimeChunksMap.values()) {
 			for (const other of new Set(
+				// 当前块 关联的 异步入口点 下的所有块
 				Array.from(info.chunk.getAllReferencedAsyncEntrypoints()).map(
 					e => e.chunks[e.chunks.length - 1]
 				)
@@ -3709,7 +3735,9 @@ This prevents using hashes of each other and should be avoided.`);
 		this.logger.timeAggregateEnd("hashing: hash chunks");
 		this.logger.time("hashing: hash digest");
 		this.hooks.fullHash.call(hash);
+		// 当前 编译过程 中的 完整哈希值
 		this.fullHash = /** @type {string} */ (hash.digest(hashDigest));
+		// 当前 编译过程 中的 完整哈希值(截取特定长度)
 		this.hash = this.fullHash.substr(0, hashDigestLength);
 		this.logger.timeEnd("hashing: hash digest");
 
@@ -3742,6 +3770,7 @@ This prevents using hashes of each other and should be avoided.`);
 			);
 			chunk.hash = chunkHashDigest;
 			chunk.renderedHash = chunk.hash.substr(0, hashDigestLength);
+			// 内容哈希
 			this.hooks.contentHash.call(chunk);
 		}
 		this.logger.timeEnd("hashing: process full hash modules");
@@ -3750,7 +3779,7 @@ This prevents using hashes of each other and should be avoided.`);
 
 	// 存储 资源文件(构建产物)
 	// 设置 compilation.assets
-	emitAsset(file, source, assetInfo = {}) {
+	emitAsset(file, source, assetInfo = {}) { 
 		if (this.assets[file]) {
 			if (!isSourceEqual(this.assets[file], source)) {
 				this.errors.push(
@@ -3987,7 +4016,8 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	// 从缓存(module.buildInfo.assetsInfo)中读取生成的代码
+	// 创建 模块资源文件
+	// 从缓存的 模块打包信息(module.buildInfo.assetsInfo) 中读取生成的代码
 	createModuleAssets() {
 		const { chunkGraph } = this;
 		for (const module of this.modules) {
@@ -4013,7 +4043,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	// 获取render chunk的方法
+	// 返回 渲染块 的方法
 	getRenderManifest(options) {
 		// 插件
 		// JavascriptModulesPlugin  获得render函数
@@ -4021,6 +4051,7 @@ This prevents using hashes of each other and should be avoided.`);
 		return this.hooks.renderManifest.call([], options);
 	}
 
+	// 创建 块资源文件
 	// render chunk
 	// 根据chunks来生成compilation.assets
 	createChunkAssets(callback) {
@@ -4035,7 +4066,7 @@ This prevents using hashes of each other and should be avoided.`);
 				/** @type {RenderManifestEntry[]} */
 				let manifest;
 				try {
-					// 获取render chunk
+					// 获取 渲染块 的方法
 					manifest = this.getRenderManifest({
 						chunk,
 						hash: this.hash,
@@ -4126,8 +4157,7 @@ This prevents using hashes of each other and should be avoided.`);
 										source = alreadyWritten.source;
 									}
 								} else if (!source) {
-									// NOTE:
-									// render the asset
+									// 渲染块
 									source = fileManifest.render();
 
 									// Ensure that source is a cached source to avoid additional cost because of repeated access
@@ -4247,6 +4277,7 @@ This prevents using hashes of each other and should be avoided.`);
 	 * @param {Array<WebpackPluginInstance | WebpackPluginFunction>=} plugins webpack plugins that will be applied
 	 * @returns {Compiler} creates a child Compiler instance
 	 */
+	// 创建 子编译器 的实例
 	createChildCompiler(name, outputOptions, plugins) {
 		const idx = this.childrenCounters[name] || 0;
 		this.childrenCounters[name] = idx + 1;

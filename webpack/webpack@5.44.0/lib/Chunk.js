@@ -88,7 +88,7 @@ class Chunk {
 		// 标识: 标识 当前块 能否被合并
 		// RuntimeChunk.preventIntegration = true
 		this.preventIntegration = false;
-		// 块组(包含当前块的快组)
+		// 块组(包含当前块的块组)
 		// Set<ChunkGroup>
 		this._groups = new SortableSet(undefined, compareChunkGroupsByIndex);
 		// 运行时块名称(如果当前块需要额外的运行时块时)
@@ -431,10 +431,7 @@ class Chunk {
 		return false;
 	}
 
-	/**
-	 * @returns {boolean} whether this chunk can only be an initial chunk
-	 */
-	// 
+	// 返回 当前块 是否是唯一的初始块
 	isOnlyInitial() {
 		if (this._groups.size <= 0) return false;
 		for (const chunkGroup of this._groups) {
@@ -589,7 +586,7 @@ class Chunk {
 		return chunks;
 	}
 
-	// 以 Set 的形式返回与当前 Chunk 相关的异步 Entrypoint 集合
+	// 以 Set 的形式返回与当前 Chunk 相关的 异步入口点 集合
 	getAllReferencedAsyncEntrypoints() {
 		const queue = new Set(this.groupsIterable);
 		const entrypoints = new Set();
