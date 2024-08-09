@@ -2608,6 +2608,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					// 调用来决定是否存储 record
 					const shouldRecord = this.hooks.shouldRecord.call() !== false;
 
+					// 从 记录 中读取缓存的 模块 信息并给对应的 模块 设置 Id
 					// RecordIdsPlugin
 					// 根据 compilation.records.modules 设置 chunkGraphModule.id
 					this.hooks.reviveModules.call(this.modules, this.records);
@@ -2617,7 +2618,8 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					this.hooks.beforeModuleIds.call(this.modules);
 
 					// NamedModuleIdsPlugin
-					// 根据 compilation.modules 设置compilation.records.modules
+					// 遍历所有的模块 给每一个 模块 设置Id
+					// 根据 compilation.modules 设置 compilation.records.modules
 					// 同时设置 chunkGraphModule.id
 					this.hooks.moduleIds.call(this.modules);
 
@@ -2629,8 +2631,9 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					// 在模块 id 优化完成时调用
 					this.hooks.afterOptimizeModuleIds.call(this.modules);
 
+					// 从 记录 中读取缓存的 块 信息并给对应的 块 设置 Id
 					// RecordIdsPlugin
-					// 根据compilation.records.chunks设置chunk.id chunk.ids
+					// 根据 compilation.records.chunks 设置chunk.id chunk.ids
 					this.hooks.reviveChunks.call(this.chunks, this.records);
 
 					// 空调用
@@ -2653,9 +2656,10 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					this.assignRuntimeIds();
 
 					// ChunkGroups.origins 排序
-					// errors warnings排序
+					// errors warnings 排序
 					this.sortItemsWithChunkIds();
 
+					// 将当前 编译过程 中的 所有模块和块的Id信息 存储到 编译器的记录(compiler.records) 中
 					if (shouldRecord) {
 						// RecordIdsPlugin
 						// 将compilation.modules信息存储到compilation.records.modules
@@ -2675,7 +2679,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 					// 在创建模块哈希（hash）之前
 					this.hooks.beforeModuleHash.call();
 
-					// 模块Hash
+					// 批量设置 模块哈希
 					// 设置 chunkGraphModule.hashes
 					this.createModuleHashes();
 
@@ -3375,20 +3379,23 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// 给 每个Entrypoint 的 RuntimeChunk 分配 chunk.id
-	// 给 每个AsyncEntryponit 中的 RuntimeChunk 分配 chunk.id
+	// 给每个 入口点 和 异步入口点 的 运行时块 设置 块Id
 	// 设置 chunkGraph._runtimeIds
 	assignRuntimeIds() {
 		const { chunkGraph } = this;
 		const processEntrypoint = ep => {
+			// 返回 当前入口点名
 			const runtime = ep.options.runtime || ep.name;
+			// 返回 当前入口点 的 运行时块
 			const chunk = ep.getRuntimeChunk();
 			// chunkGraph._runtimeIds.set(runtime, chunk.id)
 			chunkGraph.setRuntimeId(runtime, chunk.id);
 		};
+		// 给每个 入口点 的 运行时块 分配 chunk.id
 		for (const ep of this.entrypoints.values()) {
 			processEntrypoint(ep);
 		}
+		// 给每个 异步入口点 中的 运行时块 分配 chunk.id
 		for (const ep of this.asyncEntrypoints) {
 			processEntrypoint(ep);
 		}
@@ -3434,7 +3441,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// 批量设置模块哈希
+	// 批量设置 模块哈希
 	createModuleHashes() {
 		let statModulesHashed = 0;
 		const { chunkGraph, runtimeTemplate } = this;

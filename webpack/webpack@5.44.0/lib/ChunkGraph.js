@@ -470,7 +470,7 @@ class ChunkGraph {
 		return cgm.chunks.size;
 	}
 	
-	// 以 数组 的形式返回 当前模块 关联的所有 块 ??
+	// 以 数组 的形式返回 当前模块 关联的所有 块运行时块名称
 	getModuleRuntimes(module) {
 		const cgm = this._getChunkGraphModule(module);
 		return cgm.chunks.getFromUnorderedCache(getModuleRuntimes);

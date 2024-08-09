@@ -4,6 +4,8 @@ const { compareNumbers } = require("./util/comparators");
 const identifierUtils = require("./util/identifier");
 
 // TODO: 暂时不知道具体怎么使用
+// 记录Id插件
+// 作用:
 // 告知 webpack 生成带有相对路径的记录(records)使得可以移动上下文目录。
 // 默认 optimization.portableRecords 被禁用
 // 如果下列至少一个选项在 webpack 中被设置
@@ -35,26 +37,33 @@ class RecordIdsPlugin {
 		};
 
 		compiler.hooks.compilation.tap("RecordIdsPlugin", compilation => {
-			// 设置 compilation.records.modules 属性
+			// 记录 模块Id
+			// 设置 compiler.records.modules 属性
+			// compiler.records 与 compilation.records 指向同一个内存地址
 			compilation.hooks.recordModules.tap(
 				"RecordIdsPlugin",
 				(modules, records) => {
 					const chunkGraph = compilation.chunkGraph;
 					if (!records.modules) records.modules = {};
 					if (!records.modules.byIdentifier) records.modules.byIdentifier = {};
-					/** @type {Set<number>} */
+					// Set<Number>
 					const usedIds = new Set();
 					for (const module of modules) {
 						const moduleId = chunkGraph.getModuleId(module);
+						// 只有当 模块Id 是 纯数字 时才会记录
 						if (typeof moduleId !== "number") continue;
 						const identifier = getModuleIdentifier(module);
+						// 以 模块标识符 为 Key 以 模块Id 为值
 						records.modules.byIdentifier[identifier] = moduleId;
+						// 存储当前模块Id
 						usedIds.add(moduleId);
 					}
 					records.modules.usedIds = Array.from(usedIds).sort(compareNumbers);
 				}
 			);
 
+			// 从 缓存 中读取数据 给对应的 模块 设置Id
+			// 读取 compiler.records.modules 中缓存的 id 信息 给 对应的模块 设置Id
 			// 给 Module 对应的 ChunkGraphModule 设置id
 			// 即: chunkGraphModule.id = xx
 			compilation.hooks.reviveModules.tap(
@@ -126,6 +135,9 @@ class RecordIdsPlugin {
 				return sources;
 			};
 
+			// 记录 块Id
+			// 设置 compiler.records.chunks 属性
+			// compiler.records 与 compilation.records 指向同一个内存地址
 			// 设置 compilation.records.chunks 属性
 			compilation.hooks.recordChunks.tap(
 				"RecordIdsPlugin",
@@ -138,32 +150,34 @@ class RecordIdsPlugin {
 					if (!records.chunks) records.chunks = {};
 					if (!records.chunks.byName) records.chunks.byName = {};
 					if (!records.chunks.bySource) records.chunks.bySource = {};
-					/** @type {Set<number>} */
+					// Set<Number>
 					const usedIds = new Set();
 					for (const chunk of chunks) {
+						// 只有当 块Id 是 纯数字 时才会记录
 						if (typeof chunk.id !== "number") continue;
 						const name = chunk.name;
+						// // 以 块名 为 Key 以 块Id 为值
 						if (name) records.chunks.byName[name] = chunk.id;
 						const sources = getChunkSources(chunk);
+						// 
 						for (const source of sources) {
 							records.chunks.bySource[source] = chunk.id;
 						}
+						// 存储当前块Id
 						usedIds.add(chunk.id);
 					}
 					records.chunks.usedIds = Array.from(usedIds).sort(compareNumbers);
 				}
 			);
-			// 设置 chunk.id
+
+			// 从 缓存 中读取数据 给对应的 块 设置Id
+			// 读取 compiler.records.chunks 中缓存的 id 信息 给对应的 块 设置Id
+			// 即: chunk.id = xx chunk.ids = [xx]
 			compilation.hooks.reviveChunks.tap(
 				"RecordIdsPlugin",
-				/**
-				 * @param {Chunk[]} chunks the chunks array
-				 * @param {Records} records the records object
-				 * @returns {void}
-				 */
 				(chunks, records) => {
 					if (!records.chunks) return;
-					/** @type {Set<number>} */
+					// Set<Number>
 					const usedIds = new Set();
 					if (records.chunks.byName) {
 						for (const chunk of chunks) {
