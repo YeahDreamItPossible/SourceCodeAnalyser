@@ -386,6 +386,7 @@ const compareErrors = concatComparators(byModule, byLocation, byMessage);
  * 
  * 4. 优化
  * 优化模块 优化块 优化块中模块
+ * 
  * 5. 模块代码生成
  * 
  * 6. 块代码生成

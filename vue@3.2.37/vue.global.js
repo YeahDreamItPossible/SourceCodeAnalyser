@@ -46,9 +46,11 @@
  * process					=>		 加工
  * resolve					=>		 解析
  * transform				=>		 转换
- * parser						=>		 语法分析器 解析器
+ * parser						=>		 语法分析器
  * optimizer				=>		 优化器 优化程序
  * generator				=>		 生成器
+ * track						=>		 追踪
+ * trigger					=>		 触发
  */
 
 /**
@@ -128,10 +130,10 @@
  * computed => ComputedRefImpl
  * customRef => CustomRefImpl
  * RefImpl CustomRefImpl ObjectRefImpl ComputedRefImpl区别:
- * 1. CustomRefImpl CustomRefImpl都具有get时track(追踪依赖) set时trigger(派发更新)的特征
+ * 1. CustomRefImpl CustomRefImpl都具有get时track(追踪依赖) set时trigger(触发更新)的特征
  * 2. CustomRefImpl是RefImpl的包装 将track和trigger暴漏给用户 需要用户手动触发
- * 3. ObjectRefImpl追踪依赖和派发更新的特征是通过直接源响应式对象的属性实现的
- * 4. ComputedRefImpl本身是惰性的 只有追踪依赖 没有直接派发更新特征
+ * 3. ObjectRefImpl追踪依赖和触发更新的特征是通过直接源响应式对象的属性实现的
+ * 4. ComputedRefImpl本身是惰性的 只有追踪依赖 没有直接触发更新特征
  */
 
 /**
@@ -175,6 +177,33 @@
 // 创建组件的方式
 // 1. 选项式组件(以 配置 的方式)
 // 2. 函数式组件(以 函数 的方式)
+
+/**
+ * Vue.h Vue.createVNode Vue.createTextVNode
+ * Vue.h 参数非标准化 内部逻辑会对参数进行加工
+ * Vue.createVNode 参数标准化
+ */
+
+/**
+ * 编译函数: 
+ * 将 模板 转换成 渲染函数
+ * 示例: Vue.compile
+ * 渲染函数:  
+ * 创建 虚拟DOM
+ * 示例: Vue.h Vue.createVNode
+ * 渲染器:
+ * 将 虚拟DOM 渲染成 真实DOM 并挂载(或更新)到容器中
+ * 示例: Vue.render Vue.createRenderer
+ */
+
+/**
+ * 副作用作用域:
+ * EffectScope 类的实例
+ * 响应式副作用: 
+ * ReactiveEffect 类的实例
+ * 副作用:
+ * 函数
+*/
 
 var Vue = (function (exports) {
 	'use strict';
@@ -605,30 +634,30 @@ var Vue = (function (exports) {
 		console.warn(`[Vue warn] ${msg}`, ...args);
 	}
 
-	/* 逻辑分层: 副作用作用域开始 */
-
-	// 当前激活的作用域
+	// 当前激活的副作用作用域
 	let activeEffectScope;
-
-	// 创建 副作用作用域
+	// 副作用作用域
+	// 作用:
 	// 1. 保存当前副作用域下的副作用
 	// 2. 保存当前副作用域下的清除队列
 	// 3. 保存当前副作用域下的嵌套层级副作用域
 	class EffectScope {
 		constructor(detached = false) {
-			// 标识: 标记当前作用域是激活的
+			// 标识: 标记当前副作用作用域是激活的
 			this.active = true;
 			
-			// 当前作用域下的副作用集合
+			// 副作用队列
 			this.effects = [];
 			
-			// 清除队列(通过onScopeDispose注册的回调函数)
+			// 清除任务队列(通过onScopeDispose注册的回调函数)
 			this.cleanups = [];
 
-			// detached表示 是否独立构建作用域
-			// 默认会构建嵌套层级副作用域
+			// detached 表示是否要独立构建作用域
+			// 默认会构建具有嵌套层级的副作用作用域
 			if (!detached && activeEffectScope) {
+				// 父副作用作用域
 				this.parent = activeEffectScope;
+				// 当前副作用作用域 在 父副作用作用域 中的索引
 				this.index =
 					(activeEffectScope.scopes || (activeEffectScope.scopes = [])).push(this) - 1;
 			}
@@ -651,39 +680,39 @@ var Vue = (function (exports) {
 			}
 		}
 		
-		// 绑定当前作用域
+		// 绑定当前副作用作用域
 		on() {
 			activeEffectScope = this;
 		}
 		
-		// 解绑当前作用域(绑定当前作用域的父级)
+		// 解绑当前副作用作用域(绑定当前副作用作用域的父副作用作用域)
 		off() {
 			activeEffectScope = this.parent;
 		}
 
 		// 停止作用域
-		// 1. 停止当前作用域下的副作用
-		// 2. 停止当前作用域下的清除函数
-		// 3. 停止当前作用域下的子作用域集合 
-		// 4. 从当前作用域的父作用域的子作用域集合移除当前作用域
+		// 1. 停止 当前副作用作用域 下的 副作用队列
+		// 2. 停止 当前副作用作用域 下的 清除任务队列
+		// 3. 执行 当前副作用作用域下的 子副作用作用域集合的停止函数 
+		// 4. 从当前副作用作用域的父作用域的子作用域集合移除当前副作用作用域
 		stop(fromParent) {
 			if (this.active) {
 				let i, l;
-				// 1. 停止当前作用域下的副作用
+				// 1. 停止当前副作用作用域下的副作用
 				for (i = 0, l = this.effects.length; i < l; i++) {
 					this.effects[i].stop();
 				}
-				// 2. 停止当前作用域下的清除函数
+				// 2. 停止当前副作用作用域下的清除函数
 				for (i = 0, l = this.cleanups.length; i < l; i++) {
 					this.cleanups[i]();
 				}
-				// 3. 停止当前作用域下的所有子作用域
+				// 3. 停止当前副作用作用域下的所有子作用域
 				if (this.scopes) {
 					for (i = 0, l = this.scopes.length; i < l; i++) {
 						this.scopes[i].stop(true);
 					}
 				}
-				// 4. 从父作用域中的作用域集合移除当前作用域
+				// 4. 从父作用域中的作用域集合移除当前副作用作用域
 				if (this.parent && !fromParent) {
 					const last = this.parent.scopes.pop();
 					if (last && last !== this) {
@@ -696,26 +725,21 @@ var Vue = (function (exports) {
 			}
 		}
 	}
-
-	// 创建作用域快捷方式
-	// detached 字段表示是否绑定父scope
+	// 创建 副作用作用域 的实例
 	function effectScope(detached) {
 		return new EffectScope(detached);
 	}
-
-	// 当创建副作用时 手动将当前副作用绑定到当前激活作用域中
+	// 在 当前副作用作用域 下 添加 副作用
 	function recordEffectScope(effect, scope = activeEffectScope) {
 		if (scope && scope.active) {
 			scope.effects.push(effect);
 		}
 	}
-
-	// 获取当前的作用域
+	// 获取当前激活的副作用作用域
 	function getCurrentScope() {
 		return activeEffectScope;
 	}
-
-	// 当前作用域 注册清除任务
+	// 在 当前副作用作用域 下添加 清除任务
 	function onScopeDispose(fn) {
 		if (activeEffectScope) {
 			activeEffectScope.cleanups.push(fn);
@@ -740,7 +764,6 @@ var Vue = (function (exports) {
 		dep.n = 0;
 		return dep;
 	};
-
 	// 断言: 断言当前依赖是否已经被追踪
 	const wasTracked = (dep) => (dep.w & trackOpBit) > 0;
 	// 断言: 断言当前依赖是否是新的
@@ -792,29 +815,24 @@ var Vue = (function (exports) {
 	const ITERATE_KEY = Symbol('iterate');
 	const MAP_KEY_ITERATE_KEY = Symbol('Map key iterate');
 	
-	// 副作用类
+	// 响应式副作用类
 	class ReactiveEffect {
 		constructor(fn, scheduler = null, scope) {
 			// 回调函数
 			this.fn = fn;
-
-			// 调度者
+			// 调度器
 			this.scheduler = scheduler;
-
-			// 标识: 标识当前副作用是激活状态
+			// 标识: 标识当前响应式副作用是否是激活的
 			this.active = true;
-
 			// 依赖(响应式数据依赖)
 			this.deps = [];
-
-			// 父副作用
+			// 父响应式副作用
 			this.parent = undefined;
-
-			// 将当前副作用绑定到激活的副作用域中
+			// 将 当前响应式副作用 绑定到 当前激活的副作用作用域 中
 			recordEffectScope(this, scope);
 		}
 
-		// 执行副作用的回调函数
+		// 执行 当前响应式副作用 的 回调函数
 		run() {
 			if (!this.active) {
 				return this.fn();
@@ -855,9 +873,10 @@ var Vue = (function (exports) {
 			}
 		}
 
+		// 终止
 		stop() {
-			// stopped while running itself - defer the cleanup
 			if (activeEffect === this) {
+				// 标识: 延迟清理当前响应式副作用
 				this.deferStop = true;
 			}
 			else if (this.active) {
@@ -869,23 +888,20 @@ var Vue = (function (exports) {
 			}
 		}
 	}
-
-	/**
-	 * 清除副作用
-	 * 主要是找到当前副作用下的所有依赖
-	 * 清除每个依赖中缓存的当前副作用
-	 */
+	// 清除 响应式副作用
+	// 主要是解除 响应式数据依赖 与 当前响应式副作用 的关联关系
 	function cleanupEffect(effect) {
 		const { deps } = effect;
 		if (deps.length) {
+			// 遍历 当前响应式副作用 下的所有依赖
 			for (let i = 0; i < deps.length; i++) {
+				// 解除 响应式数据依赖 与 当前响应式副作用 的关联关系
 				deps[i].delete(effect);
 			}
 			deps.length = 0;
 		}
 	}
-
-	// 
+	// 创建 副作用
 	function effect(fn, options) {
 		if (fn.effect) {
 			fn = fn.effect.fn;
@@ -903,16 +919,19 @@ var Vue = (function (exports) {
 		runner.effect = _effect;
 		return runner;
 	}
-
+	// 终止 副作用
 	function stop(runner) {
 		runner.effect.stop();
 	}
 
 	// 标识: 是否应追踪
-	// 主要用于 生命周期hook 等
 	let shouldTrack = true;
-
 	// 追踪栈
+	// 作用:
+	// 栈中存储 Boolean 以标识是否需要进行 依赖收集
+	// 追踪栈存在的意义:
+	// 在收集依赖的过程中 是一个递归收集的过程(例如 组件的递归解析)
+	// 某些操作(例如 生命周期Hook)是不需要收集依赖的
 	const trackStack = [];
 	// 停止追踪
 	function pauseTracking() {
@@ -925,7 +944,7 @@ var Vue = (function (exports) {
 		shouldTrack = last === undefined ? true : last;
 	}
 
-	// 追踪reactive副作用
+	// 收集 reactive 依赖
 	function track(target, type, key) {
 		if (shouldTrack && activeEffect) {
 			let depsMap = targetMap.get(target);
@@ -941,9 +960,10 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 追踪副作用
-	// 无论是reactive 还是ref 最终都会调用该函数
-	// (effect.deps 与 响应式数据的deps相互绑定 多对多关系)
+	// 最基础的 收集依赖 方式
+	// 无论是 reactive 还是 ref 的依赖收集 最终都是调用该函数
+	// 依赖收集的本质就是向 依赖 中添加副作用
+	// 需要注意的是 响应式数据的依赖 与 副作用 相互绑定 属于多对多关系
 	function trackEffects(dep, debuggerEventExtraInfo) {
 		let shouldTrack = false;
 		if (effectTrackDepth <= maxMarkerBits) {
@@ -957,10 +977,10 @@ var Vue = (function (exports) {
 			shouldTrack = !dep.has(activeEffect);
 		}
 		if (shouldTrack) {
-			// 双向收集
-			// 响应式数据依赖 收集当前激活的副作用
+			// 依赖 与 副作用 相互收集
+			// 响应式数据的依赖 收集 当前激活的副作用
 			dep.add(activeEffect);
-			// 当前激活的副作用依赖 收集响应式数据依赖
+			// 当前激活的副作用依赖 收集 当前响应式数据依赖
 			activeEffect.deps.push(dep);
 			if (activeEffect.onTrack) {
 				activeEffect.onTrack(Object.assign({ effect: activeEffect }, debuggerEventExtraInfo));
@@ -1047,7 +1067,7 @@ var Vue = (function (exports) {
 	function triggerEffects(dep, debuggerEventExtraInfo) {
 		// spread into array for stabilization
 		const effects = isArray(dep) ? dep : [...dep];
-		// 计算属性
+		// 优先触发 计算属性 的触发更新
 		for (const effect of effects) {
 			if (effect.computed) {
 				triggerEffect(effect, debuggerEventExtraInfo);
@@ -1061,7 +1081,9 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 触发副作用(触发更新)
+	// 最基础的 触发更新 方式
+	// 无论是 reactive 还是 ref 或者 computed 的触发更新 最终都是调用该函数
+	// 触发更新的本质就是执行 依赖 中的 副作用
 	function triggerEffect(effect, debuggerEventExtraInfo) {
 		if (effect !== activeEffect || effect.allowRecurse) {
 			if (effect.onTrigger) {
@@ -1716,7 +1738,7 @@ var Vue = (function (exports) {
 	const toReactive = (value) => isObject(value) ? reactive(value) : value;
 	const toReadonly = (value) => isObject(value) ? readonly(value) : value;
 
-	// 追踪ref副作用
+	// 收集 ref 依赖
 	function trackRefValue(ref) {
 		if (shouldTrack && activeEffect) {
 			ref = toRaw(ref);
@@ -1730,7 +1752,7 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 触发ref副作用
+	// 触发 ref 更新
 	function triggerRefValue(ref, newVal) {
 		ref = toRaw(ref);
 		if (ref.dep) {
@@ -1755,21 +1777,22 @@ var Vue = (function (exports) {
 	 * 问题: ref api是如何实现数据响应式的?
 	 * ref api 内部通过创建 RefImpl类 的实例
 	 * 当获取ref时 通过get函数 收集依赖
-	 * 当更新ref时 通过set函数 派发更新
+	 * 当更新ref时 通过set函数 触发更新
 	 */
-	// 创建深层ref对象
+
+	// 创建 深层ref对象
 	// 注意: 内部值会被深层递归地转为响应式
 	function ref(value) {
 		// 默认深层ref对象
 		return createRef(value, false);
 	}
 
-	// 创建浅层ref对象
+	// 创建 浅层ref对象
 	function shallowRef(value) {
 		return createRef(value, true);
 	}
 
-	// 返回RefImpl的实例
+	// 返回 RefImpl 的实例
 	function createRef(rawValue, shallow) {
 		// 该值已经是RefImpl的实例
 		if (isRef(rawValue)) {
@@ -1806,6 +1829,7 @@ var Vue = (function (exports) {
 
 		set value(newVal) {
 			newVal = this.__v_isShallow ? newVal : toRaw(newVal);
+			// 只有当 新值 与 旧值 不一致 时才会触发更新
 			if (hasChanged(newVal, this._rawValue)) {
 				this._rawValue = newVal;
 				this._value = this.__v_isShallow ? newVal : toReactive(newVal);
@@ -1866,7 +1890,9 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 自定义ref
+	// 自定义 ref
+	// 作用:
+	// 自定义 ref 手动控制 收集依赖 和 触发更新 的方式和时机
 	function customRef(factory) {
 		return new CustomRefImpl(factory);
 	}
@@ -1949,6 +1975,7 @@ var Vue = (function (exports) {
 		}
 	}
 
+	// 计算属性
 	// 总结: 计算属性实质上是ref
 	function computed(getterOrOptions, debugOptions, isSSR = false) {
 		let getter;
@@ -1975,8 +2002,8 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: 响应式结束 */
 
-	// 栈结构简易实现
-	// 栈: Arry<vnode>
+	// 存储 虚拟DOM节点 的栈
+	// Array<vnode>
 	const stack = [];
 	// 入栈
 	function pushWarningContext(vnode) {
@@ -1987,14 +2014,16 @@ var Vue = (function (exports) {
 		stack.pop();
 	}
 
-	// 警告
+	// 内置警告处理函数
 	function warn$1(msg, ...args) {
 		// avoid props formatting or warn handler tracking deps that might be mutated
 		// during patch, leading to infinite recursion.
 		pauseTracking();
 		const instance = stack.length ? stack[stack.length - 1].component : null;
+		// 获取 全局警告处理函数
 		const appWarnHandler = instance && instance.appContext.config.warnHandler;
 		const trace = getComponentTrace();
+		// 当 全局警告处理函数 存在时 优先调用
 		if (appWarnHandler) {
 			callWithErrorHandling(appWarnHandler, instance, 11 /* APP_WARN_HANDLER */, [
 				msg + args.join(''),
@@ -2005,6 +2034,7 @@ var Vue = (function (exports) {
 				trace
 			]);
 		}
+		// 
 		else {
 			const warnArgs = [`[Vue warn]: ${msg}`, ...args];
 			/* istanbul ignore if */
@@ -2099,7 +2129,8 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// 错误类型 便于定位
+	// 错误类型 
+	// 用于提示错误发生时机 便于定位问题
 	const ErrorTypeStrings = {
 		["sp" /* SERVER_PREFETCH */]: 'serverPrefetch hook',
 		["bc" /* BEFORE_CREATE */]: 'beforeCreate hook',
@@ -2132,8 +2163,7 @@ var Vue = (function (exports) {
 		[14 /* SCHEDULER */]: 'scheduler flush. This is likely a Vue internals bug. ' +
 			'Please open an issue at https://new-issue.vuejs.org/?repo=vuejs/core'
 	};
-
-	// 调用同步函数并捕捉错误
+	// 返回调用 同步错误处理函数 的返回值 并捕捉错误
 	function callWithErrorHandling(fn, instance, type, args) {
 		let res;
 		try {
@@ -2144,9 +2174,11 @@ var Vue = (function (exports) {
 		}
 		return res;
 	}
-
+	// 返回调用 异步错误处理函数 的返回值 并捕捉错误
+	// 调用 同步错误处理函数 并捕捉错误
 	// 调用函数或函数数组(包括同步和异步函数)并捕捉错误 然后返回该函数值
 	function callWithAsyncErrorHandling(fn, instance, type, args) {
+		// 异步错误处理函数
 		if (isFunction(fn)) {
 			const res = callWithErrorHandling(fn, instance, type, args);
 			// 异步函数
@@ -2157,14 +2189,15 @@ var Vue = (function (exports) {
 			}
 			return res;
 		}
+
+		// 异步错误处理函数队列
 		const values = [];
 		for (let i = 0; i < fn.length; i++) {
 			values.push(callWithAsyncErrorHandling(fn[i], instance, type, args));
 		}
 		return values;
 	}
-
-	// 处理错误(主要是获取错误的上下文栈)
+	// 内置全局错误处理函数
 	function handleError(err, instance, type, throwInDev = true) {
 		const contextVNode = instance ? instance.vnode : null;
 		if (instance) {
@@ -2174,7 +2207,8 @@ var Vue = (function (exports) {
 			// in production the hook receives only the error code
 			const errorInfo = ErrorTypeStrings[type];
 
-			// 递归找到父组件的 errorCaptured 函数
+			// 递归 寻找父组件的 errorCaptured 函数
+			// 如果某个 父组件 的 errorCaptured 不允许错误捕捉时 将不再处理该错误
 			while (cur) {
 				const errorCapturedHooks = cur.ec;
 				if (errorCapturedHooks) {
@@ -2186,7 +2220,7 @@ var Vue = (function (exports) {
 				}
 				cur = cur.parent;
 			}
-			// app-level handling
+			// 全局错误处理函数
 			const appErrorHandler = instance.appContext.config.errorHandler;
 			if (appErrorHandler) {
 				callWithErrorHandling(appErrorHandler, null, 10 /* APP_ERROR_HANDLER */, [err, exposedInstance, errorInfo]);
@@ -2195,8 +2229,7 @@ var Vue = (function (exports) {
 		}
 		logError(err, type, contextVNode, throwInDev);
 	}
-
-	// 输出错误
+	// 输出错误信息
 	function logError(err, type, contextVNode, throwInDev = true) {
 		{
 			const info = ErrorTypeStrings[type];
@@ -2207,6 +2240,7 @@ var Vue = (function (exports) {
 			if (contextVNode) {
 				popWarningContext();
 			}
+			// 输出错误信息后 是否继续抛出错误
 			// crash in dev by default so it's more noticeable
 			if (throwInDev) {
 				throw err;
@@ -2219,32 +2253,48 @@ var Vue = (function (exports) {
 
 	/* 逻辑分层: 任务调度开始  */
 
-	// 是否正在冲刷队列
+	/**
+	 * 根据 任务执行时机 分类:
+	 * 用于 更新DOM 的任务 job
+	 * 用于在 DOM更新前 执行的回调函数 
+	 * 用于在 DOM更新后 执行的回调函数
+	 */
+
+	// 标识: 是否正在冲刷队列
 	let isFlushing = false;
-	// 是否正在冲刷等待
+	// 标识: 是否正在冲刷等待
 	let isFlushPending = false;
-
-	// 任务队列
+	// 任务队列: 存储着用于 更新DOM 的任务
 	const queue = [];
+	// 任务队列索引: 指向 任务队列 中未被指向的任务
 	let flushIndex = 0;
-	
-	// 预执行队列
+	// 预冲刷回调队列: 存储着在 DOM更新前 要执行的回调函数
+	// 即将执行的预冲刷回调队列
 	const pendingPreFlushCbs = [];
+	// 正在执行的预冲刷回调队列
 	let activePreFlushCbs = null;
+	// 预冲刷回调队列索引: 指向 预冲刷回调队列 中未被执行的回调函数
 	let preFlushIndex = 0;
-
-	// 后执行队列
+	// 后冲刷回调队列: 存储着在 DOM更新后 要执行的回调函数
+	// 即将执行的后冲刷回调队列
 	const pendingPostFlushCbs = [];
+	// 正在执行的后冲刷回调队列
 	let activePostFlushCbs = null;
+	// 后冲刷回调队列索引: 指向 后冲刷回调队列 中未被执行的回调函数
 	let postFlushIndex = 0;
-
+	// 
 	const resolvedPromise = /*#__PURE__*/ Promise.resolve();
+	// 当前正在冲刷队列的Promise
 	let currentFlushPromise = null;
+	// 
 	let currentPreFlushParentJob = null;
+	// 递归次数限制
 	const RECURSION_LIMIT = 100;
 
-	// 
+	// Vue.nextTick
 	function nextTick(fn) {
+		// 该回调函数之所以能访问到更新的DOM
+		// 是因为该 回调函数 的执行时机是在 冲刷完所有的队列 后的 Promise 的 then 去执行的
 		const p = currentFlushPromise || resolvedPromise;
 		return fn ? p.then(this ? fn.bind(this) : fn) : p;
 	}
@@ -2253,7 +2303,9 @@ var Vue = (function (exports) {
 	// Use binary-search to find a suitable position in the queue,
 	// so that the queue maintains the increasing order of job's id,
 	// which can prevent the job from being skipped and also can avoid repeated patching.
-	// 二分搜索
+	// 使用二分查找在队列中找到合适的位置，
+	// 以便队列保持作业id的递增顺序，
+	// 这可以防止作业被跳过，也可以避免重复修补。
 	function findInsertionIndex(id) {
 		// the start index should be `flushIndex + 1`
 		let start = flushIndex + 1;
@@ -2265,8 +2317,7 @@ var Vue = (function (exports) {
 		}
 		return start;
 	}
-
-	// 入队
+	// 向 任务队列 中添加 任务 并开启队列冲刷
 	function queueJob(job) {
 		// the dedupe search uses the startIndex argument of Array.includes()
 		// by default the search index includes the current job that is being run
@@ -2274,6 +2325,7 @@ var Vue = (function (exports) {
 		// if the job is a watch() callback, the search will start with a +1 index to
 		// allow it recursively trigger itself - it is the user's responsibility to
 		// ensure it doesn't end up in an infinite loop.
+		// 如果 任务队列 中不存在任务 或者 任务队列中不包含 当前任务 或者
 		if ((!queue.length ||
 			!queue.includes(job, isFlushing && job.allowRecurse ? flushIndex + 1 : flushIndex)) &&
 			job !== currentPreFlushParentJob) {
@@ -2286,22 +2338,27 @@ var Vue = (function (exports) {
 			queueFlush();
 		}
 	}
-
+	// 开启 队列冲刷
+	// 每次队列冲刷都是在 微任务(Promise.resolve) 中开始 而不是立即开始
 	function queueFlush() {
 		if (!isFlushing && !isFlushPending) {
+			// 正在等待队列冲刷
 			isFlushPending = true;
+			// 
 			currentFlushPromise = resolvedPromise.then(flushJobs);
 		}
 	}
-
+	// 将某个 任务 从 任务队列 中删除
 	function invalidateJob(job) {
 		const i = queue.indexOf(job);
 		if (i > flushIndex) {
 			queue.splice(i, 1);
 		}
 	}
-
+	// 向 冲刷回调队列 中添加 回调函数
 	function queueCb(cb, activeQueue, pendingQueue, index) {
+		// 向 等待执行的(预 | 后)冲刷回调队列中 添加 回调函数
+		// 如果该 回调函数 已经在 正在执行的(预 | 后)冲刷回调队列中 则不需要添加
 		if (!isArray(cb)) {
 			if (!activeQueue ||
 				!activeQueue.includes(cb, cb.allowRecurse ? index + 1 : index)) {
@@ -2316,17 +2373,16 @@ var Vue = (function (exports) {
 		}
 		queueFlush();
 	}
-
-	// 挂起
+	// 向 预冲刷回调队列 中添加 回调函数
+	// 当侦听器选项 flush: pre 时
 	function queuePreFlushCb(cb) {
 		queueCb(cb, activePreFlushCbs, pendingPreFlushCbs, preFlushIndex);
 	}
-
+	// 向 后冲刷回调队列 中添加 回调函数
 	function queuePostFlushCb(cb) {
 		queueCb(cb, activePostFlushCbs, pendingPostFlushCbs, postFlushIndex);
 	}
-
-	// 执行预执行回调函数
+	// 冲刷 预冲刷回调队列
 	function flushPreFlushCbs(seen, parentJob = null) {
 		if (pendingPreFlushCbs.length) {
 			currentPreFlushParentJob = parentJob;
@@ -2348,8 +2404,7 @@ var Vue = (function (exports) {
 			flushPreFlushCbs(seen, parentJob);
 		}
 	}
-
-	// 执行后执行回调函数
+	// 冲刷 后冲刷回调队列
 	function flushPostFlushCbs(seen) {
 		// flush any pre cbs queued during the flush (e.g. pre watchers)
 		flushPreFlushCbs();
@@ -2376,13 +2431,14 @@ var Vue = (function (exports) {
 			postFlushIndex = 0;
 		}
 	}
-
+	// 返回 任务Id
 	const getId = (job) => job.id == null ? Infinity : job.id;
-
+	// 冲刷 所有的任务
 	function flushJobs(seen) {
 		isFlushPending = false;
 		isFlushing = true;
 		{
+			// 当每次开始冲刷任务时 创建新的Map
 			seen = seen || new Map();
 		}
 		flushPreFlushCbs(seen);
@@ -2427,14 +2483,14 @@ var Vue = (function (exports) {
 			}
 		}
 	}
-
-	// 更新时 防止递归调用陷入死循环
+	// 在某次冲刷队列时 防止某个任务被无限递归调用 陷入死循环
 	function checkRecursiveUpdates(seen, fn) {
 		if (!seen.has(fn)) {
 			seen.set(fn, 1);
 		}
 		else {
 			const count = seen.get(fn);
+			// 当某个任务被执行超过限制次数时 意味着已陷入死循环
 			if (count > RECURSION_LIMIT) {
 				const instance = fn.ownerInstance;
 				const componentName = instance && getComponentName(instance.type);
@@ -3682,25 +3738,26 @@ var Vue = (function (exports) {
 		}
 	}
 
-	// Simple effect.
+	// 侦听器
+	// 默认是 前置侦听器: 在更新DOM前执行副作用
 	function watchEffect(effect, options) {
 		return doWatch(effect, null, options);
 	}
-
+	// 后置侦听器: 当更新完DOM后执行副作用
 	function watchPostEffect(effect, options) {
 		return doWatch(effect, null, (Object.assign(Object.assign({}, options), { flush: 'post' })));
 	}
-
+	// 同步侦听器: 立即执行副作用
 	function watchSyncEffect(effect, options) {
 		return doWatch(effect, null, (Object.assign(Object.assign({}, options), { flush: 'sync' })));
 	}
-
-	// initial value for watchers to trigger on undefined initial values
+	// 侦听器在未定义的初始值时触发的初始值
 	const INITIAL_WATCHER_VALUE = {};
-
-	// implementation
+	// 侦听器
+	// 作用:
+	// 监听 某响应式数据 在响应式数据变化时 执行回调函数
 	function watch(source, cb, options) {
-		// 验证: 验证cb必须是函数
+		// 验证 cb 必须是回调函数
 		if (!isFunction(cb)) {
 			warn$1(`\`watch(fn, options?)\` signature has been moved to a separate API. ` +
 				`Use \`watchEffect(fn, options?)\` instead. \`watch\` now only ` +
@@ -3708,10 +3765,10 @@ var Vue = (function (exports) {
 		}
 		return doWatch(source, cb, options);
 	}
-
+	// 侦听器底层实现
 	// watch watchEffect watchPostEffect watchSyncEffect的底层实现
 	function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EMPTY_OBJ) {
-		// options中的 immedidate、deep 属性只能watch api使用
+		// 侦听器选项中的 immedidate、deep 属性只能watch api使用
 		// 如果 watchEffect watchPostEffect watchSyncEffect api使用时 报错
 		if (!cb) {
 			if (immediate !== undefined) {
@@ -3858,8 +3915,10 @@ var Vue = (function (exports) {
 			queuePostRenderEffect(effect.run.bind(effect), instance && instance.suspense);
 		}
 		else {
+			// 当 flush: sync 时 立即执行当前副作用
 			effect.run();
 		}
+		// 返回 注销函数 用于卸载当前侦听器
 		return () => {
 			effect.stop();
 			if (instance && instance.scope) {
@@ -4947,16 +5006,18 @@ var Vue = (function (exports) {
 				registry[capitalize(camelize(name))]));
 	}
 
-	// 渲染 v-for
+	// 根据 自定义渲染项函数 来 渲染列表
 	function renderList(source, renderItem, cache, index) {
 		let ret;
 		const cached = (cache && cache[index]);
+		// 渲染 数组 或者 渲染 字符串
 		if (isArray(source) || isString(source)) {
 			ret = new Array(source.length);
 			for (let i = 0, l = source.length; i < l; i++) {
 				ret[i] = renderItem(source[i], i, undefined, cached && cached[i]);
 			}
 		}
+		// 渲染 数字
 		else if (typeof source === 'number') {
 			if (!Number.isInteger(source)) {
 				warn$1(`The v-for range expect an integer value but got ${source}.`);
@@ -4966,6 +5027,7 @@ var Vue = (function (exports) {
 				ret[i] = renderItem(i + 1, i, undefined, cached && cached[i]);
 			}
 		}
+		// 渲染 对象
 		else if (isObject(source)) {
 			if (source[Symbol.iterator]) {
 				ret = Array.from(source, (item, i) => renderItem(item, i, undefined, cached && cached[i]));
@@ -6366,7 +6428,8 @@ var Vue = (function (exports) {
 		}
 	};
 
-  // 创建应用上下文(任何组件均可访问到)
+  // 创建 应用上下文(AppContext)
+	// 任何组件均可访问到
 	function createAppContext() {
 		return {
 			app: null, // 当前根引用
@@ -6395,11 +6458,12 @@ var Vue = (function (exports) {
 		};
 	}
 
-  // 高阶函数: 
+	// 标识: 应用Id
 	let uid = 0;
-	// 创建 app api
+	// 返回 创建应用 的API
+	// 高阶函数: 返回值为函数 该函数作用是用来创建应用
 	function createAppAPI(render, hydrate) {
-		// 作用: 主要是创建 根应用(root app)
+		// 创建 根应用(RootApp)
 		return function createApp(rootComponent, rootProps = null) {
       // rootComponent 可能是函数式组件 也可能是选项式组件
 			if (!isFunction(rootComponent)) {
@@ -7071,7 +7135,12 @@ var Vue = (function (exports) {
 
 	const queuePostRenderEffect = queueEffectWithSuspense;
 	
-  // 创建自定义渲染器
+	// 渲染器作用:
+	// 将 vnode 通过 补丁函数 渲染成 真实dom 并挂载(或更新)到容器中
+
+  // 创建 自定义渲染器
+	// 作用:
+	// 
 	// options 功能分为两类:
 	// 1. 浏览器 DOM API(增删改查)
 	// 2. 自定义对DOM Props(attrs class style directives) patch
@@ -7087,6 +7156,7 @@ var Vue = (function (exports) {
 		return baseCreateRenderer(options, createHydrationFunctions);
 	}
 
+	// 创建基础渲染器
   // render api 实现
 	function baseCreateRenderer(options, createHydrationFns) {
 		const target = getGlobalThis();
@@ -8867,16 +8937,17 @@ var Vue = (function (exports) {
 		return n1.type === n2.type && n1.key === n2.key;
 	}
 
-	// vnode参数转换器
-	// 在调用Vue.h之前 对参数进行预处理
+	// 当前vnode参数转换器
+	// 作用:
+	// 在创建 vnode 之前 对 参数 进行预处理
 	let vnodeArgsTransformer;
 	// 设置 vnode 参数转换器
 	function transformVNodeArgs(transformer) {
 		vnodeArgsTransformer = transformer;
 	}
 
+	// 对 参数 进行预处理 并创建 vnode
 	// 等同于 createVNode
-	// 函数包装: 在创建 vnode 之前对 vnode 参数进行预处理
 	const createVNodeWithArgsTransform = (...args) => {
 		return _createVNode(...(vnodeArgsTransformer
 			? vnodeArgsTransformer(args, currentRenderingInstance)
@@ -8897,7 +8968,9 @@ var Vue = (function (exports) {
 			: null);
 	};
 
-	// 创建: 创建基础虚拟节点
+	// 创建基础VNode
+	// 作用:
+	// 
 	function createBaseVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, shapeFlag = type === Fragment ? 0 : 1 /* ELEMENT */, isBlockNode = false, needFullChildrenNormalization = false) {
 		const vnode = {
 			__v_isVNode: true, // 标识: 标记当前是vnode
@@ -8963,9 +9036,10 @@ var Vue = (function (exports) {
 		return vnode;
 	}
 
-	// 创建vnode
+	// 创建 vnode
 	const createVNode = (createVNodeWithArgsTransform);
 
+	// 
 	// 创建vnode的内部实现
 	// 在创建 vnode 之前 先对 type shapeFlag 参数进行预处理
 	function _createVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, isBlockNode = false) {
@@ -9554,8 +9628,8 @@ var Vue = (function (exports) {
 		finishComponentSetup(instance, isSSR);
 	}
 
+	// 编译函数
 	// 标识: 标记当前版本是运行时版本
-	// 编译函数: template => render
 	let compile;
 
 	// 绑定 instance.withProxy 属性
@@ -9870,10 +9944,12 @@ var Vue = (function (exports) {
 	}
 
 	// Vue.h
-	// 返回 创建的 vnode
+	// 渲染函数
+	// 作用:
+	// 返回 创建 虚拟DOM节点(底层仍然是 Vue.createVNode)
 	function h(type, propsOrChildren, children) {
+		// 根据 参数 来 正常化 props 和 children 属性 并创建 vnode
 		const l = arguments.length;
-		// 根据 参数 个数来 正常化 props 和 children 并创建 vnode
 		if (l === 2) {
 			if (isObject(propsOrChildren) && !isArray(propsOrChildren)) {
 				// 没有props
@@ -10124,7 +10200,8 @@ var Vue = (function (exports) {
 		return true;
 	}
 
-	// 版本 一般与package.json重的version字段保持一致
+	// 当前库版本号
+	// 通过读取 package.json 中的 version 字段
 	const version = "3.2.37";
 	/**
 	 * SSR utils for \@vue/server-renderer. Only exposed in ssr-possible builds.
@@ -11689,7 +11766,8 @@ var Vue = (function (exports) {
 	let renderer;
 	// 标识: 是否是服务端渲染
 	let enabledHydration = false;
-	// 保证渲染器存在(如果不存在 则创建并保存该渲染器, 如果存在 则直接返回)
+	// 保证渲染器存在
+	// 如果不存在 则创建并保存该渲染器, 如果存在 则直接返回
 	function ensureRenderer() {
     // 缓存
 		return (renderer ||
@@ -11704,6 +11782,7 @@ var Vue = (function (exports) {
 		return renderer;
 	}
 
+	// 渲染函数:
 	// Vue.render
   // render函数将vnode渲染到container中
   // 参数: vnode, container, isSVG = false
@@ -11716,7 +11795,8 @@ var Vue = (function (exports) {
 		ensureHydrationRenderer().hydrate(...args);
 	});
 
-	// 创建app实例(用于浏览器)
+	// 创建 App
+	// 用于 浏览器
 	const createApp = ((...args) => {
 		const app = ensureRenderer().createApp(...args);
 		{
@@ -11758,7 +11838,8 @@ var Vue = (function (exports) {
 		return app;
 	});
 
-	// 创建app实例(用于服务端)
+	// 创建 App
+	// 用于服务端
 	const createSSRApp = ((...args) => {
 		const app = ensureHydrationRenderer().createApp(...args);
 		{
@@ -12034,6 +12115,7 @@ var Vue = (function (exports) {
 		end: { line: 1, column: 1, offset: 0 }
 	};
 
+	// 创建 根AST节点 
 	function createRoot(children, loc = locStub) {
 		return {
 			type: 0 /* ROOT */,
@@ -12582,7 +12664,7 @@ var Vue = (function (exports) {
 		quot: '"'
 	};
 
-	// 默认解析选项
+	// 默认 语法分析器选项
 	const defaultParserOptions = {
 		delimiters: [`{{`, `}}`],
 		getNamespace: () => 0 /* HTML */,
@@ -12596,14 +12678,18 @@ var Vue = (function (exports) {
 		comments: true
 	};
 
-	// 将 template => ast
+	// 基础语法分析器
+	// 作用:
+	// 将 模板 转换成 抽象语法树(ast)
 	function baseParse(content, options = {}) {
 		const context = createParserContext(content, options);
 		const start = getCursor(context);
 		return createRoot(parseChildren(context, 0 /* DATA */, []), getSelection(context, start));
 	}
 
-	// 创建 parser context(解析上下文)
+	// 创建 语法分析器上下文(ParserContext)
+	// 作用:
+	// 
 	function createParserContext(content, rawOptions) {
 		const options = extend({}, defaultParserOptions);
 		let key;
@@ -12614,18 +12700,19 @@ var Vue = (function (exports) {
 					: rawOptions[key];
 		}
 		return {
-			options,
-			column: 1,
-			line: 1,
-			offset: 0,
-			originalSource: content,
-			source: content,
-			inPre: false,
-			inVPre: false,
-			onWarn: options.onWarn
+			options, // 
+			column: 1, // 列
+			line: 1, // 行
+			offset: 0, //
+			originalSource: content, // 初始源代码
+			source: content, // 源代码
+			inPre: false, // 
+			inVPre: false, // 
+			onWarn: options.onWarn // 警告函数
 		};
 	}
 
+	// 通过 语法分析器 分析节点
 	function parseChildren(context, mode, ancestors) {
 		const parent = last(ancestors);
 		const ns = parent ? parent.ns : 0 /* HTML */;
@@ -13752,6 +13839,7 @@ var Vue = (function (exports) {
 	}
 
 	// TODO: 具体转换
+	// 
 	function transform(root, options) {
 		const context = createTransformContext(root, options);
 		traverseNode(root, context);
@@ -13917,7 +14005,7 @@ var Vue = (function (exports) {
 	const PURE_ANNOTATION = `/*#__PURE__*/`;
 	const aliasHelper = (s) => `${helperNameMap[s]}: _${helperNameMap[s]}`;
 
-	// 创建代码生成上下文(code generate context)
+	// 创建 代码生成上下文(CodeGenContext)
 	function createCodegenContext(ast, { mode = 'function', prefixIdentifiers = mode === 'module', sourceMap = false, filename = `template.vue.html`, scopeId = null, optimizeImports = false, runtimeGlobalName = `Vue`, runtimeModuleName = `vue`, ssrRuntimeModuleName = 'vue/server-renderer', ssr = false, isTS = false, inSSR = false }) {
 		const context = {
 			mode,
@@ -13970,6 +14058,8 @@ var Vue = (function (exports) {
 	}
 
 	// 代码生成
+	// 作用:
+	// 
 	function generate(ast, options = {}) {
 		const context = createCodegenContext(ast, options);
 		if (options.onContextCreated)
@@ -16190,10 +16280,11 @@ var Vue = (function (exports) {
 		];
 	}
 
-	// 编译函数
-	// 1. 将 template => ast
-	// 2. 优化ast
-	// 3. 将 ast => render
+	// 基础编译函数
+	// 作用:
+	// 1. 通过 正则匹配 将 模板 转换成 抽象语法树
+	// 2. 对 抽象语法树 进行优化
+	// 3. 将 抽象语法树 代码生成
 	function baseCompile(template, options = {}) {
 		const onError = options.onError || defaultOnError;
 		const isModuleMode = options.mode === 'module';
@@ -16689,8 +16780,11 @@ var Vue = (function (exports) {
 		show: transformShow
 	};
 
-	// 编译函数
+	// 核心编译函数
 	function compile$1(template, options = {}) {
+		// 将 用户自定义编译选项 和 默认编译选项 进行合并
+		// 默认编译选项是 关于DOM处理 偏向于底层核心
+		// 而 用户自定义编译选项 则是属性配置 和 错误捕捉 偏向于 业务处理
 		return baseCompile(template, extend({}, parserOptions, options, {
 			nodeTransforms: [
 				// ignore <script> and <tag>
@@ -16709,14 +16803,19 @@ var Vue = (function (exports) {
 	{
 		initDev();
 	}
+	// 编译缓存
+	// 作用:
+	// 以 模板 为 Key 以编译后的 渲染函数 为 Value 
 	const compileCache = Object.create(null);
 
 	// Vue.compile
 	// 编译函数
-	// 将template => render函数
+	// 作用: 
+	// 将 模板(template) 转换成 渲染函数(render)
 	function compileToFunction(template, options) {
+		// 当 模板 非字符串时
 		if (!isString(template)) {
-			// DOM节点
+			// 当 模板 是DOM节点时
 			if (template.nodeType) {
 				template = template.innerHTML;
 			}
@@ -16726,14 +16825,15 @@ var Vue = (function (exports) {
 			}
 		}
 
-		// 缓存: 避免重复编译
+		// 从 编译缓存 中读取当前 模板 编译后的渲染函数
+		// 如果存在 则直接返回该渲染函数
 		const key = template;
 		const cached = compileCache[key];
 		if (cached) {
 			return cached;
 		}
 
-		// 通过 ID选择器 来获取template
+		// 通过 ID选择器 来获取 模板
 		if (template[0] === '#') {
 			const el = document.querySelector(template);
 			if (!el) {
@@ -16746,6 +16846,7 @@ var Vue = (function (exports) {
 			template = el ? el.innerHTML : ``;
 		}
 
+		// 将 用户自定义编译选项 和 默认编译选项 进行合并
 		const { code } = compile$1(template, extend({
 			hoistStatic: true,
 			onError: onError,

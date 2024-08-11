@@ -7,18 +7,18 @@
 </head>
 <body>
   <div id="app">
+    {{ user }}
     <Hello />
   </div>
 
   <script src="./vue.global.js"></script>
   <script>
     const app = Vue.createApp({
-      // render() {
-      //   return Vue.h('div', [
-      //     'app',
-      //     Vue.h('Hello', '...')
-      //   ])
-      // }
+      setup(){
+        const user = Vue.ref('Lee')
+
+        return {user}
+      },
       el: '#app',
       // template: `<div>app <Hello /></div>`
     })

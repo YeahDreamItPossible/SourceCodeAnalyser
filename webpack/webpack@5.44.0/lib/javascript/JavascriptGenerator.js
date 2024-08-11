@@ -153,6 +153,8 @@ class JavascriptGenerator extends Generator {
 			initFragments
 		};
 
+		// 调用 依赖 对应的 依赖模板 方法 对 source 进行处理
+		// dependencyTemplate.apply
 		template.apply(dependency, source, templateContext);
 
 		// TODO remove in webpack 6

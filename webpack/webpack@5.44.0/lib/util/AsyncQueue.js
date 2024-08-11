@@ -11,7 +11,7 @@ const DONE_STATE = 2;
 
 let inHandleResult = 0;
 
-
+// 异步队列入口
 class AsyncQueueEntry {
 	constructor(item, callback) {
 		this.item = item;
@@ -32,6 +32,8 @@ class AsyncQueueEntry {
  * @template R
  */
 // 异步队列
+// 作用:
+// 
 class AsyncQueue {
 	/**
 	 * @param {Object} options options object
@@ -42,16 +44,21 @@ class AsyncQueue {
 	 * @param {function(T, Callback<R>): void} options.processor async function to process items
 	 */
 	constructor({ name, parallelism, parent, processor, getKey }) {
+		// 队列名
 		this._name = name;
+		// 并行数
 		this._parallelism = parallelism || 1;
+		// 处理器
 		this._processor = processor;
+		// 
 		this._getKey =
 			getKey || /** @type {(T) => K} */ (item => /** @type {any} */ (item));
 
 		/** @type {Map<K, AsyncQueueEntry<T, K, R>>} */
 		this._entries = new Map();
 
-		/** @type {ArrayQueue<AsyncQueueEntry<T, K, R>>} */
+		// 队列
+		// ArrayQueue<AsyncQueueEntry>
 		this._queued = new ArrayQueue();
 
 		/** @type {AsyncQueue<any, any, any>[]} */
@@ -59,6 +66,7 @@ class AsyncQueue {
 		this._activeTasks = 0;
 		this._willEnsureProcessing = false;
 		this._needProcessing = false;
+		// 标识: 
 		this._stopped = false;
 		this._root = parent ? parent._root : this;
 		if (parent) {

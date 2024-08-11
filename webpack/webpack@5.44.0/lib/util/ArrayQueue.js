@@ -5,8 +5,10 @@
 // 
 class ArrayQueue {
 	constructor(items) {
+		// 数组
 		// Array<T>
 		this._list = items ? Array.from(items) : [];
+		// 反转数组
 		// Array<T>
 		this._listReversed = [];
 	}
@@ -27,16 +29,18 @@ class ArrayQueue {
 		this._list.push(item);
 	}
 
-	/**
-	 * Retrieves and removes the head of this queue.
-	 * @returns {T | undefined} The head of the queue of `undefined` if this queue is empty.
-	 */
 	// 出队
 	dequeue() {
-		// NOTE: 没看懂 队列长度为16
+		// 如果 数组 的长度大于或等于 16
+		// 则将 数组 的内容转移到 反转数组 上 
+		// 并将 数组 清空
+		// 这样做的目的是为了避免在 数组 较长时频繁使用 shift() 方法
+		// 因为反转整个数组并使用 pop() 方法来出队可能更高效
 		if (this._listReversed.length === 0) {
 			if (this._list.length === 0) return undefined;
+			// 从数组中删除最后一个元素 并返回该元素
 			if (this._list.length === 1) return this._list.pop();
+			// 当 数组长度 < 16 时 从数组中删除第一个元素
 			if (this._list.length < 16) return this._list.shift();
 			const temp = this._listReversed;
 			this._listReversed = this._list;

@@ -1,6 +1,8 @@
 "use strict";
 
 // 队列
+// 作用:
+// 先进先出
 class Queue {
 	constructor(items) {
 		this._set = new Set(items);
