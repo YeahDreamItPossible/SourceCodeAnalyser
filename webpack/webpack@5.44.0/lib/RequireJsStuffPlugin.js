@@ -6,6 +6,8 @@ const {
 	toConstantDependency
 } = require("./javascript/JavascriptParserHelpers");
 
+// 
+// 作用:
 // 解决兼容问题
 // 兼容 require.config require.version require.onError 方法
 module.exports = class RequireJsStuffPlugin {

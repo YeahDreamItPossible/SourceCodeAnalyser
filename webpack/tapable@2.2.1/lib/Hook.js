@@ -67,7 +67,7 @@ const PROMISE_DELEGATE = function(...args) {
  * 		// 事件类型: sync || async || promise
  * 		type: String,
  * 		fn: Function,
- * 		stage: Number, // 优先级
+ * 		stage: Number, // 优先级 字段越小 优先级越高
  * 		before: String || Array<String> // 调整
  * }
  */

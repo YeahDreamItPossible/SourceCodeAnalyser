@@ -1,35 +1,26 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Jarid Margolin @jaridmargolin
-*/
-
 "use strict";
 
 const inspect = require("util").inspect.custom;
 const makeSerializable = require("./util/makeSerializable");
 
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./Dependency").DependencyLocation} DependencyLocation */
-/** @typedef {import("./Module")} Module */
-
+// 错误
+// 作用:
+// 在 webpack 整个编译过程中 抛出的错误应该是 WebpackError 的子类的实例
 class WebpackError extends Error {
-	/**
-	 * Creates an instance of WebpackError.
-	 * @param {string=} message error message
-	 */
 	constructor(message) {
+		// 错误信息
 		super(message);
 
 		this.details = undefined;
-		/** @type {Module} */
+		// 模块
 		this.module = undefined;
-		/** @type {DependencyLocation} */
+		// 位置信息
 		this.loc = undefined;
-		/** @type {boolean} */
+		// 标识: 是否隐藏错误栈信息
 		this.hideStack = undefined;
-		/** @type {Chunk} */
+		// 块
 		this.chunk = undefined;
-		/** @type {string} */
+		// 文件
 		this.file = undefined;
 	}
 

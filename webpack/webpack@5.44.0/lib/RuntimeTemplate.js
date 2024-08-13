@@ -32,7 +32,8 @@ Module has these incoming connections: ${Array.from(
 };
 
 // 运行时模板
-// 作用: 生成与运行时相关的模板字符串
+// 作用: 
+// 渲染成与运行时相关的模板字符串 或者 特定的值
 class RuntimeTemplate {
 	constructor(compilation, outputOptions, requestShortener) {
 		this.compilation = compilation;

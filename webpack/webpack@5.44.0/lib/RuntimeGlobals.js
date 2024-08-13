@@ -1,6 +1,9 @@
 "use strict";
 
-// 运行时变量对象
+// 运行时代码:
+// 在浏览器运行过程中，webpack 用来连接模块化应用程序所需的所有代码
+// 运行时变量:
+// 在 运行时代码 中所定义的变量
 
 // 内部 require 函数
 exports.require = "__webpack_require__";
@@ -27,11 +30,13 @@ exports.returnExportsFromRuntime = "return-exports-from-runtime";
 /**
  * the internal module object
  */
+// 模块
 exports.module = "module";
 
 /**
  * the internal module object
  */
+// 模块Id
 exports.moduleId = "module.id";
 
 /**

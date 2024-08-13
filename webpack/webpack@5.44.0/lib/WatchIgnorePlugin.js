@@ -81,9 +81,9 @@ class IgnoringWatchFileSystem {
 	}
 }
 
-// 配置 观察模式 下 应忽视的文件
+// 观察模式忽视插件
 // 作用:
-// 
+// 配置 观察模式 下 应忽视的文件
 class WatchIgnorePlugin {
 	constructor(options) {
 		validate(options);

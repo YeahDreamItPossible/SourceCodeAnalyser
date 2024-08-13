@@ -7,6 +7,8 @@ const Module = require("./Module");
 const TYPES = new Set(["runtime"]);
 
 // 运行时模块
+// 作用:
+// 
 class RuntimeModule extends Module {
 	constructor(name, stage = 0) {
 		super("runtime");

@@ -3,7 +3,8 @@
 const ConstDependency = require("./dependencies/ConstDependency");
 
 // 使用严格模式插件
-// 作用: 判断源代码是否需要使用严格模式
+// 作用: 
+// 判断 源代码 是否需要使用 严格模式
 // 设置 moulde.buildInfo.strict = true
 class UseStrictPlugin {
 	apply(compiler) {

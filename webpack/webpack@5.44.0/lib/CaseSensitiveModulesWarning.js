@@ -34,7 +34,7 @@ const createModulesListMessage = (modules, moduleGraph) => {
 		.join("\n");
 };
 
-// 区分大小写模块警告
+// 区分模块大小写警告
 class CaseSensitiveModulesWarning extends WebpackError {
 	constructor(modules, moduleGraph) {
 		const sortedModules = sortModules(Array.from(modules));

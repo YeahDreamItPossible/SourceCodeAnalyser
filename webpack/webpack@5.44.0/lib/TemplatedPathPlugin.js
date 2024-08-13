@@ -48,6 +48,7 @@ const hashLength = (replacer, handler, assetInfo, hashName) => {
 	return fn;
 };
 
+// 替换器
 const replacer = (value, allowEmpty) => {
 	const fn = (match, arg, input) => {
 		if (typeof value === "function") {
@@ -83,32 +84,25 @@ const deprecated = (fn, message, code) => {
 	};
 };
 
+// 用 特定值 替换掉 字符串中用于 占位符 的变量
 const replacePathVariables = (path, data, assetInfo) => {
 	const chunkGraph = data.chunkGraph;
 
+	// Map<占位符类型, 替换器>
 	// Map<string, Function>
 	const replacements = new Map();
 
-	// Filename context
-	//
-	// Placeholders
-	//
-	// for /some/path/file.js?query#fragment:
-	// [file] - /some/path/file.js
-	// [query] - ?query
-	// [fragment] - #fragment
-	// [base] - file.js
-	// [path] - /some/path/
-	// [name] - file
-	// [ext] - .js
-	/**
-	 * 对于 资源路径path： /home/user/documents/file.txt
-	 * dir => 目录  /home/user/documents/
-	 * root => 根目录 Unix 路径是 /， 对于 Windows 路径是 C:\
-	 * base => 基本路径(包括文件名和扩展名) file.txt
-	 * ext => 扩展名 .txt
-	 * name => 文件名 file
-	 */
+	// for /some/path/file.js?query#fragment:      // 资源路径
+	// [root] - /												           // 根目录 Unix 路径是 /， 对于 Windows 路径是 C:\
+	// [file] - /some/path/file.js                 // 文件路径
+	// [query] - ?query                            // 查询参数
+	// [fragment] - #fragment                      // 片段标识符
+	// [base] - file.js                            // 基本文件名
+	// [path] - /some/path/                        // 目录
+	// [name] - file                               // 文件名
+	// [ext] - .js   
+	
+	// 扩展名
 	if (typeof data.filename === "string") {
 		// 根据 文件名 返回资源路径 参数 片段
 		const { path: file, query, fragment } = parseResource(data.filename);
@@ -303,6 +297,10 @@ const replacePathVariables = (path, data, assetInfo) => {
 const plugin = "TemplatedPathPlugin";
 
 // 模板路径插件
+// 作用:
+// 用 编译后的特定值 替换掉 字符串中满足匹配条件的 占位符
+// 示例:
+// [name].[contenthash.8].[ext] => app.85ee440e99.js
 class TemplatedPathPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(plugin, compilation => {

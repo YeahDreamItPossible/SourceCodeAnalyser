@@ -2,17 +2,19 @@
 
 const WebpackError = require("./WebpackError");
 
+// Webpack选项遗弃插件
+// 作用:
+// 当 Webpack 选项中某个 属性 被废弃 但是被使用时 抛出错误
 // Webpack.options.xx 被废弃 抛出错误
 class WarnDeprecatedOptionPlugin {
-	/**
-	 * Create an instance of the plugin
-	 * @param {string} option the target option
-	 * @param {string | number} value the deprecated option value
-	 * @param {string} suggestion the suggestion replacement
-	 */
 	constructor(option, value, suggestion) {
+		// 属性路径
+		// Webpack.options
 		this.option = option;
+		// 属性
+		// Webpack.options.[xx]
 		this.value = value;
+		// 建议
 		this.suggestion = suggestion;
 	}
 

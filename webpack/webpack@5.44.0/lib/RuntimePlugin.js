@@ -25,6 +25,7 @@ const SystemContextRuntimeModule = require("./runtime/SystemContextRuntimeModule
 const ShareRuntimeModule = require("./sharing/ShareRuntimeModule");
 const StringXor = require("./util/StringXor");
 
+// require
 const GLOBALS_ON_REQUIRE = [
 	RuntimeGlobals.chunkName,
 	RuntimeGlobals.runtimeId,

@@ -2,36 +2,26 @@
 
 const { ConcatSource, PrefixSource } = require("webpack-sources");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("../declarations/WebpackOptions").Output} OutputOptions */
-/** @typedef {import("./Chunk")} Chunk */
-/** @typedef {import("./ChunkGraph")} ChunkGraph */
-/** @typedef {import("./CodeGenerationResults")} CodeGenerationResults */
-/** @typedef {import("./Compilation").AssetInfo} AssetInfo */
-/** @typedef {import("./Compilation").PathData} PathData */
-/** @typedef {import("./DependencyTemplates")} DependencyTemplates */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./ModuleGraph")} ModuleGraph */
-/** @typedef {import("./ModuleTemplate")} ModuleTemplate */
-/** @typedef {import("./RuntimeModule")} RuntimeModule */
-/** @typedef {import("./RuntimeTemplate")} RuntimeTemplate */
-/** @typedef {import("./javascript/JavascriptModulesPlugin").ChunkRenderContext} ChunkRenderContext */
-/** @typedef {import("./javascript/JavascriptModulesPlugin").RenderContext} RenderContext */
 // 'a' 字符码
+// 97
 const START_LOWERCASE_ALPHABET_CODE = "a".charCodeAt(0);
 // 'A' 字符码
+// 65
 const START_UPPERCASE_ALPHABET_CODE = "A".charCodeAt(0);
-// 小写字母数量和 26
+// 小写字母数量之和 
+// 26
 const DELTA_A_TO_Z = "z".charCodeAt(0) - START_LOWERCASE_ALPHABET_CODE + 1;
-// a-z A-Z _ $ 字符数量和 54
+// a-z A-Z _ $ 字符数量之和 
+// 54
 const NUMBER_OF_IDENTIFIER_START_CHARS = DELTA_A_TO_Z * 2 + 2; // a-z A-Z _ $
-// a-z A-Z _ $ 0-9 字符数量和64
+// a-z A-Z _ $ 0-9 字符数量之和 
+// 64
 const NUMBER_OF_IDENTIFIER_CONTINUATION_CHARS = NUMBER_OF_IDENTIFIER_START_CHARS + 10; // a-z A-Z _ $ 0-9
-// 
+// 空函数
 const FUNCTION_CONTENT_REGEX = /^function\s?\(\)\s?\{\r?\n?|\r?\n?\}$/g;
-// 
+// 多行缩进
 const INDENT_MULTILINE_REGEX = /^\t/gm;
-// 
+// 换行符
 const LINE_SEPARATOR_REGEX = /\r?\n/g;
 // 1. ^: 表示字符串的开始
 // 2. ( 和 ): 是一个捕获组，用于捕获匹配的子字符串
@@ -49,7 +39,8 @@ const PATH_NAME_NORMALIZE_REPLACE_REGEX = /[^a-zA-Z0-9_!§$()=\-^°]+/g;
 const MATCH_PADDED_HYPHENS_REPLACE_REGEX = /^-|-$/g;
 
 // 模板
-// 作用: 在渲染 chunk 时 渲染默认内容
+// 作用: 
+// 在渲染 chunk 时 渲染成对应的模板字符串 或者 特定的值
 class Template {
 	// 返回 标准化的函数字符串
 	static getFunctionContent(fn) {
@@ -61,7 +52,8 @@ class Template {
 	}
 
 	// 将 字符串 转换成 以 _ 连接 的标识符
-	// 示例: './src/math' => '_src_math_'
+	// 示例: 
+	// './src/math' => '_src_math_'
 	static toIdentifier(str) {
 		if (typeof str !== "string") return "";
 		return str
@@ -74,21 +66,24 @@ class Template {
 	}
 
 	// 将 字符串 转换成 单行注释
-	// 示例: 'hello world' => /*! hello world */
+	// 示例: 
+	// 'hello world' => /*! hello world */
 	static toComment(str) {
 		if (!str) return "";
 		return `/*! ${str.replace(COMMENT_END_REGEX, "* /")} */`;
 	}
 
 	// 将 字符串 转换成 正常单行注释
-	// 示例: 'hello */ world' => /* hello * / world */
+	// 示例: 
+	// 'hello */ world' => /* hello * / world */
 	static toNormalComment(str) {
 		if (!str) return "";
 		return `/* ${str.replace(COMMENT_END_REGEX, "* /")} */`;
 	}
 
 	// 将 字符串 转换成 路径
-	// 示例: './src/index.js#frame' => 'src-index-js-frame'
+	// 示例: 
+	// './src/index.js#frame' => 'src-index-js-frame'
 	static toPath(str) {
 		if (typeof str !== "string") return "";
 		return str
@@ -173,7 +168,8 @@ class Template {
 	// 缩进
 	// 将 字符串 中 换行符(\n)后非换行符(\n) 替换成 换行符 + 一个制表符
 	// \t 是一个转义字符,代表一个制表符(Tab),就是空格
-	// 示例: 'hello\nworld' => 'hello\n\tworld'
+	// 示例: 
+	// 'hello\nworld' => 'hello\n\tworld'
 	static indent(s) {
 		if (Array.isArray(s)) {
 			return s.map(Template.indent).join("\n");
@@ -190,7 +186,8 @@ class Template {
 	}
 
 	// 将 字符串 中 换行符(\n)后非换行符(\n) 替换成 换行符 + prefix
-	// 示例: 'hello\nworld' => 'hello\n' + prefix +'world'
+	// 示例: 
+	// 'hello\nworld' => 'hello\n' + prefix +'world'
 	static prefix(s, prefix) {
 		const str = Template.asString(s).trim();
 		if (!str) return "";
@@ -201,7 +198,8 @@ class Template {
 	}
 
 	// 返回(数组拼接后的)字符串
-	// 示例: ['hello', 'world'] => 'hello world'
+	// 示例: 
+	// ['hello', 'world'] => 'hello world'
 	static asString(str) {
 		if (Array.isArray(str)) {
 			return str.join("\n");

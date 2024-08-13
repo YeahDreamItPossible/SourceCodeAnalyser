@@ -161,7 +161,7 @@ class ChunkGraphModule {
 
 		// 模块Id
 		this.id = null;
-		// 当前模块 在运行时所需要的 webpack 相关的变量 ??
+		// 当前模块 在某个 运行时块 中运行时所需要的 webpack 变量
 		// RuntimeSpecMap<Set<string>> | undefined
 		this.runtimeRequirements = undefined;
 		// RuntimeSpecMap<string>
@@ -194,6 +194,7 @@ class ChunkGraphChunk {
 		// 当前块 在运行时所需要的 webpack 相关的变量
 		// 示例: __webpack_require__ __webpack_require__.o
 		this.runtimeRequirements = undefined;
+		// 
 		// 当前块 在运行时所需要的 webpack 相关的变量 ??
 		// Set<string>
 		this.runtimeRequirementsInTree = new Set();
@@ -1118,14 +1119,10 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 		cgm.hashes.set(runtime, new ModuleHashInfo(hash, renderedHash));
 	}
 
-	/**
-	 * @param {Module} module the module
-	 * @param {RuntimeSpec} runtime the runtime
-	 * @param {Set<string>} items runtime requirements to be added (ownership of this Set is given to ChunkGraph)
-	 * @returns {void}
-	 */
-	// 
+	// 添加 模块 在某个 运行时块 中运行时所需要的 webpack 变量
 	addModuleRuntimeRequirements(module, runtime, items) {
+		// runtime: 运行时块名
+		// items: webpack 变量集合
 		const cgm = this._getChunkGraphModule(module);
 		const runtimeRequirementsMap = cgm.runtimeRequirements;
 		if (runtimeRequirementsMap === undefined) {
@@ -1171,6 +1168,7 @@ Caller might not support runtime-dependent code generation (opt-out via optimiza
 	 * @param {Iterable<string>} items runtime requirements to be added
 	 * @returns {void}
 	 */
+	// 
 	addTreeRuntimeRequirements(chunk, items) {
 		const cgc = this._getChunkGraphChunk(chunk);
 		const runtimeRequirements = cgc.runtimeRequirementsInTree;
