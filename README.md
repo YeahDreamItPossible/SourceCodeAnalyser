@@ -12,8 +12,6 @@
 
   - [redux-thunk@2.3.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/redux-thunk%402.3.0/index.js)
 
-  - [redux-promise@0.6.0]()
-
 - vue3
 
   - [vue@3.2.37](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/vue%403.2.37/vue.global.js)
@@ -39,17 +37,3 @@
 - [webpack-sources@3.2.3]()
 
 - [webpack@5.44.0]()
-
-- localforage
-
-  - [localforage@1.10.0](https://github.com/YeahDreamItPossible/SourceCodeAnalyser/blob/main/js/localforage%401.10.0/dist/localforage.js)
-
-
-## 进行中的库
-
-- webpack
-- node
-
-  - [egg@3.1.5]()
-
-  - [koa@3.0.0-alpha.0]()
