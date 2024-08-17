@@ -307,6 +307,8 @@ const EMPTY_COMMENT_OPTIONS = {
 };
 
 // JS类型 语法分析器
+// 作用:
+// 
 class JavascriptParser extends Parser {
 	// sourceTyp: module | script | auto
 	constructor(sourceType = "auto") {
@@ -517,9 +519,11 @@ class JavascriptParser extends Parser {
 			// 当分析 含有逻辑操作符(|| | && | !)的表达式  时
 			// 示例: vb && ...
 			expressionLogicalOperator: new SyncBailHook(["expression"]),
-			// 当访问词法、语法分析后的整个程序(抽象语法树ast)时
+			// 当访问整个 抽象语法树(ast) 时
+			// 此时整个 抽象语法树 并未经过 词法、语法分析
 			program: new SyncBailHook(["ast", "comments"]),
-			// 当遍历结束后
+			// 当访问整个 抽象语法树(ast) 时
+			// 此时已经对整个 抽象语法树 经过 词法、语法分析
 			finish: new SyncBailHook(["ast", "comments"])
 		});
 		// 源代码类型
