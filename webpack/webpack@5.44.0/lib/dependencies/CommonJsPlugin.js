@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -30,6 +25,9 @@ const {
 } = require("../javascript/JavascriptParserHelpers");
 const CommonJsExportRequireDependency = require("./CommonJsExportRequireDependency");
 
+// CommonJS插件
+// 作用:
+// 
 class CommonJsPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
@@ -229,9 +227,6 @@ class HarmonyModuleDecoratorRuntimeModule extends RuntimeModule {
 		super("harmony module decorator");
 	}
 
-	/**
-	 * @returns {string} runtime code
-	 */
 	generate() {
 		const { runtimeTemplate } = this.compilation;
 		return Template.asString([

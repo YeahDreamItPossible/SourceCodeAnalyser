@@ -11,6 +11,7 @@ const { relative } = require("./util/fs");
 const { parseResource } = require("./util/identifier");
 
 // Node填充插件
+// 作用:
 // 该插件主要是 polyfill(填充) 或 mock(模拟) 某些 Node.js 全局变量
 class NodeStuffPlugin {
 	constructor(options) {

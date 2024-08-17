@@ -7,6 +7,8 @@ const makeSerializable = require("./util/makeSerializable");
 const TYPES = new Set(["javascript"]);
 
 // 原始模块
+// 作用:
+// 
 class RawModule extends Module {
 	constructor(source, identifier, readableIdentifier, runtimeRequirements) {
 		super("javascript/dynamic", null);

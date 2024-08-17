@@ -11,6 +11,8 @@ const { runtimeToString, RuntimeSpecMap } = require("./util/runtime");
 /** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
 
 // 代码生成结果
+// 作用:
+// 
 class CodeGenerationResults {
 	constructor() {
 		// Map<Module, RuntimeSpecMap>

@@ -3,9 +3,10 @@
 const { compareNumbers } = require("./util/comparators");
 const identifierUtils = require("./util/identifier");
 
-// TODO: 暂时不知道具体怎么使用
 // 记录Id插件
 // 作用:
+// 将 模块 和 块 的 Id 信息缓存到预设的目录文件中
+// 描述:
 // 告知 webpack 生成带有相对路径的记录(records)使得可以移动上下文目录。
 // 默认 optimization.portableRecords 被禁用
 // 如果下列至少一个选项在 webpack 中被设置

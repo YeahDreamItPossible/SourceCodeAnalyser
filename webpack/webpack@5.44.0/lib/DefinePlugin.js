@@ -234,8 +234,10 @@ const VALUE_DEP_PREFIX = "webpack/DefinePlugin ";
 const VALUE_DEP_MAIN = "webpack/DefinePlugin";
 
 // 定义插件
-// 作用: 允许在 编译时 将你代码中的变量替换为其他值或表达式
-// 原理: 在 compiler.hooks.normalModuleFactory 钩子
+// 作用: 
+// 允许在 编译时 将你代码中的变 量 替换为 其他值或表达式
+// 原理: 
+// 在 compiler.hooks.normalModuleFactory 钩子
 class DefinePlugin {
 	constructor(definitions) {
 		// Record<String, CodeValue>

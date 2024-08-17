@@ -14,6 +14,7 @@ const pathToString = path =>
 		: "";
 
 // 提供依赖
+// 作用:
 // 根据键值对定义 自动加载模块 来替代通过 import 或者 require 的方式手动加载模块
 // 使用场景: ProvidePlugin
 class ProvidedDependency extends ModuleDependency {

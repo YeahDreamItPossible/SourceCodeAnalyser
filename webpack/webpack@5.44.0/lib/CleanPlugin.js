@@ -205,6 +205,7 @@ const applyDiff = (fs, outputPath, dry, logger, diff, isKept, callback) => {
 const compilationHooksMap = new WeakMap();
 
 // 清空插件
+// 作用:
 // 在生成文件之前 清空 output 目录
 class CleanPlugin {
 	static getCompilationHooks(compilation) {

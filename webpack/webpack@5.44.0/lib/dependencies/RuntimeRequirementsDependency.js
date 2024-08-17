@@ -5,10 +5,9 @@ const NullDependency = require("./NullDependency");
 
 // TODO:
 // CommonJS 相关
+// 作用:
+// 
 class RuntimeRequirementsDependency extends NullDependency {
-	/**
-	 * @param {string[]} runtimeRequirements runtime requirements
-	 */
 	constructor(runtimeRequirements) {
 		super();
 		this.runtimeRequirements = new Set(runtimeRequirements);
