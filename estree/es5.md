@@ -459,7 +459,7 @@ interface VariableDeclarator <: Node {
 
 A variable declarator.
 
-# Expressions
+# 表达式
 
 ```js
 interface Expression <: Node { }
