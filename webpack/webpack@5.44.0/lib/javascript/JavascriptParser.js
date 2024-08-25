@@ -3429,7 +3429,7 @@ class JavascriptParser extends Parser {
 		this.enterPattern(pattern.left, onIdent);
 	}
 
-	// 计算表达式
+	// 计算 表达式
 	// 主要是调用 表达式类型 对应的钩子(parser.hooks.evaluate.for('ExpressionType')) 返回钩子计算后的结果
 	// 返回 BasicEvaluatedExpression 的实例
 	evaluateExpression(expression) {
