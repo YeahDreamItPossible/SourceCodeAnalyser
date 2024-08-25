@@ -1629,7 +1629,7 @@ class JavascriptParser extends Parser {
 		}
 	}
 
-	// 预遍历 所有的语句(ast.body)
+	// 预遍历 所有的语句
 	// 作用: 为所有的 变量声明 设置 作用域
 	preWalkStatements(statements) {
 		for (let index = 0, len = statements.length; index < len; index++) {

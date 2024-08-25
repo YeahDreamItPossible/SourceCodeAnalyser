@@ -2,6 +2,8 @@
 
 const InnerGraph = require("./optimize/InnerGraph");
 
+// JS元信息插件
+// 作用:
 // 设置 normalModule.buildInfo
 class JavascriptMetaInfoPlugin {
 	apply(compiler) {

@@ -65,11 +65,13 @@ ConstDependency.Template = class ConstDependencyTemplate extends (
 				templateContext.runtimeRequirements.add(req);
 			}
 		}
+		// 在源代码中 在特定位置插入字符串
 		if (typeof dep.range === "number") {
 			source.insert(dep.range, dep.expression);
 			return;
 		}
 
+		// 在源代码中 替换掉固定位置的字符串
 		source.replace(dep.range[0], dep.range[1] - 1, dep.expression);
 	}
 };
