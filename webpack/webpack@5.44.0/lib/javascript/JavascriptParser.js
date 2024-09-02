@@ -202,14 +202,14 @@ class VariableInfo {
  */
 
 /**
- * 一元表达式
+ * 一元表达式(UnaryExpression)
  * "-" | "+" | "!" | "~" | "typeof" | "void" | "delete"
- * 二元表达式
+ * 二元表达式(BinaryExpression)
  * "==" | "!=" | "===" | "!==" | "<" | "<=" | 
  * ">" | ">=" | "<<" | ">>" | ">>>" | "+" | 
  * "-" | "*" | "/" | "%" | "|" | "^" | "&" | "in" | "instanceof"
  * 逻辑表达式(LogicalExpression)
- * "||" | "&&"
+ * "||" | "&&" | "??"
  * 条件表达式(ConditionalExpression)
  * ?/:
  * 更新表达式(UpdateExpression)
@@ -637,6 +637,7 @@ class JavascriptParser extends Parser {
 				.setRegExp(flags ? new RegExp(regExp, flags) : new RegExp(regExp))
 				.setRange(expr.range);
 		});
+		// 
 		this.hooks.evaluate
 			.for("LogicalExpression")
 			.tap("JavascriptParser", _expr => {

@@ -5,7 +5,7 @@ const Template = require("../Template");
 const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 
-// 
+// webpack是否包含某模块 依赖
 // 作用:
 // 标识 某个模块 是否是否被 webpack 打包
 class WebpackIsIncludedDependency extends ModuleDependency {
