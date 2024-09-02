@@ -5,9 +5,12 @@ const Template = require("../Template");
 const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 
-// TODO:
+// 
+// 作用:
+// 标识 某个模块 是否是否被 webpack 打包
 class WebpackIsIncludedDependency extends ModuleDependency {
 	constructor(request, range) {
+		// 某模块路径
 		super(request);
 		// 当前依赖是弱依赖
 		this.weak = true;

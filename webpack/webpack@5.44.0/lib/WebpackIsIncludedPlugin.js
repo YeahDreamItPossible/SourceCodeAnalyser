@@ -6,7 +6,9 @@ const {
 	toConstantDependency
 } = require("./javascript/JavascriptParserHelpers");
 
-// TODO:
+// webpack是否包含某模块插件
+// 作用:
+// 测试给定的模块是否被 webpack 打包
 class WebpackIsIncludedPlugin {
 	apply(compiler) {
 		compiler.hooks.compilation.tap(
@@ -44,6 +46,8 @@ class WebpackIsIncludedPlugin {
 							parser.state.module.addDependency(dep);
 							return true;
 						});
+
+					// 把 typeof __webpack_is_included__ 替换成 function
 					parser.hooks.typeof
 						.for("__webpack_is_included__")
 						.tap(
