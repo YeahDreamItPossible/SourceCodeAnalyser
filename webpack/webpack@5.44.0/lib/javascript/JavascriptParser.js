@@ -112,10 +112,10 @@ class VariableInfo {
 /**
  * 表达式 与 语句 定义以及区别:
  * 表达式:
- * 由操作符和操作数组合而成的序列, 它计算出一个值
+ * 由操作符和操作数组合而成的序列, 它求值出一个值
  * 在JavaScript中,几乎任何可以产生值的代码片段都可以被视为一个表达式
  * 用途:
- * 表达式通常用于赋值、逻辑判断、数学计算等场景
+ * 表达式通常用于赋值、逻辑判断、数学求值等场景
  * 语句:
  * 语句是执行特定任务的代码片段, 它可能包含关键字、变量、操作符、表达式等
  * 用途:
@@ -255,7 +255,7 @@ class VariableInfo {
  * expressionConditionalOperator
  * expressionLogicalOperator
  * 
- * 3. 针对于 表达式计算(evaluate)
+ * 3. 针对于 表达式求值(evaluate)
  * evaluate  		// 必须返回 BasicEvaluatedExpression 的实例
  * evaluateTypeof
  * evaluateIdentifier
@@ -314,31 +314,31 @@ class JavascriptParser extends Parser {
 	constructor(sourceType = "auto") {
 		super();
 		this.hooks = Object.freeze({
-			// 当代码片段中有有计算 typeof 自由变量 表达式时
+			// 当代码片段中有有求值 typeof 自由变量 表达式时
 			// 自由变量: 在 A 中作用域要用到的变量 x.并没有在 A 中声明,要到别的作用域中找到他,这个变量 x 就是自由变量
 			// 示例: 
 			// const val = typeof name => evaluateTypeof.for('name').tap('...')
 			evaluateTypeof: new HookMap(() => new SyncBailHook(["expression"])),
-			// 当计算 特定表达式类型的表达式 时 必须返回 BasicEvaluatedExpression 的实例
+			// 当求值 特定表达式类型的表达式 时 必须返回 BasicEvaluatedExpression 的实例
 			// 当代码片段中有 以上表达式类型(ExpressionType) 时
 			// 示例: 
 			// const a = new String('Hello') => evaluate.for('NewExpression').tap('...')
 			// const val = name + '...'      => evaluate.for('Identifier').tap('...')
 			evaluate: new HookMap(() => new SyncBailHook(["expression"])),
-			// 当计算 特定自由变量的表达式 时
+			// 当求值 特定自由变量的表达式 时
 			// 当表达式中包含 自由变量 时
 			// 示例: 
 			// name += 1 => evaluateIdentifier.for('name').tap(...)
 			evaluateIdentifier: new HookMap(() => new SyncBailHook(["expression"])),
 			// TODO:
-			// 当计算 含有特定已经被定义的变量的表达式 时
+			// 当求值 含有特定已经被定义的变量的表达式 时
 			// 评估 定义标识符
 			// 示例:
 			// 
 			evaluateDefinedIdentifier: new HookMap(
 				() => new SyncBailHook(["expression"])
 			),
-			// 当计算 特定成员函数调用的表达式 时
+			// 当求值 特定成员函数调用的表达式 时
 			// 示例: 
 			// const val = u.vb() => evaluateCallExpressionMember.for('vb').tap('...') 
 			evaluateCallExpressionMember: new HookMap(
@@ -549,7 +549,7 @@ class JavascriptParser extends Parser {
 		this._initializeEvaluating();
 	}
 
-	// 注册 计算表达式 钩子
+	// 注册 求值表达式 钩子
 	// 作用: 主要是注册 evaluate 相关钩子
 	_initializeEvaluating() {
 		// 分析 表达式 中的 字面量
@@ -3430,8 +3430,8 @@ class JavascriptParser extends Parser {
 		this.enterPattern(pattern.left, onIdent);
 	}
 
-	// 计算 表达式
-	// 主要是调用 表达式类型 对应的钩子(parser.hooks.evaluate.for('ExpressionType')) 返回钩子计算后的结果
+	// 求值 表达式
+	// 主要是调用 表达式类型 对应的钩子(parser.hooks.evaluate.for('ExpressionType')) 返回钩子求值后的结果
 	// 返回 BasicEvaluatedExpression 的实例
 	evaluateExpression(expression) {
 		try {
@@ -3633,7 +3633,7 @@ class JavascriptParser extends Parser {
 		return state;
 	}
 
-	// 计算包含表达式的源代码(非语句) 并返回 BasicEvaluatedExpression 的实例
+	// 求值包含表达式的源代码(非语句) 并返回 BasicEvaluatedExpression 的实例
 	evaluate(source) {
 		// 1. 分析 源代码 后返回对应的 ast
 		const ast = JavascriptParser._parse("(" + source + ")", {
@@ -3643,7 +3643,7 @@ class JavascriptParser extends Parser {
 		if (ast.body.length !== 1 || ast.body[0].type !== "ExpressionStatement") {
 			throw new Error("evaluate: Source is not a expression");
 		}
-		// 2. 调用 表达式类型 对应的钩子 并返回钩子计算后的结果
+		// 2. 调用 表达式类型 对应的钩子 并返回钩子求值后的结果
 		return this.evaluateExpression(ast.body[0].expression);
 	}
 

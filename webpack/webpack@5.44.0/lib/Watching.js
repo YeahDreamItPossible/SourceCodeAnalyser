@@ -2,8 +2,9 @@
 
 const Stats = require("./Stats");
 
-// 开启观察模式后
 // 监听器
+// 作用:
+// 当开启 观察模式 后 在文件 或者 目录变化时 自动编译 
 class Watching {
 	constructor(compiler, watchOptions, handler) {
 		// 标识: 编译开始时间
