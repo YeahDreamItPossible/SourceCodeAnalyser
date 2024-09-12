@@ -8,7 +8,6 @@
  * @param {function(): V} computer compute value
  * @returns {V} value
  */
-// 
 exports.provide = (map, key, computer) => {
 	const value = map.get(key);
 	if (value !== undefined) return value;

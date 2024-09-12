@@ -5,11 +5,6 @@ const { first } = require("./util/SetHelpers");
 const createHash = require("./util/createHash");
 const { runtimeToString, RuntimeSpecMap } = require("./util/runtime");
 
-/** @typedef {import("webpack-sources").Source} Source */
-/** @typedef {import("./Module")} Module */
-/** @typedef {import("./Module").CodeGenerationResult} CodeGenerationResult */
-/** @typedef {import("./util/runtime").RuntimeSpec} RuntimeSpec */
-
 // 代码生成结果
 // 作用:
 // 

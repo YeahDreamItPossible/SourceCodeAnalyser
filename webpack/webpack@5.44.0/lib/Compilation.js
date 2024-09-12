@@ -582,6 +582,16 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			);
 		};
 		this.hooks = Object.freeze({
+			// 当添加完单项入口后
+			// RuntimeChunkPlugin
+			// ProgressPlugin
+			addEntry: new SyncHook(["entry", "options"]),
+			// 当在构建单项入口的模块树的过程中出错时
+			// ProgressPlugin
+			failedEntry: new SyncHook(["entry", "options", "error"]),
+			// 当成功构建完单项入口的模块树后
+			succeedEntry: new SyncHook(["entry", "options", "module"]),
+
 			// 在单个模块构建开始之前
 			// SourceMapDevToolModuleOptionsPlugin
 			// ProgressPlugin
@@ -596,15 +606,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 空调用
 			// 
 			stillValidModule: new SyncHook(["module"]),
-			// 当添加完单项入口后
-			// RuntimeChunkPlugin
-			// ProgressPlugin
-			addEntry: new SyncHook(["entry", "options"]),
-			// 当在构建单项入口的模块树的过程中出错时
-			// ProgressPlugin
-			failedEntry: new SyncHook(["entry", "options", "error"]),
-			// 当成功构建完单项入口的模块树后
-			succeedEntry: new SyncHook(["entry", "options", "module"]),
+			
 			// 
 			dependencyReferencedExports: new SyncWaterfallHook([
 				"referencedExports",
@@ -631,6 +633,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			finishRebuildingModule: new AsyncSeriesHook(["module"]),
 			// 解除冻结
 			unseal: new SyncHook([]),
+
 			// 冻结(compilation对象停止接受新的模块)
 			// FlagEntryExportAsUsedPlugin
 			// WarnCaseSensitiveModulesPlugin
@@ -657,7 +660,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 在优化完所有的模块后
 			// 在执行完 compilation.hooks.optimizeModules 后立即执行
 			afterOptimizeModules: new SyncHook(["modules"]),
-
 			// 当优化块时
 			// 在执行完 compilation.hooks.afterOptimizeModules 后立即执行
 			// AggressiveMergingPlugin
@@ -673,7 +675,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 当优化玩所有的块后
 			// 在执行完 compilation.hooks.optimizeChunks 后立即执行
 			afterOptimizeChunks: new SyncHook(["chunks", "chunkGroups"]),
-
 			// 执行执行回调
 			// 当优化依赖树时
 			// 在执行完 compilation.hooks.afterOptimizeChunks 后立即执行
@@ -681,7 +682,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 当优化完依赖树后
 			// 在执行完 compilation.hooks.optimizeTree 后立即执行
 			afterOptimizeTree: new SyncHook(["chunks", "modules"]),
-
 			// 直接执行回调
 			// 在树优化之后，chunk 模块优化开始时
 			// 在执行完 compilation.hooks.afterOptimizeTree 后立即执行
@@ -690,70 +690,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			// 在 chunk 模块优化成功完成之后调用
 			// 在执行完 compilation.hooks.optimizeChunkModules 后立即执行
 			afterOptimizeChunkModules: new SyncHook(["chunks", "modules"]),
+
 			// 用来决定是否存储 record
 			// 在执行完 compilation.hooks.afterOptimizeChunkModules 后立即执行
 			// NoEmitOnErrorsPlugin
 			shouldRecord: new SyncBailHook([]),
-			// TODO:
-			// 当前chunk 以及 所需要的 运行时变量
-			// ModuleChunkFormatPlugin
-			// ArrayPushCallbackChunkFormatPlugin
-			// CommonJsChunkFormatPlugin
-			// AbstractLibraryPlugin
-			// ChunkPrefetchPreloadPlugin
-			additionalChunkRuntimeRequirements: new SyncHook([
-				"chunk",
-				"runtimeRequirements",
-				"context"
-			]),
-			// TODO:
-			// 当前chunk 以及 所需要的 运行时变量
-			runtimeRequirementInChunk: new HookMap(
-				() => new SyncBailHook(["chunk", "runtimeRequirements", "context"])
-			),
-			// TODO:
-			// 当前模块 以及 所需要的 运行时变量
-			additionalModuleRuntimeRequirements: new SyncHook([
-				"module",
-				"runtimeRequirements",
-				"context"
-			]),
-			// TODO:
-			// 当前模块 以及 所需要的 运行时变量
-			runtimeRequirementInModule: new HookMap(
-				() => new SyncBailHook(["module", "runtimeRequirements", "context"])
-			),
-			// 根据 添加运行时模块 并设置
-			// HotModuleReplacementPlugin
-			// RuntimePlugin
-			// JavascriptModulesPlugin
-			// ChunkPrefetchPreloadPlugin
-			// StartupChunkDependenciesPlugin
-			// ConsumeSharedPlugin
-			additionalTreeRuntimeRequirements: new SyncHook([
-				"chunk",
-				"runtimeRequirements",
-				"context"
-			]),
-			// 根据  添加运行时模块
-			// APIPlugin
-			// RuntimePlugin
-			// ContainerReferencePlugin
-			// AMDPlugin
-			// CommonJsPlugin
-			// ModuleChunkLoadingPlugin
-			// CommonJsChunkLoadingPlugin
-			// ReadFileCompileAsyncWasmPlugin
-			// ReadFileCompileWasmPlugin
-			// ChunkPrefetchPreloadPlugin
-			// StartupChunkDependenciesPlugin
-			// FetchCompileAsyncWasmPlugin
-			// FetchCompileWasmPlugin
-			// JsonpChunkLoadingPlugin
-			// ImportScriptsChunkLoadingPlugin
-			runtimeRequirementInTree: new HookMap(
-				() => new SyncBailHook(["chunk", "runtimeRequirements", "context"])
-			),
 			// 
 			runtimeModule: new SyncHook(["module", "chunk"]),
 			// 从 record 中恢复模块信息
@@ -808,10 +749,72 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			beforeCodeGeneration: new SyncHook([]),
 			//
 			afterCodeGeneration: new SyncHook([]),
+
 			// 
 			beforeRuntimeRequirements: new SyncHook([]),
+			// TODO:
+			// 当前模块 以及 所需要的 运行时变量
+			runtimeRequirementInModule: new HookMap(
+				() => new SyncBailHook(["module", "runtimeRequirements", "context"])
+			),
+			// TODO:
+			// 当前模块 以及 所需要的 运行时变量
+			additionalModuleRuntimeRequirements: new SyncHook([
+				"module",
+				"runtimeRequirements",
+				"context"
+			]),
+			// TODO:
+			// 当前chunk 以及 所需要的 运行时变量
+			runtimeRequirementInChunk: new HookMap(
+				() => new SyncBailHook(["chunk", "runtimeRequirements", "context"])
+			),
+			// TODO:
+			// 当前chunk 以及 所需要的 运行时变量
+			// ModuleChunkFormatPlugin
+			// ArrayPushCallbackChunkFormatPlugin
+			// CommonJsChunkFormatPlugin
+			// AbstractLibraryPlugin
+			// ChunkPrefetchPreloadPlugin
+			additionalChunkRuntimeRequirements: new SyncHook([
+				"chunk",
+				"runtimeRequirements",
+				"context"
+			]),
+			// 根据  添加运行时模块
+			// APIPlugin
+			// RuntimePlugin
+			// ContainerReferencePlugin
+			// AMDPlugin
+			// CommonJsPlugin
+			// ModuleChunkLoadingPlugin
+			// CommonJsChunkLoadingPlugin
+			// ReadFileCompileAsyncWasmPlugin
+			// ReadFileCompileWasmPlugin
+			// ChunkPrefetchPreloadPlugin
+			// StartupChunkDependenciesPlugin
+			// FetchCompileAsyncWasmPlugin
+			// FetchCompileWasmPlugin
+			// JsonpChunkLoadingPlugin
+			// ImportScriptsChunkLoadingPlugin
+			runtimeRequirementInTree: new HookMap(
+				() => new SyncBailHook(["chunk", "runtimeRequirements", "context"])
+			),
+			// 根据 添加运行时模块 并设置
+			// HotModuleReplacementPlugin
+			// RuntimePlugin
+			// JavascriptModulesPlugin
+			// ChunkPrefetchPreloadPlugin
+			// StartupChunkDependenciesPlugin
+			// ConsumeSharedPlugin
+			additionalTreeRuntimeRequirements: new SyncHook([
+				"chunk",
+				"runtimeRequirements",
+				"context"
+			]),
 			// 
 			afterRuntimeRequirements: new SyncHook([]),
+
 			// 在 compilation 添加哈希（hash）之前
 			beforeHash: new SyncHook([]),
 			// 
@@ -3265,7 +3268,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		return entrypoint;
 	}
 
-	// 返回 Chunk (创建 Chunk 并缓存 Chunk)
+	// 返回 Chunk (创建 Chunk 的实例 并缓存 Chunk)
 	addChunk(name) {
 		if (name) {
 			const chunk = this.namedChunks.get(name);
@@ -3461,7 +3464,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		}
 	}
 
-	// 批量设置 模块哈希
+	// 批量生成 模块哈希
 	createModuleHashes() {
 		let statModulesHashed = 0;
 		const { chunkGraph, runtimeTemplate } = this;
@@ -3487,7 +3490,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 		);
 	}
 
-	// 设置单个模块哈希
+	// 生成单个模块哈希
 	// 设置 chunkGraphModule.hashes
 	_createModuleHash(
 		module,
@@ -3778,8 +3781,7 @@ This prevents using hashes of each other and should be avoided.`);
 		return codeGenerationJobs;
 	}
 
-	// 存储 资源文件(构建产物)
-	// 设置 compilation.assets
+	// 存储本次构建生成的构建资源
 	emitAsset(file, source, assetInfo = {}) { 
 		if (this.assets[file]) {
 			if (!isSourceEqual(this.assets[file], source)) {
@@ -3801,7 +3803,7 @@ This prevents using hashes of each other and should be avoided.`);
 		this._setAssetInfo(file, assetInfo, undefined);
 	}
 
-	// 设置 compilation.assetsInfo
+	// 设置 构建资源信息
 	_setAssetInfo(file, newInfo, oldInfo = this.assetsInfo.get(file)) {
 		if (newInfo === undefined) {
 			this.assetsInfo.delete(file);
@@ -3853,7 +3855,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	// 更新资源文件(构建产物)
+	// 更新 构建资源
 	updateAsset(
 		file,
 		newSourceOrFunction,
@@ -3883,7 +3885,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	// 重命名资源文件(构建产物)
+	// 重命名 构建资源
 	renameAsset(file, newFile) {
 		const source = this.assets[file];
 		if (!source) {
@@ -3949,7 +3951,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	// 根据 标识 删除对应的资源文件(构建产物)
+	// 根据 标识 删除对应的构建资源
 	deleteAsset(file) {
 		if (!this.assets[file]) {
 			return;
@@ -3981,7 +3983,7 @@ This prevents using hashes of each other and should be avoided.`);
 		}
 	}
 
-	// 返回所有的资源文件(构建产物)
+	// 返回所有的构建资源
 	getAssets() {
 		const array = [];
 		for (const assetName of Object.keys(this.assets)) {
@@ -3996,7 +3998,7 @@ This prevents using hashes of each other and should be avoided.`);
 		return array;
 	}
 
-	// 根据 标识 返回对应的资源文件(构建产物)
+	// 根据 标识 返回对应的构建资源
 	getAsset(name) {
 		if (!Object.prototype.hasOwnProperty.call(this.assets, name))
 			return undefined;
@@ -4007,9 +4009,7 @@ This prevents using hashes of each other and should be avoided.`);
 		};
 	}
 
-	// 清除Chunk上次运行时生成的assets
-	// chunk.files
-	// chunk.auxiliaryFiles
+	// 清除上次构建缓存的构建资源
 	clearAssets() {
 		for (const chunk of this.chunks) {
 			chunk.files.clear();

@@ -13,6 +13,8 @@ const HelperRuntimeModule = require("./HelperRuntimeModule");
 // 	}
 // };
 
+// 运行时函数
+// 作用:
 // 运行时模块之定义属性getters函数
 // __webpack_require__.d
 class DefinePropertyGettersRuntimeModule extends HelperRuntimeModule {
