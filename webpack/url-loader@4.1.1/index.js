@@ -92,9 +92,7 @@ function getEncodedData(generator, mimetype, encoding, content, resourcePath) {
   encoding || undefined)}`;
 }
 
-/**
- * 将文件作为 data URI 内联到 bundle 中
- */
+// 将文件作为 data URI 内联到 bundle 中
 function loader(content) {
   // 获取当前Loader Options
   // 该选项注册在Webpack.options Module.Rule.options中
@@ -137,7 +135,6 @@ function loader(content) {
     return `${esModule ? 'export default' : 'module.exports ='} ${JSON.stringify(encodedData)}`;
   }
 
-
   const {
     loader: fallbackLoader,
     options: fallbackOptions
@@ -152,8 +149,7 @@ function loader(content) {
     query: fallbackOptions
   });
   return fallback.call(fallbackLoaderContext, content);
-} // Loader Mode
-
+}
 
 const raw = true;
 exports.raw = raw;

@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 var $installedChunks$ = undefined;
@@ -16,6 +11,9 @@ var $hmrDownloadUpdateHandlers$ = undefined;
 var $hmrInvalidateModuleHandlers$ = undefined;
 var __webpack_require__ = undefined;
 
+// 
+// 作用:
+// 
 module.exports = function () {
 	var currentUpdateChunks;
 	var currentUpdate;

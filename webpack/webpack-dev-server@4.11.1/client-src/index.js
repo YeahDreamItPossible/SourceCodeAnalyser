@@ -27,17 +27,11 @@ import createSocketURL from "./utils/createSocketURL.js";
  * @property {string} [previousHash]
  */
 
-/**
- * @type {Status}
- */
 const status = {
   isUnloading: false,
-  // TODO Workaround for webpack v4, `__webpack_hash__` is not replaced without HotModuleReplacement
-  // eslint-disable-next-line camelcase
   currentHash: typeof __webpack_hash__ !== "undefined" ? __webpack_hash__ : "",
 };
 
-/** @type {Options} */
 const options = {
   hot: false,
   liveReload: false,
@@ -53,6 +47,8 @@ const enabledFeatures = {
   Overlay: false,
 };
 
+// "./node_modules/webpack-dev-server/client/index.js?protocol=ws%3A&hostname=0.0.0.0&port=9527&pathname=%2Fws&logging=info&overlay=true&reconnect=10&hot=true&live-reload=true"
+// __resourceQuery = "?protocol=ws%3A&hostname=0.0.0.0&port=9527&pathname=%2Fws&logging=info&overlay=true&reconnect=10&hot=true&live-reload=true"
 if (parsedResourceQuery.hot === "true") {
   options.hot = true;
   enabledFeatures["Hot Module Replacement"] = true;
@@ -140,17 +136,11 @@ const onSocketMessage = {
 
     sendMessage("Invalid");
   },
-  /**
-   * @param {string} hash
-   */
   hash(hash) {
     status.previousHash = status.currentHash;
     status.currentHash = hash;
   },
   logging: setAllLogLevel,
-  /**
-   * @param {boolean} value
-   */
   overlay(value) {
     if (typeof document === "undefined") {
       return;
@@ -158,9 +148,6 @@ const onSocketMessage = {
 
     options.overlay = value;
   },
-  /**
-   * @param {number} value
-   */
   reconnect(value) {
     if (parsedResourceQuery.reconnect === "false") {
       return;
@@ -168,15 +155,9 @@ const onSocketMessage = {
 
     options.reconnect = value;
   },
-  /**
-   * @param {boolean} value
-   */
   progress(value) {
     options.progress = value;
   },
-  /**
-   * @param {{ pluginName?: string, percent: number, msg: string }} data
-   */
   "progress-update": function progressUpdate(data) {
     if (options.progress) {
       log.info(
@@ -206,10 +187,6 @@ const onSocketMessage = {
 
     reloadApp(options, status);
   },
-  // TODO: remove in v5 in favor of 'static-changed'
-  /**
-   * @param {string} file
-   */
   "content-changed": function contentChanged(file) {
     log.info(
       `${
@@ -219,9 +196,6 @@ const onSocketMessage = {
 
     self.location.reload();
   },
-  /**
-   * @param {string} file
-   */
   "static-changed": function staticChanged(file) {
     log.info(
       `${
@@ -231,10 +205,6 @@ const onSocketMessage = {
 
     self.location.reload();
   },
-  /**
-   * @param {Error[]} warnings
-   * @param {any} params
-   */
   warnings(warnings, params) {
     log.warn("Warnings while compiling.");
 
@@ -268,9 +238,6 @@ const onSocketMessage = {
 
     reloadApp(options, status);
   },
-  /**
-   * @param {Error[]} errors
-   */
   errors(errors) {
     log.error("Errors while compiling. Reload prevented.");
 
@@ -298,9 +265,6 @@ const onSocketMessage = {
       show("error", errors, trustedTypesPolicyName || null);
     }
   },
-  /**
-   * @param {Error} error
-   */
   error(error) {
     log.error(error);
   },

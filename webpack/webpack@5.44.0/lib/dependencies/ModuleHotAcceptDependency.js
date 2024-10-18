@@ -4,7 +4,9 @@ const makeSerializable = require("../util/makeSerializable");
 const ModuleDependency = require("./ModuleDependency");
 const ModuleDependencyTemplateAsId = require("./ModuleDependencyTemplateAsId");
 
-// TODO:
+// 
+// 作用:
+// 
 // module.hot.*
 class ModuleHotAcceptDependency extends ModuleDependency {
 	constructor(request, range) {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 const PrettyError = require('pretty-error');
 const prettyError = new PrettyError();

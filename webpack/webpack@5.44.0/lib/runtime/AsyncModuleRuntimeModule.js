@@ -1,7 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
@@ -9,6 +5,8 @@ const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
 // 运行时模块之异步模块
+// 作用:
+// 
 class AsyncModuleRuntimeModule extends HelperRuntimeModule {
 	constructor() {
 		super("async module");

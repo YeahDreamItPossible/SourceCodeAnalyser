@@ -34,7 +34,9 @@ const {
 // WeakMap<JavascriptParser, Hooks>
 const parserHooksMap = new WeakMap();
 
-// 热模块替换插件
+// 热模块替换插件(热更新)
+// 作用:
+// 
 class HotModuleReplacementPlugin {
 	static getParserHooks(parser) {
 		if (!(parser instanceof JavascriptParser)) {

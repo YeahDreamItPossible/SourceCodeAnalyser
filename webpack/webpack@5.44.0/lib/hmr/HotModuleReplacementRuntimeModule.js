@@ -1,21 +1,17 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
+// 热模块替换运行时模块
+// 作用:
+// 
 class HotModuleReplacementRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("hot module replacement", RuntimeModule.STAGE_BASIC);
 	}
-	/**
-	 * @returns {string} runtime code
-	 */
+	
 	generate() {
 		return Template.getFunctionContent(
 			require("./HotModuleReplacement.runtime.js")

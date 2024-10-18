@@ -1,14 +1,6 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const nextTick = require("process").nextTick;
-
-/** @typedef {import("./Resolver").FileSystem} FileSystem */
-/** @typedef {import("./Resolver").SyncFileSystem} SyncFileSystem */
 
 const dirname = path => {
 	let idx = path.length - 1;

@@ -1,5 +1,4 @@
 /* This loader renders the template with underscore if no other loader was found */
-// @ts-nocheck
 'use strict';
 const _ = require('lodash');
 

@@ -5,6 +5,9 @@ const Template = require("../Template");
 const HelperRuntimeModule = require("./HelperRuntimeModule");
 
 // 运行时模块之
+// 
+// 作用:
+// 
 class CreateFakeNamespaceObjectRuntimeModule extends HelperRuntimeModule {
 	constructor() {
 		super("create fake namespace object");

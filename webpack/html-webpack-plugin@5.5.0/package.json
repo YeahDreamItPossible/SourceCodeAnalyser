@@ -1,7 +1,6 @@
 {
   "name": "html-webpack-plugin",
   "version": "5.5.0",
-  "license": "MIT",
   "description": "Simplifies creation of HTML files to serve your webpack bundles",
   "author": "Jan Nicklas <j.nicklas@me.com> (https://github.com/jantimon)",
   "main": "index.js",
@@ -21,11 +20,6 @@
     "test-watch": "jest --runInBand --watch",
     "puml": "npx puml generate flow.puml -o flow.png",
     "release": "standard-version"
-  },
-  "semistandard": {
-    "ignore": [
-      "examples/*/dist/**/*.*"
-    ]
   },
   "devDependencies": {
     "@types/node": "11.13.9",
@@ -58,13 +52,6 @@
   "peerDependencies": {
     "webpack": "^5.20.0"
   },
-  "keywords": [
-    "webpack",
-    "plugin",
-    "html",
-    "html-webpack-plugin"
-  ],
-  "bugs": "https://github.com/jantimon/html-webpack-plugin/issues",
   "homepage": "https://github.com/jantimon/html-webpack-plugin",
   "repository": "https://github.com/jantimon/html-webpack-plugin.git",
   "engines": {
@@ -74,12 +61,6 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  },
-  "jest": {
-    "watchPathIgnorePatterns": [
-      "<rootDir>/dist"
-    ],
-    "testEnvironment": "node"
   },
   "funding": {
     "type": "opencollective",

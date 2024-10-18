@@ -4,6 +4,8 @@ const ModuleDependency = require("./ModuleDependency");
 
 // TODO:
 // 
+// 作用:
+// 
 class ModuleDependencyTemplateAsId extends ModuleDependency.Template {
 	/**
 	 * @param {Dependency} dependency the dependency for which the template should be applied

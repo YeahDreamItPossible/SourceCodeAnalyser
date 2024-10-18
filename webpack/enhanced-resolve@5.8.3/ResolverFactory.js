@@ -42,6 +42,7 @@ const UseFilePlugin = require("./UseFilePlugin");
 /** @typedef {{[k: string]: AliasOptionNewRequest}} AliasOptions */
 /** @typedef {{apply: function(Resolver): void} | function(this: Resolver, Resolver): void} Plugin */
 
+// 用户选项
 /**
  * @typedef {Object} UserResolveOptions
  * @property {(AliasOptions | AliasOptionEntry[])=} alias A list of module alias configurations or an object which maps key to value
@@ -73,6 +74,7 @@ const UseFilePlugin = require("./UseFilePlugin");
  * @property {boolean=} preferAbsolute Prefer to resolve server-relative urls as absolute paths before falling back to resolve in roots
  */
 
+// 标准化选项
 /**
  * @typedef {Object} ResolveOptions
  * @property {AliasOptionEntry[]} alias
@@ -143,20 +145,19 @@ function normalizeAlias(alias) {
  * @param {UserResolveOptions} options input options
  * @returns {ResolveOptions} output options
  */
-// 根据用户自定义options返回解析后的options
+// 返回 标准化 后的用户选项(UserResolveOptions) 即: ResolveOptions
 function createOptions(options) {
 	const mainFieldsSet = new Set(options.mainFields || ["main"]);
 	const mainFields = [];
 
-	/**
-	 * 标准化 Resolver.options.mainFields
-	 * ['main', ['index'], {name: ['root'], forceRelative: true}]
-	 * => [
-	 * 			{ name: ['main'], forceRelative: true},
-	 * 			{ name: ['index'], forceRelative: true},
-	 * 			{ name: ['root'], forceRelative: true},
-	 * ]
-	 */
+	// 标准化 UserResolveOptions.mainFields
+	// ['main', ['index'], {name: ['root'], forceRelative: true}]
+	// =>
+	// [
+	// 	{ name: ['main'], forceRelative: true},
+	// 	{ name: ['index'], forceRelative: true},
+	// 	{ name: ['root'], forceRelative: true},
+	// ]
 	for (const item of mainFieldsSet) {
 		// 字符串类型
 		if (typeof item === "string") {

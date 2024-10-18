@@ -1,65 +1,13 @@
-// @ts-check
-/**
- * @file
- * Helper plugin manages the cached state of the child compilation
- *
- * To optimize performance the child compilation is running asyncronously.
- * Therefore it needs to be started in the compiler.make phase and ends after
- * the compilation.afterCompile phase.
- *
- * To prevent bugs from blocked hooks there is no promise or event based api
- * for this plugin.
- *
- * Example usage:
- *
- * ```js
-    const childCompilerPlugin = new PersistentChildCompilerPlugin();
-    childCompilerPlugin.addEntry('./src/index.js');
-    compiler.hooks.afterCompile.tapAsync('MyPlugin', (compilation, callback) => {
-      console.log(childCompilerPlugin.getCompilationResult()['./src/index.js']));
-      return true;
-    });
- * ```
- */
-
-// Import types
-/** @typedef {import("webpack/lib/Compiler.js")} WebpackCompiler */
-/** @typedef {import("webpack/lib/Compilation.js")} WebpackCompilation */
-/** @typedef {{hash: string, entry: any, content: string }} ChildCompilationResultEntry */
-/** @typedef {import("./file-watcher-api").Snapshot} Snapshot */
-/** @typedef {{fileDependencies: string[], contextDependencies: string[], missingDependencies: string[]}} FileDependencies */
-/** @typedef {{
-  dependencies: FileDependencies,
-  compiledEntries: {[entryName: string]: ChildCompilationResultEntry}
-} | {
-  dependencies: FileDependencies,
-  error: Error
-}} ChildCompilationResult */
 'use strict';
 
 const { HtmlWebpackChildCompiler } = require('./child-compiler');
 const fileWatcherApi = require('./file-watcher-api');
 
-/**
- * This plugin is a singleton for performance reasons.
- * To keep track if a plugin does already exist for the compiler they are cached
- * in this map
- * @type {WeakMap<WebpackCompiler, PersistentChildCompilerSingletonPlugin>}}
- */
 const compilerMap = new WeakMap();
 
 class CachedChildCompilation {
-  /**
-   * @param {WebpackCompiler} compiler
-   */
   constructor (compiler) {
-    /**
-     * @private
-     * @type {WebpackCompiler}
-     */
     this.compiler = compiler;
-    // Create a singleton instance for the compiler
-    // if there is none
     if (compilerMap.has(compiler)) {
       return;
     }
@@ -68,10 +16,6 @@ class CachedChildCompilation {
     persistentChildCompilerSingletonPlugin.apply(compiler);
   }
 
-  /**
-   * apply is called by the webpack main compiler during the start phase
-   * @param {string} entry
-   */
   addEntry (entry) {
     const persistentChildCompilerSingletonPlugin = compilerMap.get(this.compiler);
     if (!persistentChildCompilerSingletonPlugin) {
@@ -92,14 +36,6 @@ class CachedChildCompilation {
     return persistentChildCompilerSingletonPlugin.getLatestResult();
   }
 
-  /**
-   * Returns the result for the given entry
-   * @param {string} entry
-   * @returns {
-      | { mainCompilationHash: string, error: Error }
-      | { mainCompilationHash: string, compiledEntry: ChildCompilationResultEntry }
-    }
-   */
   getCompilationEntryResult (entry) {
     const latestResult = this.getCompilationResult();
     const compilationResult = latestResult.compilationResult;
@@ -115,30 +51,6 @@ class CachedChildCompilation {
 
 class PersistentChildCompilerSingletonPlugin {
   constructor () {
-    /**
-     * @private
-     * @type {
-      | {
-        isCompiling: false,
-        isVerifyingCache: false,
-        entries: string[],
-        compiledEntries: string[],
-        mainCompilationHash: string,
-        compilationResult: ChildCompilationResult
-      }
-    | Readonly<{
-      isCompiling: false,
-      isVerifyingCache: true,
-      entries: string[],
-      previousEntries: string[],
-      previousResult: ChildCompilationResult
-    }>
-    | Readonly <{
-      isVerifyingCache: false,
-      isCompiling: true,
-      entries: string[],
-    }>
-  } the internal compilation state */
     this.compilationState = {
       isCompiling: false,
       isVerifyingCache: false,
@@ -156,12 +68,7 @@ class PersistentChildCompilerSingletonPlugin {
     };
   }
 
-  /**
-   * apply is called by the webpack main compiler during the start phase
-   * @param {WebpackCompiler} compiler
-   */
   apply (compiler) {
-    /** @type Promise<ChildCompilationResult> */
     let childCompilationResultPromise = Promise.resolve({
       dependencies: {
         fileDependencies: [],
@@ -274,10 +181,6 @@ class PersistentChildCompilerSingletonPlugin {
     );
   }
 
-  /**
-   * Add a new entry to the next compile run
-   * @param {string} entry
-   */
   addEntry (entry) {
     if (this.compilationState.isCompiling || this.compilationState.isVerifyingCache) {
       throw new Error(

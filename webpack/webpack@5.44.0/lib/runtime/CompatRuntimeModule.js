@@ -4,6 +4,9 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 
 // 运行时模块之兼容
+// 
+// 作用:
+// 
 class CompatRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("compat", RuntimeModule.STAGE_ATTACH);

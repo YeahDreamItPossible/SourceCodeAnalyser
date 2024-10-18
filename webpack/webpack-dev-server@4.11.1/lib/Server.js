@@ -11,56 +11,6 @@ const express = require("express");
 const { validate } = require("schema-utils");
 const schema = require("./options.json");
 
-/** @typedef {import("schema-utils/declarations/validate").Schema} Schema */
-/** @typedef {import("webpack").Compiler} Compiler */
-/** @typedef {import("webpack").MultiCompiler} MultiCompiler */
-/** @typedef {import("webpack").Configuration} WebpackConfiguration */
-/** @typedef {import("webpack").StatsOptions} StatsOptions */
-/** @typedef {import("webpack").StatsCompilation} StatsCompilation */
-/** @typedef {import("webpack").Stats} Stats */
-/** @typedef {import("webpack").MultiStats} MultiStats */
-/** @typedef {import("os").NetworkInterfaceInfo} NetworkInterfaceInfo */
-/** @typedef {import("express").Request} Request */
-/** @typedef {import("express").Response} Response */
-/** @typedef {import("express").NextFunction} NextFunction */
-/** @typedef {import("express").RequestHandler} ExpressRequestHandler */
-/** @typedef {import("express").ErrorRequestHandler} ExpressErrorRequestHandler */
-/** @typedef {import("chokidar").WatchOptions} WatchOptions */
-/** @typedef {import("chokidar").FSWatcher} FSWatcher */
-/** @typedef {import("connect-history-api-fallback").Options} ConnectHistoryApiFallbackOptions */
-/** @typedef {import("bonjour-service").Bonjour} Bonjour */
-/** @typedef {import("bonjour-service").Service} BonjourOptions */
-/** @typedef {import("http-proxy-middleware").RequestHandler} RequestHandler */
-/** @typedef {import("http-proxy-middleware").Options} HttpProxyMiddlewareOptions */
-/** @typedef {import("http-proxy-middleware").Filter} HttpProxyMiddlewareOptionsFilter */
-/** @typedef {import("serve-index").Options} ServeIndexOptions */
-/** @typedef {import("serve-static").ServeStaticOptions} ServeStaticOptions */
-/** @typedef {import("ipaddr.js").IPv4} IPv4 */
-/** @typedef {import("ipaddr.js").IPv6} IPv6 */
-/** @typedef {import("net").Socket} Socket */
-/** @typedef {import("http").IncomingMessage} IncomingMessage */
-/** @typedef {import("open").Options} OpenOptions */
-
-/** @typedef {import("https").ServerOptions & { spdy?: { plain?: boolean | undefined, ssl?: boolean | undefined, 'x-forwarded-for'?: string | undefined, protocol?: string | undefined, protocols?: string[] | undefined }}} ServerOptions */
-
-/**
- * @template Request, Response
- * @typedef {import("webpack-dev-middleware").Options<Request, Response>} DevMiddlewareOptions
- */
-
-/**
- * @template Request, Response
- * @typedef {import("webpack-dev-middleware").Context<Request, Response>} DevMiddlewareContext
- */
-
-/**
- * @typedef {"local-ip" | "local-ipv4" | "local-ipv6" | string} Host
- */
-
-/**
- * @typedef {number | string | "auto"} Port
- */
-
 /**
  * @typedef {Object} WatchFiles
  * @property {string | string[]} paths
@@ -206,15 +156,13 @@ const schema = require("./options.json");
  */
 
 if (!process.env.WEBPACK_SERVE) {
-  // TODO fix me in the next major release
-  // @ts-ignore
   process.env.WEBPACK_SERVE = true;
 }
 
 // 服务
 class Server {
   constructor(options = {}, compiler) {
-    // compiler 作为第一个参数 的方式已被遗弃
+    // 已遗弃 compiler 作为第一个参数的方式
     if (/** @type {Compiler | MultiCompiler} */ (options).hooks) {
       util.deprecate(
         () => {},
@@ -231,9 +179,9 @@ class Server {
       baseDataPath: "options",
     });
 
-    this.compiler = /** @type {Compiler | MultiCompiler} */ (compiler);
+    this.compiler = (compiler);
     this.logger = this.compiler.getInfrastructureLogger("webpack-dev-server");
-    this.options = /** @type {Configuration} */ (options);
+    this.options = (options);
     /**
      * @type {FSWatcher[]}
      */
@@ -250,15 +198,9 @@ class Server {
      * @type {RequestHandler[]}
      */
     this.webSocketProxies = [];
-    /**
-     * @type {Socket[]}
-     */
+    
     this.sockets = [];
-    /**
-     * @private
-     * @type {string | undefined}
-     */
-    // eslint-disable-next-line no-undefined
+    
     this.currentHash = undefined;
   }
 
@@ -426,9 +368,6 @@ class Server {
 
   // 添加额外的入口
   addAdditionalEntries(compiler) {
-    /**
-     * @type {string[]}
-     */
     const additionalEntries = [];
 
     const isWebTarget = compiler.options.externalsPresets
@@ -613,11 +552,9 @@ class Server {
 
     const webpack = compiler.webpack || require("webpack");
 
-    // use a hook to add entries if available
     if (typeof webpack.EntryPlugin !== "undefined") {
       for (const additionalEntry of additionalEntries) {
         new webpack.EntryPlugin(compiler.context, additionalEntry, {
-          // eslint-disable-next-line no-undefined
           name: undefined,
         }).apply(compiler);
       }
@@ -732,7 +669,7 @@ class Server {
     return /** @type {Compiler} */ (this.compiler).options;
   }
 
-  // 正常化 选项
+  // 标准化选项
   async normalizeOptions() {
     const { options } = this;
     const compilerOptions = this.getCompilerOptions();
@@ -866,7 +803,7 @@ class Server {
       return item;
     };
 
-    // 许将允许访问开发服务器的服务列入白名单
+    // 将允许访问开发服务器的服务列入白名单
     if (typeof options.allowedHosts === "undefined") {
       // AllowedHosts allows some default hosts picked from `options.host` or `webSocketURL.hostname` and `localhost`
       options.allowedHosts = "auto";
@@ -887,6 +824,7 @@ class Server {
       options.allowedHosts = "all";
     }
 
+    // 在启动时通过 ZeroConf 网络广播你的开发服务器
     if (typeof options.bonjour === "undefined") {
       options.bonjour = false;
     } else if (typeof options.bonjour === "boolean") {
@@ -923,7 +861,6 @@ class Server {
       }
 
       // 出现编译错误或警告时，在浏览器中显示全屏覆盖
-      // Enable client overlay by default
       if (typeof options.client.overlay === "undefined") {
         options.client.overlay = true;
       } else if (typeof options.client.overlay !== "boolean") {
@@ -1632,20 +1569,19 @@ class Server {
 
     switch (
       typeof (
-        /** @type {WebSocketServerConfiguration} */
         (this.options.webSocketServer).type
       )
     ) {
       case "string":
         // Could be 'sockjs', in the future 'ws', or a path that should be required
         if (
-          /** @type {WebSocketServerConfiguration} */ (
+          (
             this.options.webSocketServer
           ).type === "sockjs"
         ) {
           implementation = require("./servers/SockJSServer");
         } else if (
-          /** @type {WebSocketServerConfiguration} */ (
+          (
             this.options.webSocketServer
           ).type === "ws"
         ) {
@@ -1653,7 +1589,7 @@ class Server {
         } else {
           try {
             // eslint-disable-next-line import/no-dynamic-require
-            implementation = require(/** @type {WebSocketServerConfiguration} */ (
+            implementation = require((
               this.options.webSocketServer
             ).type);
           } catch (error) {
@@ -1728,7 +1664,6 @@ class Server {
   async initialize() {
     if (this.options.webSocketServer) {
       const compilers =
-        /** @type {MultiCompiler} */
         (this.compiler).compilers || [this.compiler];
 
       compilers.forEach((compiler) => {
@@ -1763,7 +1698,7 @@ class Server {
 
       if (
         this.options.client &&
-        /** @type {ClientConfiguration} */ (this.options.client).progress
+        (this.options.client).progress
       ) {
         this.setupProgressPlugin();
       }
@@ -1771,21 +1706,29 @@ class Server {
 
     // 注册 compiler 钩子
     this.setupHooks();
+
     // 启动应用
     this.setupApp();
+
     // 每次请求时 检查请求头
     this.setupHostHeaderCheck();
+
     // 启动 webpack-dev-middleware
     this.setupDevMiddleware();
+
     // Should be after `webpack-dev-middleware`, otherwise other middlewares might rewrite response
     // 启动内置路由
     this.setupBuiltInRoutes();
+
     // 启动文件观察
     this.setupWatchFiles();
+
     // 启动 观察静态文件
     this.setupWatchStaticFiles();
+
     // 启动中间件
     this.setupMiddlewares();
+    
     // 创建服务器
     this.createServer();
 
@@ -1827,7 +1770,6 @@ class Server {
     // https://github.com/chimurai/http-proxy-middleware#external-websocket-upgrade
     /** @type {RequestHandler[]} */
     (this.webSocketProxies).forEach((webSocketProxy) => {
-      /** @type {import("http").Server} */
       (this.server).on(
         "upgrade",
         /** @type {RequestHandler & { upgrade: NonNullable<RequestHandler["upgrade"]> }} */
@@ -1838,7 +1780,6 @@ class Server {
 
   // 启动应用
   setupApp() {
-    /** @type {import("express").Application | undefined}*/
     this.app = new (express)();
   }
 
@@ -1880,12 +1821,6 @@ class Server {
     /** @type {import("express").Application} */
     (this.app).all(
       "*",
-      /**
-       * @param {Request} req
-       * @param {Response} res
-       * @param {NextFunction} next
-       * @returns {void}
-       */
       (req, res, next) => {
         if (
           this.checkHeader(
@@ -1906,7 +1841,7 @@ class Server {
   setupDevMiddleware() {
     const webpackDevMiddleware = require("webpack-dev-middleware");
 
-    // middleware for serving webpack bundle
+    // 
     this.middleware = webpackDevMiddleware(
       this.compiler,
       this.options.devMiddleware
@@ -1917,14 +1852,8 @@ class Server {
   setupBuiltInRoutes() {
     const { app, middleware } = this;
 
-    /** @type {import("express").Application} */
     (app).get(
       "/__webpack_dev_server__/sockjs.bundle.js",
-      /**
-       * @param {Request} req
-       * @param {Response} res
-       * @returns {void}
-       */
       (req, res) => {
         res.setHeader("Content-Type", "application/javascript");
 
@@ -1934,14 +1863,8 @@ class Server {
       }
     );
 
-    /** @type {import("express").Application} */
     (app).get(
       "/webpack-dev-server/invalidate",
-      /**
-       * @param {Request} _req
-       * @param {Response} res
-       * @returns {void}
-       */
       (_req, res) => {
         this.invalidate();
 
@@ -1949,16 +1872,9 @@ class Server {
       }
     );
 
-    /** @type {import("express").Application} */
     (app).get(
       "/webpack-dev-server",
-      /**
-       * @param {Request} req
-       * @param {Response} res
-       * @returns {void}
-       */
       (req, res) => {
-        /** @type {import("webpack-dev-middleware").API<Request, Response>}*/
         (middleware).waitUntilValid((stats) => {
           res.setHeader("Content-Type", "text/html");
           res.write(
@@ -1966,15 +1882,12 @@ class Server {
           );
 
           const statsForPrint =
-            typeof (/** @type {MultiStats} */ (stats).stats) !== "undefined"
-              ? /** @type {MultiStats} */ (stats).toJson().children
-              : [/** @type {Stats} */ (stats).toJson()];
+            typeof ((stats).stats) !== "undefined"
+              ? (stats).toJson().children
+              : [(stats).toJson()];
 
           res.write(`<h1>Assets Report:</h1>`);
 
-          /**
-           * @type {StatsCompilation[]}
-           */
           (statsForPrint).forEach((item, index) => {
             res.write("<div>");
 
@@ -2031,8 +1944,7 @@ class Server {
   setupWatchFiles() {
     const { watchFiles } = this.options;
 
-    if (/** @type {WatchFiles[]} */ (watchFiles).length > 0) {
-      /** @type {WatchFiles[]} */
+    if ((watchFiles).length > 0) {
       (watchFiles).forEach((item) => {
         this.watchFiles(item.paths, item.options);
       });
@@ -2041,9 +1953,6 @@ class Server {
 
   // 启动中间件
   setupMiddlewares() {
-    /**
-     * @type {Array<Middleware>}
-     */
     let middlewares = [];
 
     // compress is placed last and uses unshift so that it will be the first middleware used
@@ -2068,7 +1977,6 @@ class Server {
     middlewares.push({
       name: "webpack-dev-middleware",
       middleware:
-        /** @type {import("webpack-dev-middleware").Middleware<Request, Response>}*/
         (this.middleware),
     });
 
@@ -2278,10 +2186,9 @@ class Server {
       }
     }
 
-    if (/** @type {NormalizedStatic[]} */ (this.options.static).length > 0) {
+    if ((this.options.static).length > 0) {
       const serveIndex = require("serve-index");
 
-      /** @type {NormalizedStatic[]} */
       (this.options.static).forEach((staticOption) => {
         staticOption.publicPath.forEach((publicPath) => {
           if (staticOption.serveIndex) {
@@ -2347,13 +2254,10 @@ class Server {
 
     middlewares.forEach((middleware) => {
       if (typeof middleware === "function") {
-        /** @type {import("express").Application} */
         (this.app).use(middleware);
       } else if (typeof middleware.path !== "undefined") {
-        /** @type {import("express").Application} */
         (this.app).use(middleware.path, middleware.middleware);
       } else {
-        /** @type {import("express").Application} */
         (this.app).use(middleware.middleware);
       }
     });
@@ -2365,40 +2269,30 @@ class Server {
 
   // 创建服务器
   createServer() {
-    const { type, options } = /** @type {ServerConfiguration} */ (
+    const { type, options } = (
       this.options.server
     );
 
-    /** @type {import("http").Server | undefined | null} */
-    // eslint-disable-next-line import/no-dynamic-require
-    this.server = require(/** @type {string} */ (type)).createServer(
+    // type: http || https || spdy
+    this.server = require((type)).createServer(
       options,
       this.app
     );
 
-    /** @type {import("http").Server} */
     (this.server).on(
       "connection",
-      /**
-       * @param {Socket} socket
-       */
+      
       (socket) => {
-        // Add socket to list
         this.sockets.push(socket);
 
         socket.once("close", () => {
-          // Remove socket from list
           this.sockets.splice(this.sockets.indexOf(socket), 1);
         });
       }
     );
 
-    /** @type {import("http").Server} */
     (this.server).on(
       "error",
-      /**
-       * @param {Error} error
-       */
       (error) => {
         throw error;
       }
@@ -2408,21 +2302,14 @@ class Server {
   // 命令行参数 --web-socket-server 已被 --web-socket-server-type 替代
   // 创建 websocket 服务器
   createWebSocketServer() {
-    /** @type {WebSocketServerImplementation | undefined | null} */
-    this.webSocketServer = new /** @type {any} */ (this.getServerTransport())(
+    this.webSocketServer = new (this.getServerTransport())(
       this
     );
-    /** @type {WebSocketServerImplementation} */
     (this.webSocketServer).implementation.on(
       "connection",
-      /**
-       * @param {ClientConnection} client
-       * @param {IncomingMessage} request
-       */
       (client, request) => {
         /** @type {{ [key: string]: string | undefined } | undefined} */
         const headers =
-          // eslint-disable-next-line no-nested-ternary
           typeof request !== "undefined"
             ? /** @type {{ [key: string]: string | undefined }} */
               (request.headers)
@@ -2430,8 +2317,7 @@ class Server {
                 /** @type {import("sockjs").Connection} */ (client).headers
               ) !== "undefined"
             ? /** @type {import("sockjs").Connection} */ (client).headers
-            : // eslint-disable-next-line no-undefined
-              undefined;
+            : undefined;
 
         if (!headers) {
           this.logger.warn(
@@ -2463,38 +2349,33 @@ class Server {
 
         if (
           this.options.client &&
-          /** @type {ClientConfiguration} */
           (this.options.client).progress
         ) {
           this.sendMessage(
             [client],
             "progress",
-            /** @type {ClientConfiguration} */
             (this.options.client).progress
           );
         }
 
         if (
           this.options.client &&
-          /** @type {ClientConfiguration} */ (this.options.client).reconnect
+          (this.options.client).reconnect
         ) {
           this.sendMessage(
             [client],
             "reconnect",
-            /** @type {ClientConfiguration} */
             (this.options.client).reconnect
           );
         }
 
         if (
           this.options.client &&
-          /** @type {ClientConfiguration} */
           (this.options.client).overlay
         ) {
           this.sendMessage(
             [client],
             "overlay",
-            /** @type {ClientConfiguration} */
             (this.options.client).overlay
           );
         }
@@ -2958,13 +2839,7 @@ class Server {
     }
   }
 
-  /**
-   * @private
-   * @param {Request} req
-   * @param {Response} res
-   * @param {NextFunction} next
-   * @returns {void}
-   */
+  // 
   serveMagicHtml(req, res, next) {
     if (req.method !== "GET" && req.method !== "HEAD") {
       return next();
@@ -3028,9 +2903,7 @@ class Server {
     this.sendMessage(clients, "hash", stats.hash);
 
     if (
-      /** @type {NonNullable<StatsCompilation["errors"]>} */
       (stats.errors).length > 0 ||
-      /** @type {NonNullable<StatsCompilation["warnings"]>} */
       (stats.warnings).length > 0
     ) {
       const hasErrors =
@@ -3082,9 +2955,7 @@ class Server {
     this.staticWatchers.push(watcher);
   }
 
-  /**
-   * @param {import("webpack-dev-middleware").Callback} [callback]
-   */
+  // 
   invalidate(callback = () => {}) {
     if (this.middleware) {
       this.middleware.invalidate(callback);
@@ -3281,15 +3152,6 @@ class Server {
       .catch(callback);
   }
 
-  // TODO remove in the next major release
-  /**
-   * @param {Port} port
-   * @param {Host} hostname
-   * @param {(err?: Error) => void} fn
-   * @returns {void}
-   */
-  // 监听
-  // 下个大版本中将移除该api
   listen(port, hostname, fn) {
     util.deprecate(
       () => {},
@@ -3347,9 +3209,7 @@ class Server {
       });
   }
   
-  // TODO remove in the next major release
   // 关闭
-  // 下个大版本中将移除该api
   close(callback) {
     util.deprecate(
       () => {},

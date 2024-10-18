@@ -4,17 +4,10 @@ const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
-// __webpack_require__.f = {};
-// // This file contains only the entry chunk.
-// // The chunk loading function for additional chunks
-// __webpack_require__.e = (chunkId) => {
-// 	return Promise.all(Object.keys(__webpack_require__.f).reduce((promises, key) => {
-// 		__webpack_require__.f[key](chunkId, promises);
-// 		return promises;
-// 	}, []));
-// };
-
-// 运行时模块之确保块加载
+// 运行时模块之保证块加载
+// __webpack_require__.e
+// 作用:
+// 根据 chunkId 加载对应的 chunk 并缓存该 chunk
 class EnsureChunkRuntimeModule extends RuntimeModule {
 	constructor(runtimeRequirements) {
 		super("ensure chunk");
@@ -56,3 +49,16 @@ class EnsureChunkRuntimeModule extends RuntimeModule {
 }
 
 module.exports = EnsureChunkRuntimeModule;
+
+// 生成代码示例:
+(() => {
+	__webpack_require__.f = {};
+	// This file contains only the entry chunk.
+	// The chunk loading function for additional chunks
+	__webpack_require__.e = (chunkId) => {
+		return Promise.all(Object.keys(__webpack_require__.f).reduce((promises, key) => {
+			__webpack_require__.f[key](chunkId, promises);
+			return promises;
+		}, []));
+	}
+})()

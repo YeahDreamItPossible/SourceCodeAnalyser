@@ -1,10 +1,11 @@
-"use strict";
-
 const RuntimeGlobals = require("../RuntimeGlobals");
 const RuntimeModule = require("../RuntimeModule");
 const Template = require("../Template");
 
-// 运行时模块之返回全局对象
+// 运行时模块之全局对象
+// __webpack_require__.g
+// 作用:
+// 返回运行时的全局对象
 class GlobalRuntimeModule extends RuntimeModule {
 	constructor() {
 		super("global");
@@ -40,3 +41,16 @@ class GlobalRuntimeModule extends RuntimeModule {
 }
 
 module.exports = GlobalRuntimeModule;
+
+// 生成代码示例:
+/* webpack/runtime/global */
+(() => {
+	__webpack_require__.g = (function() {
+		if (typeof globalThis === 'object') return globalThis;
+		try {
+			return this || new Function('return this')();
+		} catch (e) {
+			if (typeof window === 'object') return window;
+		}
+	})();
+})()

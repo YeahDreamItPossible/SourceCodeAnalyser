@@ -23,10 +23,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * (0, fn)() 改变fn的this绑定
  */
 
-// 将 文件 按照特定格式 输出到 特定目录 中
+// 将 文件 输出到 特定目录 中 并返回 模块输出
 function loader(content) {
-  // 获取当前Loader options
-  // 该选项注册在Webpack.options Module.Rule.options中
+  // 获取当前 Loader.options
+  // 该选项注册在 Webpack.options Module.Rule.options 中
   const options = (0, _loaderUtils.getOptions)(this);
 
   // 验证
@@ -97,7 +97,7 @@ function loader(content) {
 
     assetInfo.sourceFilename = (0, _utils.normalizePath)(_path.default.relative(this.rootContext, this.resourcePath));
 
-    // 缓存到NormalModule中 
+    // 缓存到 NormalModule 中 
     // 在编译结束后 将文件按照特定格式输出特定目录中
     this.emitFile(outputPath, content, null, assetInfo);
   }
@@ -106,7 +106,7 @@ function loader(content) {
   // 默认esm
   const esModule = typeof options.esModule !== 'undefined' ? options.esModule : true;
 
-  // 导出模块
+  // 返回 模块导出 
   return `${esModule ? 'export default' : 'module.exports ='} ${publicPath};`;
 }
 

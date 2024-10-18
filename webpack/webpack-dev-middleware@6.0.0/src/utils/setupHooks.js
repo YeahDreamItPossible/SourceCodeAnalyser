@@ -1,22 +1,6 @@
 const { isColorSupported } = require("colorette");
 
-/** @typedef {import("webpack").Configuration} Configuration */
-/** @typedef {import("webpack").Compiler} Compiler */
-/** @typedef {import("webpack").MultiCompiler} MultiCompiler */
-/** @typedef {import("webpack").Stats} Stats */
-/** @typedef {import("webpack").MultiStats} MultiStats */
 
-/** @typedef {import("../index.js").IncomingMessage} IncomingMessage */
-/** @typedef {import("../index.js").ServerResponse} ServerResponse */
-/** @typedef {Configuration["stats"]} StatsOptions */
-/** @typedef {{ children: Configuration["stats"][] }} MultiStatsOptions */
-/** @typedef {Exclude<Configuration["stats"], boolean | string | undefined>} NormalizedStatsOptions */
-
-/**
- * @template {IncomingMessage} Request
- * @template {ServerResponse} Response
- * @param {import("../index.js").Context<Request, Response>} context
- */
 function setupHooks(context) {
   function invalid() {
     if (context.state) {
@@ -30,10 +14,6 @@ function setupHooks(context) {
     context.stats = undefined;
   }
 
-  /**
-   * @param {Configuration["stats"]} statsOptions
-   * @returns {NormalizedStatsOptions}
-   */
   function normalizeStatsOptions(statsOptions) {
     if (typeof statsOptions === "undefined") {
       // eslint-disable-next-line no-param-reassign
@@ -49,9 +29,6 @@ function setupHooks(context) {
     return statsOptions;
   }
 
-  /**
-   * @param {Stats | MultiStats} stats
-   */
   function done(stats) {
     // We are now on valid state
     // eslint-disable-next-line no-param-reassign

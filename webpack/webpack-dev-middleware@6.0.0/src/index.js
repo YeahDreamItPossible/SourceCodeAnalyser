@@ -11,13 +11,6 @@ const schema = require("./options.json");
 
 const noop = () => {};
 
-/** @typedef {import("schema-utils/declarations/validate").Schema} Schema */
-/** @typedef {import("webpack").Compiler} Compiler */
-/** @typedef {import("webpack").MultiCompiler} MultiCompiler */
-/** @typedef {import("webpack").Configuration} Configuration */
-/** @typedef {import("webpack").Stats} Stats */
-/** @typedef {import("webpack").MultiStats} MultiStats */
-
 /**
  * @typedef {Object} ExtendedServerResponse
  * @property {{ webpack?: { devMiddleware?: Context<IncomingMessage, ServerResponse> } }} [locals]
@@ -146,7 +139,7 @@ const noop = () => {};
  * @returns {API<RequestInternal, ResponseInternal>}
  */
 function wdm(compiler, options = {}) {
-  validate(/** @type {Schema} */ (schema), options, {
+  validate((schema), options, {
     name: "Dev Middleware",
     baseDataPath: "options",
   });
@@ -158,13 +151,9 @@ function wdm(compiler, options = {}) {
 
     // mimeTypes from user provided options should take priority
     // over existing, known types
-    // @ts-ignore
     mime.types = { ...types, ...mimeTypes };
   }
 
-  /**
-   * @type {Context<RequestInternal, ResponseInternal>}
-   */
   const context = {
     state: false,
     // eslint-disable-next-line no-undefined
@@ -189,9 +178,8 @@ function wdm(compiler, options = {}) {
 
   setupOutputFileSystem(context);
 
-  // Start watching
-  if (/** @type {Compiler} */ (context.compiler).watching) {
-    context.watching = /** @type {Compiler} */ (context.compiler).watching;
+  if ((context.compiler).watching) {
+    context.watching = (context.compiler).watching;
   } else {
     /**
      * @type {WatchOptions | WatchOptions[]}
@@ -243,37 +231,28 @@ function wdm(compiler, options = {}) {
     }
   }
 
-  const instance = /** @type {API<RequestInternal, ResponseInternal>} */ (
+  const instance = (
     middleware(context)
   );
 
   // API
-  /** @type {API<RequestInternal, ResponseInternal>} */
   (instance).getFilenameFromUrl =
-    /**
-     * @param {string} url
-     * @returns {string|undefined}
-     */
     (url) => getFilenameFromUrl(context, url);
 
-  /** @type {API<RequestInternal, ResponseInternal>} */
   (instance).waitUntilValid = (callback = noop) => {
     ready(context, callback);
   };
 
-  /** @type {API<RequestInternal, ResponseInternal>} */
   (instance).invalidate = (callback = noop) => {
     ready(context, callback);
 
     context.watching.invalidate();
   };
 
-  /** @type {API<RequestInternal, ResponseInternal>} */
   (instance).close = (callback = noop) => {
     context.watching.close(callback);
   };
 
-  /** @type {API<RequestInternal, ResponseInternal>} */
   (instance).context = context;
 
   return instance;

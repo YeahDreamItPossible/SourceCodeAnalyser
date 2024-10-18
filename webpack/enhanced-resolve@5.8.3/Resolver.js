@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const { AsyncSeriesBailHook, AsyncSeriesHook, SyncHook } = require("tapable");
@@ -14,8 +9,6 @@ const {
 	getType,
 	PathType
 } = require("./util/path");
-
-/** @typedef {import("./ResolverFactory").ResolveOptions} ResolveOptions */
 
 /**
  * @typedef {Object} FileSystemStats
@@ -137,10 +130,6 @@ class Resolver {
 		);
 	}
 
-	/**
-	 * @param {FileSystem} fileSystem a filesystem
-	 * @param {ResolveOptions} options options
-	 */
 	constructor(fileSystem, options) {
 		this.fileSystem = fileSystem;
 		this.options = options;
@@ -163,10 +152,8 @@ class Resolver {
 		};
 	}
 
-	/**
-	 * 根据 HookName 返回对应的 Hook
-	 * 如果该Hook不存在 则创建新的Hook并返回
-	 */
+	// 根据 HookName 返回对应的 Hook
+	// 如果 HookName 不存在 则创建 AsyncSeriesBailHook 的实例并返回
 	ensureHook(name) {
 		if (typeof name !== "string") {
 			return name;
@@ -200,6 +187,7 @@ class Resolver {
 	 * @param {string | ResolveStepHook} name hook name or hook itself
 	 * @returns {ResolveStepHook} the hook
 	 */
+	// 根据 HookName 或者 Hook 返回对应的 Hook
 	getHook(name) {
 		if (typeof name !== "string") {
 			return name;
@@ -466,7 +454,7 @@ class Resolver {
 		return getType(path) === PathType.Normal;
 	}
 
-	// 断言: 是否是
+	// 断言: 是否是代码片段
 	isPrivate(path) {
 		return getType(path) === PathType.Internal;
 	}
@@ -476,10 +464,12 @@ class Resolver {
 		return path.endsWith("/");
 	}
 
+	// 连接路径
 	join(path, request) {
 		return join(path, request);
 	}
 
+	// 标准化路径
 	normalize(path) {
 		return normalize(path);
 	}

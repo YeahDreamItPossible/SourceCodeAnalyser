@@ -1,11 +1,3 @@
-// @ts-check
-// Import types
-/** @typedef {import("./typings").HtmlTagObject} HtmlTagObject */
-/** @typedef {import("./typings").Options} HtmlWebpackOptions */
-/** @typedef {import("./typings").ProcessedOptions} ProcessedHtmlWebpackOptions */
-/** @typedef {import("./typings").TemplateParameter} TemplateParameter */
-/** @typedef {import("webpack/lib/Compiler.js")} WebpackCompiler */
-/** @typedef {import("webpack/lib/Compilation.js")} WebpackCompilation */
 'use strict';
 
 const promisify = require('util').promisify;
@@ -26,22 +18,15 @@ const { assert } = require('console');
 const fsReadFileAsync = promisify(fs.readFile);
 
 class HtmlWebpackPlugin {
-  /**
-   * @param {HtmlWebpackOptions} [options]
-   */
   constructor (options) {
-    /** @type {HtmlWebpackOptions} */
     this.userOptions = options || {};
     this.version = HtmlWebpackPlugin.version;
   }
 
   apply (compiler) {
-    // Wait for configuration preset plugions to apply all configure webpack defaults
     compiler.hooks.initialize.tap('HtmlWebpackPlugin', () => {
       const userOptions = this.userOptions;
 
-      // Default options
-      /** @type {ProcessedHtmlWebpackOptions} */
       const defaultOptions = {
         template: 'auto',
         templateContent: false,
@@ -65,58 +50,39 @@ class HtmlWebpackPlugin {
         xhtml: false
       };
 
-      /** @type {ProcessedHtmlWebpackOptions} */
       const options = Object.assign(defaultOptions, userOptions);
       this.options = options;
 
-      // Assert correct option spelling
       assert(options.scriptLoading === 'defer' || options.scriptLoading === 'blocking' || options.scriptLoading === 'module', 'scriptLoading needs to be set to "defer", "blocking" or "module"');
       assert(options.inject === true || options.inject === false || options.inject === 'head' || options.inject === 'body', 'inject needs to be set to true, false, "head" or "body');
 
-      // Default metaOptions if no template is provided
+      // 
       if (!userOptions.template && options.templateContent === false && options.meta) {
         const defaultMeta = {
-        // From https://developer.mozilla.org/en-US/docs/Mozilla/Mobile/Viewport_meta_tag
           viewport: 'width=device-width, initial-scale=1'
         };
         options.meta = Object.assign({}, options.meta, defaultMeta, userOptions.meta);
       }
 
-      // entryName to fileName conversion function
       const userOptionFilename = userOptions.filename || defaultOptions.filename;
       const filenameFunction = typeof userOptionFilename === 'function'
         ? userOptionFilename
-        // Replace '[name]' with entry name
         : (entryName) => userOptionFilename.replace(/\[name\]/g, entryName);
 
-      /** output filenames for the given entry names */
       const entryNames = Object.keys(compiler.options.entry);
       const outputFileNames = new Set((entryNames.length ? entryNames : ['main']).map(filenameFunction));
 
-      /** Option for every entry point */
       const entryOptions = Array.from(outputFileNames).map((filename) => ({
         ...options,
         filename
       }));
 
-      // Hook all options into the webpack compiler
       entryOptions.forEach((instanceOptions) => {
         hookIntoCompiler(compiler, instanceOptions, this);
       });
     });
   }
 
-  /**
-   * Once webpack is done with compiling the template into a NodeJS code this function
-   * evaluates it to generate the html result
-   *
-   * The evaluateCompilationResult is only a class function to allow spying during testing.
-   * Please change that in a further refactoring
-   *
-   * @param {string} source
-   * @param {string} templateFilename
-   * @returns {Promise<string | (() => string | Promise<string>)>}
-   */
   evaluateCompilationResult (source, publicPath, templateFilename) {
     if (!source) {
       return Promise.reject(new Error('The child compilation didn\'t provide a result'));
@@ -152,23 +118,12 @@ class HtmlWebpackPlugin {
   }
 }
 
-/**
- * connect the html-webpack-plugin to the webpack compiler lifecycle hooks
- *
- * @param {import('webpack').Compiler} compiler
- * @param {ProcessedHtmlWebpackOptions} options
- * @param {HtmlWebpackPlugin} plugin
- */
 function hookIntoCompiler (compiler, options, plugin) {
   const webpack = compiler.webpack;
-  // Instance variables to keep caching information
-  // for multiple builds
+  
   let assetJson;
-  /**
-   * store the previous generated asset to emit them even if the content did not change
-   * to support watch mode for third party plugins like the clean-webpack-plugin or the compression plugin
-   * @type {Array<{html: string, name: string}>}
-   */
+  
+  // Array<{html: string, name: string}>
   let previousEmittedAssets = [];
 
   options.template = getFullTemplatePath(options.template, compiler.context);
@@ -183,19 +138,15 @@ function hookIntoCompiler (compiler, options, plugin) {
   // generate it at correct location
   const filename = options.filename;
   if (path.resolve(filename) === path.normalize(filename)) {
-    const outputPath = /** @type {string} - Once initialized the path is always a string */(compiler.options.output.path);
+    const outputPath = (compiler.options.output.path);
     options.filename = path.relative(outputPath, filename);
   }
 
-  // Check if webpack is running in production mode
-  // @see https://github.com/webpack/webpack/blob/3366421f1784c449f415cda5930a8e445086f688/lib/WebpackOptionsDefaulter.js#L12-L14
   const isProductionLikeMode = compiler.options.mode === 'production' || !compiler.options.mode;
 
   const minify = options.minify;
   if (minify === true || (minify === 'auto' && isProductionLikeMode)) {
-    /** @type { import('html-minifier-terser').Options } */
     options.minify = {
-      // https://www.npmjs.com/package/html-minifier-terser#options-quick-reference
       collapseWhitespace: true,
       keepClosingSlash: true,
       removeComments: true,
@@ -207,25 +158,13 @@ function hookIntoCompiler (compiler, options, plugin) {
   }
 
   compiler.hooks.thisCompilation.tap('HtmlWebpackPlugin',
-    /**
-       * Hook into the webpack compilation
-       * @param {WebpackCompilation} compilation
-      */
     (compilation) => {
       compilation.hooks.processAssets.tapAsync(
         {
           name: 'HtmlWebpackPlugin',
           stage:
-          /**
-           * Generate the html after minification and dev tooling is done
-           */
           webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_INLINE
         },
-        /**
-         * Hook into the process assets hook
-         * @param {WebpackCompilation} compilationAssets
-         * @param {(err?: Error) => void} callback
-         */
         (compilationAssets, callback) => {
           // Get all entry point names for this html file
           const entryNames = Array.from(compilation.entrypoints.keys());
@@ -325,7 +264,6 @@ function hookIntoCompiler (compiler, options, plugin) {
                 : Promise.reject(new Error('Child compilation contained no compiledEntry'));
             });
           const templateExectutionPromise = Promise.all([assetsPromise, assetTagGroupsPromise, templateEvaluationPromise])
-          // Execute the template
             .then(([assetsHookResult, assetTags, compilationResult]) => typeof compilationResult !== 'function'
               ? compilationResult
               : executeTemplate(compilationResult, assetsHookResult.assets, { headTags: assetTags.headTags, bodyTags: assetTags.bodyTags }, compilation));
@@ -380,22 +318,6 @@ function hookIntoCompiler (compiler, options, plugin) {
         });
     });
 
-  /**
-   * Generate the template parameters for the template function
-   * @param {WebpackCompilation} compilation
-   * @param {{
-      publicPath: string,
-      js: Array<string>,
-      css: Array<string>,
-      manifest?: string,
-      favicon?: string
-    }} assets
-   * @param {{
-       headTags: HtmlTagObject[],
-       bodyTags: HtmlTagObject[]
-     }} assetTags
-   * @returns {Promise<{[key: any]: any}>}
-   */
   function getTemplateParameters (compilation, assets, assetTags) {
     const templateParameters = options.templateParameters;
     if (templateParameters === false) {
@@ -421,25 +343,6 @@ function hookIntoCompiler (compiler, options, plugin) {
       .then(() => templateParameterFunction(compilation, assets, preparedAssetTags, options));
   }
 
-  /**
-   * This function renders the actual html by executing the template function
-   *
-   * @param {(templateParameters) => string | Promise<string>} templateFunction
-   * @param {{
-      publicPath: string,
-      js: Array<string>,
-      css: Array<string>,
-      manifest?: string,
-      favicon?: string
-    }} assets
-   * @param {{
-       headTags: HtmlTagObject[],
-       bodyTags: HtmlTagObject[]
-     }} assetTags
-   * @param {WebpackCompilation} compilation
-   *
-   * @returns Promise<string>
-   */
   function executeTemplate (templateFunction, assets, assetTags, compilation) {
     // Template processing
     const templateParamsPromise = getTemplateParameters(compilation, assets, assetTags);
@@ -455,20 +358,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     });
   }
 
-  /**
-   * Html Post processing
-   *
-   * @param {any} html
-   * The input html
-   * @param {any} assets
-   * @param {{
-       headTags: HtmlTagObject[],
-       bodyTags: HtmlTagObject[]
-     }} assetTags
-   * The asset tags to inject
-   *
-   * @returns {Promise<string>}
-   */
   function postProcessHtml (html, assets, assetTags) {
     if (typeof html !== 'string') {
       return Promise.reject(new Error('Expected html to be a string but got ' + JSON.stringify(html)));
@@ -480,13 +369,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     return Promise.resolve(htmlAfterMinification);
   }
 
-  /*
-   * Pushes the content of the given filename to the compilation assets
-   * @param {string} filename
-   * @param {WebpackCompilation} compilation
-   *
-   * @returns {string} file basename
-   */
   function addFileToAssets (filename, compilation) {
     filename = path.resolve(compilation.compiler.context, filename);
     return fsReadFileAsync(filename)
@@ -500,16 +382,6 @@ function hookIntoCompiler (compiler, options, plugin) {
       });
   }
 
-  /**
-   * Replace [contenthash] in filename
-   *
-   * @see https://survivejs.com/webpack/optimizing/adding-hashes-to-filenames/
-   *
-   * @param {string} filename
-   * @param {string|Buffer} fileContent
-   * @param {WebpackCompilation} compilation
-   * @returns {{ path: string, info: {} }}
-   */
   function replacePlaceholdersInFilename (filename, fileContent, compilation) {
     if (/\[\\*([\w:]+)\\*\]/i.test(filename) === false) {
       return { path: filename, info: {} };
@@ -532,12 +404,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     );
   }
 
-  /**
-   * Helper to sort chunks
-   * @param {string[]} entryNames
-   * @param {string|((entryNameA: string, entryNameB: string) => number)} sortMode
-   * @param {WebpackCompilation} compilation
-   */
   function sortEntryChunks (entryNames, sortMode, compilation) {
     // Custom function
     if (typeof sortMode === 'function') {
@@ -550,12 +416,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     throw new Error('"' + sortMode + '" is not a valid chunk sort mode');
   }
 
-  /**
-   * Return all chunks from the compilation result which match the exclude and include filters
-   * @param {any} chunks
-   * @param {string[]|'all'} includedChunks
-   * @param {string[]} excludedChunks
-   */
   function filterChunks (chunks, includedChunks, excludedChunks) {
     return chunks.filter(chunkName => {
       // Skip if the chunks should be filtered and the given chunk was not added explicity
@@ -571,23 +431,9 @@ function hookIntoCompiler (compiler, options, plugin) {
     });
   }
 
-  /**
-   * Generate the relative or absolute base url to reference images, css, and javascript files
-   * from within the html file - the publicPath
-   *
-   * @param {WebpackCompilation} compilation
-   * @param {string} childCompilationOutputName
-   * @param {string | 'auto'} customPublicPath
-   * @returns {string}
-   */
   function getPublicPath (compilation, childCompilationOutputName, customPublicPath) {
     const compilationHash = compilation.hash;
 
-    /**
-     * @type {string} the configured public path to the asset root
-     * if a path publicPath is set in the current webpack config use it otherwise
-     * fallback to a relative path
-     */
     const webpackPublicPath = compilation.getAssetPath(compilation.outputOptions.publicPath, { hash: compilationHash });
 
     // Webpack 5 introduced "auto" as default value
@@ -612,31 +458,8 @@ function hookIntoCompiler (compiler, options, plugin) {
     return publicPath;
   }
 
-  /**
-   * The htmlWebpackPluginAssets extracts the asset information of a webpack compilation
-   * for all given entry names
-   * @param {WebpackCompilation} compilation
-   * @param {string[]} entryNames
-   * @param {string | 'auto'} publicPath
-   * @returns {{
-      publicPath: string,
-      js: Array<string>,
-      css: Array<string>,
-      manifest?: string,
-      favicon?: string
-    }}
-   */
   function htmlWebpackPluginAssets (compilation, entryNames, publicPath) {
     const compilationHash = compilation.hash;
-    /**
-     * @type {{
-        publicPath: string,
-        js: Array<string>,
-        css: Array<string>,
-        manifest?: string,
-        favicon?: string
-      }}
-     */
     const assets = {
       // The public path
       publicPath,
@@ -707,15 +530,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     return assets;
   }
 
-  /**
-   * Converts a favicon file from disk to a webpack resource
-   * and returns the url to the resource
-   *
-   * @param {string|false} faviconFilePath
-   * @param {WebpackCompilation} compilation
-   * @param {string} publicPath
-   * @returns {Promise<string|undefined>}
-   */
   function getFaviconPublicPath (faviconFilePath, compilation, publicPath) {
     if (!faviconFilePath) {
       return Promise.resolve(undefined);
@@ -730,11 +544,6 @@ function hookIntoCompiler (compiler, options, plugin) {
       });
   }
 
-  /**
-   * Generate all tags script for the given file paths
-   * @param {Array<string>} jsAssets
-   * @returns {Array<HtmlTagObject>}
-   */
   function generatedScriptTags (jsAssets) {
     return jsAssets.map(scriptAsset => ({
       tagName: 'script',
@@ -748,11 +557,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     }));
   }
 
-  /**
-   * Generate all style tags for the given file paths
-   * @param {Array<string>} cssAssets
-   * @returns {Array<HtmlTagObject>}
-   */
   function generateStyleTags (cssAssets) {
     return cssAssets.map(styleAsset => ({
       tagName: 'link',
@@ -765,14 +569,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     }));
   }
 
-  /**
-   * Generate an optional base tag
-   * @param { false
-            | string
-            | {[attributeName: string]: string} // attributes e.g. { href:"http://example.com/page.html" target:"_blank" }
-            } baseOption
-  * @returns {Array<HtmlTagObject>}
-  */
   function generateBaseTag (baseOption) {
     if (baseOption === false) {
       return [];
@@ -788,16 +584,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     }
   }
 
-  /**
-   * Generate all meta tags for the given meta configuration
-   * @param {false | {
-            [name: string]:
-              false // disabled
-              | string // name content pair e.g. {viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no'}`
-              | {[attributeName: string]: string|boolean} // custom properties e.g. { name:"viewport" content:"width=500, initial-scale=1" }
-        }} metaOptions
-  * @returns {Array<HtmlTagObject>}
-  */
   function generatedMetaTags (metaOptions) {
     if (metaOptions === false) {
       return [];
@@ -829,11 +615,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     });
   }
 
-  /**
-   * Generate a favicon tag for the given file path
-   * @param {string| undefined} faviconPath
-   * @returns {Array<HtmlTagObject>}
-   */
   function generateFaviconTags (faviconPath) {
     if (!faviconPath) {
       return [];
@@ -849,20 +630,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     }];
   }
 
-  /**
-   * Group assets to head and bottom tags
-   *
-   * @param {{
-      scripts: Array<HtmlTagObject>;
-      styles: Array<HtmlTagObject>;
-      meta: Array<HtmlTagObject>;
-    }} assetTags
-  * @param {"body" | "head"} scriptTarget
-  * @returns {{
-      headTags: Array<HtmlTagObject>;
-      bodyTags: Array<HtmlTagObject>;
-    }}
-  */
   function generateAssetGroups (assetTags, scriptTarget) {
     /** @type {{ headTags: Array<HtmlTagObject>; bodyTags: Array<HtmlTagObject>; }} */
     const result = {
@@ -885,13 +652,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     return result;
   }
 
-  /**
-   * Add toString methods for easier rendering
-   * inside the template
-   *
-   * @param {Array<HtmlTagObject>} assetTagGroup
-   * @returns {Array<HtmlTagObject>}
-   */
   function prepareAssetTagGroupForRendering (assetTagGroup) {
     const xhtml = options.xhtml;
     return HtmlTagArray.from(assetTagGroup.map((assetTag) => {
@@ -917,6 +677,7 @@ function hookIntoCompiler (compiler, options, plugin) {
    *
    * @returns {string}
    */
+  // 
   function injectAssetsIntoHtml (html, assets, assetTags) {
     const htmlRegExp = /(<html[^>]*>)/i;
     const headRegExp = /(<\/head\s*>)/i;
@@ -961,12 +722,6 @@ function hookIntoCompiler (compiler, options, plugin) {
     return html;
   }
 
-  /**
-   * Appends a cache busting hash to the query string of the url
-   * E.g. http://localhost:8080/ -> http://localhost:8080/?50c9096ba6183fd728eeb065a26ec175
-   * @param {string} url
-   * @param {string} hash
-   */
   function appendHash (url, hash) {
     if (!url) {
       return url;
@@ -1009,13 +764,7 @@ function hookIntoCompiler (compiler, options, plugin) {
     return encodedUrlPath + queryString;
   }
 
-  /**
-   * Helper to return the absolute template path with a fallback loader
-   * @param {string} template
-   * The path to the template e.g. './index.html'
-   * @param {string} context
-   * The webpack base resolution path for relative paths e.g. process.cwd()
-   */
+  // 返回 模板文件 的绝对路径
   function getFullTemplatePath (template, context) {
     if (template === 'auto') {
       template = path.resolve(context, 'src/index.ejs');
@@ -1027,21 +776,12 @@ function hookIntoCompiler (compiler, options, plugin) {
     if (template.indexOf('!') === -1) {
       template = require.resolve('./lib/loader.js') + '!' + path.resolve(context, template);
     }
-    // Resolve template path
     return template.replace(
       /([!])([^/\\][^!?]+|[^/\\!?])($|\?[^!?\n]+$)/,
       (match, prefix, filepath, postfix) => prefix + path.resolve(filepath) + postfix);
   }
 
-  /**
-   * Minify the given string using html-minifier-terser
-   *
-   * As this is a breaking change to html-webpack-plugin 3.x
-   * provide an extended error message to explain how to get back
-   * to the old behaviour
-   *
-   * @param {string} html
-   */
+  // 压缩 HTML
   function minifyHtml (html) {
     if (typeof options.minify !== 'object') {
       return html;
@@ -1069,6 +809,7 @@ function hookIntoCompiler (compiler, options, plugin) {
    * Helper to return a sorted unique array of all asset files out of the
    * asset object
    */
+  // 
   function getAssetFiles (assets) {
     const files = _.uniq(Object.keys(assets).filter(assetType => assetType !== 'chunks' && assets[assetType]).reduce((files, assetType) => files.concat(assets[assetType]), []));
     files.sort();
@@ -1076,26 +817,6 @@ function hookIntoCompiler (compiler, options, plugin) {
   }
 }
 
-/**
- * The default for options.templateParameter
- * Generate the template parameters
- *
- * Generate the template parameters for the template function
- * @param {WebpackCompilation} compilation
- * @param {{
-   publicPath: string,
-   js: Array<string>,
-   css: Array<string>,
-   manifest?: string,
-   favicon?: string
- }} assets
- * @param {{
-     headTags: HtmlTagObject[],
-     bodyTags: HtmlTagObject[]
-   }} assetTags
- * @param {ProcessedHtmlWebpackOptions} options
- * @returns {TemplateParameter}
- */
 function templateParametersGenerator (compilation, assets, assetTags, options) {
   return {
     compilation: compilation,
@@ -1108,17 +829,7 @@ function templateParametersGenerator (compilation, assets, assetTags, options) {
   };
 }
 
-// Statics:
-/**
- * The major version number of this plugin
- */
 HtmlWebpackPlugin.version = 5;
-
-/**
- * A static helper to get the hooks for this plugin
- *
- * Usage: HtmlWebpackPlugin.getHooks(compilation).HOOK_NAME.tapAsync('YourPluginName', () => { ... });
- */
 HtmlWebpackPlugin.getHooks = getHtmlWebpackPluginHooks;
 HtmlWebpackPlugin.createHtmlTagObject = createHtmlTagObject;
 

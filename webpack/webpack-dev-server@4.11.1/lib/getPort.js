@@ -1,11 +1,5 @@
 "use strict";
 
-/*
- * Based on the packages get-port https://www.npmjs.com/package/get-port
- * and portfinder https://www.npmjs.com/package/portfinder
- * The code structure is similar to get-port, but it searches
- * ports deterministically like portfinder
- */
 const net = require("net");
 const os = require("os");
 

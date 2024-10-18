@@ -1,8 +1,3 @@
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-
 "use strict";
 
 const path = require("path");
@@ -20,9 +15,10 @@ const CHAR_COLON = ":".charCodeAt(0);
 const posixNormalize = path.posix.normalize;
 const winNormalize = path.win32.normalize;
 
+// 路径类型
 const PathType = Object.freeze({
 	Empty: 0, // 空路径
-	Normal: 1, // 
+	Normal: 1, // 标准路径
 	Relative: 2, // 相对路径
 	AbsoluteWin: 3, // window下的绝对路径
 	AbsolutePosix: 4, // 可移植操作下的绝对路径
@@ -34,6 +30,7 @@ exports.PathType = PathType;
  * @param {string} p a path
  * @returns {PathType} type of path
  */
+// 
 const getType = p => {
 	switch (p.length) {
 		case 0:
@@ -150,6 +147,7 @@ exports.normalize = normalize;
  * @param {string | undefined} request the request path
  * @returns {string} the joined path
  */
+// 连接路径
 const join = (rootPath, request) => {
 	if (!request) return normalize(rootPath);
 	const requestType = getType(request);

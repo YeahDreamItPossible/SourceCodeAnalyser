@@ -1,33 +1,15 @@
 const fs = require("fs");
 const path = require("path");
 
-/** @typedef {import("webpack").Compiler} Compiler */
-/** @typedef {import("webpack").MultiCompiler} MultiCompiler */
-/** @typedef {import("webpack").Compilation} Compilation */
-/** @typedef {import("../index.js").IncomingMessage} IncomingMessage */
-/** @typedef {import("../index.js").ServerResponse} ServerResponse */
-
-/**
- * @template {IncomingMessage} Request
- * @template {ServerResponse} Response
- * @param {import("../index.js").Context<Request, Response>} context
- */
+// 将  写入到 磁盘 中
 function setupWriteToDisk(context) {
-  /**
-   * @type {Compiler[]}
-   */
   const compilers =
-    /** @type {MultiCompiler} */
     (context.compiler).compilers || [context.compiler];
 
   for (const compiler of compilers) {
     compiler.hooks.emit.tap(
       "DevMiddleware",
-      /**
-       * @param {Compilation} compilation
-       */
       (compilation) => {
-        // @ts-ignore
         if (compiler.hasWebpackDevMiddlewareAssetEmittedCallback) {
           return;
         }
@@ -35,16 +17,9 @@ function setupWriteToDisk(context) {
         compiler.hooks.assetEmitted.tapAsync(
           "DevMiddleware",
           (file, info, callback) => {
-            /**
-             * @type {string}
-             */
             let targetPath;
-            /**
-             * @type {Buffer}
-             */
             let content;
 
-            // webpack@5
             if (info.compilation) {
               ({ targetPath, content } = info);
             } else {
@@ -107,7 +82,7 @@ function setupWriteToDisk(context) {
           }
         );
 
-        // @ts-ignore
+        // 标识:
         compiler.hasWebpackDevMiddlewareAssetEmittedCallback = true;
       }
     );
