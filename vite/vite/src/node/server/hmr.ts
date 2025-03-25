@@ -1,97 +1,97 @@
-import fsp from 'node:fs/promises'
-import path from 'node:path'
-import { EventEmitter } from 'node:events'
-import colors from 'picocolors'
-import type { CustomPayload, HotPayload, Update } from 'types/hmrPayload'
-import type { RollupError } from 'rollup'
-import { CLIENT_DIR } from '../constants'
-import { createDebugger, normalizePath } from '../utils'
-import type { InferCustomEventPayload, ViteDevServer } from '..'
-import { getHookHandler } from '../plugins'
-import { isCSSRequest } from '../plugins/css'
-import { isExplicitImportRequired } from '../plugins/importAnalysis'
-import { getEnvFilesForMode } from '../env'
-import type { Environment } from '../environment'
-import { withTrailingSlash, wrapId } from '../../shared/utils'
-import type { Plugin } from '../plugin'
+import fsp from "node:fs/promises";
+import path from "node:path";
+import { EventEmitter } from "node:events";
+import colors from "picocolors";
+import type { CustomPayload, HotPayload, Update } from "types/hmrPayload";
+import type { RollupError } from "rollup";
+import { CLIENT_DIR } from "../constants";
+import { createDebugger, normalizePath } from "../utils";
+import type { InferCustomEventPayload, ViteDevServer } from "..";
+import { getHookHandler } from "../plugins";
+import { isCSSRequest } from "../plugins/css";
+import { isExplicitImportRequired } from "../plugins/importAnalysis";
+import { getEnvFilesForMode } from "../env";
+import type { Environment } from "../environment";
+import { withTrailingSlash, wrapId } from "../../shared/utils";
+import type { Plugin } from "../plugin";
 import {
   ignoreDeprecationWarnings,
   warnFutureDeprecation,
-} from '../deprecations'
-import type { EnvironmentModuleNode } from './moduleGraph'
-import type { ModuleNode } from './mixedModuleGraph'
-import type { DevEnvironment } from './environment'
-import { prepareError } from './middlewares/error'
-import type { HttpServer } from '.'
-import { restartServerWithUrls } from '.'
+} from "../deprecations";
+import type { EnvironmentModuleNode } from "./moduleGraph";
+import type { ModuleNode } from "./mixedModuleGraph";
+import type { DevEnvironment } from "./environment";
+import { prepareError } from "./middlewares/error";
+import type { HttpServer } from ".";
+import { restartServerWithUrls } from ".";
 
-export const debugHmr = createDebugger('vite:hmr')
+export const debugHmr = createDebugger("vite:hmr");
 
-const whitespaceRE = /\s/
+const whitespaceRE = /\s/;
 
-const normalizedClientDir = normalizePath(CLIENT_DIR)
+const normalizedClientDir = normalizePath(CLIENT_DIR);
 
 export interface HmrOptions {
-  protocol?: string
-  host?: string
-  port?: number
-  clientPort?: number
-  path?: string
-  timeout?: number
-  overlay?: boolean
-  server?: HttpServer
+  protocol?: string;
+  host?: string;
+  port?: number;
+  clientPort?: number;
+  path?: string;
+  timeout?: number;
+  overlay?: boolean;
+  server?: HttpServer;
 }
 
 export interface HotUpdateOptions {
-  type: 'create' | 'update' | 'delete'
-  file: string
-  timestamp: number
-  modules: Array<EnvironmentModuleNode>
-  read: () => string | Promise<string>
-  server: ViteDevServer
+  type: "create" | "update" | "delete";
+  file: string;
+  timestamp: number;
+  modules: Array<EnvironmentModuleNode>;
+  read: () => string | Promise<string>;
+  server: ViteDevServer;
 
   /**
    * @deprecated use this.environment in the hotUpdate hook instead
    **/
-  environment: DevEnvironment
+  environment: DevEnvironment;
 }
 
 export interface HmrContext {
-  file: string
-  timestamp: number
-  modules: Array<ModuleNode>
-  read: () => string | Promise<string>
-  server: ViteDevServer
+  file: string;
+  timestamp: number;
+  modules: Array<ModuleNode>;
+  read: () => string | Promise<string>;
+  server: ViteDevServer;
 }
 
 interface PropagationBoundary {
-  boundary: EnvironmentModuleNode
-  acceptedVia: EnvironmentModuleNode
-  isWithinCircularImport: boolean
+  boundary: EnvironmentModuleNode;
+  acceptedVia: EnvironmentModuleNode;
+  isWithinCircularImport: boolean;
 }
 
 export interface HotChannelClient {
   /**
    * Send event to the client
    */
-  send(payload: HotPayload): void
+  send(payload: HotPayload): void;
   /**
    * Send custom event
    */
-  send(event: string, payload?: CustomPayload['data']): void
+  send(event: string, payload?: CustomPayload["data"]): void;
 }
 /** @deprecated use `HotChannelClient` instead */
-export type HMRBroadcasterClient = HotChannelClient
+export type HMRBroadcasterClient = HotChannelClient;
 
 export interface HotChannel {
   /**
    * Broadcast events to all clients
    */
-  send(payload: HotPayload): void
+  send(payload: HotPayload): void;
   /**
    * Send custom event
    */
-  send<T extends string>(event: T, payload?: InferCustomEventPayload<T>): void
+  send<T extends string>(event: T, payload?: InferCustomEventPayload<T>): void;
   /**
    * Handle custom event emitted by `import.meta.hot.send`
    */
@@ -101,140 +101,141 @@ export interface HotChannel {
       data: InferCustomEventPayload<T>,
       client: HotChannelClient,
       ...args: any[]
-    ) => void,
-  ): void
-  on(event: 'connection', listener: () => void): void
+    ) => void
+  ): void;
+  on(event: "connection", listener: () => void): void;
   /**
    * Unregister event listener
    */
-  off(event: string, listener: Function): void
+  off(event: string, listener: Function): void;
   /**
    * Start listening for messages
    */
-  listen(): void
+  listen(): void;
   /**
    * Disconnect all clients, called when server is closed or restarted.
    */
-  close(): Promise<unknown> | void
+  close(): Promise<unknown> | void;
 }
 /** @deprecated use `HotChannel` instead */
-export type HMRChannel = HotChannel
+export type HMRChannel = HotChannel;
 
 export function getShortName(file: string, root: string): string {
   return file.startsWith(withTrailingSlash(root))
     ? path.posix.relative(root, file)
-    : file
+    : file;
 }
 
 export function getSortedPluginsByHotUpdateHook(
-  plugins: readonly Plugin[],
+  plugins: readonly Plugin[]
 ): Plugin[] {
-  const sortedPlugins: Plugin[] = []
+  const sortedPlugins: Plugin[] = [];
   // Use indexes to track and insert the ordered plugins directly in the
   // resulting array to avoid creating 3 extra temporary arrays per hook
   let pre = 0,
     normal = 0,
-    post = 0
+    post = 0;
   for (const plugin of plugins) {
-    const hook = plugin['hotUpdate'] ?? plugin['handleHotUpdate']
+    const hook = plugin["hotUpdate"] ?? plugin["handleHotUpdate"];
     if (hook) {
-      if (typeof hook === 'object') {
-        if (hook.order === 'pre') {
-          sortedPlugins.splice(pre++, 0, plugin)
-          continue
+      if (typeof hook === "object") {
+        if (hook.order === "pre") {
+          sortedPlugins.splice(pre++, 0, plugin);
+          continue;
         }
-        if (hook.order === 'post') {
-          sortedPlugins.splice(pre + normal + post++, 0, plugin)
-          continue
+        if (hook.order === "post") {
+          sortedPlugins.splice(pre + normal + post++, 0, plugin);
+          continue;
         }
       }
-      sortedPlugins.splice(pre + normal++, 0, plugin)
+      sortedPlugins.splice(pre + normal++, 0, plugin);
     }
   }
 
-  return sortedPlugins
+  return sortedPlugins;
 }
 
-const sortedHotUpdatePluginsCache = new WeakMap<Environment, Plugin[]>()
+const sortedHotUpdatePluginsCache = new WeakMap<Environment, Plugin[]>();
 function getSortedHotUpdatePlugins(environment: Environment): Plugin[] {
-  let sortedPlugins = sortedHotUpdatePluginsCache.get(environment) as Plugin[]
+  let sortedPlugins = sortedHotUpdatePluginsCache.get(environment) as Plugin[];
   if (!sortedPlugins) {
-    sortedPlugins = getSortedPluginsByHotUpdateHook(environment.plugins)
-    sortedHotUpdatePluginsCache.set(environment, sortedPlugins)
+    sortedPlugins = getSortedPluginsByHotUpdateHook(environment.plugins);
+    sortedHotUpdatePluginsCache.set(environment, sortedPlugins);
   }
-  return sortedPlugins
+  return sortedPlugins;
 }
 
+// 处理 热更新
 export async function handleHMRUpdate(
-  type: 'create' | 'delete' | 'update',
+  type: "create" | "delete" | "update",
   file: string,
-  server: ViteDevServer,
+  server: ViteDevServer
 ): Promise<void> {
-  const { config } = server
-  const mixedModuleGraph = ignoreDeprecationWarnings(() => server.moduleGraph)
+  const { config } = server;
+  const mixedModuleGraph = ignoreDeprecationWarnings(() => server.moduleGraph);
 
-  const environments = Object.values(server.environments)
-  const shortFile = getShortName(file, config.root)
+  const environments = Object.values(server.environments);
+  const shortFile = getShortName(file, config.root);
 
-  const isConfig = file === config.configFile
+  const isConfig = file === config.configFile;
   const isConfigDependency = config.configFileDependencies.some(
-    (name) => file === name,
-  )
+    (name) => file === name
+  );
 
   const isEnv =
     config.inlineConfig.envFile !== false &&
-    getEnvFilesForMode(config.mode, config.envDir).includes(file)
+    getEnvFilesForMode(config.mode, config.envDir).includes(file);
   if (isConfig || isConfigDependency || isEnv) {
     // auto restart server
-    debugHmr?.(`[config change] ${colors.dim(shortFile)}`)
+    debugHmr?.(`[config change] ${colors.dim(shortFile)}`);
     config.logger.info(
       colors.green(
         `${normalizePath(
-          path.relative(process.cwd(), file),
-        )} changed, restarting server...`,
+          path.relative(process.cwd(), file)
+        )} changed, restarting server...`
       ),
-      { clear: true, timestamp: true },
-    )
+      { clear: true, timestamp: true }
+    );
     try {
-      await restartServerWithUrls(server)
+      await restartServerWithUrls(server);
     } catch (e) {
-      config.logger.error(colors.red(e))
+      config.logger.error(colors.red(e));
     }
-    return
+    return;
   }
 
-  debugHmr?.(`[file change] ${colors.dim(shortFile)}`)
+  debugHmr?.(`[file change] ${colors.dim(shortFile)}`);
 
   // (dev only) the client itself cannot be hot updated.
   if (file.startsWith(withTrailingSlash(normalizedClientDir))) {
     environments.forEach(({ hot }) =>
       hot.send({
-        type: 'full-reload',
-        path: '*',
+        type: "full-reload",
+        path: "*",
         triggeredBy: path.resolve(config.root, file),
-      }),
-    )
-    return
+      })
+    );
+    return;
   }
 
-  const timestamp = Date.now()
+  const timestamp = Date.now();
   const contextMeta = {
     type,
     file,
     timestamp,
     read: () => readModifiedFile(file),
     server,
-  }
+  };
   const hotMap = new Map<
     Environment,
     { options: HotUpdateOptions; error?: Error }
-  >()
+  >();
 
   for (const environment of Object.values(server.environments)) {
-    const mods = new Set(environment.moduleGraph.getModulesByFile(file))
-    if (type === 'create') {
+    const mods = new Set(environment.moduleGraph.getModulesByFile(file));
+    if (type === "create") {
       for (const mod of environment.moduleGraph._hasResolveFailedErrorModules) {
-        mods.add(mod)
+        mods.add(mod);
       }
     }
     const options = {
@@ -242,165 +243,167 @@ export async function handleHMRUpdate(
       modules: [...mods],
       // later on hotUpdate will be called for each runtime with a new HotUpdateContext
       environment,
-    }
-    hotMap.set(environment, { options })
+    };
+    hotMap.set(environment, { options });
   }
 
-  const mixedMods = new Set(mixedModuleGraph.getModulesByFile(file))
+  const mixedMods = new Set(mixedModuleGraph.getModulesByFile(file));
 
   const mixedHmrContext: HmrContext = {
     ...contextMeta,
     modules: [...mixedMods],
-  }
+  };
 
-  const clientEnvironment = server.environments.client
-  const ssrEnvironment = server.environments.ssr
-  const clientContext = { environment: clientEnvironment }
-  const clientHotUpdateOptions = hotMap.get(clientEnvironment)!.options
-  const ssrHotUpdateOptions = hotMap.get(ssrEnvironment)?.options
+  const clientEnvironment = server.environments.client;
+  const ssrEnvironment = server.environments.ssr;
+  const clientContext = { environment: clientEnvironment };
+  const clientHotUpdateOptions = hotMap.get(clientEnvironment)!.options;
+  const ssrHotUpdateOptions = hotMap.get(ssrEnvironment)?.options;
   try {
     for (const plugin of getSortedHotUpdatePlugins(
-      server.environments.client,
+      server.environments.client
     )) {
       if (plugin.hotUpdate) {
         const filteredModules = await getHookHandler(plugin.hotUpdate).call(
           clientContext,
-          clientHotUpdateOptions,
-        )
+          clientHotUpdateOptions
+        );
         if (filteredModules) {
-          clientHotUpdateOptions.modules = filteredModules
+          clientHotUpdateOptions.modules = filteredModules;
           // Invalidate the hmrContext to force compat modules to be updated
           mixedHmrContext.modules = mixedHmrContext.modules.filter(
             (mixedMod) =>
               filteredModules.some((mod) => mixedMod.id === mod.id) ||
               ssrHotUpdateOptions?.modules.some(
-                (ssrMod) => ssrMod.id === mixedMod.id,
-              ),
-          )
+                (ssrMod) => ssrMod.id === mixedMod.id
+              )
+          );
           mixedHmrContext.modules.push(
             ...filteredModules
               .filter(
                 (mod) =>
                   !mixedHmrContext.modules.some(
-                    (mixedMod) => mixedMod.id === mod.id,
-                  ),
+                    (mixedMod) => mixedMod.id === mod.id
+                  )
               )
               .map((mod) =>
-                mixedModuleGraph.getBackwardCompatibleModuleNode(mod),
-              ),
-          )
+                mixedModuleGraph.getBackwardCompatibleModuleNode(mod)
+              )
+          );
         }
-      } else if (type === 'update') {
+      } else if (type === "update") {
         warnFutureDeprecation(
           config,
-          'removePluginHookHandleHotUpdate',
+          "removePluginHookHandleHotUpdate",
           `Used in plugin "${plugin.name}".`,
-          false,
-        )
+          false
+        );
         // later on, we'll need: if (runtime === 'client')
         // Backward compatibility with mixed client and ssr moduleGraph
         const filteredModules = await getHookHandler(plugin.handleHotUpdate!)(
-          mixedHmrContext,
-        )
+          mixedHmrContext
+        );
         if (filteredModules) {
-          mixedHmrContext.modules = filteredModules
+          mixedHmrContext.modules = filteredModules;
           clientHotUpdateOptions.modules =
             clientHotUpdateOptions.modules.filter((mod) =>
-              filteredModules.some((mixedMod) => mod.id === mixedMod.id),
-            )
+              filteredModules.some((mixedMod) => mod.id === mixedMod.id)
+            );
           clientHotUpdateOptions.modules.push(
             ...(filteredModules
               .filter(
                 (mixedMod) =>
                   !clientHotUpdateOptions.modules.some(
-                    (mod) => mod.id === mixedMod.id,
-                  ),
+                    (mod) => mod.id === mixedMod.id
+                  )
               )
               .map((mixedMod) => mixedMod._clientModule)
-              .filter(Boolean) as EnvironmentModuleNode[]),
-          )
+              .filter(Boolean) as EnvironmentModuleNode[])
+          );
           if (ssrHotUpdateOptions) {
             ssrHotUpdateOptions.modules = ssrHotUpdateOptions.modules.filter(
               (mod) =>
-                filteredModules.some((mixedMod) => mod.id === mixedMod.id),
-            )
+                filteredModules.some((mixedMod) => mod.id === mixedMod.id)
+            );
             ssrHotUpdateOptions.modules.push(
               ...(filteredModules
                 .filter(
                   (mixedMod) =>
                     !ssrHotUpdateOptions.modules.some(
-                      (mod) => mod.id === mixedMod.id,
-                    ),
+                      (mod) => mod.id === mixedMod.id
+                    )
                 )
                 .map((mixedMod) => mixedMod._ssrModule)
-                .filter(Boolean) as EnvironmentModuleNode[]),
-            )
+                .filter(Boolean) as EnvironmentModuleNode[])
+            );
           }
         }
       }
     }
   } catch (error) {
-    hotMap.get(server.environments.client)!.error = error
+    hotMap.get(server.environments.client)!.error = error;
   }
 
   for (const environment of Object.values(server.environments)) {
-    if (environment.name === 'client') continue
-    const hot = hotMap.get(environment)!
-    const environmentThis = { environment }
+    if (environment.name === "client") continue;
+    const hot = hotMap.get(environment)!;
+    const environmentThis = { environment };
     try {
       for (const plugin of getSortedHotUpdatePlugins(environment)) {
         if (plugin.hotUpdate) {
           const filteredModules = await getHookHandler(plugin.hotUpdate).call(
             environmentThis,
-            hot.options,
-          )
+            hot.options
+          );
           if (filteredModules) {
-            hot.options.modules = filteredModules
+            hot.options.modules = filteredModules;
           }
         }
       }
     } catch (error) {
-      hot.error = error
+      hot.error = error;
     }
   }
 
   async function hmr(environment: DevEnvironment) {
     try {
-      const { options, error } = hotMap.get(environment)!
+      const { options, error } = hotMap.get(environment)!;
       if (error) {
-        throw error
+        throw error;
       }
       if (!options.modules.length) {
         // html file cannot be hot updated
-        if (file.endsWith('.html')) {
+        if (file.endsWith(".html")) {
           environment.logger.info(
             colors.green(`page reload `) + colors.dim(shortFile),
             {
               clear: true,
               timestamp: true,
-            },
-          )
+            }
+          );
           environment.hot.send({
-            type: 'full-reload',
+            type: "full-reload",
             path: config.server.middlewareMode
-              ? '*'
-              : '/' + normalizePath(path.relative(config.root, file)),
-          })
+              ? "*"
+              : "/" + normalizePath(path.relative(config.root, file)),
+          });
         } else {
           // loaded but not in the module graph, probably not js
           debugHmr?.(
-            `(${environment.name}) [no modules matched] ${colors.dim(shortFile)}`,
-          )
+            `(${environment.name}) [no modules matched] ${colors.dim(
+              shortFile
+            )}`
+          );
         }
-        return
+        return;
       }
 
-      updateModules(environment, shortFile, options.modules, timestamp)
+      updateModules(environment, shortFile, options.modules, timestamp);
     } catch (err) {
       environment.hot.send({
-        type: 'error',
+        type: "error",
         err: prepareError(err),
-      })
+      });
     }
   }
 
@@ -410,48 +413,48 @@ export async function handleHMRUpdate(
       // Run HMR in parallel for all environments by default
       return Promise.all(
         Object.values(server.environments).map((environment) =>
-          hmr(environment),
-        ),
-      )
-    })
+          hmr(environment)
+        )
+      );
+    });
 
-  await hotUpdateEnvironments(server, hmr)
+  await hotUpdateEnvironments(server, hmr);
 }
 
-type HasDeadEnd = boolean
+type HasDeadEnd = boolean;
 
 export function updateModules(
   environment: DevEnvironment,
   file: string,
   modules: EnvironmentModuleNode[],
   timestamp: number,
-  afterInvalidation?: boolean,
+  afterInvalidation?: boolean
 ): void {
-  const { hot } = environment
-  const updates: Update[] = []
-  const invalidatedModules = new Set<EnvironmentModuleNode>()
-  const traversedModules = new Set<EnvironmentModuleNode>()
+  const { hot } = environment;
+  const updates: Update[] = [];
+  const invalidatedModules = new Set<EnvironmentModuleNode>();
+  const traversedModules = new Set<EnvironmentModuleNode>();
   // Modules could be empty if a root module is invalidated via import.meta.hot.invalidate()
-  let needFullReload: HasDeadEnd = modules.length === 0
+  let needFullReload: HasDeadEnd = modules.length === 0;
 
   for (const mod of modules) {
-    const boundaries: PropagationBoundary[] = []
-    const hasDeadEnd = propagateUpdate(mod, traversedModules, boundaries)
+    const boundaries: PropagationBoundary[] = [];
+    const hasDeadEnd = propagateUpdate(mod, traversedModules, boundaries);
 
     environment.moduleGraph.invalidateModule(
       mod,
       invalidatedModules,
       timestamp,
-      true,
-    )
+      true
+    );
 
     if (needFullReload) {
-      continue
+      continue;
     }
 
     if (hasDeadEnd) {
-      needFullReload = hasDeadEnd
-      continue
+      needFullReload = hasDeadEnd;
+      continue;
     }
 
     updates.push(
@@ -462,69 +465,69 @@ export function updateModules(
           path: normalizeHmrUrl(boundary.url),
           acceptedPath: normalizeHmrUrl(acceptedVia.url),
           explicitImportRequired:
-            boundary.type === 'js'
+            boundary.type === "js"
               ? isExplicitImportRequired(acceptedVia.url)
               : false,
           isWithinCircularImport,
-        }),
-      ),
-    )
+        })
+      )
+    );
   }
 
   if (needFullReload) {
     const reason =
-      typeof needFullReload === 'string'
+      typeof needFullReload === "string"
         ? colors.dim(` (${needFullReload})`)
-        : ''
+        : "";
     environment.logger.info(
       colors.green(`page reload `) + colors.dim(file) + reason,
-      { clear: !afterInvalidation, timestamp: true },
-    )
+      { clear: !afterInvalidation, timestamp: true }
+    );
     hot.send({
-      type: 'full-reload',
+      type: "full-reload",
       triggeredBy: path.resolve(environment.config.root, file),
-    })
-    return
+    });
+    return;
   }
 
   if (updates.length === 0) {
-    debugHmr?.(colors.yellow(`no update happened `) + colors.dim(file))
-    return
+    debugHmr?.(colors.yellow(`no update happened `) + colors.dim(file));
+    return;
   }
 
   environment.logger.info(
     colors.green(`hmr update `) +
-      colors.dim([...new Set(updates.map((u) => u.path))].join(', ')),
-    { clear: !afterInvalidation, timestamp: true },
-  )
+      colors.dim([...new Set(updates.map((u) => u.path))].join(", ")),
+    { clear: !afterInvalidation, timestamp: true }
+  );
   hot.send({
-    type: 'update',
+    type: "update",
     updates,
-  })
+  });
 }
 
 function areAllImportsAccepted(
   importedBindings: Set<string>,
-  acceptedExports: Set<string>,
+  acceptedExports: Set<string>
 ) {
   for (const binding of importedBindings) {
     if (!acceptedExports.has(binding)) {
-      return false
+      return false;
     }
   }
-  return true
+  return true;
 }
 
 function propagateUpdate(
   node: EnvironmentModuleNode,
   traversedModules: Set<EnvironmentModuleNode>,
   boundaries: PropagationBoundary[],
-  currentChain: EnvironmentModuleNode[] = [node],
+  currentChain: EnvironmentModuleNode[] = [node]
 ): HasDeadEnd {
   if (traversedModules.has(node)) {
-    return false
+    return false;
   }
-  traversedModules.add(node)
+  traversedModules.add(node);
 
   // #7561
   // if the imports of `node` have not been analyzed, then `node` has not
@@ -532,10 +535,10 @@ function propagateUpdate(
   if (node.id && node.isSelfAccepting === undefined) {
     debugHmr?.(
       `[propagate update] stop propagation because not analyzed: ${colors.dim(
-        node.id,
-      )}`,
-    )
-    return false
+        node.id
+      )}`
+    );
+    return false;
   }
 
   if (node.isSelfAccepting) {
@@ -543,7 +546,7 @@ function propagateUpdate(
       boundary: node,
       acceptedVia: node,
       isWithinCircularImport: isNodeWithinCircularImports(node, currentChain),
-    })
+    });
 
     // additionally check for CSS importers, since a PostCSS plugin like
     // Tailwind JIT may register any file as a dependency to a CSS file.
@@ -553,12 +556,12 @@ function propagateUpdate(
           importer,
           traversedModules,
           boundaries,
-          currentChain.concat(importer),
-        )
+          currentChain.concat(importer)
+        );
       }
     }
 
-    return false
+    return false;
   }
 
   // A partially accepted module with no importers is considered self accepting,
@@ -571,10 +574,10 @@ function propagateUpdate(
       boundary: node,
       acceptedVia: node,
       isWithinCircularImport: isNodeWithinCircularImports(node, currentChain),
-    })
+    });
   } else {
     if (!node.importers.size) {
-      return true
+      return true;
     }
 
     // #3716, #3913
@@ -584,29 +587,29 @@ function propagateUpdate(
       !isCSSRequest(node.url) &&
       [...node.importers].every((i) => isCSSRequest(i.url))
     ) {
-      return true
+      return true;
     }
   }
 
   for (const importer of node.importers) {
-    const subChain = currentChain.concat(importer)
+    const subChain = currentChain.concat(importer);
 
     if (importer.acceptedHmrDeps.has(node)) {
       boundaries.push({
         boundary: importer,
         acceptedVia: node,
         isWithinCircularImport: isNodeWithinCircularImports(importer, subChain),
-      })
-      continue
+      });
+      continue;
     }
 
     if (node.id && node.acceptedHmrExports && importer.importedBindings) {
-      const importedBindingsFromNode = importer.importedBindings.get(node.id)
+      const importedBindingsFromNode = importer.importedBindings.get(node.id);
       if (
         importedBindingsFromNode &&
         areAllImportsAccepted(importedBindingsFromNode, node.acceptedHmrExports)
       ) {
-        continue
+        continue;
       }
     }
 
@@ -614,10 +617,10 @@ function propagateUpdate(
       !currentChain.includes(importer) &&
       propagateUpdate(importer, traversedModules, boundaries, subChain)
     ) {
-      return true
+      return true;
     }
   }
-  return false
+  return false;
 }
 
 /**
@@ -634,7 +637,7 @@ function isNodeWithinCircularImports(
   node: EnvironmentModuleNode,
   nodeChain: EnvironmentModuleNode[],
   currentChain: EnvironmentModuleNode[] = [node],
-  traversedModules = new Set<EnvironmentModuleNode>(),
+  traversedModules = new Set<EnvironmentModuleNode>()
 ): boolean {
   // To help visualize how each parameters work, imagine this import graph:
   //
@@ -653,21 +656,21 @@ function isNodeWithinCircularImports(
   // means there's an import loop with a HMR-accepted module in it.
 
   if (traversedModules.has(node)) {
-    return false
+    return false;
   }
-  traversedModules.add(node)
+  traversedModules.add(node);
 
   for (const importer of node.importers) {
     // Node may import itself which is safe
-    if (importer === node) continue
+    if (importer === node) continue;
 
     // a PostCSS plugin like Tailwind JIT may register
     // any file as a dependency to a CSS file.
     // But in that case, the actual dependency chain is separate.
-    if (isCSSRequest(importer.url)) continue
+    if (isCSSRequest(importer.url)) continue;
 
     // Check circular imports
-    const importerIndex = nodeChain.indexOf(importer)
+    const importerIndex = nodeChain.indexOf(importer);
     if (importerIndex > -1) {
       // Log extra debug information so users can fix and remove the circular imports
       if (debugHmr) {
@@ -680,13 +683,13 @@ function isNodeWithinCircularImports(
           importer,
           ...[...currentChain].reverse(),
           ...nodeChain.slice(importerIndex, -1).reverse(),
-        ]
+        ];
         debugHmr(
           colors.yellow(`circular imports detected: `) +
-            importChain.map((m) => colors.dim(m.url)).join(' -> '),
-        )
+            importChain.map((m) => colors.dim(m.url)).join(" -> ")
+        );
       }
-      return true
+      return true;
     }
 
     // Continue recursively
@@ -695,31 +698,31 @@ function isNodeWithinCircularImports(
         importer,
         nodeChain,
         currentChain.concat(importer),
-        traversedModules,
-      )
-      if (result) return result
+        traversedModules
+      );
+      if (result) return result;
     }
   }
-  return false
+  return false;
 }
 
 export function handlePrunedModules(
   mods: Set<EnvironmentModuleNode>,
-  { hot }: DevEnvironment,
+  { hot }: DevEnvironment
 ): void {
   // update the disposed modules' hmr timestamp
   // since if it's re-imported, it should re-apply side effects
   // and without the timestamp the browser will not re-import it!
-  const t = Date.now()
+  const t = Date.now();
   mods.forEach((mod) => {
-    mod.lastHMRTimestamp = t
-    mod.lastHMRInvalidationReceived = false
-    debugHmr?.(`[dispose] ${colors.dim(mod.file)}`)
-  })
+    mod.lastHMRTimestamp = t;
+    mod.lastHMRInvalidationReceived = false;
+    debugHmr?.(`[dispose] ${colors.dim(mod.file)}`);
+  });
   hot.send({
-    type: 'prune',
+    type: "prune",
     paths: [...mods].map((m) => m.url),
-  })
+  });
 }
 
 const enum LexerState {
@@ -740,205 +743,207 @@ const enum LexerState {
 export function lexAcceptedHmrDeps(
   code: string,
   start: number,
-  urls: Set<{ url: string; start: number; end: number }>,
+  urls: Set<{ url: string; start: number; end: number }>
 ): boolean {
-  let state: LexerState = LexerState.inCall
+  let state: LexerState = LexerState.inCall;
   // the state can only be 2 levels deep so no need for a stack
-  let prevState: LexerState = LexerState.inCall
-  let currentDep: string = ''
+  let prevState: LexerState = LexerState.inCall;
+  let currentDep: string = "";
 
   function addDep(index: number) {
     urls.add({
       url: currentDep,
       start: index - currentDep.length - 1,
       end: index + 1,
-    })
-    currentDep = ''
+    });
+    currentDep = "";
   }
 
   for (let i = start; i < code.length; i++) {
-    const char = code.charAt(i)
+    const char = code.charAt(i);
     switch (state) {
       case LexerState.inCall:
       case LexerState.inArray:
         if (char === `'`) {
-          prevState = state
-          state = LexerState.inSingleQuoteString
+          prevState = state;
+          state = LexerState.inSingleQuoteString;
         } else if (char === `"`) {
-          prevState = state
-          state = LexerState.inDoubleQuoteString
-        } else if (char === '`') {
-          prevState = state
-          state = LexerState.inTemplateString
+          prevState = state;
+          state = LexerState.inDoubleQuoteString;
+        } else if (char === "`") {
+          prevState = state;
+          state = LexerState.inTemplateString;
         } else if (whitespaceRE.test(char)) {
-          continue
+          continue;
         } else {
           if (state === LexerState.inCall) {
             if (char === `[`) {
-              state = LexerState.inArray
+              state = LexerState.inArray;
             } else {
               // reaching here means the first arg is neither a string literal
               // nor an Array literal (direct callback) or there is no arg
               // in both case this indicates a self-accepting module
-              return true // done
+              return true; // done
             }
           } else if (state === LexerState.inArray) {
             if (char === `]`) {
-              return false // done
-            } else if (char === ',') {
-              continue
+              return false; // done
+            } else if (char === ",") {
+              continue;
             } else {
-              error(i)
+              error(i);
             }
           }
         }
-        break
+        break;
       case LexerState.inSingleQuoteString:
         if (char === `'`) {
-          addDep(i)
+          addDep(i);
           if (prevState === LexerState.inCall) {
             // accept('foo', ...)
-            return false
+            return false;
           } else {
-            state = prevState
+            state = prevState;
           }
         } else {
-          currentDep += char
+          currentDep += char;
         }
-        break
+        break;
       case LexerState.inDoubleQuoteString:
         if (char === `"`) {
-          addDep(i)
+          addDep(i);
           if (prevState === LexerState.inCall) {
             // accept('foo', ...)
-            return false
+            return false;
           } else {
-            state = prevState
+            state = prevState;
           }
         } else {
-          currentDep += char
+          currentDep += char;
         }
-        break
+        break;
       case LexerState.inTemplateString:
-        if (char === '`') {
-          addDep(i)
+        if (char === "`") {
+          addDep(i);
           if (prevState === LexerState.inCall) {
             // accept('foo', ...)
-            return false
+            return false;
           } else {
-            state = prevState
+            state = prevState;
           }
-        } else if (char === '$' && code.charAt(i + 1) === '{') {
-          error(i)
+        } else if (char === "$" && code.charAt(i + 1) === "{") {
+          error(i);
         } else {
-          currentDep += char
+          currentDep += char;
         }
-        break
+        break;
       default:
-        throw new Error('unknown import.meta.hot lexer state')
+        throw new Error("unknown import.meta.hot lexer state");
     }
   }
-  return false
+  return false;
 }
 
 export function lexAcceptedHmrExports(
   code: string,
   start: number,
-  exportNames: Set<string>,
+  exportNames: Set<string>
 ): boolean {
-  const urls = new Set<{ url: string; start: number; end: number }>()
-  lexAcceptedHmrDeps(code, start, urls)
+  const urls = new Set<{ url: string; start: number; end: number }>();
+  lexAcceptedHmrDeps(code, start, urls);
   for (const { url } of urls) {
-    exportNames.add(url)
+    exportNames.add(url);
   }
-  return urls.size > 0
+  return urls.size > 0;
 }
 
 export function normalizeHmrUrl(url: string): string {
-  if (url[0] !== '.' && url[0] !== '/') {
-    url = wrapId(url)
+  if (url[0] !== "." && url[0] !== "/") {
+    url = wrapId(url);
   }
-  return url
+  return url;
 }
 
 function error(pos: number) {
   const err = new Error(
     `import.meta.hot.accept() can only accept string literals or an ` +
-      `Array of string literals.`,
-  ) as RollupError
-  err.pos = pos
-  throw err
+      `Array of string literals.`
+  ) as RollupError;
+  err.pos = pos;
+  throw err;
 }
 
 // vitejs/vite#610 when hot-reloading Vue files, we read immediately on file
 // change event and sometimes this can be too early and get an empty buffer.
 // Poll until the file's modified time has changed before reading again.
 async function readModifiedFile(file: string): Promise<string> {
-  const content = await fsp.readFile(file, 'utf-8')
+  const content = await fsp.readFile(file, "utf-8");
   if (!content) {
-    const mtime = (await fsp.stat(file)).mtimeMs
+    const mtime = (await fsp.stat(file)).mtimeMs;
 
     for (let n = 0; n < 10; n++) {
-      await new Promise((r) => setTimeout(r, 10))
-      const newMtime = (await fsp.stat(file)).mtimeMs
+      await new Promise((r) => setTimeout(r, 10));
+      const newMtime = (await fsp.stat(file)).mtimeMs;
       if (newMtime !== mtime) {
-        break
+        break;
       }
     }
 
-    return await fsp.readFile(file, 'utf-8')
+    return await fsp.readFile(file, "utf-8");
   } else {
-    return content
+    return content;
   }
 }
 
 export interface ServerHotChannel extends HotChannel {
   api: {
-    innerEmitter: EventEmitter
-    outsideEmitter: EventEmitter
-  }
+    innerEmitter: EventEmitter;
+    outsideEmitter: EventEmitter;
+  };
 }
 /** @deprecated use `ServerHotChannel` instead */
-export type ServerHMRChannel = ServerHotChannel
+export type ServerHMRChannel = ServerHotChannel;
 
+// 创建 热更新通道
 export function createServerHotChannel(): ServerHotChannel {
-  const innerEmitter = new EventEmitter()
-  const outsideEmitter = new EventEmitter()
+  const innerEmitter = new EventEmitter();
+  const outsideEmitter = new EventEmitter();
 
   return {
     send(...args: any[]) {
-      let payload: HotPayload
-      if (typeof args[0] === 'string') {
+      let payload: HotPayload;
+      if (typeof args[0] === "string") {
         payload = {
-          type: 'custom',
+          type: "custom",
           event: args[0],
           data: args[1],
-        }
+        };
       } else {
-        payload = args[0]
+        payload = args[0];
       }
-      outsideEmitter.emit('send', payload)
+      outsideEmitter.emit("send", payload);
     },
     off(event, listener: () => void) {
-      innerEmitter.off(event, listener)
+      innerEmitter.off(event, listener);
     },
     on: ((event: string, listener: () => unknown) => {
-      innerEmitter.on(event, listener)
-    }) as ServerHotChannel['on'],
+      innerEmitter.on(event, listener);
+    }) as ServerHotChannel["on"],
     close() {
-      innerEmitter.removeAllListeners()
-      outsideEmitter.removeAllListeners()
+      innerEmitter.removeAllListeners();
+      outsideEmitter.removeAllListeners();
     },
     listen() {
-      innerEmitter.emit('connection')
+      innerEmitter.emit("connection");
     },
     api: {
       innerEmitter,
       outsideEmitter,
     },
-  }
+  };
 }
 
+// 创建空的 热更新通道
 export function createNoopHotChannel(): HotChannel {
   function noop() {
     // noop
@@ -950,22 +955,26 @@ export function createNoopHotChannel(): HotChannel {
     off: noop,
     listen: noop,
     close: noop,
-  }
+  };
 }
 
 /** @deprecated use `environment.hot` instead */
 export interface HotBroadcaster extends HotChannel {
-  readonly channels: HotChannel[]
+  readonly channels: HotChannel[];
   /**
    * A noop.
    * @deprecated
    */
-  addChannel(channel: HotChannel): HotBroadcaster
-  close(): Promise<unknown[]>
+  addChannel(channel: HotChannel): HotBroadcaster;
+  close(): Promise<unknown[]>;
 }
 /** @deprecated use `environment.hot` instead */
-export type HMRBroadcaster = HotBroadcaster
+export type HMRBroadcaster = HotBroadcaster;
 
+// 创建废弃的 热更新广播器
+// 作用：
+// 1. 创建一个热更新广播器
+// 2. 将热更新通道添加到广播器中
 export function createDeprecatedHotBroadcaster(ws: HotChannel): HotBroadcaster {
   const broadcaster: HotBroadcaster = {
     on: ws.on,
@@ -973,14 +982,16 @@ export function createDeprecatedHotBroadcaster(ws: HotChannel): HotBroadcaster {
     listen: ws.listen,
     send: ws.send,
     get channels() {
-      return [ws]
+      return [ws];
     },
     addChannel() {
-      return broadcaster
+      return broadcaster;
     },
     close() {
-      return Promise.all(broadcaster.channels.map((channel) => channel.close()))
+      return Promise.all(
+        broadcaster.channels.map((channel) => channel.close())
+      );
     },
-  }
-  return broadcaster
+  };
+  return broadcaster;
 }

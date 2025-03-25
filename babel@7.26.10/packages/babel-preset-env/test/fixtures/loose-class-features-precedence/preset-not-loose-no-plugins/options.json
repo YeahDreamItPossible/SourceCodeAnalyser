@@ -1,0 +1,9 @@
+{
+  "BABEL_8_BREAKING": false,
+  "validateLogs": true,
+  "presets": [
+    ["env", {
+      "targets": { "node": 10 }
+    }]
+  ]
+}

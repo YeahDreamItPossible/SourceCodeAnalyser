@@ -84,6 +84,7 @@ function noop() {
   // noop
 }
 
+// 创建 ws服务
 export function createWebSocketServer(
   server: HttpServer | null,
   config: ResolvedConfig,

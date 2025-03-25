@@ -31,6 +31,9 @@ export interface HMRConnection {
   send(messages: HotPayload): void
 }
 
+// 热更新上下文
+// 作用：
+// 
 export class HMRContext implements ViteHotContext {
   private newListeners: CustomListenersMap
 
@@ -173,9 +176,13 @@ export class HMRContext implements ViteHotContext {
   }
 }
 
+// 热更新消息队列
+// 作用：
+// 执行消息队列
 class HMRMessenger {
   constructor(private connection: HMRConnection) {}
 
+  // 队列
   private queue: HotPayload[] = []
 
   public send(payload: HotPayload): void {
@@ -183,6 +190,7 @@ class HMRMessenger {
     this.flush()
   }
 
+  // 刷新
   public flush(): void {
     if (this.connection.isReady()) {
       this.queue.forEach((msg) => this.connection.send(msg))
@@ -191,6 +199,9 @@ class HMRMessenger {
   }
 }
 
+// 热更新客户端
+// 作用：
+// 
 export class HMRClient {
   public hotModulesMap = new Map<string, HotModule>()
   public disposeMap = new Map<string, (data: any) => void | Promise<void>>()

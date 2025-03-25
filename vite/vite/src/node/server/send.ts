@@ -29,6 +29,9 @@ export interface SendOptions {
   map?: SourceMap | { mappings: '' } | null
 }
 
+//
+// 作用：
+// 
 export function send(
   req: IncomingMessage,
   res: ServerResponse,

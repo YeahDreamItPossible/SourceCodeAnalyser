@@ -1,8 +1,8 @@
-import colors from 'picocolors'
-import { createDebugger, getHash, promiseWithResolvers } from '../utils'
-import type { PromiseWithResolvers } from '../utils'
-import type { DevEnvironment } from '../server/environment'
-import { devToScanEnvironment } from './scan'
+import colors from "picocolors";
+import { createDebugger, getHash, promiseWithResolvers } from "../utils";
+import type { PromiseWithResolvers } from "../utils";
+import type { DevEnvironment } from "../server/environment";
+import { devToScanEnvironment } from "./scan";
 import {
   addManuallyIncludedOptimizeDeps,
   addOptimizedDepInfo,
@@ -18,41 +18,46 @@ import {
   optimizeExplicitEnvironmentDeps,
   runOptimizeDeps,
   toDiscoveredDependencies,
-} from './index'
+} from "./index";
 import type {
   DepOptimizationMetadata,
   DepOptimizationResult,
   DepsOptimizer,
   OptimizedDepInfo,
-} from './index'
+} from "./index";
 
-const debug = createDebugger('vite:deps')
+const debug = createDebugger("vite:deps");
 
-/**
- * The amount to wait for requests to register newly found dependencies before triggering
- * a re-bundle + page reload
- */
-const debounceMs = 100
+// 依赖优化器 依赖发现的 防抖时间
+const debounceMs = 100;
 
+// 依赖优化器
+// 作用：
+// 
+
+// 创建 依赖优化器
 export function createDepsOptimizer(
-  environment: DevEnvironment,
+  environment: DevEnvironment
 ): DepsOptimizer {
-  const { logger } = environment
-  const sessionTimestamp = Date.now().toString()
+  const { logger } = environment;
+  const sessionTimestamp = Date.now().toString();
 
-  let debounceProcessingHandle: NodeJS.Timeout | undefined
+  let debounceProcessingHandle: NodeJS.Timeout | undefined;
 
-  let closed = false
+  let closed = false;
 
-  const options = environment.config.dev.optimizeDeps
+  // 依赖优化器选项
+  const options = environment.config.dev.optimizeDeps;
 
-  const { noDiscovery, holdUntilCrawlEnd } = options
+  const { noDiscovery, holdUntilCrawlEnd } = options;
 
+  // 元数据
   let metadata: DepOptimizationMetadata = initDepsOptimizerMetadata(
     environment,
-    sessionTimestamp,
-  )
+    sessionTimestamp
+  );
 
+  // 依赖优化器
   const depsOptimizer: DepsOptimizer = {
     init,
     metadata,
@@ -64,166 +69,175 @@ export function createDepsOptimizer(
       `${depInfo.file}?v=${depInfo.browserHash}`,
     close,
     options,
-  }
+  };
 
-  let newDepsDiscovered = false
+  let newDepsDiscovered = false;
 
-  let newDepsToLog: string[] = []
-  let newDepsToLogHandle: NodeJS.Timeout | undefined
+  let newDepsToLog: string[] = [];
+  let newDepsToLogHandle: NodeJS.Timeout | undefined;
   const logNewlyDiscoveredDeps = () => {
     if (newDepsToLog.length) {
       logger.info(
         colors.green(
-          `✨ new dependencies optimized: ${depsLogString(newDepsToLog)}`,
+          `✨ new dependencies optimized: ${depsLogString(newDepsToLog)}`
         ),
         {
           timestamp: true,
-        },
-      )
-      newDepsToLog = []
+        }
+      );
+      newDepsToLog = [];
     }
-  }
+  };
 
-  let discoveredDepsWhileScanning: string[] = []
+  let discoveredDepsWhileScanning: string[] = [];
   const logDiscoveredDepsWhileScanning = () => {
     if (discoveredDepsWhileScanning.length) {
       logger.info(
         colors.green(
           `✨ discovered while scanning: ${depsLogString(
-            discoveredDepsWhileScanning,
-          )}`,
+            discoveredDepsWhileScanning
+          )}`
         ),
         {
           timestamp: true,
-        },
-      )
-      discoveredDepsWhileScanning = []
+        }
+      );
+      discoveredDepsWhileScanning = [];
     }
-  }
+  };
 
-  let depOptimizationProcessing = promiseWithResolvers<void>()
-  let depOptimizationProcessingQueue: PromiseWithResolvers<void>[] = []
+  let depOptimizationProcessing = promiseWithResolvers<void>();
+  let depOptimizationProcessingQueue: PromiseWithResolvers<void>[] = [];
   const resolveEnqueuedProcessingPromises = () => {
     // Resolve all the processings (including the ones which were delayed)
     for (const processing of depOptimizationProcessingQueue) {
-      processing.resolve()
+      processing.resolve();
     }
-    depOptimizationProcessingQueue = []
-  }
+    depOptimizationProcessingQueue = [];
+  };
 
-  let enqueuedRerun: (() => void) | undefined
-  let currentlyProcessing = false
+  let enqueuedRerun: (() => void) | undefined;
+  let currentlyProcessing = false;
 
-  let firstRunCalled = false
-  let warnAboutMissedDependencies = false
+  let firstRunCalled = false;
+  let warnAboutMissedDependencies = false;
 
   // If this is a cold run, we wait for static imports discovered
   // from the first request before resolving to minimize full page reloads.
   // On warm start or after the first optimization is run, we use a simpler
   // debounce strategy each time a new dep is discovered.
-  let waitingForCrawlEnd = false
+  let waitingForCrawlEnd = false;
 
   let optimizationResult:
     | {
-        cancel: () => Promise<void>
-        result: Promise<DepOptimizationResult>
+        cancel: () => Promise<void>;
+        result: Promise<DepOptimizationResult>;
       }
-    | undefined
+    | undefined;
 
   let discover:
     | {
-        cancel: () => Promise<void>
-        result: Promise<Record<string, string>>
+        cancel: () => Promise<void>;
+        result: Promise<Record<string, string>>;
       }
-    | undefined
+    | undefined;
 
   async function close() {
-    closed = true
+    closed = true;
     await Promise.allSettled([
       discover?.cancel(),
       depsOptimizer.scanProcessing,
       optimizationResult?.cancel(),
-    ])
+    ]);
   }
 
-  let inited = false
+  // 初始化
+  let inited = false;
   async function init() {
-    if (inited) return
-    inited = true
+    if (inited) return;
+    inited = true;
 
-    const cachedMetadata = await loadCachedDepOptimizationMetadata(environment)
+    // 优先加载上次构建缓存的元数据
+    const cachedMetadata = await loadCachedDepOptimizationMetadata(environment);
+    // 是否是初次运行
+    firstRunCalled = !!cachedMetadata;
 
-    firstRunCalled = !!cachedMetadata
-
+    // 当缓存的 元数据 不存在时 则初始化 元数据
     metadata = depsOptimizer.metadata =
-      cachedMetadata || initDepsOptimizerMetadata(environment, sessionTimestamp)
+      cachedMetadata ||
+      initDepsOptimizerMetadata(environment, sessionTimestamp);
 
+    // crawler 网页抓取(爬虫)
     if (!cachedMetadata) {
-      environment.waitForRequestsIdle().then(onCrawlEnd)
-      waitingForCrawlEnd = true
+      environment.waitForRequestsIdle().then(onCrawlEnd);
+      waitingForCrawlEnd = true;
 
       // Enter processing state until crawl of static imports ends
-      currentlyProcessing = true
+      // 进入处理状态，直到静态导入的爬取结束
+      currentlyProcessing = true;
 
-      // Initialize discovered deps with manually added optimizeDeps.include info
+      // 初始化 已发现的依赖 与 手动添加的 optimizeDeps.include 信息
+      const manuallyIncludedDeps: Record<string, string> = {};
+      // 将手动添加的 optimizeDeps.include 添加到 已发现的依赖 中
+      await addManuallyIncludedOptimizeDeps(environment, manuallyIncludedDeps);
 
-      const manuallyIncludedDeps: Record<string, string> = {}
-      await addManuallyIncludedOptimizeDeps(environment, manuallyIncludedDeps)
-
+      // 将手动添加的 optimizeDeps.include 转换为 已发现的依赖 信息
       const manuallyIncludedDepsInfo = toDiscoveredDependencies(
         environment,
         manuallyIncludedDeps,
-        sessionTimestamp,
-      )
+        sessionTimestamp
+      );
 
       for (const depInfo of Object.values(manuallyIncludedDepsInfo)) {
-        addOptimizedDepInfo(metadata, 'discovered', {
+        addOptimizedDepInfo(metadata, "discovered", {
           ...depInfo,
           processing: depOptimizationProcessing.promise,
-        })
-        newDepsDiscovered = true
+        });
+        newDepsDiscovered = true;
       }
 
       if (noDiscovery) {
         // We don't need to scan for dependencies or wait for the static crawl to end
         // Run the first optimization run immediately
-        runOptimizer()
+        runOptimizer();
       } else {
         // Important, the scanner is dev only
         depsOptimizer.scanProcessing = new Promise((resolve) => {
           // Runs in the background in case blocking high priority tasks
-          ;(async () => {
+          (async () => {
             try {
-              debug?.(colors.green(`scanning for dependencies...`))
+              debug?.(colors.green(`scanning for dependencies...`));
 
+              // 发现项目中的依赖关系
               discover = discoverProjectDependencies(
-                devToScanEnvironment(environment),
-              )
-              const deps = await discover.result
-              discover = undefined
+                devToScanEnvironment(environment)
+              );
+              // 依赖关系
+              const deps = await discover.result;
+              discover = undefined;
 
-              const manuallyIncluded = Object.keys(manuallyIncludedDepsInfo)
+              const manuallyIncluded = Object.keys(manuallyIncludedDepsInfo);
               discoveredDepsWhileScanning.push(
                 ...Object.keys(metadata.discovered).filter(
-                  (dep) => !deps[dep] && !manuallyIncluded.includes(dep),
-                ),
-              )
+                  (dep) => !deps[dep] && !manuallyIncluded.includes(dep)
+                )
+              );
 
               // Add these dependencies to the discovered list, as these are currently
               // used by the preAliasPlugin to support aliased and optimized deps.
               // This is also used by the CJS externalization heuristics in legacy mode
               for (const id of Object.keys(deps)) {
                 if (!metadata.discovered[id]) {
-                  addMissingDep(id, deps[id])
+                  addMissingDep(id, deps[id]);
                 }
               }
 
-              const knownDeps = prepareKnownDeps()
-              startNextDiscoveredBatch()
+              const knownDeps = prepareKnownDeps();
+              startNextDiscoveredBatch();
 
               // For dev, we run the scanner and the first optimization
               // run on the background
-              optimizationResult = runOptimizeDeps(environment, knownDeps)
+              optimizationResult = runOptimizeDeps(environment, knownDeps);
 
               // If the holdUntilCrawlEnd strategy is used, we wait until crawling has
               // ended to decide if we send this result to the browser or we need to
@@ -237,107 +251,104 @@ export function createDepsOptimizer(
                 optimizationResult.result.then((result) => {
                   // Check if the crawling of static imports has already finished. In that
                   // case, the result is handled by the onCrawlEnd callback
-                  if (!waitingForCrawlEnd) return
+                  if (!waitingForCrawlEnd) return;
 
-                  optimizationResult = undefined // signal that we'll be using the result
+                  optimizationResult = undefined; // signal that we'll be using the result
 
-                  runOptimizer(result)
-                })
+                  runOptimizer(result);
+                });
               }
             } catch (e) {
-              logger.error(e.stack || e.message)
+              logger.error(e.stack || e.message);
             } finally {
-              resolve()
-              depsOptimizer.scanProcessing = undefined
+              resolve();
+              depsOptimizer.scanProcessing = undefined;
             }
-          })()
-        })
+          })();
+        });
       }
     }
   }
 
+  // 开始下一个发现的依赖批次
   function startNextDiscoveredBatch() {
-    newDepsDiscovered = false
+    newDepsDiscovered = false;
 
     // Add the current depOptimizationProcessing to the queue, these
     // promises are going to be resolved once a rerun is committed
-    depOptimizationProcessingQueue.push(depOptimizationProcessing)
+    depOptimizationProcessingQueue.push(depOptimizationProcessing);
 
     // Create a new promise for the next rerun, discovered missing
     // dependencies will be assigned this promise from this point
-    depOptimizationProcessing = promiseWithResolvers()
+    depOptimizationProcessing = promiseWithResolvers();
   }
 
+  // 返回已知的依赖(从缓存的依赖优化元数据中)
   function prepareKnownDeps() {
-    const knownDeps: Record<string, OptimizedDepInfo> = {}
+    const knownDeps: Record<string, OptimizedDepInfo> = {};
     // Clone optimized info objects, fileHash, browserHash may be changed for them
-    const metadata = depsOptimizer.metadata!
+    const metadata = depsOptimizer.metadata!;
     for (const dep of Object.keys(metadata.optimized)) {
-      knownDeps[dep] = { ...metadata.optimized[dep] }
+      knownDeps[dep] = { ...metadata.optimized[dep] };
     }
     for (const dep of Object.keys(metadata.discovered)) {
       // Clone the discovered info discarding its processing promise
-      const { processing, ...info } = metadata.discovered[dep]
-      knownDeps[dep] = info
+      const { processing, ...info } = metadata.discovered[dep];
+      knownDeps[dep] = info;
     }
-    return knownDeps
+    return knownDeps;
   }
 
+  // 运行优化器
   async function runOptimizer(preRunResult?: DepOptimizationResult) {
-    // a successful completion of the optimizeDeps rerun will end up
-    // creating new bundled version of all current and discovered deps
-    // in the cache dir and a new metadata info object assigned
-    // to _metadata. A fullReload is only issued if the previous bundled
-    // dependencies have changed.
+    // 一个成功的优化依赖 rerun 将创建新的捆绑包版本，所有当前和已发现的依赖都在缓存目录中，
+    // 并创建一个新的元数据信息对象，分配给 _metadata。
+    // 只有在之前的捆绑包依赖发生变化时，才会发出 fullReload。
+    // 所有依赖，之前的已知依赖和新的已发现依赖都被重新捆绑，
+    // 按插入顺序保持元数据文件稳定
 
-    // if the rerun fails, _metadata remains untouched, current discovered
-    // deps are cleaned, and a fullReload is issued
+    const isRerun = firstRunCalled;
+    firstRunCalled = true;
 
-    // All deps, previous known and newly discovered are rebundled,
-    // respect insertion order to keep the metadata file stable
+    // 确保 rerun 按顺序调用
+    enqueuedRerun = undefined;
 
-    const isRerun = firstRunCalled
-    firstRunCalled = true
-
-    // Ensure that rerun is called sequentially
-    enqueuedRerun = undefined
-
-    // Ensure that a rerun will not be issued for current discovered deps
-    if (debounceProcessingHandle) clearTimeout(debounceProcessingHandle)
+    // 确保不会为当前的 已发现的依赖 发出 rerun
+    if (debounceProcessingHandle) clearTimeout(debounceProcessingHandle);
 
     if (closed) {
-      currentlyProcessing = false
-      return
+      currentlyProcessing = false;
+      return;
     }
 
-    currentlyProcessing = true
+    currentlyProcessing = true;
 
     try {
-      let processingResult: DepOptimizationResult
+      let processingResult: DepOptimizationResult;
       if (preRunResult) {
-        processingResult = preRunResult
+        processingResult = preRunResult;
       } else {
-        const knownDeps = prepareKnownDeps()
-        startNextDiscoveredBatch()
+        const knownDeps = prepareKnownDeps();
+        startNextDiscoveredBatch();
 
-        optimizationResult = runOptimizeDeps(environment, knownDeps)
-        processingResult = await optimizationResult.result
-        optimizationResult = undefined
+        optimizationResult = runOptimizeDeps(environment, knownDeps);
+        processingResult = await optimizationResult.result;
+        optimizationResult = undefined;
       }
 
       if (closed) {
-        currentlyProcessing = false
-        processingResult.cancel()
-        resolveEnqueuedProcessingPromises()
-        return
+        currentlyProcessing = false;
+        processingResult.cancel();
+        resolveEnqueuedProcessingPromises();
+        return;
       }
 
-      const newData = processingResult.metadata
+      const newData = processingResult.metadata;
 
       const needsInteropMismatch = findInteropMismatches(
         metadata.discovered,
-        newData.optimized,
-      )
+        newData.optimized
+      );
 
       // After a re-optimization, if the internal bundled chunks change a full page reload
       // is required. If the files are stable, we can avoid the reload that is expensive
@@ -349,30 +360,30 @@ export function createDepsOptimizer(
         Object.keys(metadata.optimized).some((dep) => {
           return (
             metadata.optimized[dep].fileHash !== newData.optimized[dep].fileHash
-          )
-        })
+          );
+        });
 
       const commitProcessing = async () => {
-        await processingResult.commit()
+        await processingResult.commit();
 
         // While optimizeDeps is running, new missing deps may be discovered,
         // in which case they will keep being added to metadata.discovered
         for (const id in metadata.discovered) {
           if (!newData.optimized[id]) {
-            addOptimizedDepInfo(newData, 'discovered', metadata.discovered[id])
+            addOptimizedDepInfo(newData, "discovered", metadata.discovered[id]);
           }
         }
 
         // If we don't reload the page, we need to keep browserHash stable
         if (!needsReload) {
-          newData.browserHash = metadata.browserHash
+          newData.browserHash = metadata.browserHash;
           for (const dep in newData.chunks) {
-            newData.chunks[dep].browserHash = metadata.browserHash
+            newData.chunks[dep].browserHash = metadata.browserHash;
           }
           for (const dep in newData.optimized) {
             newData.optimized[dep].browserHash = (
               metadata.optimized[dep] || metadata.discovered[dep]
-            ).browserHash
+            ).browserHash;
           }
         }
 
@@ -380,47 +391,47 @@ export function createDepsOptimizer(
         // object. Allow for code to await for the discovered processing promise
         // and use the information in the same object
         for (const o in newData.optimized) {
-          const discovered = metadata.discovered[o]
+          const discovered = metadata.discovered[o];
           if (discovered) {
-            const optimized = newData.optimized[o]
-            discovered.browserHash = optimized.browserHash
-            discovered.fileHash = optimized.fileHash
-            discovered.needsInterop = optimized.needsInterop
-            discovered.processing = undefined
+            const optimized = newData.optimized[o];
+            discovered.browserHash = optimized.browserHash;
+            discovered.fileHash = optimized.fileHash;
+            discovered.needsInterop = optimized.needsInterop;
+            discovered.processing = undefined;
           }
         }
 
         if (isRerun) {
           newDepsToLog.push(
             ...Object.keys(newData.optimized).filter(
-              (dep) => !metadata.optimized[dep],
-            ),
-          )
+              (dep) => !metadata.optimized[dep]
+            )
+          );
         }
 
-        metadata = depsOptimizer.metadata = newData
-        resolveEnqueuedProcessingPromises()
-      }
+        metadata = depsOptimizer.metadata = newData;
+        resolveEnqueuedProcessingPromises();
+      };
 
       if (!needsReload) {
-        await commitProcessing()
+        await commitProcessing();
 
         if (!debug) {
-          if (newDepsToLogHandle) clearTimeout(newDepsToLogHandle)
+          if (newDepsToLogHandle) clearTimeout(newDepsToLogHandle);
           newDepsToLogHandle = setTimeout(() => {
-            newDepsToLogHandle = undefined
-            logNewlyDiscoveredDeps()
+            newDepsToLogHandle = undefined;
+            logNewlyDiscoveredDeps();
             if (warnAboutMissedDependencies) {
-              logDiscoveredDepsWhileScanning()
+              logDiscoveredDepsWhileScanning();
               logger.info(
                 colors.magenta(
-                  `❗ add these dependencies to optimizeDeps.include to speed up cold start`,
+                  `❗ add these dependencies to optimizeDeps.include to speed up cold start`
                 ),
-                { timestamp: true },
-              )
-              warnAboutMissedDependencies = false
+                { timestamp: true }
+              );
+              warnAboutMissedDependencies = false;
             }
-          }, 2 * debounceMs)
+          }, 2 * debounceMs);
         } else {
           debug(
             colors.green(
@@ -428,9 +439,9 @@ export function createDepsOptimizer(
                 !isRerun
                   ? `dependencies optimized`
                   : `optimized dependencies unchanged`
-              }`,
-            ),
-          )
+              }`
+            )
+          );
         }
       } else {
         if (newDepsDiscovered) {
@@ -438,29 +449,29 @@ export function createDepsOptimizer(
           // executed. Avoid the current full reload discarding this rerun result
           // We don't resolve the processing promise, as they will be resolved
           // once a rerun is committed
-          processingResult.cancel()
+          processingResult.cancel();
 
           debug?.(
             colors.green(
-              `✨ delaying reload as new dependencies have been found...`,
-            ),
-          )
+              `✨ delaying reload as new dependencies have been found...`
+            )
+          );
         } else {
-          await commitProcessing()
+          await commitProcessing();
 
           if (!debug) {
-            if (newDepsToLogHandle) clearTimeout(newDepsToLogHandle)
-            newDepsToLogHandle = undefined
-            logNewlyDiscoveredDeps()
+            if (newDepsToLogHandle) clearTimeout(newDepsToLogHandle);
+            newDepsToLogHandle = undefined;
+            logNewlyDiscoveredDeps();
             if (warnAboutMissedDependencies) {
-              logDiscoveredDepsWhileScanning()
+              logDiscoveredDepsWhileScanning();
               logger.info(
                 colors.magenta(
-                  `❗ add these dependencies to optimizeDeps.include to avoid a full page reload during cold start`,
+                  `❗ add these dependencies to optimizeDeps.include to avoid a full page reload during cold start`
                 ),
-                { timestamp: true },
-              )
-              warnAboutMissedDependencies = false
+                { timestamp: true }
+              );
+              warnAboutMissedDependencies = false;
             }
           }
 
@@ -468,92 +479,91 @@ export function createDepsOptimizer(
             colors.green(`✨ optimized dependencies changed. reloading`),
             {
               timestamp: true,
-            },
-          )
+            }
+          );
           if (needsInteropMismatch.length > 0) {
             logger.warn(
               `Mixed ESM and CJS detected in ${colors.yellow(
-                needsInteropMismatch.join(', '),
+                needsInteropMismatch.join(", ")
               )}, add ${
-                needsInteropMismatch.length === 1 ? 'it' : 'them'
+                needsInteropMismatch.length === 1 ? "it" : "them"
               } to optimizeDeps.needsInterop to speed up cold start`,
               {
                 timestamp: true,
-              },
-            )
+              }
+            );
           }
 
-          fullReload()
+          fullReload();
         }
       }
     } catch (e) {
       logger.error(
         colors.red(`error while updating dependencies:\n${e.stack}`),
-        { timestamp: true, error: e },
-      )
-      resolveEnqueuedProcessingPromises()
+        { timestamp: true, error: e }
+      );
+      resolveEnqueuedProcessingPromises();
 
       // Reset missing deps, let the server rediscover the dependencies
-      metadata.discovered = {}
+      metadata.discovered = {};
     }
 
-    currentlyProcessing = false
-    // @ts-expect-error `enqueuedRerun` could exist because `debouncedProcessing` may run while awaited
-    enqueuedRerun?.()
+    currentlyProcessing = false;
+    enqueuedRerun?.();
   }
 
   function fullReload() {
     // Cached transform results have stale imports (resolved to
     // old locations) so they need to be invalidated before the page is
     // reloaded.
-    environment.moduleGraph.invalidateAll()
+    environment.moduleGraph.invalidateAll();
 
     environment.hot.send({
-      type: 'full-reload',
-      path: '*',
-    })
+      type: "full-reload",
+      path: "*",
+    });
   }
 
   async function rerun() {
     // debounce time to wait for new missing deps finished, issue a new
     // optimization of deps (both old and newly found) once the previous
     // optimizeDeps processing is finished
-    const deps = Object.keys(metadata.discovered)
-    const depsString = depsLogString(deps)
-    debug?.(colors.green(`new dependencies found: ${depsString}`))
-    runOptimizer()
+    const deps = Object.keys(metadata.discovered);
+    const depsString = depsLogString(deps);
+    debug?.(colors.green(`new dependencies found: ${depsString}`));
+    runOptimizer();
   }
 
   function getDiscoveredBrowserHash(
     hash: string,
     deps: Record<string, string>,
-    missing: Record<string, string>,
+    missing: Record<string, string>
   ) {
     return getHash(
-      hash + JSON.stringify(deps) + JSON.stringify(missing) + sessionTimestamp,
-    )
+      hash + JSON.stringify(deps) + JSON.stringify(missing) + sessionTimestamp
+    );
   }
 
   function registerMissingImport(
     id: string,
-    resolved: string,
+    resolved: string
   ): OptimizedDepInfo {
-    const optimized = metadata.optimized[id]
+    const optimized = metadata.optimized[id];
     if (optimized) {
-      return optimized
+      return optimized;
     }
-    const chunk = metadata.chunks[id]
+    const chunk = metadata.chunks[id];
     if (chunk) {
-      return chunk
+      return chunk;
     }
-    let missing = metadata.discovered[id]
+    let missing = metadata.discovered[id];
     if (missing) {
       // We are already discover this dependency
       // It will be processed in the next rerun call
-      return missing
+      return missing;
     }
 
-    missing = addMissingDep(id, resolved)
+    missing = addMissingDep(id, resolved);
 
     // Until the first optimize run is called, avoid triggering processing
     // We'll wait until the user codebase is eagerly processed by Vite so
@@ -563,18 +573,18 @@ export function createDepsOptimizer(
     if (!waitingForCrawlEnd) {
       // Debounced rerun, let other missing dependencies be discovered before
       // the running next optimizeDeps
-      debouncedProcessing()
+      debouncedProcessing();
     }
 
     // Return the path for the optimized bundle, this path is known before
     // esbuild is run to generate the pre-bundle
-    return missing
+    return missing;
   }
 
   function addMissingDep(id: string, resolved: string) {
-    newDepsDiscovered = true
+    newDepsDiscovered = true;
 
-    return addOptimizedDepInfo(metadata, 'discovered', {
+    return addOptimizedDepInfo(metadata, "discovered", {
       id,
       file: getOptimizedDepPath(environment, id),
       src: resolved,
@@ -585,46 +595,49 @@ export function createDepsOptimizer(
       browserHash: getDiscoveredBrowserHash(
         metadata.hash,
         depsFromOptimizedDepInfo(metadata.optimized),
-        depsFromOptimizedDepInfo(metadata.discovered),
+        depsFromOptimizedDepInfo(metadata.discovered)
       ),
       // loading of this pre-bundled dep needs to await for its processing
       // promise to be resolved
       processing: depOptimizationProcessing.promise,
       exportsData: extractExportsData(environment, resolved),
-    })
+    });
   }
 
   function debouncedProcessing(timeout = debounceMs) {
     // Debounced rerun, let other missing dependencies be discovered before
     // the next optimizeDeps run
-    enqueuedRerun = undefined
-    if (debounceProcessingHandle) clearTimeout(debounceProcessingHandle)
-    if (newDepsToLogHandle) clearTimeout(newDepsToLogHandle)
-    newDepsToLogHandle = undefined
+    enqueuedRerun = undefined;
+    if (debounceProcessingHandle) clearTimeout(debounceProcessingHandle);
+    if (newDepsToLogHandle) clearTimeout(newDepsToLogHandle);
+    newDepsToLogHandle = undefined;
     debounceProcessingHandle = setTimeout(() => {
-      debounceProcessingHandle = undefined
-      enqueuedRerun = rerun
+      debounceProcessingHandle = undefined;
+      enqueuedRerun = rerun;
       if (!currentlyProcessing) {
-        enqueuedRerun()
+        enqueuedRerun();
       }
-    }, timeout)
+    }, timeout);
   }
 
   // onCrawlEnd is called once when the server starts and all static
   // imports after the first request have been crawled (dynamic imports may also
   // be crawled if the browser requests them right away).
+  // 当服务器启动时，在所有静态导入（包括动态导入）被爬取后，调用 onCrawlEnd 方法
+  // 从这一点开始，切换到简单的防抖策略
+  // 当 爬虫 结束时
   async function onCrawlEnd() {
     // switch after this point to a simple debounce strategy
-    waitingForCrawlEnd = false
+    waitingForCrawlEnd = false;
 
-    debug?.(colors.green(`✨ static imports crawl ended`))
+    debug?.(colors.green(`✨ static imports crawl ended`));
     if (closed) {
-      return
+      return;
     }
 
     // Await for the scan+optimize step running in the background
     // It normally should be over by the time crawling of user code ended
-    await depsOptimizer.scanProcessing
+    await depsOptimizer.scanProcessing;
 
     if (optimizationResult && !options.noDiscovery) {
       // In the holdUntilCrawlEnd strategy, we don't release the result of the
@@ -634,63 +647,65 @@ export function createDepsOptimizer(
       // If holdUntilCrawlEnd is false and we reach here, it means that the
       // scan+optimize step finished after crawl end. We follow the same
       // process as in the holdUntilCrawlEnd in this case.
-      const afterScanResult = optimizationResult.result
-      optimizationResult = undefined // signal that we'll be using the result
+      const afterScanResult = optimizationResult.result;
+      optimizationResult = undefined; // signal that we'll be using the result
 
-      const result = await afterScanResult
-      currentlyProcessing = false
+      const result = await afterScanResult;
+      currentlyProcessing = false;
 
-      const crawlDeps = Object.keys(metadata.discovered)
-      const scanDeps = Object.keys(result.metadata.optimized)
+      const crawlDeps = Object.keys(metadata.discovered);
+      const scanDeps = Object.keys(result.metadata.optimized);
 
       if (scanDeps.length === 0 && crawlDeps.length === 0) {
         debug?.(
           colors.green(
-            `✨ no dependencies found by the scanner or crawling static imports`,
-          ),
-        )
+            `✨ no dependencies found by the scanner or crawling static imports`
+          )
+        );
         // We still commit the result so the scanner isn't run on the next cold start
         // for projects without dependencies
-        startNextDiscoveredBatch()
-        runOptimizer(result)
-        return
+        startNextDiscoveredBatch();
+        runOptimizer(result);
+        return;
       }
 
       const needsInteropMismatch = findInteropMismatches(
         metadata.discovered,
-        result.metadata.optimized,
-      )
-      const scannerMissedDeps = crawlDeps.some((dep) => !scanDeps.includes(dep))
+        result.metadata.optimized
+      );
+      const scannerMissedDeps = crawlDeps.some(
+        (dep) => !scanDeps.includes(dep)
+      );
       const outdatedResult =
-        needsInteropMismatch.length > 0 || scannerMissedDeps
+        needsInteropMismatch.length > 0 || scannerMissedDeps;
 
       if (outdatedResult) {
         // Drop this scan result, and perform a new optimization to avoid a full reload
-        result.cancel()
+        result.cancel();
 
         // Add deps found by the scanner to the discovered deps while crawling
         for (const dep of scanDeps) {
           if (!crawlDeps.includes(dep)) {
-            addMissingDep(dep, result.metadata.optimized[dep].src!)
+            addMissingDep(dep, result.metadata.optimized[dep].src!);
           }
         }
         if (scannerMissedDeps) {
           debug?.(
             colors.yellow(
-              `✨ new dependencies were found while crawling that weren't detected by the scanner`,
-            ),
-          )
+              `✨ new dependencies were found while crawling that weren't detected by the scanner`
+            )
+          );
         }
-        debug?.(colors.green(`✨ re-running optimizer`))
-        debouncedProcessing(0)
+        debug?.(colors.green(`✨ re-running optimizer`));
+        debouncedProcessing(0);
       } else {
         debug?.(
           colors.green(
-            `✨ using post-scan optimizer result, the scanner found every used dependency`,
-          ),
-        )
-        startNextDiscoveredBatch()
-        runOptimizer(result)
+            `✨ using post-scan optimizer result, the scanner found every used dependency`
+          )
+        );
+        startNextDiscoveredBatch();
+        runOptimizer(result);
       }
     } else if (!holdUntilCrawlEnd) {
       // The post-scanner optimize result has been released to the browser
@@ -700,35 +715,36 @@ export function createDepsOptimizer(
       if (newDepsDiscovered) {
         debug?.(
           colors.green(
-            `✨ new dependencies were found while crawling static imports, re-running optimizer`,
-          ),
-        )
-        warnAboutMissedDependencies = true
-        debouncedProcessing(0)
+            `✨ new dependencies were found while crawling static imports, re-running optimizer`
+          )
+        );
+        warnAboutMissedDependencies = true;
+        debouncedProcessing(0);
       }
     } else {
-      const crawlDeps = Object.keys(metadata.discovered)
-      currentlyProcessing = false
+      const crawlDeps = Object.keys(metadata.discovered);
+      currentlyProcessing = false;
 
       if (crawlDeps.length === 0) {
         debug?.(
           colors.green(
-            `✨ no dependencies found while crawling the static imports`,
-          ),
-        )
-        firstRunCalled = true
+            `✨ no dependencies found while crawling the static imports`
+          )
+        );
+        firstRunCalled = true;
       }
 
       // queue the first optimizer run, even without deps so the result is cached
-      debouncedProcessing(0)
+      debouncedProcessing(0);
     }
   }
 
-  return depsOptimizer
+  return depsOptimizer;
 }
 
+// 创建 明确依赖优化器
 export function createExplicitDepsOptimizer(
-  environment: DevEnvironment,
+  environment: DevEnvironment
 ): DepsOptimizer {
   const depsOptimizer = {
     metadata: initDepsOptimizerMetadata(environment),
@@ -739,8 +755,8 @@ export function createExplicitDepsOptimizer(
 
     registerMissingImport: () => {
       throw new Error(
-        `Vite Internal Error: registerMissingImport is not supported in dev ${environment.name}`,
-      )
+        `Vite Internal Error: registerMissingImport is not supported in dev ${environment.name}`
+      );
     },
     init,
     // noop, there is no scanning during dev SSR
@@ -749,37 +765,37 @@ export function createExplicitDepsOptimizer(
 
     close: async () => {},
     options: environment.config.dev.optimizeDeps,
-  }
+  };
 
-  let inited = false
+  let inited = false;
   async function init() {
-    if (inited) return
-    inited = true
+    if (inited) return;
+    inited = true;
 
-    depsOptimizer.metadata = await optimizeExplicitEnvironmentDeps(environment)
+    depsOptimizer.metadata = await optimizeExplicitEnvironmentDeps(environment);
   }
 
-  return depsOptimizer
+  return depsOptimizer;
 }
 
 function findInteropMismatches(
   discovered: Record<string, OptimizedDepInfo>,
-  optimized: Record<string, OptimizedDepInfo>,
+  optimized: Record<string, OptimizedDepInfo>
 ) {
-  const needsInteropMismatch = []
+  const needsInteropMismatch = [];
   for (const dep in discovered) {
-    const discoveredDepInfo = discovered[dep]
-    if (discoveredDepInfo.needsInterop === undefined) continue
+    const discoveredDepInfo = discovered[dep];
+    if (discoveredDepInfo.needsInterop === undefined) continue;
 
-    const depInfo = optimized[dep]
-    if (!depInfo) continue
+    const depInfo = optimized[dep];
+    if (!depInfo) continue;
 
     if (depInfo.needsInterop !== discoveredDepInfo.needsInterop) {
       // This only happens when a discovered dependency has mixed ESM and CJS syntax
       // and it hasn't been manually added to optimizeDeps.needsInterop
-      needsInteropMismatch.push(dep)
-      debug?.(colors.cyan(`✨ needsInterop mismatch detected for ${dep}`))
+      needsInteropMismatch.push(dep);
+      debug?.(colors.cyan(`✨ needsInterop mismatch detected for ${dep}`));
     }
   }
-  return needsInteropMismatch
+  return needsInteropMismatch;
 }

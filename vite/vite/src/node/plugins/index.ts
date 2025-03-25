@@ -1,47 +1,48 @@
-import aliasPlugin, { type ResolverFunction } from '@rollup/plugin-alias'
-import type { ObjectHook } from 'rollup'
-import type { PluginHookUtils, ResolvedConfig } from '../config'
-import { isDepOptimizationDisabled } from '../optimizer'
-import type { HookHandler, Plugin, PluginWithRequiredHook } from '../plugin'
-import { watchPackageDataPlugin } from '../packages'
-import { getFsUtils } from '../fsUtils'
-import { jsonPlugin } from './json'
-import { resolvePlugin } from './resolve'
-import { optimizedDepsPlugin } from './optimizedDeps'
-import { esbuildPlugin } from './esbuild'
-import { importAnalysisPlugin } from './importAnalysis'
-import { cssAnalysisPlugin, cssPlugin, cssPostPlugin } from './css'
-import { assetPlugin } from './asset'
-import { clientInjectionsPlugin } from './clientInjections'
-import { buildHtmlPlugin, htmlInlineProxyPlugin } from './html'
-import { wasmFallbackPlugin, wasmHelperPlugin } from './wasm'
-import { modulePreloadPolyfillPlugin } from './modulePreloadPolyfill'
-import { webWorkerPlugin } from './worker'
-import { preAliasPlugin } from './preAlias'
-import { definePlugin } from './define'
-import { workerImportMetaUrlPlugin } from './workerImportMetaUrl'
-import { assetImportMetaUrlPlugin } from './assetImportMetaUrl'
-import { metadataPlugin } from './metadata'
-import { dynamicImportVarsPlugin } from './dynamicImportVars'
-import { importGlobPlugin } from './importMetaGlob'
+import aliasPlugin, { type ResolverFunction } from "@rollup/plugin-alias";
+import type { ObjectHook } from "rollup";
+import type { PluginHookUtils, ResolvedConfig } from "../config";
+import { isDepOptimizationDisabled } from "../optimizer";
+import type { HookHandler, Plugin, PluginWithRequiredHook } from "../plugin";
+import { watchPackageDataPlugin } from "../packages";
+import { getFsUtils } from "../fsUtils";
+import { jsonPlugin } from "./json";
+import { resolvePlugin } from "./resolve";
+import { optimizedDepsPlugin } from "./optimizedDeps";
+import { esbuildPlugin } from "./esbuild";
+import { importAnalysisPlugin } from "./importAnalysis";
+import { cssAnalysisPlugin, cssPlugin, cssPostPlugin } from "./css";
+import { assetPlugin } from "./asset";
+import { clientInjectionsPlugin } from "./clientInjections";
+import { buildHtmlPlugin, htmlInlineProxyPlugin } from "./html";
+import { wasmFallbackPlugin, wasmHelperPlugin } from "./wasm";
+import { modulePreloadPolyfillPlugin } from "./modulePreloadPolyfill";
+import { webWorkerPlugin } from "./worker";
+import { preAliasPlugin } from "./preAlias";
+import { definePlugin } from "./define";
+import { workerImportMetaUrlPlugin } from "./workerImportMetaUrl";
+import { assetImportMetaUrlPlugin } from "./assetImportMetaUrl";
+import { metadataPlugin } from "./metadata";
+import { dynamicImportVarsPlugin } from "./dynamicImportVars";
+import { importGlobPlugin } from "./importMetaGlob";
 
+// 返回排序后的 自定义插件 和 内置插件
 export async function resolvePlugins(
   config: ResolvedConfig,
   prePlugins: Plugin[],
   normalPlugins: Plugin[],
-  postPlugins: Plugin[],
+  postPlugins: Plugin[]
 ): Promise<Plugin[]> {
-  const isBuild = config.command === 'build'
-  const isWorker = config.isWorker
+  const isBuild = config.command === "build";
+  const isWorker = config.isWorker;
   const buildPlugins = isBuild
-    ? await (await import('../build')).resolveBuildPlugins(config)
-    : { pre: [], post: [] }
-  const { modulePreload } = config.build
+    ? await (await import("../build")).resolveBuildPlugins(config)
+    : { pre: [], post: [] };
+  const { modulePreload } = config.build;
   const depOptimizationEnabled =
     !isBuild &&
     Object.values(config.environments).some(
-      (environment) => !isDepOptimizationDisabled(environment.dev.optimizeDeps),
-    )
+      (environment) => !isDepOptimizationDisabled(environment.dev.optimizeDeps)
+    );
 
   return [
     depOptimizationEnabled ? optimizedDepsPlugin() : null,
@@ -69,7 +70,7 @@ export async function resolvePlugins(
         optimizeDeps: true,
         externalize: isBuild && !!config.build.ssr, // TODO: should we do this for all environments?
       },
-      config.environments,
+      config.environments
     ),
     htmlInlineProxyPlugin(config),
     cssPlugin(config),
@@ -79,7 +80,7 @@ export async function resolvePlugins(
         namedExports: true,
         ...config.json,
       },
-      isBuild,
+      isBuild
     ),
     wasmHelperPlugin(),
     webWorkerPlugin(config),
@@ -109,70 +110,75 @@ export async function resolvePlugins(
           cssAnalysisPlugin(config),
           importAnalysisPlugin(config),
         ]),
-  ].filter(Boolean) as Plugin[]
+  ].filter(Boolean) as Plugin[];
 }
 
+//
 export function createPluginHookUtils(
-  plugins: readonly Plugin[],
+  plugins: readonly Plugin[]
 ): PluginHookUtils {
   // sort plugins per hook
-  const sortedPluginsCache = new Map<keyof Plugin, Plugin[]>()
+  const sortedPluginsCache = new Map<keyof Plugin, Plugin[]>();
   function getSortedPlugins<K extends keyof Plugin>(
-    hookName: K,
+    hookName: K
   ): PluginWithRequiredHook<K>[] {
     if (sortedPluginsCache.has(hookName))
-      return sortedPluginsCache.get(hookName) as PluginWithRequiredHook<K>[]
-    const sorted = getSortedPluginsByHook(hookName, plugins)
-    sortedPluginsCache.set(hookName, sorted)
-    return sorted
+      return sortedPluginsCache.get(hookName) as PluginWithRequiredHook<K>[];
+    const sorted = getSortedPluginsByHook(hookName, plugins);
+    sortedPluginsCache.set(hookName, sorted);
+    return sorted;
   }
   function getSortedPluginHooks<K extends keyof Plugin>(
-    hookName: K,
+    hookName: K
   ): NonNullable<HookHandler<Plugin[K]>>[] {
-    const plugins = getSortedPlugins(hookName)
-    return plugins.map((p) => getHookHandler(p[hookName])).filter(Boolean)
+    const plugins = getSortedPlugins(hookName);
+    return plugins.map((p) => getHookHandler(p[hookName])).filter(Boolean);
   }
 
   return {
+    // 返回包含 特定钩子 的插件
     getSortedPlugins,
+    // 返回包含 特定钩子 队列
     getSortedPluginHooks,
-  }
+  };
 }
 
+// 筛选含有 特定钩子 的插件并按照 order 字段排序
 export function getSortedPluginsByHook<K extends keyof Plugin>(
   hookName: K,
-  plugins: readonly Plugin[],
+  plugins: readonly Plugin[]
 ): PluginWithRequiredHook<K>[] {
-  const sortedPlugins: Plugin[] = []
+  const sortedPlugins: Plugin[] = [];
   // Use indexes to track and insert the ordered plugins directly in the
   // resulting array to avoid creating 3 extra temporary arrays per hook
   let pre = 0,
     normal = 0,
-    post = 0
+    post = 0;
   for (const plugin of plugins) {
-    const hook = plugin[hookName]
+    const hook = plugin[hookName];
     if (hook) {
-      if (typeof hook === 'object') {
-        if (hook.order === 'pre') {
-          sortedPlugins.splice(pre++, 0, plugin)
-          continue
+      if (typeof hook === "object") {
+        if (hook.order === "pre") {
+          sortedPlugins.splice(pre++, 0, plugin);
+          continue;
         }
-        if (hook.order === 'post') {
-          sortedPlugins.splice(pre + normal + post++, 0, plugin)
-          continue
+        if (hook.order === "post") {
+          sortedPlugins.splice(pre + normal + post++, 0, plugin);
+          continue;
         }
       }
-      sortedPlugins.splice(pre + normal++, 0, plugin)
+      sortedPlugins.splice(pre + normal++, 0, plugin);
     }
   }
 
-  return sortedPlugins as PluginWithRequiredHook<K>[]
+  return sortedPlugins as PluginWithRequiredHook<K>[];
 }
 
+// 返回 钩子函数
 export function getHookHandler<T extends ObjectHook<Function>>(
-  hook: T,
+  hook: T
 ): HookHandler<T> {
-  return (typeof hook === 'object' ? hook.handler : hook) as HookHandler<T>
+  return (typeof hook === "object" ? hook.handler : hook) as HookHandler<T>;
 }
 
 // Same as `@rollup/plugin-alias` default resolver, but we attach additional meta
@@ -180,8 +186,8 @@ export function getHookHandler<T extends ObjectHook<Function>>(
 export const viteAliasCustomResolver: ResolverFunction = async function (
   id,
   importer,
-  options,
+  options
 ) {
-  const resolved = await this.resolve(id, importer, options)
-  return resolved || { id, meta: { 'vite:alias': { noResolved: true } } }
-}
+  const resolved = await this.resolve(id, importer, options);
+  return resolved || { id, meta: { "vite:alias": { noResolved: true } } };
+};

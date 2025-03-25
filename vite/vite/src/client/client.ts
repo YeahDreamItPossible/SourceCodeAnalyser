@@ -31,6 +31,7 @@ const socketHost = `${__HMR_HOSTNAME__ || importMetaUrl.hostname}:${
 const directSocketHost = __HMR_DIRECT_TARGET__
 const base = __BASE__ || '/'
 
+// 
 let socket: WebSocket
 try {
   let fallback: (() => void) | undefined
@@ -69,14 +70,17 @@ try {
   console.error(`[vite] failed to connect to websocket (${error}). `)
 }
 
+// 启动 socket 并监听 open & message & close 事件
 function setupWebSocket(
   protocol: string,
   hostAndPath: string,
   onCloseWithoutOpen?: () => void,
 ) {
+  // 启动 socket
   const socket = new WebSocket(`${protocol}://${hostAndPath}`, 'vite-hmr')
   let isOpened = false
 
+  // 监听 open
   socket.addEventListener(
     'open',
     () => {
@@ -135,6 +139,7 @@ const debounceReload = (time: number) => {
 }
 const pageReload = debounceReload(50)
 
+// 运行在 客户端 的 HMR
 const hmrClient = new HMRClient(
   {
     error: (err) => console.error('[vite]', err),
@@ -172,6 +177,7 @@ const hmrClient = new HMRClient(
   },
 )
 
+// 处理 socket message
 async function handleMessage(payload: HotPayload) {
   switch (payload.type) {
     case 'connected':
@@ -313,15 +319,18 @@ function notifyListeners(event: string, data: any): void {
 const enableOverlay = __HMR_ENABLE_OVERLAY__
 const hasDocument = 'document' in globalThis
 
+// 创建 错误遮罩层
 function createErrorOverlay(err: ErrorPayload['err']) {
   clearErrorOverlay()
   document.body.appendChild(new ErrorOverlay(err))
 }
 
+// 清空 错误遮罩层
 function clearErrorOverlay() {
   document.querySelectorAll<ErrorOverlay>(overlayId).forEach((n) => n.close())
 }
 
+// 是否有 错误遮罩层
 function hasErrorOverlay() {
   return document.querySelectorAll(overlayId).length
 }
@@ -405,6 +414,7 @@ const cspNonce =
 // because after build it will be a single css file
 let lastInsertedStyle: HTMLStyleElement | undefined
 
+// 更新 样式
 export function updateStyle(id: string, content: string): void {
   let style = sheetsMap.get(id)
   if (!style) {
@@ -434,6 +444,7 @@ export function updateStyle(id: string, content: string): void {
   sheetsMap.set(id, style)
 }
 
+// 移除 样式
 export function removeStyle(id: string): void {
   const style = sheetsMap.get(id)
   if (style) {
@@ -442,6 +453,7 @@ export function removeStyle(id: string): void {
   }
 }
 
+// 创建 HotContext 的实例
 export function createHotContext(ownerPath: string): ViteHotContext {
   return new HMRContext(hmrClient, ownerPath)
 }

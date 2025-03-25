@@ -23,8 +23,12 @@ export function getDefaultResolvedEnvironmentOptions(
   };
 }
 
+// 局部环境
+// 作用:
+// 提供环境名, 环境配置, 环境选项
 export class PartialEnvironment {
   name: string;
+  // 顶层配置
   getTopLevelConfig(): ResolvedConfig {
     return this._topLevelConfig;
   }
@@ -49,16 +53,18 @@ export class PartialEnvironment {
     topLevelConfig: ResolvedConfig,
     options: ResolvedEnvironmentOptions = topLevelConfig.environments[name]
   ) {
-    // only allow some characters so that we can use name without escaping for directory names
-    // and make users easier to access with `environments.*`
     if (!/^[\w$]+$/.test(name)) {
       throw new Error(
         `Invalid environment name "${name}". Environment names must only contain alphanumeric characters and "$", "_".`
       );
     }
+    // 环境名
     this.name = name;
+    // 配置
     this._topLevelConfig = topLevelConfig;
+    // 环境选项
     this._options = options;
+    // 代理
     this.config = new Proxy(
       options as ResolvedConfig & ResolvedEnvironmentOptions,
       {
@@ -78,6 +84,7 @@ export class PartialEnvironment {
       [...this.name].reduce((acc, c) => acc + c.charCodeAt(0), 0) %
       environmentColors.length;
     const infoColor = environmentColors[colorIndex || 0];
+    // 日志
     this.logger = {
       get hasWarned() {
         return topLevelConfig.logger.hasWarned;
@@ -116,7 +123,11 @@ export class PartialEnvironment {
   }
 }
 
+// 基础环境
+// 作用:
+// 插件系统
 export class BaseEnvironment extends PartialEnvironment {
+  // 插件系统
   get plugins(): Plugin[] {
     if (!this._plugins)
       throw new Error(
@@ -138,6 +149,9 @@ export class BaseEnvironment extends PartialEnvironment {
   }
 }
 
+// 未知环境
+// 作用:
+// 当环境不存在时, 使用未知环境
 export class UnknownEnvironment extends BaseEnvironment {
   mode = "unknown" as const;
 }

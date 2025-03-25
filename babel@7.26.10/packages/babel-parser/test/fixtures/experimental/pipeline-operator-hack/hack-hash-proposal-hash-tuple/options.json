@@ -1,0 +1,16 @@
+{
+  "BABEL_8_BREAKING": true,
+  "plugins": [
+    [
+      "pipelineOperator",
+      {
+        "proposal": "hack",
+        "topicToken": "#"
+      }
+    ],
+    [
+      "recordAndTuple"
+    ]
+  ],
+  "throws": "Plugin conflict between `[\"pipelineOperator\", { proposal: \"hack\", topicToken: \"#\" }]` and `[\"recordAndTuple\",{}]`."
+}

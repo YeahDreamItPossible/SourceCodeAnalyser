@@ -40,6 +40,9 @@ interface ParsedGeneralImportGlobOptions extends GeneralImportGlobOptions {
   query?: string
 }
 
+//
+// 作用：
+// 
 export function importGlobPlugin(config: ResolvedConfig): Plugin {
   const importGlobMaps = new Map<
     Environment,

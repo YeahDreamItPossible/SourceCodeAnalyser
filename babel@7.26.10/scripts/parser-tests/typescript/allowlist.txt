@@ -1,0 +1,143 @@
+# 7 invalid programs did not produce a parsing error
+
+collisionArgumentsArrowFunctions.ts # TypeScript doesn't allow a parameter to be named arguments even in non-strict mode, which we don't catch.
+collisionArgumentsFunction.ts # TypeScript doesn't allow a parameter to be named arguments even in non-strict mode, which we don't catch.
+collisionArgumentsFunctionExpressions.ts # TypeScript doesn't allow a parameter to be named arguments even in non-strict mode, which we don't catch.
+dynamicImportTrailingComma.ts
+exportDeclarationsInAmbientNamespaces2.ts
+multipleExports.ts
+regularExpressionAnnexB.ts # Babel parser does not handle regex parsing
+
+
+# 130 valid programs produced a parsing error
+
+ArrowFunctionExpression1.ts
+MemberAccessorDeclaration15.ts
+ParameterList13.ts
+ParameterList4.ts
+ParameterList5.ts
+ParameterList6.ts
+accessorBodyInTypeContext.ts
+accessorParameterAccessibilityModifier.ts
+anyDeclare.ts
+asiAbstract.ts
+augmentedTypesClass.ts
+augmentedTypesClass2.ts
+augmentedTypesClass2a.ts
+augmentedTypesClass4.ts
+augmentedTypesEnum.ts
+augmentedTypesEnum2.ts
+augmentedTypesFunction.ts
+augmentedTypesInterface.ts
+augmentedTypesVar.ts
+classCannotExtendVar.ts
+classExtendsMultipleBaseClasses.ts
+classOverloadForFunction.ts
+classWithEmptyTypeParameter.ts
+conflictingDeclarationsImportFromNamespace1.ts
+conflictingDeclarationsImportFromNamespace2.ts
+constDeclarations-invalidContexts.ts
+constDeclarations-scopes.ts
+constDeclarations-validContexts.ts
+declarationEmitDestructuring2.ts
+declarationEmitDestructuringParameterProperties.ts
+declarationEmitDestructuringWithOptionalBindingParameters.ts
+declarationEmitInterfaceWithNonEntityNameExpressionHeritage.ts
+declareModifierOnImport1.ts
+decoratorsOnComputedProperties.ts
+decrementAndIncrementOperators.ts
+defaultArgsInOverloads.ts
+defaultValueInFunctionTypes.ts
+deleteOperatorInStrictMode.ts
+duplicateErrorNameNotFound.ts
+duplicateIdentifierBindingElementInParameterDeclaration1.ts
+duplicateIdentifierBindingElementInParameterDeclaration2.ts
+duplicateIdentifierEnum.ts
+duplicateIdentifierInCatchBlock.ts
+duplicateLabel1.ts
+duplicateLabel2.ts
+duplicatePackage_withErrors.ts
+emptyGenericParamList.ts
+emptyTypeArgumentList.ts
+emptyTypeArgumentListWithNew.ts
+enumGenericTypeClash.ts
+es6ImportDefaultBindingMergeErrors.ts
+es6ImportNameSpaceImportMergeErrors.ts
+es6ImportNamedImportMergeErrors.ts
+expandoFunctionContextualTypesNoValue.ts
+exportAssignmentImportMergeNoCrash.ts
+exportAssignmentWithDeclareAndExportModifiers.ts
+exportAssignmentWithDeclareModifier.ts
+exportAssignmentWithExportModifier.ts
+exportClassWithoutName.ts
+exportDefaultAsyncFunction2.ts
+exportInterfaceClassAndValue.ts
+exportSameNameFuncVar.ts
+exportSpecifierForAGlobal.ts # We handle this fine, but it doesn't consider the different files together
+exportSpecifierReferencingOuterDeclaration2.ts # We handle this fine, but it doesn't consider the different files together
+expressionWithJSDocTypeArguments.ts
+expressionsForbiddenInParameterInitializers.ts
+fileWithNextLine2.ts # This is a bug in TS: U+0085 is not a whitespace in ECMAScript
+funClodule.ts
+functionCall15.ts
+importAndVariableDeclarationConflict3.ts
+importAssertionNonstring.ts
+importDeclWithClassModifiers.ts
+importDeclWithDeclareModifierInAmbientContext.ts
+indexSignatureWithAccessibilityModifier.ts
+indexSignatureWithInitializer1.ts
+indexSignatureWithTrailingComma.ts
+indexTypeCheck.ts
+indexWithoutParamType.ts
+indexerSignatureWithRestParam.ts
+interfaceMayNotBeExtendedWitACall.ts
+interfaceNaming1.ts # We correctly identify this error, but we can't bring it in without bringing a bunch of other tests too.
+interfaceWithImplements1.ts
+invalidOptionalChainFromNewExpression.ts
+jsxAttributeMissingInitializer.tsx
+jsxAttributeWithoutExpressionReact.tsx
+letAndVarRedeclaration.ts
+letAsIdentifier.ts
+letDeclarations-invalidContexts.ts
+letDeclarations-scopes-duplicates.ts
+letDeclarations-scopes.ts
+letDeclarations-validContexts.ts
+letInConstDeclarations_ES5.ts
+letInConstDeclarations_ES6.ts
+letInLetConstDeclOfForOfAndForIn_ES5.ts
+letInLetConstDeclOfForOfAndForIn_ES6.ts
+letInLetDeclarations_ES5.ts
+letInLetDeclarations_ES6.ts
+mismatchedClassConstructorVariable.ts
+misspelledNewMetaProperty.ts
+modifiersOnInterfaceIndexSignature1.ts
+moduleDuplicateIdentifiers.ts
+modulePreserve2.ts
+moduleSharesNameWithImportDeclarationInsideIt3.ts
+moduleSharesNameWithImportDeclarationInsideIt5.ts
+multipleInheritance.ts
+nameCollisions.ts
+nonMergedOverloads.ts
+optionalChainWithInstantiationExpression1.ts
+parameterInitializerBeforeDestructuringEmit.ts # This is a bug in TS: "use strict" is not allowed when a function has destructuring parameters
+parameterPropertyOutsideConstructor.ts
+parseInvalidNonNullableTypes.ts
+parseInvalidNullableTypes.ts
+parserConstructorDeclaration12.ts
+reExportGlobalDeclaration1.ts
+reExportGlobalDeclaration2.ts # We handle this fine, but it doesn't consider the different files together
+reExportGlobalDeclaration3.ts # We handle this fine, but it doesn't consider the different files together
+reExportGlobalDeclaration4.ts # We handle this fine, but it doesn't consider the different files together
+reExportUndefined1.ts
+readonlyInNonPropertyParameters.ts
+redeclareParameterInCatchBlock.ts
+regularExpressionScanning.ts
+restParamModifier2.ts
+shadowedReservedCompilerDeclarationsWithNoEmit.ts
+sourceMap-LineBreaks.ts
+sourceMapValidationDecorators.ts
+stackDepthLimitCastingType.ts
+strictOptionalProperties1.ts
+superCallFromClassThatHasNoBaseType1.ts
+unicodeEscapesInNames02.ts
+varArgConstructorMemberParameter.ts

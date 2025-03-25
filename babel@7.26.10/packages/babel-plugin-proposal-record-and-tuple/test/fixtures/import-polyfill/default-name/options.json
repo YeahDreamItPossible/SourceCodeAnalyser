@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    [
+      "proposal-record-and-tuple",
+      {
+        "importPolyfill": true
+      }
+    ]
+  ]
+}

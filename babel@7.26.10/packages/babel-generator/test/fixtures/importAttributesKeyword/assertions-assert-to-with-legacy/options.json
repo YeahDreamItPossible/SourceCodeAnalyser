@@ -1,0 +1,6 @@
+{
+  "BABEL_8_BREAKING": false,
+  "plugins": ["importAssertions"],
+  "importAttributesKeyword": "with-legacy",
+  "expectedReParseError": true
+}

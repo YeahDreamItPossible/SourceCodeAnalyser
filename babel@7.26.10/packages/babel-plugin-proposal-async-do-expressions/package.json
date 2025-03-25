@@ -1,0 +1,58 @@
+{
+  "name": "@babel/plugin-proposal-async-do-expressions",
+  "version": "7.25.9",
+  "description": "Transform async do expressions to ES2021",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/babel/babel.git",
+    "directory": "packages/babel-plugin-proposal-async-do-expressions"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "keywords": [
+    "babel-plugin"
+  ],
+  "dependencies": {
+    "@babel/helper-plugin-utils": "workspace:^",
+    "@babel/traverse": "condition:BABEL_8_BREAKING ? : workspace:^"
+  },
+  "peerDependencies": {
+    "@babel/core": "^7.13.0"
+  },
+  "devDependencies": {
+    "@babel/core": "workspace:^",
+    "@babel/helper-plugin-test-runner": "workspace:^"
+  },
+  "homepage": "https://babel.dev/docs/en/next/babel-plugin-proposal-async-do-expressions",
+  "engines": {
+    "node": ">=6.9.0"
+  },
+  "author": "The Babel Team (https://babel.dev/team)",
+  "type": "module",
+  "conditions": {
+    "USE_ESM": [
+      null,
+      {
+        "type": "commonjs"
+      }
+    ],
+    "BABEL_8_BREAKING": [
+      {
+        "engines": {
+          "node": "^18.20.0 || ^20.17.0 || >=22.8.0"
+        }
+      },
+      {}
+    ]
+  }
+}

@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
+
 <body>
   <div id="app">
     {{ user }}
@@ -14,19 +16,48 @@
   <script src="./vue.global.js"></script>
   <script>
     const app = Vue.createApp({
-      setup(){
+      setup() {
         const user = Vue.ref('Lee')
-
-        return {user}
+        console.log('setup')
+        return { user }
       },
-      el: '#app',
-      // template: `<div>app <Hello /></div>`
+      beforeCreate() {
+        console.log('beforeCreate')
+      },
+      created() {
+        console.log('created')
+      },
+      beforeMount() {
+        console.log('beforeMount')
+      },
+      mounted() {
+        console.log('mounted')
+      },
+      // el: '#app',
+      template: `<div>app <Hello /></div>`
     })
     const Hello = app.component('Hello', {
-      render () {
-        let flag = Vue.ref(true)
+      setup() {
+        const user = Vue.ref('Lee')
+        console.log('2 setup')
+        return { user }
+      },
+      beforeCreate() {
+        console.log('2 beforeCreate')
+      },
+      created() {
+        console.log('2 created')
+      },
+      beforeMount() {
+        console.log('2 beforeMount')
+      },
+      mounted() {
+        console.log('2 mounted')
+      },
+      render() {
+        let flag = Vue.ref(false)
         return Vue.h('div', {
-          onClick (e) {
+          onClick(e) {
             console.log('Hello')
             console.log(e.target)
             console.log(flag.value)
@@ -43,4 +74,5 @@
     window.a = app
   </script>
 </body>
+
 </html>

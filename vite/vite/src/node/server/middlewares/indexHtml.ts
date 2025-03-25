@@ -1,10 +1,10 @@
-import fsp from 'node:fs/promises'
-import path from 'node:path'
-import MagicString from 'magic-string'
-import type { SourceMapInput } from 'rollup'
-import type { Connect } from 'dep-types/connect'
-import type { DefaultTreeAdapterMap, Token } from 'parse5'
-import type { IndexHtmlTransformHook } from '../../plugins/html'
+import fsp from "node:fs/promises";
+import path from "node:path";
+import MagicString from "magic-string";
+import type { SourceMapInput } from "rollup";
+import type { Connect } from "dep-types/connect";
+import type { DefaultTreeAdapterMap, Token } from "parse5";
+import type { IndexHtmlTransformHook } from "../../plugins/html";
 import {
   addToHTMLProxyCache,
   applyHtmlTransforms,
@@ -23,10 +23,10 @@ import {
   preImportMapHook,
   resolveHtmlTransforms,
   traverseHtml,
-} from '../../plugins/html'
-import type { PreviewServer, ResolvedConfig, ViteDevServer } from '../..'
-import { send } from '../send'
-import { CLIENT_PUBLIC_PATH, FS_PREFIX } from '../../constants'
+} from "../../plugins/html";
+import type { PreviewServer, ResolvedConfig, ViteDevServer } from "../..";
+import { send } from "../send";
+import { CLIENT_PUBLIC_PATH, FS_PREFIX } from "../../constants";
 import {
   ensureWatchedFile,
   fsPathFromId,
@@ -38,37 +38,40 @@ import {
   normalizePath,
   processSrcSetSync,
   stripBase,
-} from '../../utils'
-import { getFsUtils } from '../../fsUtils'
-import { checkPublicFile } from '../../publicDir'
-import { isCSSRequest } from '../../plugins/css'
-import { getCodeWithSourcemap, injectSourcesContent } from '../sourcemap'
-import { cleanUrl, unwrapId, wrapId } from '../../../shared/utils'
+} from "../../utils";
+import { getFsUtils } from "../../fsUtils";
+import { checkPublicFile } from "../../publicDir";
+import { isCSSRequest } from "../../plugins/css";
+import { getCodeWithSourcemap, injectSourcesContent } from "../sourcemap";
+import { cleanUrl, unwrapId, wrapId } from "../../../shared/utils";
 
 interface AssetNode {
-  start: number
-  end: number
-  code: string
+  start: number;
+  end: number;
+  code: string;
 }
 
 interface InlineStyleAttribute {
-  index: number
-  location: Token.Location
-  code: string
+  index: number;
+  location: Token.Location;
+  code: string;
 }
 
+// 创建 开发环境中 html转换函数
+// 作用：
+// 调用 html转换钩子队列 并返回处理后的 html
 export function createDevHtmlTransformFn(
-  config: ResolvedConfig,
+  config: ResolvedConfig
 ): (
   server: ViteDevServer,
   url: string,
   html: string,
-  originalUrl?: string,
+  originalUrl?: string
 ) => Promise<string> {
   const [preHooks, normalHooks, postHooks] = resolveHtmlTransforms(
     config.plugins,
-    config.logger,
-  )
+    config.logger
+  );
   const transformHooks = [
     preImportMapHook(config),
     injectCspNonceMetaTagHook(config),
@@ -79,46 +82,47 @@ export function createDevHtmlTransformFn(
     ...postHooks,
     injectNonceAttributeTagHook(config),
     postImportMapHook(),
-  ]
+  ];
+  // 
   return (
     server: ViteDevServer,
     url: string,
     html: string,
-    originalUrl?: string,
+    originalUrl?: string
   ): Promise<string> => {
     return applyHtmlTransforms(html, transformHooks, {
       path: url,
       filename: getHtmlFilename(url, server),
       server,
       originalUrl,
-    })
-  }
+    });
+  };
 }
 
 function getHtmlFilename(url: string, server: ViteDevServer) {
   if (url.startsWith(FS_PREFIX)) {
-    return decodeURIComponent(fsPathFromId(url))
+    return decodeURIComponent(fsPathFromId(url));
   } else {
     return decodeURIComponent(
-      normalizePath(path.join(server.config.root, url.slice(1))),
-    )
+      normalizePath(path.join(server.config.root, url.slice(1)))
+    );
   }
 }
 
 function shouldPreTransform(url: string, config: ResolvedConfig) {
   return (
     !checkPublicFile(url, config) && (isJSRequest(url) || isCSSRequest(url))
-  )
+  );
 }
 
-const wordCharRE = /\w/
+const wordCharRE = /\w/;
 
 function isBareRelative(url: string) {
-  return wordCharRE.test(url[0]) && !url.includes(':')
+  return wordCharRE.test(url[0]) && !url.includes(":");
 }
 
 const isSrcSet = (attr: Token.Attribute) =>
-  attr.name === 'srcset' && attr.prefix === undefined
+  attr.name === "srcset" && attr.prefix === undefined;
 const processNodeUrl = (
   url: string,
   useSrcSetReplacer: boolean,
@@ -126,19 +130,20 @@ const processNodeUrl = (
   htmlPath: string,
   originalUrl?: string,
   server?: ViteDevServer,
-  isClassicScriptLink?: boolean,
+  isClassicScriptLink?: boolean
 ): string => {
   // prefix with base (dev only, base is never relative)
   const replacer = (url: string) => {
     if (server) {
-      const mod = server.environments.client.moduleGraph.urlToModuleMap.get(url)
+      const mod =
+        server.environments.client.moduleGraph.urlToModuleMap.get(url);
       if (mod && mod.lastHMRTimestamp > 0) {
-        url = injectQuery(url, `t=${mod.lastHMRTimestamp}`)
+        url = injectQuery(url, `t=${mod.lastHMRTimestamp}`);
       }
     }
 
     if (
-      (url[0] === '/' && url[1] !== '/') ||
+      (url[0] === "/" && url[1] !== "/") ||
       // #3230 if some request url (localhost:3000/a/b) return to fallback html, the relative assets
       // path will add `/a/` prefix, it will caused 404.
       //
@@ -147,130 +152,133 @@ const processNodeUrl = (
       // rewrite `./index.js` -> `localhost:5173/a/index.js`.
       // rewrite `../index.js` -> `localhost:5173/index.js`.
       // rewrite `relative/index.js` -> `localhost:5173/a/relative/index.js`.
-      ((url[0] === '.' || isBareRelative(url)) &&
+      ((url[0] === "." || isBareRelative(url)) &&
         originalUrl &&
-        originalUrl !== '/' &&
-        htmlPath === '/index.html')
+        originalUrl !== "/" &&
+        htmlPath === "/index.html")
     ) {
-      url = path.posix.join(config.base, url)
+      url = path.posix.join(config.base, url);
     }
 
     if (server && !isClassicScriptLink && shouldPreTransform(url, config)) {
-      let preTransformUrl: string | undefined
-      if (url[0] === '/' && url[1] !== '/') {
-        preTransformUrl = url
-      } else if (url[0] === '.' || isBareRelative(url)) {
+      let preTransformUrl: string | undefined;
+      if (url[0] === "/" && url[1] !== "/") {
+        preTransformUrl = url;
+      } else if (url[0] === "." || isBareRelative(url)) {
         preTransformUrl = path.posix.join(
           config.base,
           path.posix.dirname(htmlPath),
-          url,
-        )
+          url
+        );
       }
       if (preTransformUrl) {
         try {
-          preTransformUrl = decodeURI(preTransformUrl)
+          preTransformUrl = decodeURI(preTransformUrl);
         } catch {
           // Malformed uri. Skip pre-transform.
-          return url
+          return url;
         }
-        preTransformRequest(server, preTransformUrl, config.decodedBase)
+        preTransformRequest(server, preTransformUrl, config.decodedBase);
       }
     }
-    return url
-  }
+    return url;
+  };
 
   const processedUrl = useSrcSetReplacer
     ? processSrcSetSync(url, ({ url }) => replacer(url))
-    : replacer(url)
-  return processedUrl
-}
+    : replacer(url);
+  return processedUrl;
+};
 const devHtmlHook: IndexHtmlTransformHook = async (
   html,
-  { path: htmlPath, filename, server, originalUrl },
+  { path: htmlPath, filename, server, originalUrl }
 ) => {
-  const { config, watcher } = server!
-  const base = config.base || '/'
-  const decodedBase = config.decodedBase || '/'
+  const { config, watcher } = server!;
+  const base = config.base || "/";
+  const decodedBase = config.decodedBase || "/";
 
-  let proxyModulePath: string
-  let proxyModuleUrl: string
+  let proxyModulePath: string;
+  let proxyModuleUrl: string;
 
-  const trailingSlash = htmlPath.endsWith('/')
+  const trailingSlash = htmlPath.endsWith("/");
   if (!trailingSlash && getFsUtils(config).existsSync(filename)) {
-    proxyModulePath = htmlPath
-    proxyModuleUrl = proxyModulePath
+    proxyModulePath = htmlPath;
+    proxyModuleUrl = proxyModulePath;
   } else {
     // There are users of vite.transformIndexHtml calling it with url '/'
     // for SSR integrations #7993, filename is root for this case
     // A user may also use a valid name for a virtual html file
     // Mark the path as virtual in both cases so sourcemaps aren't processed
     // and ids are properly handled
-    const validPath = `${htmlPath}${trailingSlash ? 'index.html' : ''}`
-    proxyModulePath = `\0${validPath}`
-    proxyModuleUrl = wrapId(proxyModulePath)
+    const validPath = `${htmlPath}${trailingSlash ? "index.html" : ""}`;
+    proxyModulePath = `\0${validPath}`;
+    proxyModuleUrl = wrapId(proxyModulePath);
   }
-  proxyModuleUrl = joinUrlSegments(decodedBase, proxyModuleUrl)
+  proxyModuleUrl = joinUrlSegments(decodedBase, proxyModuleUrl);
 
-  const s = new MagicString(html)
-  let inlineModuleIndex = -1
+  const s = new MagicString(html);
+  let inlineModuleIndex = -1;
   // The key to the proxyHtml cache is decoded, as it will be compared
   // against decoded URLs by the HTML plugins.
   const proxyCacheUrl = decodeURI(
-    cleanUrl(proxyModulePath).replace(normalizePath(config.root), ''),
-  )
-  const styleUrl: AssetNode[] = []
-  const inlineStyles: InlineStyleAttribute[] = []
+    cleanUrl(proxyModulePath).replace(normalizePath(config.root), "")
+  );
+  const styleUrl: AssetNode[] = [];
+  const inlineStyles: InlineStyleAttribute[] = [];
 
   const addInlineModule = (
-    node: DefaultTreeAdapterMap['element'],
-    ext: 'js',
+    node: DefaultTreeAdapterMap["element"],
+    ext: "js"
   ) => {
-    inlineModuleIndex++
+    inlineModuleIndex++;
 
-    const contentNode = node.childNodes[0] as DefaultTreeAdapterMap['textNode']
+    const contentNode = node.childNodes[0] as DefaultTreeAdapterMap["textNode"];
 
-    const code = contentNode.value
+    const code = contentNode.value;
 
-    let map: SourceMapInput | undefined
-    if (proxyModulePath[0] !== '\0') {
+    let map: SourceMapInput | undefined;
+    if (proxyModulePath[0] !== "\0") {
       map = new MagicString(html)
         .snip(
           contentNode.sourceCodeLocation!.startOffset,
-          contentNode.sourceCodeLocation!.endOffset,
+          contentNode.sourceCodeLocation!.endOffset
         )
-        .generateMap({ hires: 'boundary' })
-      map.sources = [filename]
-      map.file = filename
+        .generateMap({ hires: "boundary" });
+      map.sources = [filename];
+      map.file = filename;
     }
 
     // add HTML Proxy to Map
-    addToHTMLProxyCache(config, proxyCacheUrl, inlineModuleIndex, { code, map })
+    addToHTMLProxyCache(config, proxyCacheUrl, inlineModuleIndex, {
+      code,
+      map,
+    });
 
     // inline js module. convert to src="proxy" (dev only, base is never relative)
-    const modulePath = `${proxyModuleUrl}?html-proxy&index=${inlineModuleIndex}.${ext}`
+    const modulePath = `${proxyModuleUrl}?html-proxy&index=${inlineModuleIndex}.${ext}`;
 
     // invalidate the module so the newly cached contents will be served
-    const clientModuleGraph = server?.environments.client.moduleGraph
-    const module = clientModuleGraph?.getModuleById(modulePath)
+    const clientModuleGraph = server?.environments.client.moduleGraph;
+    const module = clientModuleGraph?.getModuleById(modulePath);
     if (module) {
-      clientModuleGraph!.invalidateModule(module)
+      clientModuleGraph!.invalidateModule(module);
     }
     s.update(
       node.sourceCodeLocation!.startOffset,
       node.sourceCodeLocation!.endOffset,
-      `<script type="module" src="${modulePath}"></script>`,
-    )
-    preTransformRequest(server!, modulePath, decodedBase)
-  }
+      `<script type="module" src="${modulePath}"></script>`
+    );
+    preTransformRequest(server!, modulePath, decodedBase);
+  };
 
   await traverseHtml(html, filename, (node) => {
     if (!nodeIsElement(node)) {
-      return
+      return;
     }
 
     // script tags
-    if (node.nodeName === 'script') {
-      const { src, sourceCodeLocation, isModule } = getScriptInfo(node)
+    if (node.nodeName === "script") {
+      const { src, sourceCodeLocation, isModule } = getScriptInfo(node);
 
       if (src) {
         const processedUrl = processNodeUrl(
@@ -280,17 +288,17 @@ const devHtmlHook: IndexHtmlTransformHook = async (
           htmlPath,
           originalUrl,
           server,
-          !isModule,
-        )
+          !isModule
+        );
         if (processedUrl !== src.value) {
-          overwriteAttrValue(s, sourceCodeLocation!, processedUrl)
+          overwriteAttrValue(s, sourceCodeLocation!, processedUrl);
         }
       } else if (isModule && node.childNodes.length) {
-        addInlineModule(node, 'js')
+        addInlineModule(node, "js");
       } else if (node.childNodes.length) {
         const scriptNode = node.childNodes[
           node.childNodes.length - 1
-        ] as DefaultTreeAdapterMap['textNode']
+        ] as DefaultTreeAdapterMap["textNode"];
         for (const {
           url,
           start,
@@ -301,170 +309,175 @@ const devHtmlHook: IndexHtmlTransformHook = async (
             false,
             config,
             htmlPath,
-            originalUrl,
-          )
+            originalUrl
+          );
           if (processedUrl !== url) {
-            s.update(start, end, processedUrl)
+            s.update(start, end, processedUrl);
           }
         }
       }
     }
 
-    const inlineStyle = findNeedTransformStyleAttribute(node)
+    const inlineStyle = findNeedTransformStyleAttribute(node);
     if (inlineStyle) {
-      inlineModuleIndex++
+      inlineModuleIndex++;
       inlineStyles.push({
         index: inlineModuleIndex,
         location: inlineStyle.location!,
         code: inlineStyle.attr.value,
-      })
+      });
     }
 
-    if (node.nodeName === 'style' && node.childNodes.length) {
-      const children = node.childNodes[0] as DefaultTreeAdapterMap['textNode']
+    if (node.nodeName === "style" && node.childNodes.length) {
+      const children = node.childNodes[0] as DefaultTreeAdapterMap["textNode"];
       styleUrl.push({
         start: children.sourceCodeLocation!.startOffset,
         end: children.sourceCodeLocation!.endOffset,
         code: children.value,
-      })
+      });
     }
 
     // elements with [href/src] attrs
-    const assetAttrs = assetAttrsConfig[node.nodeName]
+    const assetAttrs = assetAttrsConfig[node.nodeName];
     if (assetAttrs) {
       for (const p of node.attrs) {
-        const attrKey = getAttrKey(p)
+        const attrKey = getAttrKey(p);
         if (p.value && assetAttrs.includes(attrKey)) {
           const processedUrl = processNodeUrl(
             p.value,
             isSrcSet(p),
             config,
             htmlPath,
-            originalUrl,
-          )
+            originalUrl
+          );
           if (processedUrl !== p.value) {
             overwriteAttrValue(
               s,
               node.sourceCodeLocation!.attrs![attrKey],
-              processedUrl,
-            )
+              processedUrl
+            );
           }
         }
       }
     }
-  })
+  });
 
   await Promise.all([
     ...styleUrl.map(async ({ start, end, code }, index) => {
-      const url = `${proxyModulePath}?html-proxy&direct&index=${index}.css`
+      const url = `${proxyModulePath}?html-proxy&direct&index=${index}.css`;
 
       // ensure module in graph after successful load
       const mod =
         await server!.environments.client.moduleGraph.ensureEntryFromUrl(
           url,
-          false,
-        )
-      ensureWatchedFile(watcher, mod.file, config.root)
+          false
+        );
+      ensureWatchedFile(watcher, mod.file, config.root);
 
       const result = await server!.pluginContainer.transform(code, mod.id!, {
         environment: server!.environments.client,
-      })
-      let content = ''
+      });
+      let content = "";
       if (result) {
-        if (result.map && 'version' in result.map) {
+        if (result.map && "version" in result.map) {
           if (result.map.mappings) {
             await injectSourcesContent(
               result.map,
               proxyModulePath,
-              config.logger,
-            )
+              config.logger
+            );
           }
-          content = getCodeWithSourcemap('css', result.code, result.map)
+          content = getCodeWithSourcemap("css", result.code, result.map);
         } else {
-          content = result.code
+          content = result.code;
         }
       }
-      s.overwrite(start, end, content)
+      s.overwrite(start, end, content);
     }),
     ...inlineStyles.map(async ({ index, location, code }) => {
       // will transform with css plugin and cache result with css-post plugin
-      const url = `${proxyModulePath}?html-proxy&inline-css&style-attr&index=${index}.css`
+      const url = `${proxyModulePath}?html-proxy&inline-css&style-attr&index=${index}.css`;
 
       const mod =
         await server!.environments.client.moduleGraph.ensureEntryFromUrl(
           url,
-          false,
-        )
-      ensureWatchedFile(watcher, mod.file, config.root)
+          false
+        );
+      ensureWatchedFile(watcher, mod.file, config.root);
 
       await server?.pluginContainer.transform(code, mod.id!, {
         environment: server!.environments.client,
-      })
+      });
 
-      const hash = getHash(cleanUrl(mod.id!))
-      const result = htmlProxyResult.get(`${hash}_${index}`)
-      overwriteAttrValue(s, location, result ?? '')
+      const hash = getHash(cleanUrl(mod.id!));
+      const result = htmlProxyResult.get(`${hash}_${index}`);
+      overwriteAttrValue(s, location, result ?? "");
     }),
-  ])
+  ]);
 
-  html = s.toString()
+  html = s.toString();
 
   return {
     html,
     tags: [
       {
-        tag: 'script',
+        tag: "script",
         attrs: {
-          type: 'module',
+          type: "module",
           src: path.posix.join(base, CLIENT_PUBLIC_PATH),
         },
-        injectTo: 'head-prepend',
+        injectTo: "head-prepend",
       },
     ],
-  }
-}
+  };
+};
 
+// 使用 html 中间件
+// 作用：
+// 1. 如果 url 以 .html 结尾，并且 sec-fetch-dest 不是 script，则返回 html 文件
 export function indexHtmlMiddleware(
   root: string,
-  server: ViteDevServer | PreviewServer,
+  server: ViteDevServer | PreviewServer
 ): Connect.NextHandleFunction {
-  const isDev = isDevServer(server)
-  const fsUtils = getFsUtils(server.config)
+  const isDev = isDevServer(server);
+  const fsUtils = getFsUtils(server.config);
 
-  // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
   return async function viteIndexHtmlMiddleware(req, res, next) {
     if (res.writableEnded) {
-      return next()
+      return next();
     }
 
-    const url = req.url && cleanUrl(req.url)
-    // htmlFallbackMiddleware appends '.html' to URLs
-    if (url?.endsWith('.html') && req.headers['sec-fetch-dest'] !== 'script') {
-      let filePath: string
+    const url = req.url && cleanUrl(req.url);
+    // 如果 url 以 .html 结尾，并且 sec-fetch-dest 不是 script，则返回 html 文件
+    if (url?.endsWith(".html") && req.headers["sec-fetch-dest"] !== "script") {
+      let filePath: string;
+      // 解析 文件路径
       if (isDev && url.startsWith(FS_PREFIX)) {
-        filePath = decodeURIComponent(fsPathFromId(url))
+        filePath = decodeURIComponent(fsPathFromId(url));
       } else {
-        filePath = path.join(root, decodeURIComponent(url))
+        filePath = path.join(root, decodeURIComponent(url));
       }
 
       if (fsUtils.existsSync(filePath)) {
         const headers = isDev
           ? server.config.server.headers
-          : server.config.preview.headers
+          : server.config.preview.headers;
 
         try {
-          let html = await fsp.readFile(filePath, 'utf-8')
+          // 读取文件
+          let html = await fsp.readFile(filePath, "utf-8");
           if (isDev) {
-            html = await server.transformIndexHtml(url, html, req.originalUrl)
+            // 开发环境下 转换文件
+            html = await server.transformIndexHtml(url, html, req.originalUrl);
           }
-          return send(req, res, html, 'html', { headers })
+          return send(req, res, html, "html", { headers });
         } catch (e) {
-          return next(e)
+          return next(e);
         }
       }
     }
-    next()
-  }
+    next();
+  };
 }
 
 // NOTE: We usually don't prefix `url` and `base` with `decoded`, but in this file particularly
@@ -472,11 +485,11 @@ export function indexHtmlMiddleware(
 function preTransformRequest(
   server: ViteDevServer,
   decodedUrl: string,
-  decodedBase: string,
+  decodedBase: string
 ) {
-  if (!server.config.server.preTransformRequests) return
+  if (!server.config.server.preTransformRequests) return;
 
   // transform all url as non-ssr as html includes client-side assets only
-  decodedUrl = unwrapId(stripBase(decodedUrl, decodedBase))
-  server.warmupRequest(decodedUrl)
+  decodedUrl = unwrapId(stripBase(decodedUrl, decodedBase));
+  server.warmupRequest(decodedUrl);
 }

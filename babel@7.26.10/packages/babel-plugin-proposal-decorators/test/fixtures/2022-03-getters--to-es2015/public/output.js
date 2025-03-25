@@ -1,0 +1,16 @@
+var _Foo;
+let _initProto;
+const dec = () => {};
+class Foo {
+  constructor() {
+    babelHelpers.defineProperty(this, "value", (_initProto(this), 1));
+  }
+  get a() {
+    return this.value;
+  }
+  get ['b']() {
+    return this.value;
+  }
+}
+_Foo = Foo;
+[_initProto] = babelHelpers.applyDecs2203R(_Foo, [[dec, 3, "a"], [dec, 3, 'b']], []).e;

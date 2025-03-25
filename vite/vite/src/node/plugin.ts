@@ -8,21 +8,21 @@ import type {
   PluginContext as RollupPluginContext,
   TransformPluginContext as RollupTransformPluginContext,
   TransformResult,
-} from 'rollup'
+} from "rollup";
 import type {
   ConfigEnv,
   EnvironmentOptions,
   ResolvedConfig,
   UserConfig,
-} from './config'
-import type { ServerHook } from './server'
-import type { IndexHtmlTransform } from './plugins/html'
-import type { EnvironmentModuleNode } from './server/moduleGraph'
-import type { ModuleNode } from './server/mixedModuleGraph'
-import type { HmrContext, HotUpdateOptions } from './server/hmr'
-import type { DevEnvironment } from './server/environment'
-import type { Environment } from './environment'
-import type { PreviewServerHook } from './preview'
+} from "./config";
+import type { ServerHook } from "./server";
+import type { IndexHtmlTransform } from "./plugins/html";
+import type { EnvironmentModuleNode } from "./server/moduleGraph";
+import type { ModuleNode } from "./server/mixedModuleGraph";
+import type { HmrContext, HotUpdateOptions } from "./server/hmr";
+import type { DevEnvironment } from "./server/environment";
+import type { Environment } from "./environment";
+import type { PreviewServerHook } from "./preview";
 
 /**
  * Vite plugins extends the Rollup plugin interface with a few extra
@@ -55,11 +55,11 @@ export interface PluginContextExtension {
   /**
    * Vite-specific environment instance
    */
-  environment: Environment
+  environment: Environment;
 }
 
 export interface HotUpdatePluginContext {
-  environment: DevEnvironment
+  environment: DevEnvironment;
 }
 
 export interface MinimalPluginContext
@@ -79,7 +79,7 @@ export interface TransformPluginContext
     PluginContextExtension {}
 
 // Argument Rollup types to have the PluginContextExtension
-declare module 'rollup' {
+declare module "rollup" {
   export interface MinimalPluginContext extends PluginContextExtension {}
 }
 
@@ -112,12 +112,12 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
   hotUpdate?: ObjectHook<
     (
       this: HotUpdatePluginContext,
-      options: HotUpdateOptions,
+      options: HotUpdateOptions
     ) =>
       | Array<EnvironmentModuleNode>
       | void
       | Promise<Array<EnvironmentModuleNode> | void>
-  >
+  >;
 
   /**
    * extend hooks with ssr flag
@@ -128,40 +128,40 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
       source: string,
       importer: string | undefined,
       options: {
-        attributes: Record<string, string>
-        custom?: CustomPluginOptions
-        ssr?: boolean
+        attributes: Record<string, string>;
+        custom?: CustomPluginOptions;
+        ssr?: boolean;
         /**
          * @internal
          */
-        scan?: boolean
-        isEntry: boolean
-      },
+        scan?: boolean;
+        isEntry: boolean;
+      }
     ) => Promise<ResolveIdResult> | ResolveIdResult
-  >
+  >;
   load?: ObjectHook<
     (
       this: PluginContext,
       id: string,
       options?: {
-        ssr?: boolean
+        ssr?: boolean;
         /**
          * @internal
          */
-        html?: boolean
-      },
+        html?: boolean;
+      }
     ) => Promise<LoadResult> | LoadResult
-  >
+  >;
   transform?: ObjectHook<
     (
       this: TransformPluginContext,
       code: string,
       id: string,
       options?: {
-        ssr?: boolean
-      },
+        ssr?: boolean;
+      }
     ) => Promise<TransformResult> | TransformResult
-  >
+  >;
   /**
    * Opt-in this plugin into the shared plugins pipeline.
    * For backward-compatibility, plugins are re-recreated for each environment
@@ -170,7 +170,7 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
    * In a future major, we'll flip the default to be shared by default
    * @experimental
    */
-  sharedDuringBuild?: boolean
+  sharedDuringBuild?: boolean;
   /**
    * Opt-in this plugin into per-environment buildStart and buildEnd during dev.
    * For backward-compatibility, the buildStart hook is called only once during
@@ -178,7 +178,7 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
    * per-environment, aligning with the build hook behavior.
    * @experimental
    */
-  perEnvironmentStartEndDuringDev?: boolean
+  perEnvironmentStartEndDuringDev?: boolean;
   /**
    * Enforce plugin invocation tier similar to webpack loaders. Hooks ordering
    * is still subject to the `order` property in the hook object.
@@ -192,19 +192,19 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
    * - `enforce: 'post'` plugins
    * - vite build post plugins
    */
-  enforce?: 'pre' | 'post'
+  enforce?: "pre" | "post";
   /**
    * Apply the plugin only for serve or build, or on certain conditions.
    */
   apply?:
-    | 'serve'
-    | 'build'
-    | ((this: void, config: UserConfig, env: ConfigEnv) => boolean)
+    | "serve"
+    | "build"
+    | ((this: void, config: UserConfig, env: ConfigEnv) => boolean);
   /**
    * Define environments where this plugin should be active
    * By default, the plugin is active in all environments
    */
-  applyToEnvironment?: (environment: Environment) => boolean
+  applyToEnvironment?: (environment: Environment) => boolean;
   /**
    * Modify vite config before it's resolved. The hook can either mutate the
    * passed-in config directly, or return a partial config object that will be
@@ -217,13 +217,13 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
     (
       this: void,
       config: UserConfig,
-      env: ConfigEnv,
+      env: ConfigEnv
     ) =>
-      | Omit<UserConfig, 'plugins'>
+      | Omit<UserConfig, "plugins">
       | null
       | void
-      | Promise<Omit<UserConfig, 'plugins'> | null | void>
-  >
+      | Promise<Omit<UserConfig, "plugins"> | null | void>
+  >;
   /**
    * Modify environment configs before it's resolved. The hook can either mutate the
    * passed-in environment config directly, or return a partial config object that will be
@@ -239,19 +239,19 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
       this: void,
       name: string,
       config: EnvironmentOptions,
-      env: ConfigEnv,
+      env: ConfigEnv
     ) =>
       | EnvironmentOptions
       | null
       | void
       | Promise<EnvironmentOptions | null | void>
-  >
+  >;
   /**
    * Use this hook to read and store the final resolved vite config.
    */
   configResolved?: ObjectHook<
     (this: void, config: ResolvedConfig) => void | Promise<void>
-  >
+  >;
   /**
    * Configure the vite server. The hook receives the {@link ViteDevServer}
    * instance. This can also be used to store a reference to the server
@@ -261,7 +261,7 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
    * can return a post hook that will be called after internal middlewares
    * are applied. Hook can be async functions and will be called in series.
    */
-  configureServer?: ObjectHook<ServerHook>
+  configureServer?: ObjectHook<ServerHook>;
   /**
    * Configure the preview server. The hook receives the {@link PreviewServer}
    * instance. This can also be used to store a reference to the server
@@ -271,7 +271,7 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
    * return a post hook that will be called after other middlewares are
    * applied. Hooks can be async functions and will be called in series.
    */
-  configurePreviewServer?: ObjectHook<PreviewServerHook>
+  configurePreviewServer?: ObjectHook<PreviewServerHook>;
   /**
    * Transform index.html.
    * The hook receives the following arguments:
@@ -287,7 +287,7 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
    * transform. If you need to apply the transform before vite, use an object:
    * `{ order: 'pre', handler: hook }`
    */
-  transformIndexHtml?: IndexHtmlTransform
+  transformIndexHtml?: IndexHtmlTransform;
 
   /**
    * Perform custom handling of HMR updates.
@@ -307,28 +307,30 @@ export interface Plugin<A = any> extends RollupPlugin<A> {
   handleHotUpdate?: ObjectHook<
     (
       this: void,
-      ctx: HmrContext,
+      ctx: HmrContext
     ) => Array<ModuleNode> | void | Promise<Array<ModuleNode> | void>
-  >
+  >;
 }
 
-export type HookHandler<T> = T extends ObjectHook<infer H> ? H : T
+export type HookHandler<T> = T extends ObjectHook<infer H> ? H : T;
 
 export type PluginWithRequiredHook<K extends keyof Plugin> = Plugin & {
-  [P in K]: NonNullable<Plugin[P]>
-}
+  [P in K]: NonNullable<Plugin[P]>;
+};
 
-type Thenable<T> = T | Promise<T>
+type Thenable<T> = T | Promise<T>;
 
-type FalsyPlugin = false | null | undefined
+type FalsyPlugin = false | null | undefined;
 
-export type PluginOption = Thenable<Plugin | FalsyPlugin | PluginOption[]>
+export type PluginOption = Thenable<Plugin | FalsyPlugin | PluginOption[]>;
 
+// 返回筛选后的 environment.plugins
 export function resolveEnvironmentPlugins(environment: Environment): Plugin[] {
+  // 筛选 特定环境下的 plugins
   return environment
     .getTopLevelConfig()
     .plugins.filter(
       (plugin) =>
-        !plugin.applyToEnvironment || plugin.applyToEnvironment(environment),
-    )
+        !plugin.applyToEnvironment || plugin.applyToEnvironment(environment)
+    );
 }

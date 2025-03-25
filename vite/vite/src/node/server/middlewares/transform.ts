@@ -1,9 +1,9 @@
-import path from 'node:path'
-import fsp from 'node:fs/promises'
-import type { Connect } from 'dep-types/connect'
-import colors from 'picocolors'
-import type { ExistingRawSourceMap } from 'rollup'
-import type { ViteDevServer } from '..'
+import path from "node:path";
+import fsp from "node:fs/promises";
+import type { Connect } from "dep-types/connect";
+import colors from "picocolors";
+import type { ExistingRawSourceMap } from "rollup";
+import type { ViteDevServer } from "..";
 import {
   createDebugger,
   fsPathFromId,
@@ -16,162 +16,163 @@ import {
   removeImportQuery,
   removeTimestampQuery,
   urlRE,
-} from '../../utils'
-import { send } from '../send'
-import { ERR_LOAD_URL, transformRequest } from '../transformRequest'
-import { applySourcemapIgnoreList } from '../sourcemap'
-import { isHTMLProxy } from '../../plugins/html'
+} from "../../utils";
+import { send } from "../send";
+import { ERR_LOAD_URL, transformRequest } from "../transformRequest";
+import { applySourcemapIgnoreList } from "../sourcemap";
+import { isHTMLProxy } from "../../plugins/html";
 import {
   DEP_VERSION_RE,
   ERR_FILE_NOT_FOUND_IN_OPTIMIZED_DEP_DIR,
   ERR_OPTIMIZE_DEPS_PROCESSING_ERROR,
   ERR_OUTDATED_OPTIMIZED_DEP,
   FS_PREFIX,
-} from '../../constants'
+} from "../../constants";
 import {
   isCSSRequest,
   isDirectCSSRequest,
   isDirectRequest,
-} from '../../plugins/css'
-import { ERR_CLOSED_SERVER } from '../pluginContainer'
-import { cleanUrl, unwrapId, withTrailingSlash } from '../../../shared/utils'
-import { NULL_BYTE_PLACEHOLDER } from '../../../shared/constants'
-import { ensureServingAccess } from './static'
+} from "../../plugins/css";
+import { ERR_CLOSED_SERVER } from "../pluginContainer";
+import { cleanUrl, unwrapId, withTrailingSlash } from "../../../shared/utils";
+import { NULL_BYTE_PLACEHOLDER } from "../../../shared/constants";
+import { ensureServingAccess } from "./static";
 
-const debugCache = createDebugger('vite:cache')
+const debugCache = createDebugger("vite:cache");
 
-const knownIgnoreList = new Set(['/', '/favicon.ico'])
+const knownIgnoreList = new Set(["/", "/favicon.ico"]);
 
-/**
- * A middleware that short-circuits the middleware chain to serve cached transformed modules
- */
+// 缓存转换中间件
+// 作用：
+// 缓存转换后的模块，如果请求的资源存在，则返回缓存的内容
 export function cachedTransformMiddleware(
-  server: ViteDevServer,
+  server: ViteDevServer
 ): Connect.NextHandleFunction {
-  // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
   return function viteCachedTransformMiddleware(req, res, next) {
-    const environment = server.environments.client
+    const environment = server.environments.client;
 
-    // check if we can return 304 early
-    const ifNoneMatch = req.headers['if-none-match']
+    // 检查是否可以提前返回 304
+    const ifNoneMatch = req.headers["if-none-match"];
     if (ifNoneMatch) {
-      const moduleByEtag = environment.moduleGraph.getModuleByEtag(ifNoneMatch)
+      const moduleByEtag = environment.moduleGraph.getModuleByEtag(ifNoneMatch);
       if (
         moduleByEtag?.transformResult?.etag === ifNoneMatch &&
         moduleByEtag?.url === req.url
       ) {
-        // For CSS requests, if the same CSS file is imported in a module,
-        // the browser sends the request for the direct CSS request with the etag
-        // from the imported CSS module. We ignore the etag in this case.
-        const maybeMixedEtag = isCSSRequest(req.url!)
+        // 对于 CSS 请求，如果同一个 CSS 文件被导入到多个模块中，
+        // 浏览器会发送请求获取直接的 CSS 请求，并带上导入的 CSS 模块的 etag。
+        // 在这种情况下，我们忽略 etag。
+        const maybeMixedEtag = isCSSRequest(req.url!);
         if (!maybeMixedEtag) {
-          debugCache?.(`[304] ${prettifyUrl(req.url!, server.config.root)}`)
-          res.statusCode = 304
-          return res.end()
+          debugCache?.(`[304] ${prettifyUrl(req.url!, server.config.root)}`);
+          res.statusCode = 304;
+          return res.end();
         }
       }
     }
 
-    next()
-  }
+    next();
+  };
 }
 
+// 转换中间件
+// 作用：
+// 1. 检查是否可以提前返回 304
+// 2. 转换请求的资源
 export function transformMiddleware(
-  server: ViteDevServer,
+  server: ViteDevServer
 ): Connect.NextHandleFunction {
-  // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
-
-  // check if public dir is inside root dir
-  const { root, publicDir } = server.config
-  const publicDirInRoot = publicDir.startsWith(withTrailingSlash(root))
-  const publicPath = `${publicDir.slice(root.length)}/`
+  // 检查 public 目录是否在根目录中
+  const { root, publicDir } = server.config;
+  const publicDirInRoot = publicDir.startsWith(withTrailingSlash(root));
+  const publicPath = `${publicDir.slice(root.length)}/`;
 
   return async function viteTransformMiddleware(req, res, next) {
-    const environment = server.environments.client
+    const environment = server.environments.client;
 
-    if (req.method !== 'GET' || knownIgnoreList.has(req.url!)) {
-      return next()
+    if (req.method !== "GET" || knownIgnoreList.has(req.url!)) {
+      return next();
     }
 
-    let url: string
+    let url: string;
     try {
       url = decodeURI(removeTimestampQuery(req.url!)).replace(
         NULL_BYTE_PLACEHOLDER,
-        '\0',
-      )
+        "\0"
+      );
     } catch (e) {
-      return next(e)
+      return next(e);
     }
 
-    const withoutQuery = cleanUrl(url)
+    const withoutQuery = cleanUrl(url);
 
     try {
-      const isSourceMap = withoutQuery.endsWith('.map')
+      const isSourceMap = withoutQuery.endsWith(".map");
       // since we generate source map references, handle those requests here
       if (isSourceMap) {
-        const depsOptimizer = environment.depsOptimizer
+        const depsOptimizer = environment.depsOptimizer;
         if (depsOptimizer?.isOptimizedDepUrl(url)) {
           // If the browser is requesting a source map for an optimized dep, it
           // means that the dependency has already been pre-bundled and loaded
           const sourcemapPath = url.startsWith(FS_PREFIX)
             ? fsPathFromId(url)
-            : normalizePath(path.resolve(server.config.root, url.slice(1)))
+            : normalizePath(path.resolve(server.config.root, url.slice(1)));
           try {
             const map = JSON.parse(
-              await fsp.readFile(sourcemapPath, 'utf-8'),
-            ) as ExistingRawSourceMap
+              await fsp.readFile(sourcemapPath, "utf-8")
+            ) as ExistingRawSourceMap;
 
             applySourcemapIgnoreList(
               map,
               sourcemapPath,
               server.config.server.sourcemapIgnoreList,
-              server.config.logger,
-            )
+              server.config.logger
+            );
 
-            return send(req, res, JSON.stringify(map), 'json', {
+            return send(req, res, JSON.stringify(map), "json", {
               headers: server.config.server.headers,
-            })
+            });
           } catch {
             // Outdated source map request for optimized deps, this isn't an error
             // but part of the normal flow when re-optimizing after missing deps
             // Send back an empty source map so the browser doesn't issue warnings
             const dummySourceMap = {
               version: 3,
-              file: sourcemapPath.replace(/\.map$/, ''),
+              file: sourcemapPath.replace(/\.map$/, ""),
               sources: [],
               sourcesContent: [],
               names: [],
-              mappings: ';;;;;;;;;',
-            }
-            return send(req, res, JSON.stringify(dummySourceMap), 'json', {
-              cacheControl: 'no-cache',
+              mappings: ";;;;;;;;;",
+            };
+            return send(req, res, JSON.stringify(dummySourceMap), "json", {
+              cacheControl: "no-cache",
               headers: server.config.server.headers,
-            })
+            });
           }
         } else {
-          const originalUrl = url.replace(/\.map($|\?)/, '$1')
+          const originalUrl = url.replace(/\.map($|\?)/, "$1");
           const map = (
             await environment.moduleGraph.getModuleByUrl(originalUrl)
-          )?.transformResult?.map
+          )?.transformResult?.map;
           if (map) {
-            return send(req, res, JSON.stringify(map), 'json', {
+            return send(req, res, JSON.stringify(map), "json", {
               headers: server.config.server.headers,
-            })
+            });
           } else {
-            return next()
+            return next();
           }
         }
       }
 
       if (publicDirInRoot && url.startsWith(publicPath)) {
-        warnAboutExplicitPublicPathInUrl(url)
+        warnAboutExplicitPublicPathInUrl(url);
       }
 
       if (
         (rawRE.test(url) || urlRE.test(url)) &&
         !ensureServingAccess(url, server, res, next)
       ) {
-        return
+        return;
       }
 
       if (
@@ -181,71 +182,71 @@ export function transformMiddleware(
         isHTMLProxy(url)
       ) {
         // strip ?import
-        url = removeImportQuery(url)
+        url = removeImportQuery(url);
         // Strip valid id prefix. This is prepended to resolved Ids that are
         // not valid browser import specifiers by the importAnalysis plugin.
-        url = unwrapId(url)
+        url = unwrapId(url);
 
         // for CSS, we differentiate between normal CSS requests and imports
         if (isCSSRequest(url)) {
           if (
-            req.headers.accept?.includes('text/css') &&
+            req.headers.accept?.includes("text/css") &&
             !isDirectRequest(url)
           ) {
-            url = injectQuery(url, 'direct')
+            url = injectQuery(url, "direct");
           }
 
           // check if we can return 304 early for CSS requests. These aren't handled
           // by the cachedTransformMiddleware due to the browser possibly mixing the
           // etags of direct and imported CSS
-          const ifNoneMatch = req.headers['if-none-match']
+          const ifNoneMatch = req.headers["if-none-match"];
           if (
             ifNoneMatch &&
             (await environment.moduleGraph.getModuleByUrl(url))?.transformResult
               ?.etag === ifNoneMatch
           ) {
-            debugCache?.(`[304] ${prettifyUrl(url, server.config.root)}`)
-            res.statusCode = 304
-            return res.end()
+            debugCache?.(`[304] ${prettifyUrl(url, server.config.root)}`);
+            res.statusCode = 304;
+            return res.end();
           }
         }
 
         // resolve, load and transform using the plugin container
         const result = await transformRequest(environment, url, {
-          html: req.headers.accept?.includes('text/html'),
-        })
+          html: req.headers.accept?.includes("text/html"),
+        });
         if (result) {
-          const depsOptimizer = environment.depsOptimizer
-          const type = isDirectCSSRequest(url) ? 'css' : 'js'
+          const depsOptimizer = environment.depsOptimizer;
+          const type = isDirectCSSRequest(url) ? "css" : "js";
           const isDep =
-            DEP_VERSION_RE.test(url) || depsOptimizer?.isOptimizedDepUrl(url)
+            DEP_VERSION_RE.test(url) || depsOptimizer?.isOptimizedDepUrl(url);
           return send(req, res, result.code, type, {
             etag: result.etag,
             // allow browser to cache npm deps!
-            cacheControl: isDep ? 'max-age=31536000,immutable' : 'no-cache',
+            cacheControl: isDep ? "max-age=31536000,immutable" : "no-cache",
             headers: server.config.server.headers,
             map: result.map,
-          })
+          });
         }
       }
     } catch (e) {
       if (e?.code === ERR_OPTIMIZE_DEPS_PROCESSING_ERROR) {
         // Skip if response has already been sent
         if (!res.writableEnded) {
-          res.statusCode = 504 // status code request timeout
-          res.statusMessage = 'Optimize Deps Processing Error'
-          res.end()
+          res.statusCode = 504; // status code request timeout
+          res.statusMessage = "Optimize Deps Processing Error";
+          res.end();
         }
         // This timeout is unexpected
-        server.config.logger.error(e.message)
-        return
+        server.config.logger.error(e.message);
+        return;
       }
       if (e?.code === ERR_OUTDATED_OPTIMIZED_DEP) {
         // Skip if response has already been sent
         if (!res.writableEnded) {
-          res.statusCode = 504 // status code request timeout
-          res.statusMessage = 'Outdated Optimize Dep'
-          res.end()
+          res.statusCode = 504; // status code request timeout
+          res.statusMessage = "Outdated Optimize Dep";
+          res.end();
         }
         // We don't need to log an error in this case, the request
         // is outdated because new dependencies were discovered and
@@ -253,14 +254,14 @@ export function transformMiddleware(
         // A full-page reload has been issued, and these old requests
         // can't be properly fulfilled. This isn't an unexpected
         // error but a normal part of the missing deps discovery flow
-        return
+        return;
       }
       if (e?.code === ERR_CLOSED_SERVER) {
         // Skip if response has already been sent
         if (!res.writableEnded) {
-          res.statusCode = 504 // status code request timeout
-          res.statusMessage = 'Outdated Request'
-          res.end()
+          res.statusCode = 504; // status code request timeout
+          res.statusMessage = "Outdated Request";
+          res.end();
         }
         // We don't need to log an error in this case, the request
         // is outdated because new dependencies were discovered and
@@ -268,56 +269,56 @@ export function transformMiddleware(
         // A full-page reload has been issued, and these old requests
         // can't be properly fulfilled. This isn't an unexpected
         // error but a normal part of the missing deps discovery flow
-        return
+        return;
       }
       if (e?.code === ERR_FILE_NOT_FOUND_IN_OPTIMIZED_DEP_DIR) {
         // Skip if response has already been sent
         if (!res.writableEnded) {
-          res.statusCode = 404
-          res.end()
+          res.statusCode = 404;
+          res.end();
         }
-        server.config.logger.warn(colors.yellow(e.message))
-        return
+        server.config.logger.warn(colors.yellow(e.message));
+        return;
       }
       if (e?.code === ERR_LOAD_URL) {
         // Let other middleware handle if we can't load the url via transformRequest
-        return next()
+        return next();
       }
-      return next(e)
+      return next(e);
     }
 
-    next()
-  }
+    next();
+  };
 
   function warnAboutExplicitPublicPathInUrl(url: string) {
-    let warning: string
+    let warning: string;
 
     if (isImportRequest(url)) {
-      const rawUrl = removeImportQuery(url)
+      const rawUrl = removeImportQuery(url);
       if (urlRE.test(url)) {
         warning =
           `Assets in the public directory are served at the root path.\n` +
           `Instead of ${colors.cyan(rawUrl)}, use ${colors.cyan(
-            rawUrl.replace(publicPath, '/'),
-          )}.`
+            rawUrl.replace(publicPath, "/")
+          )}.`;
       } else {
         warning =
-          'Assets in public directory cannot be imported from JavaScript.\n' +
+          "Assets in public directory cannot be imported from JavaScript.\n" +
           `If you intend to import that asset, put the file in the src directory, and use ${colors.cyan(
-            rawUrl.replace(publicPath, '/src/'),
+            rawUrl.replace(publicPath, "/src/")
           )} instead of ${colors.cyan(rawUrl)}.\n` +
           `If you intend to use the URL of that asset, use ${colors.cyan(
-            injectQuery(rawUrl.replace(publicPath, '/'), 'url'),
-          )}.`
+            injectQuery(rawUrl.replace(publicPath, "/"), "url")
+          )}.`;
       }
     } else {
       warning =
         `Files in the public directory are served at the root path.\n` +
         `Instead of ${colors.cyan(url)}, use ${colors.cyan(
-          url.replace(publicPath, '/'),
-        )}.`
+          url.replace(publicPath, "/")
+        )}.`;
     }
 
-    server.config.logger.warn(colors.yellow(warning))
+    server.config.logger.warn(colors.yellow(warning));
   }
 }
