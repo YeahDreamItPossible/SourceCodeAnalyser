@@ -41,6 +41,7 @@ export default function cachedShouldLoadAsEsm(
 }
 
 // this is a bad version of what https://github.com/nodejs/modules/issues/393 would provide
+// 
 function shouldLoadAsEsm(
   path: string,
   extensionsToTreatAsEsm: Array<string>,

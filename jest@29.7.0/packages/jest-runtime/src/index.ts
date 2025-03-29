@@ -867,6 +867,7 @@ export default class Runtime {
     return namedExports;
   }
 
+  // 加载 cjs 模块
   requireModule<T = unknown>(
     from: string,
     moduleName?: string,
@@ -1077,6 +1078,7 @@ export default class Runtime {
     return mockRegistry.get(moduleID);
   }
 
+  // 加载模块
   private _loadModule(
     localModule: InitialModule,
     from: string,
@@ -1485,6 +1487,7 @@ export default class Runtime {
     return [...modulePaths, ...globalPaths];
   }
 
+  // 执行模块
   private _execModule(
     localModule: InitialModule,
     options: InternalModuleOptions | undefined,
@@ -1603,6 +1606,7 @@ export default class Runtime {
     this._currentlyExecutingModulePath = lastExecutingModulePath;
   }
 
+  // 
   private transformFile(
     filename: string,
     options?: InternalModuleOptions,
@@ -1659,6 +1663,7 @@ export default class Runtime {
     return transformedFile.code;
   }
 
+  // 
   private createScriptFromCode(scriptSource: string, filename: string) {
     try {
       const scriptFilename = this._resolver.isCoreModule(filename)
