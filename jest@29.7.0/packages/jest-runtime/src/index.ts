@@ -406,6 +406,7 @@ export default class Runtime {
   }
 
   // unstable as it should be replaced by https://github.com/nodejs/modules/issues/393, and we don't want people to use it
+  // 是否是 ESM
   unstable_shouldLoadAsEsm(modulePath: string): boolean {
     return (
       isWasm(modulePath) ||
