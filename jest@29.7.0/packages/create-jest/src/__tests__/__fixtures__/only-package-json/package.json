@@ -1,6 +1,0 @@
-{
-  "name": "only_package_json",
-  "scripts": {
-    "test": "different-test-runner"
-  }
-}

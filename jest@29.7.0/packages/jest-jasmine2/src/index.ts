@@ -174,6 +174,7 @@ export default async function jasmine2(
       testPath,
     });
 
+  // 执行 setupFilesAfterEnv 文件
   for (const path of config.setupFilesAfterEnv) {
     const esm = runtime.unstable_shouldLoadAsEsm(path);
 

@@ -21,8 +21,8 @@ export const ROOT_DESCRIBE_BLOCK_NAME = 'ROOT_DESCRIBE_BLOCK';
 const createState = (): Circus.State => {
   const ROOT_DESCRIBE_BLOCK = makeDescribe(ROOT_DESCRIBE_BLOCK_NAME);
   return {
-    currentDescribeBlock: ROOT_DESCRIBE_BLOCK,
-    currentlyRunningTest: null,
+    currentDescribeBlock: ROOT_DESCRIBE_BLOCK, // 根描述块
+    currentlyRunningTest: null, // 
     expand: undefined,
     hasFocusedTests: false,
     hasStarted: false,

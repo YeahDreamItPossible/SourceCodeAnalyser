@@ -52,6 +52,7 @@ const eventHandler: Circus.EventHandler = (event, state) => {
       const {currentDescribeBlock} = state;
       invariant(currentDescribeBlock, 'currentDescribeBlock must be there');
 
+      // 当描述块中没有 单元测试 时
       if (!describeBlockHasTests(currentDescribeBlock)) {
         currentDescribeBlock.hooks.forEach(hook => {
           hook.asyncError.message = `Invalid: ${hook.type}() may not be used in a describe block containing no tests.`;
