@@ -67,6 +67,7 @@ export async function createTestScheduler(
   return scheduler;
 }
 
+// 单测调度器
 class TestScheduler {
   private readonly _context: TestSchedulerContext;
   private readonly _dispatcher: ReporterDispatcher;
@@ -81,14 +82,17 @@ class TestScheduler {
     this._globalConfig = globalConfig;
   }
 
+  // 注册 报告器
   addReporter(reporter: Reporter): void {
     this._dispatcher.register(reporter);
   }
 
+  // 移除 报告器
   removeReporter(reporterConstructor: ReporterConstructor): void {
     this._dispatcher.unregister(reporterConstructor);
   }
 
+  // 调度 单测任务队列
   async scheduleTests(
     tests: Array<Test>,
     watcher: TestWatcher,
@@ -318,6 +322,7 @@ class TestScheduler {
     return aggregatedResults;
   }
 
+  // 
   private _partitionTests(
     testRunners: Record<string, JestTestRunner>,
     tests: Array<Test>,
@@ -341,6 +346,7 @@ class TestScheduler {
     }
   }
 
+  // 根据 配置 启动不同的 报告器
   async _setupReporters() {
     const {collectCoverage: coverage, notify, verbose} = this._globalConfig;
     const reporters = this._globalConfig.reporters || [['default', {}]];

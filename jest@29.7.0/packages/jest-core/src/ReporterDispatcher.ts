@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import type {Reporter, ReporterOnStartOptions} from '@jest/reporters';
 import type {
   AggregatedResult,
@@ -23,6 +16,7 @@ export default class ReporterDispatcher {
     this._reporters = [];
   }
 
+  // 注册 报告器
   register(reporter: Reporter): void {
     this._reporters.push(reporter);
   }
@@ -51,6 +45,7 @@ export default class ReporterDispatcher {
     testResult.console = undefined;
   }
 
+  // 
   async onTestFileStart(test: Test): Promise<void> {
     for (const reporter of this._reporters) {
       if (reporter.onTestFileStart) {

@@ -82,6 +82,7 @@ async function runTestInternal(
   context: TestRunnerContext,
   sendMessageToJest?: TestFileEvent,
 ): Promise<RunTestInternalResult> {
+  // 读取源文件
   const testSource = fs.readFileSync(path, 'utf8');
   const docblockPragmas = docblock.parse(docblock.extract(testSource));
   const customEnvironment = docblockPragmas['jest-environment'];
@@ -104,16 +105,20 @@ async function runTestInternal(
   }
 
   const cacheFS = new Map([[path, testSource]]);
+  // 获取 代码转换器
   const transformer = await createScriptTransformer(projectConfig, cacheFS);
 
+  // 获取 运行环境
   const TestEnvironment: typeof JestEnvironment =
     await transformer.requireAndTranspileModule(testEnvironment);
+  // 
   const testFramework: TestFramework =
     await transformer.requireAndTranspileModule(
       process.env.JEST_JASMINE === '1'
         ? require.resolve('jest-jasmine2')
         : projectConfig.testRunner,
     );
+  // 获取 运行时类
   const Runtime: typeof RuntimeClass = interopRequireDefault(
     projectConfig.runtime
       ? require(projectConfig.runtime)
