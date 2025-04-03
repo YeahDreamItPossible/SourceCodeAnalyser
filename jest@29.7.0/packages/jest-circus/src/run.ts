@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import {AsyncLocalStorage} from 'async_hooks';
 import pLimit = require('p-limit');
 import {jestExpect} from '@jest/expect';
@@ -37,6 +30,7 @@ const run = async (): Promise<Circus.RunResult> => {
   );
 };
 
+// 运行描述块
 const _runTestsForDescribeBlock = async (
   describeBlock: Circus.DescribeBlock,
   rng: RandomNumberGenerator | undefined,
@@ -47,12 +41,14 @@ const _runTestsForDescribeBlock = async (
 
   const isSkipped = describeBlock.mode === 'skip';
 
+  // 调用 beforeAll 钩子队列
   if (!isSkipped) {
     for (const hook of beforeAll) {
       await _callCircusHook({describeBlock, hook});
     }
   }
 
+  // 收集 并运行 同时运行的单测文件
   if (isRootBlock) {
     const concurrentTests = collectConcurrentTests(describeBlock);
     if (concurrentTests.length > 0) {
@@ -61,13 +57,15 @@ const _runTestsForDescribeBlock = async (
   }
 
   // Tests that fail and are retried we run after other tests
-  // eslint-disable-next-line no-restricted-globals
   const retryTimes = parseInt(global[RETRY_TIMES], 10) || 0;
   const deferredRetryTests = [];
 
+  // 
   if (rng) {
     describeBlock.children = shuffleArray(describeBlock.children, rng);
   }
+
+  // 
   for (const child of describeBlock.children) {
     switch (child.type) {
       case 'describeBlock': {
@@ -103,6 +101,7 @@ const _runTestsForDescribeBlock = async (
     }
   }
 
+  // 调用 afterAll 钩子队列
   if (!isSkipped) {
     for (const hook of afterAll) {
       await _callCircusHook({describeBlock, hook});
@@ -112,6 +111,7 @@ const _runTestsForDescribeBlock = async (
   await dispatch({describeBlock, name: 'run_describe_finish'});
 };
 
+// 收集同时运行的单测文件
 function collectConcurrentTests(
   describeBlock: Circus.DescribeBlock,
 ): Array<ConcurrentTestEntry> {
@@ -134,6 +134,7 @@ function collectConcurrentTests(
   });
 }
 
+// 执行 同时运行的单测文件
 function startTestsConcurrently(concurrentTests: Array<ConcurrentTestEntry>) {
   const mutex = pLimit(getState().maxConcurrency);
   const testNameStorage = new AsyncLocalStorage<string>();
@@ -157,6 +158,7 @@ function startTestsConcurrently(concurrentTests: Array<ConcurrentTestEntry>) {
   }
 }
 
+// 运行单测文件 和 钩子
 const _runTest = async (
   test: Circus.TestEntry,
   parentSkipped: boolean,
@@ -185,6 +187,7 @@ const _runTest = async (
 
   const {afterEach, beforeEach} = getEachHooksForTest(test);
 
+  // 调用 beforeEach 钩子队列
   for (const hook of beforeEach) {
     if (test.errors.length) {
       // If any of the before hooks failed already, we don't run any
@@ -196,6 +199,7 @@ const _runTest = async (
 
   await _callCircusTest(test, testContext);
 
+  // // 调用 afterEach 钩子队列
   for (const hook of afterEach) {
     await _callCircusHook({hook, test, testContext});
   }
@@ -206,6 +210,7 @@ const _runTest = async (
   await dispatch({name: 'test_done', test});
 };
 
+// 运行全局钩子(beforeAll, beforeEach, afterEach, afterAll)
 const _callCircusHook = async ({
   hook,
   test,
@@ -231,6 +236,7 @@ const _callCircusHook = async ({
   }
 };
 
+// 运行单测文件
 const _callCircusTest = async (
   test: Circus.TestEntry,
   testContext: Circus.TestContext,

@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import type {Circus} from '@jest/types';
 import {invariant} from 'jest-util';
 import {
@@ -227,10 +220,8 @@ const eventHandler: Circus.EventHandler = (event, state) => {
     }
     case 'run_start': {
       state.hasStarted = true;
-      /* eslint-disable no-restricted-globals */
       global[TEST_TIMEOUT_SYMBOL] &&
         (state.testTimeout = global[TEST_TIMEOUT_SYMBOL]);
-      /* eslint-enable */
       break;
     }
     case 'run_finish': {

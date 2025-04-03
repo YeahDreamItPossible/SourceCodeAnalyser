@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import {AssertionError} from 'assert';
 import chalk = require('chalk');
 import type {Circus} from '@jest/types';
@@ -38,6 +31,7 @@ const humanReadableOperators: Record<string, string> = {
   strictEqual: 'to strictly be equal',
 };
 
+// 格式化 node assert 错误
 const formatNodeAssertErrors = (
   event: Circus.Event,
   state: Circus.State,

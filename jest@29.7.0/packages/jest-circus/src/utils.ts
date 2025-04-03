@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as path from 'path';
 import co from 'co';
 import dedent from 'dedent';
@@ -37,6 +30,7 @@ function isGeneratorFunction(
   return isGeneratorFn(fn);
 }
 
+// 描述块
 export const makeDescribe = (
   name: Circus.BlockName,
   parent?: Circus.DescribeBlock,
@@ -49,16 +43,17 @@ export const makeDescribe = (
   }
 
   return {
-    type: 'describeBlock', // eslint-disable-next-line sort-keys
-    children: [],
-    hooks: [],
-    mode: _mode,
+    type: 'describeBlock', // 
+    children: [], // 测试文件队列
+    hooks: [], // 钩子队列(beforeAll, beforeEach, ...)
+    mode: _mode, // 
     name: convertDescriptorToString(name),
     parent,
-    tests: [],
+    tests: [], // 测试文件队列(test ...)
   };
 };
 
+// 单测文件
 export const makeTest = (
   fn: Circus.TestFn,
   mode: Circus.TestMode,
@@ -69,23 +64,23 @@ export const makeTest = (
   asyncError: Circus.Exception,
   failing: boolean,
 ): Circus.TestEntry => ({
-  type: 'test', // eslint-disable-next-line sort-keys
+  type: 'test',
   asyncError,
   concurrent,
   duration: null,
-  errors: [],
+  errors: [], // 错误
   failing,
-  fn,
-  invocations: 0,
+  fn, // 函数
+  invocations: 0, // 当前单测文件被调用次数
   mode,
   name: convertDescriptorToString(name),
   numPassingAsserts: 0,
   parent,
   retryReasons: [],
   seenDone: false,
-  startedAt: null,
-  status: null,
-  timeout,
+  startedAt: null, // 开始运行时间
+  status: null, // 状态(skip || todo || )
+  timeout, // 耗时
 });
 
 // Traverse the tree of describe blocks and return true if at least one describe
@@ -108,6 +103,7 @@ type DescribeHooks = {
   afterAll: Array<Circus.Hook>;
 };
 
+// 返回 beforeAll 和 afterAll 队列
 export const getAllHooksForDescribe = (
   describe: Circus.DescribeBlock,
 ): DescribeHooks => {
@@ -137,6 +133,7 @@ type TestHooks = {
   afterEach: Array<Circus.Hook>;
 };
 
+// 返回 beforeEach 和 afterEach 队列
 export const getEachHooksForTest = (test: Circus.TestEntry): TestHooks => {
   const result: TestHooks = {afterEach: [], beforeEach: []};
   if (test.concurrent) {
@@ -172,6 +169,7 @@ export const describeBlockHasTests = (
     child => child.type === 'test' || describeBlockHasTests(child),
   );
 
+// 超时信息
 const _makeTimeoutMessage = (
   timeout: number,
   isHook: boolean,
@@ -183,14 +181,13 @@ const _makeTimeoutMessage = (
     takesDoneCallback ? ' while waiting for `done()` to be called' : ''
   }.\nAdd a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.`;
 
-// Global values can be overwritten by mocks or tests. We'll capture
-// the original values in the variables before we require any files.
 const {setTimeout, clearTimeout} = globalThis;
 
 function checkIsError(error: unknown): error is Error {
   return !!(error && (error as Error).message && (error as Error).stack);
 }
 
+// 执行
 export const callAsyncCircusFn = (
   testOrHook: Circus.TestEntry | Circus.Hook,
   testContext: Circus.TestContext,
@@ -321,6 +318,7 @@ export const getTestDuration = (test: Circus.TestEntry): number | null => {
   return typeof startedAt === 'number' ? Date.now() - startedAt : null;
 };
 
+// 返回 描述块 的运行结果
 export const makeRunResult = (
   describeBlock: Circus.DescribeBlock,
   unhandledErrors: Array<Error>,
@@ -339,6 +337,7 @@ const getTestNamesPath = (test: Circus.TestEntry): Circus.TestNamesPath => {
   return titles;
 };
 
+// 返回 单个单测文件 的执行结果
 export const makeSingleTestResult = (
   test: Circus.TestEntry,
 ): Circus.TestResult => {
@@ -385,6 +384,7 @@ export const makeSingleTestResult = (
   };
 };
 
+// 返回 描述块 中的执行结果
 const makeTestResults = (
   describeBlock: Circus.DescribeBlock,
 ): Circus.TestResults => {

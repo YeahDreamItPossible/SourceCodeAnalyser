@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import type {Circus, Global} from '@jest/types';
 import {bind as bindEach} from 'jest-each';
 import {ErrorWithStack, convertDescriptorToString, isPromise} from 'jest-util';
@@ -102,7 +95,6 @@ const _addHook = (
   dispatchSync({asyncError, fn, hookType, name: 'add_hook', timeout});
 };
 
-// Hooks have to pass themselves to the HOF in order for us to trim stack traces.
 const beforeEach: THook = (fn, timeout) =>
   _addHook(fn, 'beforeEach', beforeEach, timeout);
 const beforeAll: THook = (fn, timeout) =>
