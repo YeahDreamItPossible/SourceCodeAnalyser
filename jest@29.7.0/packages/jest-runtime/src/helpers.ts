@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as path from 'path';
 import glob = require('glob');
 import slash = require('slash');
@@ -15,6 +8,7 @@ const OUTSIDE_JEST_VM_PROTOCOL = 'jest-main:';
 // plus setting non-standard protocols on URL objects is difficult.
 export const createOutsideJestVmPath = (path: string): string =>
   `${OUTSIDE_JEST_VM_PROTOCOL}//${encodeURIComponent(path)}`;
+
 export const decodePossibleOutsideJestVmPath = (
   outsideJestVmPath: string,
 ): string | undefined => {

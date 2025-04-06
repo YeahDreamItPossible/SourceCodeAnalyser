@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import nativeModule = require('module');
 import * as path from 'path';
 import {URL, fileURLToPath, pathToFileURL} from 'url';
@@ -405,7 +398,6 @@ export default class Runtime {
     throw new Error('The jest-runtime CLI has been moved into jest-repl');
   }
 
-  // unstable as it should be replaced by https://github.com/nodejs/modules/issues/393, and we don't want people to use it
   // 是否是 ESM
   unstable_shouldLoadAsEsm(modulePath: string): boolean {
     return (
@@ -417,6 +409,7 @@ export default class Runtime {
     );
   }
 
+  // 加载 ES模块
   private async loadEsmModule(
     modulePath: string,
     query = '',
@@ -426,6 +419,7 @@ export default class Runtime {
       ? this._isolatedModuleRegistry
       : this._esmoduleRegistry;
 
+    // 从缓存中读取
     if (this._fileTransformsMutex.has(cacheKey)) {
       await this._fileTransformsMutex.get(cacheKey);
     }
@@ -469,6 +463,7 @@ export default class Runtime {
         return wasm;
       }
 
+      // 内置模块
       if (this._resolver.isCoreModule(modulePath)) {
         const core = this._importCoreModule(modulePath, context);
         registry.set(cacheKey, core);
@@ -709,6 +704,7 @@ export default class Runtime {
     return this.loadCjsAsEsm(referencingIdentifier, resolved, context);
   }
 
+  // 
   private async linkAndEvaluateModule(
     module: VMModule,
   ): Promise<VMModule | void> {
@@ -744,6 +740,7 @@ export default class Runtime {
     return module;
   }
 
+  // 加载模块
   async unstable_importModule(
     from: string,
     moduleName?: string,
@@ -966,6 +963,7 @@ export default class Runtime {
     return localModule.exports;
   }
 
+  // 
   requireInternalModule<T = unknown>(from: string, to?: string): T {
     if (to) {
       const require = (
@@ -1398,6 +1396,7 @@ export default class Runtime {
       : from;
   }
 
+  // 
   private _resolveModule(from: string, to: string | undefined) {
     return to
       ? this._resolver.resolveModuleAsync(from, to, {
@@ -1634,6 +1633,7 @@ export default class Runtime {
     return transformedFile.code;
   }
 
+  // 通过 转换器 异步返回转换后的文件内容
   private async transformFileAsync(
     filename: string,
     options?: InternalModuleOptions,

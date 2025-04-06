@@ -52,6 +52,7 @@ export default class TestRunner extends EmittingTestRunner {
       : this.#createParallelTestRun(tests, watcher);
   }
 
+  // 串行
   async #createInBandTestRun(tests: Array<Test>, watcher: TestWatcher) {
     process.env.JEST_WORKER_ID = '1';
     const mutex = pLimit(1);
@@ -93,6 +94,7 @@ export default class TestRunner extends EmittingTestRunner {
     );
   }
 
+  // 并行
   async #createParallelTestRun(tests: Array<Test>, watcher: TestWatcher) {
     const resolvers: Map<string, SerializableResolver> = new Map();
     for (const test of tests) {
