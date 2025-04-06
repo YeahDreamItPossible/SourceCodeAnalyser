@@ -176,7 +176,7 @@ export default class JSDOMEnvironment implements JestEnvironment<number> {
 
   getVmContext(): Context | null {
     if (this.dom) {
-      return this.dom.getInternalVMContext();
+      return this.dom. ();
     }
     return null;
   }
