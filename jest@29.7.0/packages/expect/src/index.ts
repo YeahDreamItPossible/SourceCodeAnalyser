@@ -1,13 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-/* eslint-disable local/prefer-spread-eventually */
-
 import {equals, iterableEquality, subsetEquality} from '@jest/expect-utils';
 import * as matcherUtils from 'jest-matcher-utils';
 import {isPromise} from 'jest-util';
@@ -153,10 +143,12 @@ export const expect: Expect = (actual: any, ...rest: Array<any>) => {
   return expectation;
 };
 
+// 
 const getMessage = (message?: () => string) =>
   (message && message()) ||
   matcherUtils.RECEIVED_COLOR('No message was specified for this matcher.');
 
+// 创建 resolve 的 Promise匹配器
 const makeResolveMatcher =
   (
     matcherName: string,
@@ -208,6 +200,7 @@ const makeResolveMatcher =
     );
   };
 
+// 创建 reject 的 Promise匹配器
 const makeRejectMatcher =
   (
     matcherName: string,
@@ -264,6 +257,7 @@ const makeRejectMatcher =
     );
   };
 
+// 创建带有错误收集的匹配器
 const makeThrowingMatcher = (
   matcher: RawMatcherFn,
   isNot: boolean,
@@ -409,6 +403,7 @@ expect.objectContaining = objectContaining;
 expect.stringContaining = stringContaining;
 expect.stringMatching = stringMatching;
 
+// 验证 matcher 函数返回值
 const _validateResult = (result: any) => {
   if (
     typeof result !== 'object' ||
@@ -451,9 +446,11 @@ function hasAssertions(...args: Array<unknown>): void {
   });
 }
 
-// add default jest matchers
+// 默认匹配器
 setMatchers(matchers, true, expect);
+// 模拟匹配器
 setMatchers(spyMatchers, true, expect);
+// 错误匹配器
 setMatchers(toThrowMatchers, true, expect);
 
 expect.assertions = assertions;

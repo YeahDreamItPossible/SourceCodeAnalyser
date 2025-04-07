@@ -1,11 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
 import {
   equals,
   getObjectKeys,
@@ -68,6 +60,8 @@ export function hasProperty(
   return hasProperty(getPrototype(obj), property);
 }
 
+// 不对称匹配器
+// Asymmetric： 不对称
 export abstract class AsymmetricMatcher<T>
   implements AsymmetricMatcherInterface
 {

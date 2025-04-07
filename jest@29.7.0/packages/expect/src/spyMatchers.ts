@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import {equals, iterableEquality} from '@jest/expect-utils';
 import {getType, isPrimitive} from 'jest-get-type';
 import {
@@ -1114,6 +1107,7 @@ const createNthReturnedWithMatcher = (
     return {message, pass};
   };
 
+// 模拟匹配器
 const spyMatchers: MatchersObject = {
   lastCalledWith: createLastCalledWithMatcher('lastCalledWith'),
   lastReturnedWith: createLastReturnedMatcher('lastReturnedWith'),
@@ -1141,9 +1135,11 @@ const spyMatchers: MatchersObject = {
   toReturnWith: createToReturnWithMatcher('toReturnWith'),
 };
 
+// 是否是模拟函数
 const isMock = (received: any) =>
   received != null && received._isMockFunction === true;
 
+// 
 const isSpy = (received: any) =>
   received != null &&
   received.calls != null &&

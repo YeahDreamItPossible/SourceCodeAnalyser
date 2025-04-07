@@ -1,13 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-/* eslint-disable local/ban-types-eventually */
-
 import {
   arrayBufferEquality,
   equals,
@@ -73,6 +63,7 @@ type ContainIterable =
   | DOMTokenList
   | HTMLCollectionOf<any>;
 
+// 匹配器
 const matchers: MatchersObject = {
   toBe(received: unknown, expected: unknown) {
     const matcherName = 'toBe';

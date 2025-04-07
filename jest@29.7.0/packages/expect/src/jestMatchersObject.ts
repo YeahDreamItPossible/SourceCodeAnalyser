@@ -1,11 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
 import type {Tester} from '@jest/expect-utils';
 import {getType} from 'jest-get-type';
 import {AsymmetricMatcher} from './asymmetricMatchers';
@@ -26,11 +18,11 @@ export const INTERNAL_MATCHER_FLAG = Symbol.for('$$jest-internal-matcher');
 
 if (!Object.prototype.hasOwnProperty.call(globalThis, JEST_MATCHERS_OBJECT)) {
   const defaultState: MatcherState = {
-    assertionCalls: 0,
+    assertionCalls: 0, // 单测函数调用量
     expectedAssertionsNumber: null,
     isExpectingAssertions: false,
-    numPassingAsserts: 0,
-    suppressedErrors: [], // errors that are not thrown immediately.
+    numPassingAsserts: 0, // 单测通过量
+    suppressedErrors: [], // 单测错误信息
   };
   Object.defineProperty(globalThis, JEST_MATCHERS_OBJECT, {
     value: {
@@ -50,9 +42,11 @@ export const setState = <State extends MatcherState = MatcherState>(
   Object.assign((globalThis as any)[JEST_MATCHERS_OBJECT].state, state);
 };
 
+// 返回 所有匹配器
 export const getMatchers = (): MatchersObject =>
   (globalThis as any)[JEST_MATCHERS_OBJECT].matchers;
 
+// 设置 匹配器
 export const setMatchers = (
   matchers: MatchersObject,
   isInternal: boolean,

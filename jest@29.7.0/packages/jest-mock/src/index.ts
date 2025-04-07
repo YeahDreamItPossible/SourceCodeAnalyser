@@ -496,11 +496,6 @@ export class ModuleMocker {
   private _spyState: Set<() => void>;
   private _invocationCallCounter: number;
 
-  /**
-   * @see README.md
-   * @param global Global object of the test environment, used to create
-   * mocks
-   */
   constructor(global: typeof globalThis) {
     this._environmentGlobal = global;
     this._mockState = new WeakMap();
@@ -509,6 +504,7 @@ export class ModuleMocker {
     this._invocationCallCounter = 1;
   }
 
+  // 
   private _getSlots(object?: Record<string, any>): Array<string> {
     if (!object) {
       return [];
@@ -555,6 +551,7 @@ export class ModuleMocker {
     return Array.from(slots);
   }
 
+  // 保证返回 模拟配置
   private _ensureMockConfig(f: Mock): MockFunctionConfig {
     let config = this._mockConfigRegistry.get(f);
     if (!config) {
@@ -564,6 +561,7 @@ export class ModuleMocker {
     return config;
   }
 
+  // 保证返回 模拟状态
   private _ensureMockState<T extends UnknownFunction>(
     f: Mock<T>,
   ): MockFunctionState<T> {
@@ -578,6 +576,7 @@ export class ModuleMocker {
     return state;
   }
 
+  // 默认 模拟配置
   private _defaultMockConfig(): MockFunctionConfig {
     return {
       mockImpl: undefined,
@@ -586,6 +585,7 @@ export class ModuleMocker {
     };
   }
 
+  // 默认 模拟状态
   private _defaultMockState(): MockFunctionState {
     return {
       calls: [],
@@ -616,6 +616,7 @@ export class ModuleMocker {
     metadata: MockMetadata<T, 'function'>,
     restore?: () => void,
   ): Mock<T>;
+  // 
   private _makeComponent<T extends UnknownFunction>(
     metadata: MockMetadata<T>,
     restore?: () => void,
@@ -640,7 +641,6 @@ export class ModuleMocker {
           metadata.members.prototype.members) ||
         {};
       const prototypeSlots = this._getSlots(prototype);
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const mocker = this;
       const mockConstructor = matchArity(function (
         this: ReturnType<T>,
@@ -736,6 +736,7 @@ export class ModuleMocker {
       metadata.length || 0);
 
       const f = this._createMockFunction(metadata, mockConstructor) as Mock;
+      // 标识： 是否是模拟函数
       f._isMockFunction = true;
       f.getMockImplementation = () => this._ensureMockConfig(f).mockImpl as T;
 
@@ -743,6 +744,7 @@ export class ModuleMocker {
         this._spyState.add(restore);
       }
 
+      // 
       this._mockState.set(f, this._defaultMockState());
       this._mockConfigRegistry.set(f, this._defaultMockConfig());
 
@@ -873,6 +875,7 @@ export class ModuleMocker {
     }
   }
 
+  // 创建模拟函数
   private _createMockFunction<T extends UnknownFunction>(
     metadata: MockMetadata<T>,
     mockConstructor: Function,
@@ -1081,6 +1084,7 @@ export class ModuleMocker {
     fn: (...args: P) => R,
   ): fn is Mock<(...args: P) => R>;
   isMockFunction(fn: unknown): fn is Mock<UnknownFunction>;
+  // 是否是模拟函数
   isMockFunction(fn: unknown): fn is Mock<UnknownFunction> {
     return fn != null && (fn as Mock)._isMockFunction === true;
   }

@@ -1,13 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-/* eslint-disable local/ban-types-eventually */
-
 import {isError} from '@jest/expect-utils';
 import {
   EXPECTED_COLOR,
@@ -136,6 +126,7 @@ export const createMatcher = (
     }
   };
 
+// 错误匹配器
 const matchers: MatchersObject = {
   toThrow: createMatcher('toThrow'),
   toThrowError: createMatcher('toThrowError'),
