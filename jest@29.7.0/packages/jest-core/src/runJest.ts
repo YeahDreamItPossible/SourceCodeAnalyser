@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as path from 'path';
 import {performance} from 'perf_hooks';
 import chalk = require('chalk');
@@ -77,6 +70,7 @@ type ProcessResultOptions = Pick<
   outputStream: NodeJS.WriteStream;
 };
 
+// 结果处理器
 const processResults = async (
   runResults: AggregatedResult,
   options: ProcessResultOptions,
@@ -96,6 +90,7 @@ const processResults = async (
     runResults.openHandles = [];
   }
 
+  // 加载自定义结果处理器 并处理结果
   if (testResultsProcessor) {
     const processor = await requireOrImportModule<TestResultsProcessor>(
       testResultsProcessor,

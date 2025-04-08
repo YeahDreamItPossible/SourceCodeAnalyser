@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as crypto from 'crypto';
 import * as path from 'path';
 import * as fs from 'graceful-fs';
@@ -43,6 +36,7 @@ type ShardPositionOptions = ShardOptions & {
  * TestSequencer.cacheResults(tests: Array<Test>, results: AggregatedResult)
  * is called to store/update this information on the cache map.
  */
+// 单测定序器
 export default class TestSequencer {
   private readonly _cache = new Map<TestContext, Cache>();
 

@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import chalk = require('chalk');
 import {GITHUB_ACTIONS} from 'ci-info';
 import exit = require('exit');
@@ -56,6 +49,7 @@ type TestRunnerConstructor = new (
 
 export type TestSchedulerContext = ReporterContext & TestRunnerContext;
 
+// 创建 单测调度器
 export async function createTestScheduler(
   globalConfig: Config.GlobalConfig,
   context: TestSchedulerContext,
