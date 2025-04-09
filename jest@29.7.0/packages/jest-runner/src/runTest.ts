@@ -1,11 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
 import chalk = require('chalk');
 import * as fs from 'graceful-fs';
 import sourcemapSupport = require('source-map-support');
@@ -65,15 +57,14 @@ function freezeConsole(
   };
 }
 
-// Keeping the core of "runTest" as a separate function (as "runTestInternal")
-// is key to be able to detect memory leaks. Since all variables are local to
-// the function, when "runTestInternal" finishes its execution, they can all be
-// freed, UNLESS something else is leaking them (and that's why we can detect
-// the leak!).
-//
-// If we had all the code in a single function, we should manually nullify all
-// references to verify if there is a leak, which is not maintainable and error
-// prone. That's why "runTestInternal" CANNOT be inlined inside "runTest".
+// 将“runTest”的核心保留为一个单独的函数（如“runTestInternal”）是能够检测内存泄漏的关键。
+// 由于所有变量都是局部变量函数，
+// 当“runTestInternal”完成执行时，
+// 它们都可以释放，
+// 除非有其他东西在泄漏它们（这就是为什么我们可以检测到泄漏！）。
+// 如果我们将所有代码放在一个函数中，
+// 我们应该手动取消所有用于验证是否存在不可维护的泄漏和错误的参考易感。
+// 这就是为什么“runTestInternal”不能内联在“runTest”中的原因。
 async function runTestInternal(
   path: string,
   globalConfig: Config.GlobalConfig,
@@ -108,10 +99,10 @@ async function runTestInternal(
   // 获取 代码转换器
   const transformer = await createScriptTransformer(projectConfig, cacheFS);
 
-  // 获取 运行环境
+  // 获取 运行环境类
   const TestEnvironment: typeof JestEnvironment =
     await transformer.requireAndTranspileModule(testEnvironment);
-  // 
+  // 获取 单测框架
   const testFramework: TestFramework =
     await transformer.requireAndTranspileModule(
       process.env.JEST_JASMINE === '1'
@@ -135,7 +126,6 @@ async function runTestInternal(
     );
 
   let testConsole;
-
   if (globalConfig.silent) {
     testConsole = new NullConsole(consoleOut, consoleOut, consoleFormatter);
   } else if (globalConfig.verbose) {
@@ -153,6 +143,7 @@ async function runTestInternal(
     extraTestEnvironmentOptions = JSON.parse(docblockEnvironmentOptions);
   }
 
+  // 创建 运行环境 的实例
   const environment = new TestEnvironment(
     {
       globalConfig,
@@ -186,6 +177,7 @@ async function runTestInternal(
 
   setGlobal(environment.global, 'console', testConsole);
 
+  // 创建 运行时 的实例
   const runtime = new Runtime(
     projectConfig,
     environment,
@@ -378,6 +370,7 @@ async function runTestInternal(
   }
 }
 
+// 运行单测
 export default async function runTest(
   path: string,
   globalConfig: Config.GlobalConfig,

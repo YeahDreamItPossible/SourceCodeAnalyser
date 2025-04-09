@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import chalk = require('chalk');
 import Emittery = require('emittery');
 import pLimit = require('p-limit');
@@ -39,6 +32,9 @@ export type {
 
 type TestWorker = typeof import('./testWorker');
 
+// 测试运行器
+// 作用：
+// 以 串行 或者 并行 的方式运行单测文件
 export default class TestRunner extends EmittingTestRunner {
   readonly #eventEmitter = new Emittery<TestEvents>();
 
@@ -94,7 +90,7 @@ export default class TestRunner extends EmittingTestRunner {
     );
   }
 
-  // 并行
+  // 并行， 以 worker 的方式
   async #createParallelTestRun(tests: Array<Test>, watcher: TestWatcher) {
     const resolvers: Map<string, SerializableResolver> = new Map();
     for (const test of tests) {

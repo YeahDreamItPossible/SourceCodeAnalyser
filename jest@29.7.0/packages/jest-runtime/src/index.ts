@@ -409,7 +409,7 @@ export default class Runtime {
     );
   }
 
-  // 加载 ES模块
+  // 返回 加载后的ES模块
   private async loadEsmModule(
     modulePath: string,
     query = '',
@@ -740,7 +740,7 @@ export default class Runtime {
     return module;
   }
 
-  // 加载模块
+  // 加载模块(该方法不稳定)
   async unstable_importModule(
     from: string,
     moduleName?: string,
@@ -1195,6 +1195,7 @@ export default class Runtime {
     }
   }
 
+  // 重置所有的模块模拟
   resetModules(): void {
     this._isolatedModuleRegistry?.clear();
     this._isolatedMockRegistry?.clear();
@@ -1352,6 +1353,7 @@ export default class Runtime {
     this._moduleMocker.resetAllMocks();
   }
 
+  // 清空所有的模拟
   clearAllMocks(): void {
     this._moduleMocker.clearAllMocks();
   }
@@ -2552,6 +2554,7 @@ export default class Runtime {
     return source;
   }
 
+  // 设置 jest 全局变量
   setGlobalsForRuntime(globals: JestGlobals): void {
     this.jestGlobals = globals;
   }

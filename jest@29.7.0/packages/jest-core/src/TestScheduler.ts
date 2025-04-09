@@ -214,9 +214,12 @@ class TestScheduler {
         Array.from(testContexts).map(async context => {
           const {config} = context;
           if (!testRunners[config.runner]) {
+            // 转换器
             const transformer = await createScriptTransformer(config);
+            // 运行器类
             const Runner: TestRunnerConstructor =
               await transformer.requireAndTranspileModule(config.runner);
+            // 运行器
             const runner = new Runner(this._globalConfig, {
               changedFiles: this._context.changedFiles,
               sourcesRelatedToTestsInChangedFiles:
@@ -316,7 +319,8 @@ class TestScheduler {
     return aggregatedResults;
   }
 
-  // 
+  // 分区测试
+  // 对不同的单测执行不同的运行器(Runner)
   private _partitionTests(
     testRunners: Record<string, JestTestRunner>,
     tests: Array<Test>,
@@ -381,6 +385,7 @@ class TestScheduler {
     }
   }
 
+  // 添加 自定义报告器
   private async _addCustomReporter(
     reporter: string,
     options: Record<string, unknown>,
@@ -401,6 +406,7 @@ class TestScheduler {
     }
   }
 
+  // 
   private async _bailIfNeeded(
     testContexts: Set<TestContext>,
     aggregatedResults: AggregatedResult,
@@ -425,6 +431,7 @@ class TestScheduler {
   }
 }
 
+// 创建 聚合结果
 const createAggregatedResults = (numTotalTestSuites: number) => {
   const result = makeEmptyAggregatedTestResult();
   result.numTotalTestSuites = numTotalTestSuites;

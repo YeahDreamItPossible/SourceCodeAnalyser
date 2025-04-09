@@ -7,6 +7,7 @@ import {deepCyclicCopy} from 'jest-util';
 
 const FRAMEWORK_INITIALIZER = require.resolve('./jestAdapterInit');
 
+// 
 const jestAdapter = async (
   globalConfig: Config.GlobalConfig,
   config: Config.ProjectConfig,
@@ -66,6 +67,7 @@ const jestAdapter = async (
     }
   });
 
+  // 执行 setupFilesAfterEnv 文件
   for (const path of config.setupFilesAfterEnv) {
     const esm = runtime.unstable_shouldLoadAsEsm(path);
 

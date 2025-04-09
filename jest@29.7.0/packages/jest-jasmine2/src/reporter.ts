@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import {
   AssertionResult,
   TestResult,
@@ -18,6 +11,7 @@ import type {Reporter, RunDetails} from './types';
 
 type Microseconds = number;
 
+// 报告器
 export default class Jasmine2Reporter implements Reporter {
   private readonly _testResults: Array<AssertionResult>;
   private readonly _globalConfig: Config.GlobalConfig;
@@ -125,6 +119,7 @@ export default class Jasmine2Reporter implements Reporter {
     return stack;
   }
 
+  // 抽取 规范结果
   private _extractSpecResults(
     specResult: SpecResult,
     ancestorTitles: Array<string>,
