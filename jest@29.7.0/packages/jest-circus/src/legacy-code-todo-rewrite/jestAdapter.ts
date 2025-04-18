@@ -5,9 +5,12 @@ import type Runtime from 'jest-runtime';
 import type {SnapshotState} from 'jest-snapshot';
 import {deepCyclicCopy} from 'jest-util';
 
+// 框架初始化器
 const FRAMEWORK_INITIALIZER = require.resolve('./jestAdapterInit');
 
-// 
+// 默认运行器
+// 作用：
+// 任务调度
 const jestAdapter = async (
   globalConfig: Config.GlobalConfig,
   config: Config.ProjectConfig,
@@ -71,6 +74,7 @@ const jestAdapter = async (
   for (const path of config.setupFilesAfterEnv) {
     const esm = runtime.unstable_shouldLoadAsEsm(path);
 
+    // 加载 并运行模块
     if (esm) {
       await runtime.unstable_importModule(path);
     } else {

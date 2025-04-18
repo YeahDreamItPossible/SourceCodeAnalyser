@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import {performance} from 'perf_hooks';
 import chalk = require('chalk');
 import exit = require('exit');
@@ -34,6 +27,7 @@ const {print: preRunMessagePrint} = preRunMessage;
 
 type OnCompleteCallback = (results: AggregatedResult) => void | undefined;
 
+// 运行命令行
 export async function runCLI(
   argv: Config.Argv,
   projects: Array<string>,
@@ -49,11 +43,13 @@ export async function runCLI(
   const outputStream =
     argv.json || argv.useStderr ? process.stderr : process.stdout;
 
+  // 从 命令行参数 和 项目地址 中读取 配置对象
   const {globalConfig, configs, hasDeprecationWarnings} = await readConfigs(
     argv,
     projects,
   );
 
+  // 解析 命令行参数
   if (argv.debug) {
     logDebugMessages(globalConfig, configs, outputStream);
   }
@@ -75,9 +71,10 @@ export async function runCLI(
     exit(0);
   }
 
+  // 从 命令行选项中 筛选 项目配置
   const configsOfProjectsToRun = getConfigsOfProjectsToRun(configs, {
-    ignoreProjects: argv.ignoreProjects,
-    selectProjects: argv.selectProjects,
+    ignoreProjects: argv.ignoreProjects, // 忽略指定项目的测试
+    selectProjects: argv.selectProjects, // 运行指定项目的测试
   });
   if (argv.selectProjects || argv.ignoreProjects) {
     const namesMissingWarning = getProjectNamesMissingWarning(configs, {
@@ -138,6 +135,7 @@ export async function runCLI(
   return {globalConfig, results};
 }
 
+// 
 const buildContextsAndHasteMaps = async (
   configs: Array<Config.ProjectConfig>,
   globalConfig: Config.GlobalConfig,
@@ -166,6 +164,7 @@ const buildContextsAndHasteMaps = async (
   return {contexts, hasteMapInstances};
 };
 
+// 
 const _run10000 = async (
   globalConfig: Config.GlobalConfig,
   configs: Array<Config.ProjectConfig>,
@@ -173,8 +172,8 @@ const _run10000 = async (
   outputStream: NodeJS.WriteStream,
   onComplete: OnCompleteCallback,
 ) => {
-  // Queries to hg/git can take a while, so we need to start the process
-  // as soon as possible, so by the time we need the result it's already there.
+  
+  // 尝试根据当前存储库中哪些文件已更改来确定要运行哪些测试
   const changedFilesPromise = getChangedFilesPromise(globalConfig, configs);
   if (changedFilesPromise) {
     performance.mark('jest/getChangedFiles:start');
@@ -183,8 +182,9 @@ const _run10000 = async (
     });
   }
 
-  // Filter may need to do an HTTP call or something similar to setup.
-  // We will wait on an async response from this before using the filter.
+  // 该异步函数接收一个测试路径列表，
+  // 可以通过返回形状为 { filtered: Array<{ test: string }> } 的对象
+  // 来操作该列表以排除测试运行。
   let filter: Filter | undefined;
   if (globalConfig.filter && !globalConfig.skipFilter) {
     const rawFilter = require(globalConfig.filter);
@@ -213,6 +213,7 @@ const _run10000 = async (
     };
   }
 
+  // 内部文件爬虫/缓存系统
   performance.mark('jest/buildContextsAndHasteMaps:start');
   const {contexts, hasteMapInstances} = await buildContextsAndHasteMaps(
     configs,
@@ -241,6 +242,7 @@ const _run10000 = async (
       );
 };
 
+// 
 const runWatch = async (
   contexts: Array<TestContext>,
   _configs: Array<Config.ProjectConfig>,
@@ -278,6 +280,7 @@ const runWatch = async (
   );
 };
 
+// 
 const runWithoutWatch = async (
   globalConfig: Config.GlobalConfig,
   contexts: Array<TestContext>,
