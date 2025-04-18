@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as path from 'path';
 import chalk = require('chalk');
 import exit = require('exit');
@@ -18,6 +11,7 @@ import {clearLine, tryRealpath} from 'jest-util';
 import {validateCLIOptions} from 'jest-validate';
 import * as args from './args';
 
+// 当运行 jest 命令行时 直接执行该 run 函数
 export async function run(
   maybeArgv?: Array<string>,
   project?: string,
@@ -48,6 +42,16 @@ export async function run(
   }
 }
 
+// 返回构建参数
+/**
+ * 当执行 npm run test:cc 时
+ * {
+ *    '$0': '/Users/didi/Desktop/Demo/my-jest/node_modules/.bin/jest',
+ *    _: [],
+ *    c: 'jest.config.js',
+ *    config: 'jest.config.js'
+ * }
+ */
 export async function buildArgv(
   maybeArgv?: Array<string>,
 ): Promise<Config.Argv> {
@@ -85,6 +89,9 @@ export async function buildArgv(
   );
 }
 
+// 从 命令行参数 中返回 项目列表
+// 默认返回当前 命令行 所在工作目录
+// 即: /Users/didi/Desktop/Github/MyGithub/SourceCodeAnalyser/jest@29.7.0
 const getProjectListFromCLIArgs = (argv: Config.Argv, project?: string) => {
   const projects = argv.projects ? argv.projects : [];
 
@@ -94,13 +101,13 @@ const getProjectListFromCLIArgs = (argv: Config.Argv, project?: string) => {
 
   if (!projects.length && process.platform === 'win32') {
     try {
+      
       projects.push(tryRealpath(process.cwd()));
     } catch {
-      // do nothing, just catch error
-      // process.binding('fs').realpath can throw, e.g. on mapped drives
     }
   }
 
+  // 返回当前 命令行 所在工作目录
   if (!projects.length) {
     projects.push(process.cwd());
   }
@@ -108,13 +115,13 @@ const getProjectListFromCLIArgs = (argv: Config.Argv, project?: string) => {
   return projects;
 };
 
+// 读取结果并退出进程
 const readResultsAndExit = (
   result: AggregatedResult | null,
   globalConfig: Config.GlobalConfig,
 ) => {
   const code = !result || result.success ? 0 : globalConfig.testFailureExitCode;
 
-  // Only exit if needed
   process.on('exit', () => {
     if (typeof code === 'number' && code !== 0) {
       process.exitCode = code;

@@ -31,6 +31,8 @@ const humanReadableOperators: Record<string, string> = {
   strictEqual: 'to strictly be equal',
 };
 
+// 事件处理器
+// 作用：
 // 格式化 node assert 错误
 const formatNodeAssertErrors = (
   event: Circus.Event,

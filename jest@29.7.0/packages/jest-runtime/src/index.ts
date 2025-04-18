@@ -3,12 +3,9 @@ import * as path from 'path';
 import {URL, fileURLToPath, pathToFileURL} from 'url';
 import {
   Script,
-  // @ts-expect-error: experimental, not added to the types
   SourceTextModule,
-  // @ts-expect-error: experimental, not added to the types
   SyntheticModule,
   Context as VMContext,
-  // @ts-expect-error: experimental, not added to the types
   Module as VMModule,
 } from 'vm';
 import {parse as parseCjs} from 'cjs-module-lexer';
@@ -152,6 +149,9 @@ const supportsNodeColonModulePrefixInRequire = (() => {
   }
 })();
 
+// 运行时
+// 作用：
+// 加载模块 并运行模块
 export default class Runtime {
   private readonly _cacheFS: Map<string, string>;
   private readonly _cacheFSBuffer = new Map<string, Buffer>();
@@ -553,6 +553,7 @@ export default class Runtime {
     return module;
   }
 
+  // 解析模块
   private async resolveModule<T = unknown>(
     specifier: string,
     referencingIdentifier: string,
@@ -704,7 +705,7 @@ export default class Runtime {
     return this.loadCjsAsEsm(referencingIdentifier, resolved, context);
   }
 
-  // 
+  // 关联并评估模块
   private async linkAndEvaluateModule(
     module: VMModule,
   ): Promise<VMModule | void> {
@@ -752,8 +753,10 @@ export default class Runtime {
 
     const [path, query] = (moduleName ?? '').split('?');
 
+    // 解析模块的文件路径
     const modulePath = await this._resolveModule(from, path);
 
+    // 加载模块
     const module = await this.loadEsmModule(modulePath, query);
 
     return this.linkAndEvaluateModule(module);
@@ -789,6 +792,7 @@ export default class Runtime {
     return evaluateSyntheticModule(module);
   }
 
+  // 导入 被模拟的模块
   private async importMock<T = unknown>(
     from: string,
     moduleName: string,
@@ -963,7 +967,7 @@ export default class Runtime {
     return localModule.exports;
   }
 
-  // 
+  // 加载内置模块
   requireInternalModule<T = unknown>(from: string, to?: string): T {
     if (to) {
       const require = (
@@ -1121,6 +1125,7 @@ export default class Runtime {
     };
   }
 
+  // 加载真实模块 或者要模拟的模块
   requireModuleOrMock<T = unknown>(from: string, moduleName: string): T {
     // this module is unmockable
     if (moduleName === '@jest/globals') {
@@ -1398,7 +1403,7 @@ export default class Runtime {
       : from;
   }
 
-  // 
+  // TOOD：解析模块路径
   private _resolveModule(from: string, to: string | undefined) {
     return to
       ? this._resolver.resolveModuleAsync(from, to, {
@@ -1607,7 +1612,7 @@ export default class Runtime {
     this._currentlyExecutingModulePath = lastExecutingModulePath;
   }
 
-  // 
+  // 根据 文件路径 读取文件，并返回转换后的代码
   private transformFile(
     filename: string,
     options?: InternalModuleOptions,
@@ -1635,17 +1640,19 @@ export default class Runtime {
     return transformedFile.code;
   }
 
-  // 通过 转换器 异步返回转换后的文件内容
+  // 读取文件，并通过 转换器 异步返回转换后的文件内容
   private async transformFileAsync(
     filename: string,
     options?: InternalModuleOptions,
   ): Promise<string> {
+    // 读取文件
     const source = this.readFile(filename);
 
     if (options?.isInternalModule) {
       return source;
     }
 
+    // 转换文件内容
     const transformedFile = await this._scriptTransformer.transformAsync(
       filename,
       this._getFullTransformationOptions(options),
@@ -1665,7 +1672,7 @@ export default class Runtime {
     return transformedFile.code;
   }
 
-  // 
+  // 根据 code 返回创建后的 脚本
   private createScriptFromCode(scriptSource: string, filename: string) {
     try {
       const scriptFilename = this._resolver.isCoreModule(filename)
@@ -1785,6 +1792,7 @@ export default class Runtime {
     return syntheticModule;
   }
 
+  // 
   private _getMockedNativeModule(): typeof nativeModule.Module {
     if (this._moduleImplementation) {
       return this._moduleImplementation;
@@ -1859,6 +1867,7 @@ export default class Runtime {
     return Module;
   }
 
+  // 生成模拟模块
   private _generateMock<T>(from: string, moduleName: string) {
     const modulePath =
       this._resolver.resolveStubModuleName(from, moduleName) ||
@@ -1902,6 +1911,7 @@ export default class Runtime {
     );
   }
 
+  // 
   private _shouldMockCjs(
     from: string,
     moduleName: string,
@@ -1973,6 +1983,7 @@ export default class Runtime {
     return true;
   }
 
+  // 返回 是否应该模拟模块
   private async _shouldMockModule(
     from: string,
     moduleName: string,
@@ -2047,6 +2058,7 @@ export default class Runtime {
     return true;
   }
 
+  // 创建 require 函数
   private _createRequireImplementation(
     from: InitialModule,
     options?: InternalModuleOptions,
@@ -2105,6 +2117,7 @@ export default class Runtime {
     return moduleRequire;
   }
 
+  // 创建 全局Jest对象
   private _createJestObjectFor(from: string): Jest {
     const disableAutomock = () => {
       this._shouldAutoMock = false;
@@ -2409,6 +2422,7 @@ export default class Runtime {
     return jestObject;
   }
 
+  //
   private _logFormattedReferenceError(errorMessage: string) {
     const testPath = this._testPath
       ? ` From ${slash(path.relative(this._config.rootDir, this._testPath))}.`
@@ -2428,16 +2442,19 @@ export default class Runtime {
     );
   }
 
+  // 包装后的模块代码
   private wrapCodeInModuleWrapper(content: string) {
     return `${this.constructModuleWrapperStart() + content}\n}});`;
   }
 
+  // 
   private constructModuleWrapperStart() {
     const args = this.constructInjectedModuleParameters();
 
     return `({"${EVAL_RESULT_VARIABLE}":function(${args.join(',')}){`;
   }
 
+  // 返回构造函数要注入的模块参数
   private constructInjectedModuleParameters(): Array<string> {
     return [
       'module',
@@ -2450,6 +2467,7 @@ export default class Runtime {
     ].filter(isNonNullable);
   }
 
+  // 
   private handleExecutionError(e: Error, module: Module): never {
     const moduleNotFoundError = Resolver.tryCastModuleNotFoundError(e);
     if (moduleNotFoundError) {
@@ -2468,6 +2486,7 @@ export default class Runtime {
     throw e;
   }
 
+  // 返回从 cjs 中获取的 全局变量
   private getGlobalsForCjs(from: string): JestGlobalsWithJest {
     const jest = this.jestObjectCaches.get(from);
 
@@ -2476,6 +2495,7 @@ export default class Runtime {
     return {...this.getGlobalsFromEnvironment(), jest};
   }
 
+  // 获取 esm 对应的 全局Jest
   private getGlobalsForEsm(
     from: string,
     context: VMContext,
@@ -2507,6 +2527,7 @@ export default class Runtime {
     return evaluateSyntheticModule(module);
   }
 
+  // 返回从 环境 中获取的 全局变量
   private getGlobalsFromEnvironment(): JestGlobals {
     if (this.jestGlobals) {
       return {...this.jestGlobals};
@@ -2529,6 +2550,7 @@ export default class Runtime {
     };
   }
 
+  // 以同步的方式读取文件 并返回Buffer
   private readFileBuffer(filename: string): Buffer {
     let source = this._cacheFSBuffer.get(filename);
 
@@ -2541,6 +2563,7 @@ export default class Runtime {
     return source;
   }
 
+  // 根据 文件路径 读取文件 并返回JSON类型的文件
   private readFile(filename: string): string {
     let source = this._cacheFS.get(filename);
 
@@ -2560,6 +2583,7 @@ export default class Runtime {
   }
 }
 
+// 
 async function evaluateSyntheticModule(module: SyntheticModule) {
   await module.link(() => {
     throw new Error('This should never happen');

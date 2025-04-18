@@ -209,6 +209,7 @@ async function runTestInternal(
   const start = Date.now();
 
   // 执行 setupFiles 文件
+  // 每个 单测文件执行 前都会执行所有的 setupFiles 文件
   for (const path of projectConfig.setupFiles) {
     const esm = runtime.unstable_shouldLoadAsEsm(path);
 

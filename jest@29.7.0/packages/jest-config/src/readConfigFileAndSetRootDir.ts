@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as path from 'path';
 import * as fs from 'graceful-fs';
 import parseJson = require('parse-json');
@@ -80,7 +73,7 @@ export default async function readConfigFileAndSetRootDir(
   return configObject;
 }
 
-// Load the TypeScript configuration
+// 加载ts类型的配置文件
 const loadTSConfigFile = async (
   configPath: string,
 ): Promise<Config.InitialOptions> => {

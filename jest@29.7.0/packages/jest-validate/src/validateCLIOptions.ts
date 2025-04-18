@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import camelcase = require('camelcase');
 import chalk = require('chalk');
 import type {Options} from 'yargs';
@@ -73,6 +66,7 @@ const validateDeprecatedOptions = (
   });
 };
 
+// 验证 jest 命令行选项
 export default function validateCLIOptions(
   argv: Config.Argv,
   options: Record<string, Options> & {

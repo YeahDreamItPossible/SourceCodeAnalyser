@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as os from 'os';
 import * as path from 'path';
 import micromatch = require('micromatch');
@@ -40,6 +33,7 @@ const regexToMatcher = (testRegex: Config.ProjectConfig['testRegex']) => {
     });
 };
 
+// 
 const toTests = (context: TestContext, tests: Array<string>) =>
   tests.map(path => ({
     context,
@@ -54,6 +48,9 @@ const hasSCM = (changedFilesInfo: ChangedFiles) => {
   return !noSCM;
 };
 
+// 搜索源
+// 作用：
+// 返回所有匹配的单测文件路径
 export default class SearchSource {
   private readonly _context: TestContext;
   private _dependencyResolver: DependencyResolver | null;
@@ -108,6 +105,7 @@ export default class SearchSource {
     return this._dependencyResolver;
   }
 
+  //
   private _filterTestPathsWithStats(
     allPaths: Array<Test>,
     testPathPattern: string,
@@ -152,6 +150,7 @@ export default class SearchSource {
     return data;
   }
 
+  // 根据 路径正则 来筛选 路径
   private _getAllTestPaths(testPathPattern: string): SearchResult {
     return this._filterTestPathsWithStats(
       toTests(this._context, this._context.hasteFS.getAllFiles()),
@@ -159,10 +158,12 @@ export default class SearchSource {
     );
   }
 
+  // 筛选
   isTestFilePath(path: string): boolean {
     return this._testPathCases.every(testCase => testCase.isMatch(path));
   }
 
+  // 在执行测试之前与所有测试路径进行匹配的正则表达式模式字符串
   findMatchingTests(testPathPattern: string): SearchResult {
     return this._getAllTestPaths(testPathPattern);
   }
@@ -224,6 +225,7 @@ export default class SearchSource {
     };
   }
 
+  // 仅运行以其确切路径指定的测试
   findTestsByPaths(paths: Array<string>): SearchResult {
     return {
       tests: toTests(
@@ -235,6 +237,7 @@ export default class SearchSource {
     };
   }
 
+  // 查找并运行覆盖作为参数传入的空格分隔的源文件列表的测试
   async findRelatedTestsFromPattern(
     paths: Array<string>,
     collectCoverage: boolean,
@@ -259,6 +262,7 @@ export default class SearchSource {
     return this.findRelatedTests(changedFiles, collectCoverage);
   }
 
+  // 返回 所有匹配的单测文件路径
   private async _getTestPaths(
     globalConfig: Config.GlobalConfig,
     changedFiles?: ChangedFiles,
@@ -276,18 +280,23 @@ export default class SearchSource {
 
     let paths = globalConfig.nonFlagArgs;
 
+    // 查找并运行覆盖作为参数传入的空格分隔的源文件列表的测试
     if (globalConfig.findRelatedTests && 'win32' === os.platform()) {
       paths = this.filterPathsWin32(paths);
     }
 
+
     if (globalConfig.runTestsByPath && paths && paths.length) {
+      // 仅运行以其确切路径指定的测试
       return this.findTestsByPaths(paths);
     } else if (globalConfig.findRelatedTests && paths && paths.length) {
+      // 查找并运行覆盖作为参数传入的空格分隔的源文件列表的测试
       return this.findRelatedTestsFromPattern(
         paths,
         globalConfig.collectCoverage,
       );
     } else if (globalConfig.testPathPattern != null) {
+      // 在执行测试之前与所有测试路径进行匹配的正则表达式模式字符串
       return this.findMatchingTests(globalConfig.testPathPattern);
     } else {
       return {tests: []};
@@ -320,6 +329,7 @@ export default class SearchSource {
     return paths;
   }
 
+  // 返回 筛选后的所有匹配的单测文件路径
   async getTestPaths(
     globalConfig: Config.GlobalConfig,
     changedFiles?: ChangedFiles,

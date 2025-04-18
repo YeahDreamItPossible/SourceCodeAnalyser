@@ -1,9 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
 
 import {unsafeUniformIntDistribution, xoroshiro128plus} from 'pure-rand';
 
@@ -17,8 +11,8 @@ export const rngBuilder = (seed: number): RandomNumberGenerator => {
   return {next: (from, to) => unsafeUniformIntDistribution(from, to, gen)};
 };
 
-// Fisher-Yates shuffle
-// This is performed in-place
+// 随机打乱数组
+// 洗牌算法
 export default function shuffleArray<T>(
   array: Array<T>,
   random: RandomNumberGenerator,

@@ -31,6 +31,7 @@ const describe = (() => {
   return describe;
 })();
 
+// 派发描述块
 const _dispatchDescribe = (
   blockFn: Circus.BlockFn,
   blockName: Circus.BlockNameLike,
@@ -60,8 +61,11 @@ const _dispatchDescribe = (
     mode,
     name: 'start_describe_definition',
   });
+
+  // 执行 描述块 函数
   const describeReturn = blockFn();
 
+  // 描述块 只能返回 undefined
   if (isPromise(describeReturn)) {
     throw new ErrorWithStack(
       'Returning a Promise from "describe" is not supported. Tests must be defined synchronously.',
@@ -77,6 +81,7 @@ const _dispatchDescribe = (
   dispatchSync({blockName, mode, name: 'finish_describe_definition'});
 };
 
+// 添加钩子
 const _addHook = (
   fn: Circus.HookFn,
   hookType: Circus.HookType,

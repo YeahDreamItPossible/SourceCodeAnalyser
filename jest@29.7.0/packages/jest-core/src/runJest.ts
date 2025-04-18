@@ -26,6 +26,7 @@ import getNoTestsFoundMessage from './getNoTestsFoundMessage';
 import runGlobalHook from './runGlobalHook';
 import type {Filter, TestRunData} from './types';
 
+// 
 const getTestPaths = async (
   globalConfig: Config.GlobalConfig,
   source: SearchSource,
@@ -124,6 +125,7 @@ const testSchedulerContext: TestSchedulerContext = {
   previousSuccess: true,
 };
 
+// 运行
 export default async function runJest({
   contexts,
   globalConfig,
@@ -147,14 +149,14 @@ export default async function runJest({
   failedTestsCache?: FailedTestsCache;
   filter?: Filter;
 }): Promise<void> {
-  // Clear cache for required modules - there might be different resolutions
-  // from Jest's config loading to running the tests
   Resolver.clearDefaultResolverCache();
 
+  // 定序器类
   const Sequencer: typeof TestSequencer = await requireOrImportModule(
     globalConfig.testSequencer,
   );
   const sequencer = new Sequencer();
+  // 匹配的单测文件路径
   let allTests: Array<Test> = [];
 
   if (changedFilesPromise && globalConfig.watch) {
@@ -179,6 +181,7 @@ export default async function runJest({
   const testRunData: TestRunData = await Promise.all(
     contexts.map(async (context, index) => {
       const searchSource = searchSources[index];
+      // 获取所有匹配后的单测文件路径
       const matches = await getTestPaths(
         globalConfig,
         searchSource,
@@ -194,6 +197,7 @@ export default async function runJest({
   );
   performance.mark('jest/getTestPaths:end');
 
+  // 以 (?<shardIndex>\d+)/(?<shardCount>\d+) 格式执行的测试套件分片
   if (globalConfig.shard) {
     if (typeof sequencer.shard !== 'function') {
       throw new Error(
@@ -205,6 +209,7 @@ export default async function runJest({
 
   allTests = await sequencer.sort(allTests);
 
+  // 列出 Jest 将在给定参数的情况下运行的所有测试文件
   if (globalConfig.listTests) {
     const testsPaths = Array.from(new Set(allTests.map(test => test.path)));
     /* eslint-disable no-console */
@@ -219,6 +224,7 @@ export default async function runJest({
     return;
   }
 
+  // 运行上次执行中失败的测试
   if (globalConfig.onlyFailures) {
     if (failedTestsCache) {
       allTests = failedTestsCache.filterTests(allTests);
@@ -257,6 +263,8 @@ export default async function runJest({
     collectHandles = collectNodeHandles();
   }
 
+  // 运行 globalSetup 钩子
+  // 全局只运行一次
   if (hasTests) {
     performance.mark('jest/globalSetup:start');
     await runGlobalHook({allTests, globalConfig, moduleName: 'globalSetup'});
@@ -289,7 +297,6 @@ export default async function runJest({
     ...testSchedulerContext,
   });
 
-  // @ts-expect-error - second arg is unsupported (but harmless) in Node 14
   performance.mark('jest/scheduleAndRun:start', {
     detail: {numTests: allTests.length},
   });
@@ -300,6 +307,8 @@ export default async function runJest({
   sequencer.cacheResults(allTests, results);
   performance.mark('jest/cacheResults:end');
 
+  // 运行 globalTeardown 钩子
+  // 全局只运行一次
   if (hasTests) {
     performance.mark('jest/globalTeardown:start');
     await runGlobalHook({allTests, globalConfig, moduleName: 'globalTeardown'});

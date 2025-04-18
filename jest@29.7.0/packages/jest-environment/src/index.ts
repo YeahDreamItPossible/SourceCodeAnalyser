@@ -3,13 +3,21 @@ import type {LegacyFakeTimers, ModernFakeTimers} from '@jest/fake-timers';
 import type {Circus, Config, Global} from '@jest/types';
 import type {Mocked, ModuleMocker} from 'jest-mock';
 
+// Jest环境配置
+export interface JestEnvironmentConfig {
+  projectConfig: Config.ProjectConfig;
+  globalConfig: Config.GlobalConfig;
+}
+
+// 环境上下文
 export type EnvironmentContext = {
   console: Console;
   docblockPragmas: Record<string, string | Array<string>>;
   testPath: string;
 };
 
-// Different Order than https://nodejs.org/api/modules.html#modules_the_module_wrapper , however needs to be in the form [jest-transform]ScriptTransformer accepts
+// 定义：https://nodejs.org/api/modules.html#modules_the_module_wrapper
+// 模块包装器
 export type ModuleWrapper = (
   this: Module['exports'],
   module: Module,
@@ -25,17 +33,15 @@ export interface JestImportMeta extends ImportMeta {
   jest: Jest;
 }
 
-export interface JestEnvironmentConfig {
-  projectConfig: Config.ProjectConfig;
-  globalConfig: Config.GlobalConfig;
-}
-
+// Jest环境
+// 作用:
+// 
 export declare class JestEnvironment<Timer = unknown> {
   constructor(config: JestEnvironmentConfig, context: EnvironmentContext);
-  global: Global.Global;
-  fakeTimers: LegacyFakeTimers<Timer> | null;
-  fakeTimersModern: ModernFakeTimers | null;
-  moduleMocker: ModuleMocker | null;
+  global: Global.Global; // 全局对象
+  fakeTimers: LegacyFakeTimers<Timer> | null; // 模拟旧版定时器
+  fakeTimersModern: ModernFakeTimers | null; // 模拟现代定时器
+  moduleMocker: ModuleMocker | null; // 模块模拟器
   getVmContext(): Context | null;
   setup(): Promise<void>;
   teardown(): Promise<void>;
@@ -45,7 +51,7 @@ export declare class JestEnvironment<Timer = unknown> {
 
 export type Module = NodeModule;
 
-// TODO: Move to some separate package
+// Jest接口
 export interface Jest {
   /**
    * Advances all timers by `msToRun` milliseconds. All pending "macro-tasks"

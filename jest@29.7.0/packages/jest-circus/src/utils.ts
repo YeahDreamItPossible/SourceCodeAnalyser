@@ -30,7 +30,7 @@ function isGeneratorFunction(
   return isGeneratorFn(fn);
 }
 
-// 描述块
+// 描述块模板对象
 export const makeDescribe = (
   name: Circus.BlockName,
   parent?: Circus.DescribeBlock,
@@ -53,7 +53,7 @@ export const makeDescribe = (
   };
 };
 
-// 单测文件
+// 测试用例模板对象
 export const makeTest = (
   fn: Circus.TestFn,
   mode: Circus.TestMode,
@@ -66,7 +66,7 @@ export const makeTest = (
 ): Circus.TestEntry => ({
   type: 'test',
   asyncError,
-  concurrent,
+  concurrent, // 同时运行
   duration: null,
   errors: [], // 错误
   failing,
@@ -75,7 +75,7 @@ export const makeTest = (
   mode,
   name: convertDescriptorToString(name),
   numPassingAsserts: 0,
-  parent,
+  parent, // 当前测试用例
   retryReasons: [],
   seenDone: false,
   startedAt: null, // 开始运行时间
@@ -83,8 +83,7 @@ export const makeTest = (
   timeout, // 耗时
 });
 
-// Traverse the tree of describe blocks and return true if at least one describe
-// block has an enabled test.
+// 判断该描述块中是否有要运行的测试用例
 const hasEnabledTest = (describeBlock: Circus.DescribeBlock): boolean => {
   const {hasFocusedTests, testNamePattern} = getState();
   return describeBlock.children.some(child =>
@@ -98,12 +97,13 @@ const hasEnabledTest = (describeBlock: Circus.DescribeBlock): boolean => {
   );
 };
 
+// 描述块钩子
 type DescribeHooks = {
   beforeAll: Array<Circus.Hook>;
   afterAll: Array<Circus.Hook>;
 };
 
-// 返回 beforeAll 和 afterAll 队列
+// 返回 描述块中 的 beforeAll 和 afterAll 队列
 export const getAllHooksForDescribe = (
   describe: Circus.DescribeBlock,
 ): DescribeHooks => {
@@ -112,6 +112,7 @@ export const getAllHooksForDescribe = (
     beforeAll: [],
   };
 
+  // 只有 描述块 中有要运行的 单测文件时
   if (hasEnabledTest(describe)) {
     for (const hook of describe.hooks) {
       switch (hook.type) {
@@ -128,6 +129,7 @@ export const getAllHooksForDescribe = (
   return result;
 };
 
+// 测试用例钩子
 type TestHooks = {
   beforeEach: Array<Circus.Hook>;
   afterEach: Array<Circus.Hook>;
@@ -137,7 +139,6 @@ type TestHooks = {
 export const getEachHooksForTest = (test: Circus.TestEntry): TestHooks => {
   const result: TestHooks = {afterEach: [], beforeEach: []};
   if (test.concurrent) {
-    // *Each hooks are not run for concurrent tests
     return result;
   }
 
@@ -155,13 +156,13 @@ export const getEachHooksForTest = (test: Circus.TestEntry): TestHooks => {
           break;
       }
     }
-    // 'beforeEach' hooks are executed from top to bottom, the opposite of the
-    // way we traversed it.
+    // beforeEach 钩子是从上到下执行的，与我们遍历它的方式相反
     result.beforeEach = [...beforeEachForCurrentBlock, ...result.beforeEach];
   } while ((block = block.parent));
   return result;
 };
 
+// 判断该描述块中是否有测试用例
 export const describeBlockHasTests = (
   describe: Circus.DescribeBlock,
 ): boolean =>

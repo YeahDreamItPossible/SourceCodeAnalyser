@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import type {Context} from 'vm';
 import {JSDOM, ResourceLoader, VirtualConsole} from 'jsdom';
 import type {
@@ -30,6 +23,7 @@ function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+// JSDOM环境
 export default class JSDOMEnvironment implements JestEnvironment<number> {
   dom: JSDOM | null;
   fakeTimers: LegacyFakeTimers<number> | null;
@@ -76,8 +70,6 @@ export default class JSDOMEnvironment implements JestEnvironment<number> {
     // @ts-expect-error - for "universal" code (code should use `globalThis`)
     global.global = global;
 
-    // Node's error-message stack size is limited at 10, but it's pretty useful
-    // to see more than that when a test fails.
     this.global.Error.stackTraceLimit = 100;
     installCommonGlobals(global, projectConfig.globals);
 
@@ -128,8 +120,11 @@ export default class JSDOMEnvironment implements JestEnvironment<number> {
       }
     }
 
+    // 模块模拟器
     this.moduleMocker = new ModuleMocker(global);
 
+    // 模拟定时器
+    // 模拟旧版定时器
     this.fakeTimers = new LegacyFakeTimers({
       config: projectConfig,
       global: global as unknown as typeof globalThis,
@@ -139,16 +134,17 @@ export default class JSDOMEnvironment implements JestEnvironment<number> {
         refToId: (ref: number) => ref,
       },
     });
-
+    // 模拟现代定时器
     this.fakeTimersModern = new ModernFakeTimers({
       config: projectConfig,
       global: global as unknown as typeof globalThis,
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // 启动
   async setup(): Promise<void> {}
 
+  // 拆卸
   async teardown(): Promise<void> {
     if (this.fakeTimers) {
       this.fakeTimers.dispose();
@@ -163,7 +159,6 @@ export default class JSDOMEnvironment implements JestEnvironment<number> {
       this.global.close();
     }
     this.errorEventListener = null;
-    // @ts-expect-error: this.global not allowed to be `null`
     this.global = null;
     this.dom = null;
     this.fakeTimers = null;
@@ -174,9 +169,10 @@ export default class JSDOMEnvironment implements JestEnvironment<number> {
     return this._configuredExportConditions ?? this.customExportConditions;
   }
 
+  // 返回虚拟机上下文
   getVmContext(): Context | null {
     if (this.dom) {
-      return this.dom. ();
+      return this.dom.getInternalVMContext();
     }
     return null;
   }

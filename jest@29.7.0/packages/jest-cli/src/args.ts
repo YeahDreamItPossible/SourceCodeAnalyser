@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import type {Options} from 'yargs';
 import type {Config} from '@jest/types';
 import {constants, isJSONString} from 'jest-config';
@@ -100,7 +93,7 @@ export const usage =
   'Usage: $0 [--config=<pathToConfigFile>] [TestPathPattern]';
 export const docs = 'Documentation: https://jestjs.io/';
 
-// The default values are all set in jest-config
+// 命令行选项
 export const options: {[key: string]: Options} = {
   all: {
     description:

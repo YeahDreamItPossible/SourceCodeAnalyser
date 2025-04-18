@@ -1,15 +1,9 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import chalk = require('chalk');
 import type {Config} from '@jest/types';
 import {ChangedFilesPromise, getChangedFilesForRoots} from 'jest-changed-files';
 import {formatExecError} from 'jest-message-util';
 
+// 尝试根据当前存储库中哪些文件已更改来确定要运行哪些测试
 export default function getChangedFilesPromise(
   globalConfig: Config.GlobalConfig,
   configs: Array<Config.ProjectConfig>,

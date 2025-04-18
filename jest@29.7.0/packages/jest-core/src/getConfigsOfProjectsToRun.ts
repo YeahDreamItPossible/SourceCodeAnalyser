@@ -1,6 +1,7 @@
 import type {Config} from '@jest/types';
 import getProjectDisplayName from './getProjectDisplayName';
 
+// 筛选 项目配置
 export default function getConfigsOfProjectsToRun(
   projectConfigs: Array<Config.ProjectConfig>,
   opts: {
@@ -15,6 +16,7 @@ export default function getConfigsOfProjectsToRun(
   });
 }
 
+// 创建项目筛选器
 function createProjectFilter(opts: {
   ignoreProjects: Array<string> | undefined;
   selectProjects: Array<string> | undefined;

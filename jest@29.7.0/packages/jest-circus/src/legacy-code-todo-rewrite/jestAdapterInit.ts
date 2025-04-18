@@ -29,6 +29,7 @@ interface RuntimeGlobals extends Global.TestFrameworkGlobals {
   expect: JestExpect;
 }
 
+// 初始化
 export const initialize = async ({
   config,
   environment,
@@ -59,7 +60,7 @@ export const initialize = async ({
   getRunnerState().randomize = globalConfig.randomize;
   getRunnerState().seed = globalConfig.seed;
 
-  // @ts-expect-error: missing `concurrent` which is added later
+  // 
   const globalsObject: Global.TestFrameworkGlobals = {
     ...globals,
     fdescribe: globals.describe.only,
@@ -126,6 +127,7 @@ export const initialize = async ({
   return {globals: globalsObject, snapshotState};
 };
 
+// 
 export const runAndTransformResultsToJestFormat = async ({
   config,
   globalConfig,
@@ -227,6 +229,7 @@ const handleSnapshotStateAfterRetry =
     }
   };
 
+// 
 const eventHandler = async (event: Circus.Event) => {
   switch (event.name) {
     case 'test_start': {

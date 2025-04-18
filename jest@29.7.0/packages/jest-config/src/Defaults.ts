@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import {sep} from 'path';
 import {isCI} from 'ci-info';
 import type {Config} from '@jest/types';
@@ -14,6 +7,7 @@ import getCacheDirectory from './getCacheDirectory';
 
 const NODE_MODULES_REGEXP = replacePathSepForRegex(NODE_MODULES);
 
+// 默认配置选项
 const defaultOptions: Config.DefaultOptions = {
   automock: false,
   bail: 0,

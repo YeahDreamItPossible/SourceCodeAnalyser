@@ -15,7 +15,9 @@ type Timer = {
   unref: () => Timer;
 };
 
-// some globals we do not want, either because deprecated or we set it ourselves
+// 以下全局变量不想使用
+// 原因：
+// 要么已废弃, 要么手动设置
 const denyList = new Set([
   'GLOBAL',
   'root',
@@ -24,7 +26,6 @@ const denyList = new Set([
   'Buffer',
   'ArrayBuffer',
   'Uint8Array',
-  // if env is loaded within a jest test
   'jest-symbol-do-not-touch',
 ]);
 
@@ -53,6 +54,7 @@ function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+// Node环境
 export default class NodeEnvironment implements JestEnvironment<Timer> {
   context: Context | null;
   fakeTimers: LegacyFakeTimers<Timer> | null;
@@ -62,10 +64,10 @@ export default class NodeEnvironment implements JestEnvironment<Timer> {
   customExportConditions = ['node', 'node-addons'];
   private _configuredExportConditions?: Array<string>;
 
-  // while `context` is unused, it should always be passed
   constructor(config: JestEnvironmentConfig, _context: EnvironmentContext) {
     const {projectConfig} = config;
     this.context = createContext();
+    // 当前运行环境的全局对象
     const global = runInContext(
       'this',
       Object.assign(this.context, projectConfig.testEnvironmentOptions),
@@ -122,19 +124,15 @@ export default class NodeEnvironment implements JestEnvironment<Timer> {
       }
     }
 
-    // @ts-expect-error - Buffer and gc is "missing"
     global.global = global;
     global.Buffer = Buffer;
     global.ArrayBuffer = ArrayBuffer;
-    // TextEncoder (global or via 'util') references a Uint8Array constructor
-    // different than the global one used by users in tests. This makes sure the
-    // same constructor is referenced by both.
     global.Uint8Array = Uint8Array;
 
     installCommonGlobals(global, projectConfig.globals);
 
-    // Node's error-message stack size is limited at 10, but it's pretty useful
-    // to see more than that when a test fails.
+    // Node的错误消息堆栈默认大小限制在10，
+    // 但当测试失败时，看到更多是非常有用的。
     global.Error.stackTraceLimit = 100;
 
     if ('customExportConditions' in projectConfig.testEnvironmentOptions) {
@@ -151,6 +149,7 @@ export default class NodeEnvironment implements JestEnvironment<Timer> {
       }
     }
 
+    // 模块模拟器
     this.moduleMocker = new ModuleMocker(global);
 
     const timerIdToRef = (id: number) => ({
@@ -162,9 +161,9 @@ export default class NodeEnvironment implements JestEnvironment<Timer> {
         return this;
       },
     });
-
     const timerRefToId = (timer: Timer): number | undefined => timer?.id;
-
+    // 模拟定时器
+    // 模拟旧版定时器
     this.fakeTimers = new LegacyFakeTimers({
       config: projectConfig,
       global,
@@ -174,16 +173,17 @@ export default class NodeEnvironment implements JestEnvironment<Timer> {
         refToId: timerRefToId,
       },
     });
-
+    // 模拟现代定时器
     this.fakeTimersModern = new ModernFakeTimers({
       config: projectConfig,
       global,
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // 启动
   async setup(): Promise<void> {}
 
+  // 拆卸
   async teardown(): Promise<void> {
     if (this.fakeTimers) {
       this.fakeTimers.dispose();
@@ -200,6 +200,7 @@ export default class NodeEnvironment implements JestEnvironment<Timer> {
     return this._configuredExportConditions ?? this.customExportConditions;
   }
 
+  // 返回虚拟机上下文
   getVmContext(): Context | null {
     return this.context;
   }

@@ -18,6 +18,7 @@ type ConcurrentTestEntry = Omit<Circus.TestEntry, 'fn'> & {
   fn: Circus.ConcurrentTestFn;
 };
 
+// 运行所有的描述块及测试用例
 const run = async (): Promise<Circus.RunResult> => {
   const {rootDescribeBlock, seed, randomize} = getState();
   const rng = randomize ? rngBuilder(seed) : undefined;

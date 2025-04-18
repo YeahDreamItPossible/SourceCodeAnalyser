@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import {createHash} from 'crypto';
 import {EventEmitter} from 'events';
 import {tmpdir} from 'os';
@@ -1145,7 +1138,6 @@ function copyMap<K, V>(input: Map<K, V>): Map<K, V> {
   return new Map(input);
 }
 
-// Export the smallest API surface required by Jest
 type IJestHasteMap = HasteMapStatic & {
   create(options: Options): Promise<IHasteMap>;
   getStatic(config: Config.ProjectConfig): HasteMapStatic;

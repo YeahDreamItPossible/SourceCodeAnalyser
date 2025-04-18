@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import type {TestFileEvent} from '@jest/test-result';
 import type {Circus} from '@jest/types';
 import {
@@ -13,6 +6,8 @@ import {
   parseSingleTestResult,
 } from './utils';
 
+// 事件处理器
+// 测试用例报告处理器
 const testCaseReportHandler =
   (testPath: string, sendMessageToJest: TestFileEvent) =>
   (event: Circus.Event): void => {

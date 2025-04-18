@@ -489,6 +489,9 @@ function isReadonlyProp(object: unknown, prop: string): boolean {
   return false;
 }
 
+// 模块模拟器
+// 作用：
+// 模拟模块
 export class ModuleMocker {
   private readonly _environmentGlobal: typeof globalThis;
   private _mockState: WeakMap<Mock, MockFunctionState>;
@@ -497,6 +500,7 @@ export class ModuleMocker {
   private _invocationCallCounter: number;
 
   constructor(global: typeof globalThis) {
+    // 运行时全局对象
     this._environmentGlobal = global;
     this._mockState = new WeakMap();
     this._mockConfigRegistry = new WeakMap();

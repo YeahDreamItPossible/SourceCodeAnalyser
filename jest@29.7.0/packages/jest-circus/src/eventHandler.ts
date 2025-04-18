@@ -13,6 +13,9 @@ import {
   makeTest,
 } from './utils';
 
+// 事件处理器
+// 作用：
+// 接受特定的事件 并更新状态
 const eventHandler: Circus.EventHandler = (event, state) => {
   switch (event.name) {
     case 'include_test_location_in_result': {

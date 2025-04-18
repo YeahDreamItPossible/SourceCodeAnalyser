@@ -1,12 +1,6 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import type {Config} from '@jest/types';
 
+// 返回 项目显示名称
 export default function getProjectDisplayName(
   projectConfig: Config.ProjectConfig,
 ): string | undefined {
