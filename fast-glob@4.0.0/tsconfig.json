@@ -1,0 +1,30 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["ES2022"],
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+
+		"rootDir": "src",
+		"outDir": "out",
+
+		"strict": true,
+		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"noFallthroughCasesInSwitch": true,
+
+		"forceConsistentCasingInFileNames": true,
+		"verbatimModuleSyntax": false,
+
+		"downlevelIteration": true,
+		"declaration": true,
+		"newLine": "lf",
+		"stripInternal": true
+	}
+}

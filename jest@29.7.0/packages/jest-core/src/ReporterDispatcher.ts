@@ -11,7 +11,7 @@ import type {ReporterConstructor} from './TestScheduler';
 
 // 报告调度器
 // 作用：
-// 存储 报告器， 并执行在特定时机执行调度器的特定钩子
+// 存储报告器, 并在特定时机执行报告器的特定钩子
 export default class ReporterDispatcher {
   private _reporters: Array<Reporter>;
 
