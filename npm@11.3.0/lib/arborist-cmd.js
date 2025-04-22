@@ -4,6 +4,8 @@ const BaseCommand = require('./base-cmd.js')
 // This is the base for all commands whose execWorkspaces just gets
 // a list of workspace names and passes it on to new Arborist() to
 // be able to run a filtered Arborist.reify() at some point.
+// 作用:
+// 
 class ArboristCmd extends BaseCommand {
   get isArboristCmd () {
     return true

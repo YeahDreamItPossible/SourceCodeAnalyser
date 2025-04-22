@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as path from 'path';
 import {mergeProcessCovs} from '@bcoe/v8-coverage';
 import type {EncodedSourceMap} from '@jridgewell/trace-mapping';
@@ -36,6 +29,9 @@ type CoverageWorker = typeof import('./CoverageWorker');
 const FAIL_COLOR = chalk.bold.red;
 const RUNNING_TEST_COLOR = chalk.bold.dim;
 
+// 覆盖率报告器
+// 作用:
+// 
 export default class CoverageReporter extends BaseReporter {
   private readonly _context: ReporterContext;
   private readonly _coverageMap: istanbulCoverage.CoverageMap;

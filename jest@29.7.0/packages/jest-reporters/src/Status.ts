@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import chalk = require('chalk');
 import stringLength = require('string-length');
 import type {
@@ -23,11 +16,7 @@ import wrapAnsiString from './wrapAnsiString';
 const RUNNING_TEXT = ' RUNS ';
 const RUNNING = `${chalk.reset.inverse.yellow.bold(RUNNING_TEXT)} `;
 
-/**
- * This class is a perf optimization for sorting the list of currently
- * running tests. It tries to keep tests in the same positions without
- * shifting the whole list.
- */
+// 
 class CurrentTestList {
   private _array: Array<{
     testPath: string;
@@ -70,6 +59,9 @@ type Cache = {
  * and also provides an ANSI escape sequence to remove status lines
  * from the terminal.
  */
+// 状态
+// 作用:
+// 
 export default class Status {
   private _cache: Cache | null;
   private _callback?: () => void;

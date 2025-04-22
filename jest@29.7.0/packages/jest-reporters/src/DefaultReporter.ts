@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import chalk = require('chalk');
 import {getConsoleOutput} from '@jest/console';
 import type {
@@ -31,6 +24,9 @@ type FlushBufferedOutput = () => void;
 
 const TITLE_BULLET = chalk.bold('\u25cf ');
 
+// 默认报告器
+// 作用:
+// 
 export default class DefaultReporter extends BaseReporter {
   private _clear: string; // ANSI clear sequence for the last printed status
   private readonly _err: write;
@@ -185,6 +181,7 @@ export default class DefaultReporter extends BaseReporter {
     this._status.testFinished(config, testResult, aggregatedResults);
   }
 
+  // 打印 测试文件头部
   printTestFileHeader(
     testPath: string,
     config: Config.ProjectConfig,

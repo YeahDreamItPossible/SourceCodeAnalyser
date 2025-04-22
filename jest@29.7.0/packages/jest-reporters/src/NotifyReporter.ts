@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as path from 'path';
 import * as util from 'util';
 import exit = require('exit');
@@ -18,6 +11,9 @@ const isDarwin = process.platform === 'darwin';
 
 const icon = path.resolve(__dirname, '../assets/jest_logo.png');
 
+//
+// 作用:
+// 
 export default class NotifyReporter extends BaseReporter {
   private readonly _notifier = loadNotifier();
   private readonly _globalConfig: Config.GlobalConfig;

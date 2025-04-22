@@ -4,6 +4,9 @@ const { log } = require('proc-log')
 const BaseCommand = require('./base-cmd.js')
 
 // Base command for opening urls from a package manifest (bugs, docs, repo)
+//
+// 作用:
+// 
 class PackageUrlCommand extends BaseCommand {
   static params = [
     'browser',

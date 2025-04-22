@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import ansiEscapes = require('ansi-escapes');
 import chalk = require('chalk');
 import {specialChars} from 'jest-util';
@@ -22,6 +15,9 @@ const usage = (entity: string) =>
 
 const usageRows = usage('').split('\n').length;
 
+// 
+// 作用:
+// 
 export default abstract class PatternPrompt {
   protected _currentUsageRows: number;
 

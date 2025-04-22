@@ -1,10 +1,7 @@
-// Separated out for easier unit testing
+// 
 module.exports = async (process, validateEngines) => {
-  // set it here so that regardless of what happens later, we don't
-  // leak any private CLI configs to other programs
   process.title = 'npm'
 
-  // Patch the global fs module here at the app level
   require('graceful-fs').gracefulify(require('node:fs'))
 
   const satisfies = require('semver/functions/satisfies')
@@ -14,7 +11,6 @@ module.exports = async (process, validateEngines) => {
   const npm = new Npm()
   exitHandler.setNpm(npm)
 
-  // only log node and npm paths in argv initially since argv can contain sensitive info. a cleaned version will be logged later
   const { log, output } = require('proc-log')
   log.verbose('cli', process.argv.slice(0, 2).join(' '))
   log.info('using', 'npm@%s', npm.version)
@@ -29,8 +25,7 @@ module.exports = async (process, validateEngines) => {
     log.warn('cli', validateEngines.unsupportedMessage)
   }
 
-  // Now actually fire up npm and run the command.
-  // This is how to use npm programmatically:
+  // 启动 npm 并 运行命令
   try {
     const { exec, command, args } = await npm.load()
 

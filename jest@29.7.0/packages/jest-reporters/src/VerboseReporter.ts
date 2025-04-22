@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import chalk = require('chalk');
 import type {
   AggregatedResult,
@@ -19,6 +12,9 @@ import DefaultReporter from './DefaultReporter';
 
 const {ICONS} = specialChars;
 
+// 繁琐报告器
+// 作用:
+// 
 export default class VerboseReporter extends DefaultReporter {
   protected override _globalConfig: Config.GlobalConfig;
 

@@ -1,6 +1,9 @@
 const { log, output, META } = require('proc-log')
 const { errorMessage, getExitCodeFromError } = require('../utils/error-message.js')
 
+// 进程退出处理器
+// 作用:
+// 在进程退出时执行必要的清理操作，并提供错误处理和退出代码管理功能。 
 class ExitHandler {
   #npm = null
   #process = null

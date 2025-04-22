@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import * as path from 'path';
 import ansiEscapes = require('ansi-escapes');
 import chalk = require('chalk');
@@ -153,6 +146,7 @@ export default async function watch(
     });
   };
 
+  // 内置监视插件
   const watchPlugins: Array<WatchPlugin> = INTERNAL_PLUGINS.map(
     InternalPlugin => new InternalPlugin({stdin, stdout: outputStream}),
   );
@@ -163,6 +157,7 @@ export default async function watch(
     }
   });
 
+  // 自定义监视插件
   if (globalConfig.watchPlugins != null) {
     const watchPluginKeys: WatchPluginKeysMap = new Map();
     for (const plugin of watchPlugins) {

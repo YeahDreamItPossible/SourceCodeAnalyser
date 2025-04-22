@@ -7,6 +7,9 @@ const checks = require('npm-install-checks')
 const reifyFinish = require('../utils/reify-finish.js')
 const ArboristWorkspaceCmd = require('../arborist-cmd.js')
 
+// 安装命令
+// 作用:
+// 
 class Install extends ArboristWorkspaceCmd {
   static description = 'Install a package'
   static name = 'install'
@@ -108,6 +111,8 @@ class Install extends ArboristWorkspaceCmd {
     const npmInstall = args.find(arg => arg.startsWith('npm@') || arg === 'npm')
     if (isGlobalInstall && npmInstall) {
       const npmOptions = this.npm.flatOptions
+      // 包下载
+      // 返回 package.json 文件内容
       const npmManifest = await pacote.manifest(npmInstall, npmOptions)
       try {
         checks.checkEngine(npmManifest, npmManifest.version, process.version)
@@ -137,6 +142,7 @@ class Install extends ArboristWorkspaceCmd {
       throw this.usageError()
     }
 
+    // 依赖树构建
     const Arborist = require('@npmcli/arborist')
     const opts = {
       ...this.npm.flatOptions,

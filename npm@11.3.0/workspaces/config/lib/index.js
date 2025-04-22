@@ -54,6 +54,9 @@ const confTypes = new Set([
   'cli',
 ])
 
+// 配置类
+// 作用:
+// 
 class Config {
   #loaded = false
   #flatten
@@ -237,6 +240,7 @@ class Config {
     }
   }
 
+  // 
   async load () {
     if (this.loaded) {
       throw new Error('attempting to load npm config multiple times')
@@ -271,6 +275,7 @@ class Config {
     this.setEnvs()
   }
 
+  // 
   loadDefaults () {
     this.loadGlobalPrefix()
     this.loadHome()
@@ -314,21 +319,27 @@ class Config {
     })
   }
 
+  // 当前用户主目录
   loadHome () {
+    // 当前用户主目录
     this.home = this.env.HOME || homedir()
   }
 
+  // 设置全局前缀
   loadGlobalPrefix () {
     if (this.globalPrefix) {
       throw new Error('cannot load default global prefix more than once')
     }
-
+    
     if (this.env.PREFIX) {
+      // 从 process.env.PREFIX 中读取
       this.globalPrefix = this.env.PREFIX
     } else if (this.platform === 'win32') {
+      // 
       // c:\node\node.exe --> prefix=c:\node\
       this.globalPrefix = dirname(this.execPath)
     } else {
+      // 从 process.execPath 中读取
       // /usr/local/bin/node --> prefix=/usr/local
       this.globalPrefix = dirname(dirname(this.execPath))
 

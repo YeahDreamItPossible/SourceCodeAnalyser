@@ -13,11 +13,13 @@ const pkg = require('../package.json')
 const { deref } = require('./utils/cmd-list.js')
 const { jsonError, outputError } = require('./utils/output-error.js')
 
+// 
 class Npm {
   static get version () {
     return pkg.version
   }
 
+  // 加载 命令文件, 并返回该 命令类
   static cmd (c) {
     const command = deref(c)
     if (!command) {
@@ -75,6 +77,7 @@ class Npm {
     })
   }
 
+  // 
   async load () {
     let err
     try {
@@ -85,9 +88,10 @@ class Npm {
     return this.#handleError(err)
   }
 
+  // 
   async #load () {
     await time.start('npm:load:whichnode', async () => {
-      // TODO should we throw here?
+      // 验证 node 命令位置是否一致
       const node = await which(process.argv[0]).catch(() => {})
       if (node && node.toUpperCase() !== process.execPath.toUpperCase()) {
         log.verbose('node symlink', node)
@@ -201,6 +205,15 @@ class Npm {
     return { exec: true, command: commandArg, args: this.argv }
   }
 
+  // 执行命令，并返回结果
+  // 1. 执行命令前，会先调用 #load 方法，加载配置、创建缓存目录、创建日志目录、设置进程标题等
+  // 2. 执行命令前，会先调用 #exec 方法，执行命令
+  // 3. 执行命令后，会调用 #handleError 方法，处理错误
+  // 4. 执行命令后，会调用 #finish 方法，完成命令执行
+  // 5. 执行命令后，会调用 #exit 方法，退出进程
+  // 6. 执行命令后，会调用 #unload 方法，卸载配置、销毁缓存目录、销毁日志目录、销毁定时器等
+  // 7. 执行命令后，会调用 #finish 方法，完成命令执行
+  // 8. 执行命令后，会调用 #exit 方法，退出进程
   async exec (cmd, args = this.argv) {
     if (!this.#command) {
       let err

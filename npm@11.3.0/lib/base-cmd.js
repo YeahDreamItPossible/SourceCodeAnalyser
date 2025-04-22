@@ -1,18 +1,20 @@
 const { log } = require('proc-log')
 
+// 基础命令
+// 作用:
+// 
 class BaseCommand {
-  // these defaults can be overridden by individual commands
+  // 这些默认值可以被单个命令覆盖
   static workspaces = false
   static ignoreImplicitWorkspace = true
   static checkDevEngines = false
 
-  // these should always be overridden by individual commands
+  // 这些应该始终由单独的命令覆盖
   static name = null
   static description = null
   static params = null
 
-  // this is a static so that we can read from it without instantiating a command
-  // which would require loading the config
+  // 返回 使用描述 字符串
   static get describeUsage () {
     const { definitions } = require('@npmcli/config/lib/definitions')
     const { aliases: cmdAliases } = require('./utils/cmd-list')

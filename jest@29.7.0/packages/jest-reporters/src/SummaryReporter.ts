@@ -1,10 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
 import chalk = require('chalk');
 import type {
   AggregatedResult,
@@ -53,6 +46,9 @@ export type SummaryReporterOptions = {
   summaryThreshold?: number;
 };
 
+// 摘要报告器
+// 作用:
+//
 export default class SummaryReporter extends BaseReporter {
   private _estimatedTime: number;
   private readonly _globalConfig: Config.GlobalConfig;
