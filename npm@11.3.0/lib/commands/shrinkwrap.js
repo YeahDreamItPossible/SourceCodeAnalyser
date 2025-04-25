@@ -3,6 +3,9 @@ const { unlink } = require('node:fs/promises')
 const { log } = require('proc-log')
 const BaseCommand = require('../base-cmd.js')
 
+// 依赖锁定
+// 作用:
+// 锁定发布的依赖版本
 class Shrinkwrap extends BaseCommand {
   static description = 'Lock down dependency versions for publication'
   static name = 'shrinkwrap'

@@ -77,6 +77,34 @@ class DepsQueue {
   }
 }
 
+/**
+ * ActualTree是根据本地package.json和node_modules目录下的依赖构建的Node节点树。
+ * IdealTree是根据本地package.json、package-lock.json和命令行输入的依赖构建的Node节点树。
+ */
+
+/**
+ * ActualTree创建流程
+ * 1. 解析项目package.json文件内容
+ * 2. 创建根Node节点
+ * 3. 遍历package.json中的依赖，创建其对应的Edge对象，并添加到其归属的Node节点的edgesOut属性中
+ * 4. 遍历当前Node节点的node_modules目录中的依赖，创建其对应的子Node节点，并建立父子引用关系
+ * 5. 递归遍历子Node节点，构建Node节点树
+ */
+
+/**
+ * IdealTree创建流程
+ * 1. 解析项目package.json文件内容
+ * 2. 创建根Node节点
+ * 3. 遍历package.json中的依赖，创建其对应的Edge对象，并添加到其归属的Node节点的edgesOut属性中
+ * 4. 遍历package-lock.json中的依赖，创建其对应的子Node节点，并建立父子引用关系
+ * 5. 解析命令行输入的依赖信息，更新tree package属性，遍历tree package属性中的依赖，创建新Edge对象并添加到edgesOut属性中
+ * 6. 从#depsQueue获取需要更新的Node节点，遍历edgesOut属性中有问题的Edge对象，创建其对应的子Node节点，并建立父子引用关系
+ * 7. 递归遍历#depsQueue队列的Node节点，构建Node节点树
+ */
+
+// 理想树构建器
+// 作用:
+// 构建 理想树
 module.exports = cls => class IdealTreeBuilder extends cls {
   #complete
   #currentDep = null
@@ -140,14 +168,13 @@ module.exports = cls => class IdealTreeBuilder extends cls {
     return new Set(this.#explicitRequests)
   }
 
-  // public method
+  // 构建理想树
   async buildIdealTree (options = {}) {
     if (this.idealTree) {
       return this.idealTree
     }
 
-    // allow the user to set reify options on the ctor as well.
-    // XXX: deprecate separate reify() options object.
+    // 合并选项
     options = { ...this.options, ...options }
 
     // an empty array or any falsey value is the same as null
@@ -170,6 +197,7 @@ module.exports = cls => class IdealTreeBuilder extends cls {
     // from there, we start adding nodes to it to satisfy the deps requested
     // by the package.json in the root.
 
+    // 解析 选项
     this.#parseSettings(options)
 
     // start tracker block
@@ -215,7 +243,9 @@ module.exports = cls => class IdealTreeBuilder extends cls {
     }
   }
 
+  // 解析设置参数
   #parseSettings (options) {
+    // 解析 update 选项
     const update = options.update === true ? { all: true }
       : Array.isArray(options.update) ? { names: options.update }
       : options.update || {}
@@ -224,7 +254,9 @@ module.exports = cls => class IdealTreeBuilder extends cls {
       update.names = []
     }
 
+    // 解析 complete 选项
     this.#complete = !!options.complete
+    // 解析 preferDedupe 选项
     this.#preferDedupe = !!options.preferDedupe
 
     // validates list of update names, they must
@@ -259,6 +291,15 @@ module.exports = cls => class IdealTreeBuilder extends cls {
 
   // load the initial tree, either the virtualTree from a shrinkwrap,
   // or just the root node from a package.json
+  // 初始化树
+  // 作用:
+  // 1. 初始化树
+  // 2. 初始化依赖队列
+  // 3. 初始化依赖集合
+  // 4. 初始化加载失败集合
+  // 5. 初始化显式请求集合
+  // 6. 初始化虚拟根节点集合
+  // 7. 初始化依赖标志 suspect 集合 
   async #initTree () {
     const timeEnd = time.start('idealTree:init')
     let root
@@ -352,6 +393,7 @@ module.exports = cls => class IdealTreeBuilder extends cls {
       })
   }
 
+  //  返回带有元数据的 根结点
   async #globalRootNode () {
     const root = await this.#rootNodeFromPackage({ dependencies: {} })
     // this is a gross kludge to handle the fact that we don't save
@@ -367,6 +409,7 @@ module.exports = cls => class IdealTreeBuilder extends cls {
     return root
   }
 
+  // 从 package 中返回创建的 根结点  
   async #rootNodeFromPackage (pkg) {
     // if the path doesn't exist, then we explode at this point. Note that
     // this is not a problem for reify(), since it creates the root path
@@ -430,6 +473,7 @@ module.exports = cls => class IdealTreeBuilder extends cls {
     timeEnd()
   }
 
+  // 
   async #applyUserRequestsToNode (tree, options) {
     // If we have a list of package names to update, and we know it's
     // going to update them wherever they are, add any paths into those
@@ -647,6 +691,7 @@ module.exports = cls => class IdealTreeBuilder extends cls {
     return vuln.range
   }
 
+  // 
   #queueNamedUpdates () {
     // ignore top nodes, since they are not loaded the same way, and
     // probably have their own project associated with them.
@@ -670,6 +715,7 @@ module.exports = cls => class IdealTreeBuilder extends cls {
     }
   }
 
+  // 
   async #inflateAncientLockfile () {
     const { meta, inventory } = this.idealTree
     const ancient = meta.ancientLockfile
@@ -1486,6 +1532,7 @@ This is a one-time fix-up, please be patient...
     timeEnd()
   }
 
+  // 
   #applyRootOverridesToWorkspaces (tree) {
     const rootOverrides = tree.root.package.overrides || {}
 

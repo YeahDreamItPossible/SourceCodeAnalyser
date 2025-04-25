@@ -34,6 +34,7 @@ class ArboristEdge {
   }
 }
 
+// 依赖图的边
 class Edge {
   #accept
   #error

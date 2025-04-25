@@ -6,6 +6,11 @@ const { dirname } = require('node:path')
 // defined by Node class
 const _delistFromMeta = Symbol.for('_delistFromMeta')
 const _refreshLocation = Symbol.for('_refreshLocation')
+
+
+// 链接
+// 作用:
+// 
 class Link extends Node {
   constructor (options) {
     const { root, realpath, target, parent, fsParent, isStoreLink } = options

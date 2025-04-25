@@ -17,6 +17,7 @@ const calcDepFlags = (tree, resetRoot = true) => {
   return ret
 }
 
+// 计算依赖标志
 const calcDepFlagsStep = (node) => {
   // This rewalk is necessary to handle cases where devDep and optional
   // or normal dependency graphs overlap deep in the dep graph.

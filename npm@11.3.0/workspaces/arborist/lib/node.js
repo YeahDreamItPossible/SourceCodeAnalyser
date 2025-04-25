@@ -66,6 +66,9 @@ const CaseInsensitiveMap = require('./case-insensitive-map.js')
 
 const querySelectorAll = require('./query-selector-all.js')
 
+// 节点
+// 作用:
+// 
 class Node {
   #global
   #meta
@@ -868,6 +871,8 @@ class Node {
     }
   }
 
+  // 加载依赖
+  // 绑定 this.edgesOut 属性
   [_loadDeps] () {
     // Caveat!  Order is relevant!
     // Packages in optionalDependencies are optional.
@@ -911,6 +916,12 @@ class Node {
     }
   }
 
+  // 加载依赖
+  // 绑定 this.edgesOut 属性
+  // 依赖类型：prod, dev, optional, peer, peerOptional, workspace
+  // 依赖名称：name
+  // 依赖版本：spec
+  // 依赖接受：accept 
   #loadDepType (deps, type, ad) {
     // Because of the order in which _loadDeps runs, we always want to
     // prioritize a new edge over an existing one

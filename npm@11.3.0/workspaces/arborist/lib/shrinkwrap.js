@@ -184,6 +184,14 @@ const assertNoNewer = async (path, data, lockTime, dir, seen) => {
   }
 }
 
+// 依赖锁定
+// 作用:
+// 1. 从磁盘读取 shrinkwrap 文件
+// 2. 从磁盘读取 yarn.lock 文件
+// 3. 从磁盘读取 package.json 文件
+// 4. 从磁盘读取 node_modules 文件夹
+// 5. 从磁盘读取 .package-lock.json 文件
+// 6. 从磁盘读取 .npmrc 文件      
 class Shrinkwrap {
   static get defaultLockfileVersion () {
     return defaultLockfileVersion
@@ -296,6 +304,7 @@ class Shrinkwrap {
       resolveOptions = {},
     } = options
 
+    // 锁版本
     if (hiddenLockfile) {
       this.lockfileVersion = 3
     } else if (lockfileVersion) {
@@ -357,6 +366,7 @@ class Shrinkwrap {
 
   // throw away the shrinkwrap data so we can start fresh
   // still worth doing a load() first so we know which files to write.
+  // 重置 shrinkwrap 数据 
   reset () {
     this.tree = null
     this.#awaitingUpdate = new Map()
@@ -371,7 +381,7 @@ class Shrinkwrap {
     }
   }
 
-  // files to potentially read from and write to, in order of priority
+  // 返回 锁定文件路径列表
   get #filenameSet () {
     if (this.shrinkwrapOnly) {
       return [`${this.path}/npm-shrinkwrap.json`]
@@ -386,6 +396,7 @@ class Shrinkwrap {
     ]
   }
 
+  // 读取 锁定文件内容
   get loadFiles () {
     return Promise.all(
       this.#filenameSet.map(file => file && readFile(file, 'utf8').then(d => d, er => {
@@ -415,6 +426,7 @@ class Shrinkwrap {
     )
   }
 
+  // 
   inferFormattingOptions (packageJSONData) {
     const {
       [Symbol.for('indent')]: indent,
@@ -428,6 +440,7 @@ class Shrinkwrap {
     }
   }
 
+  // 加载 锁定文件内容
   async load () {
     // we don't need to load package-lock.json except for top of tree nodes,
     // only npm-shrinkwrap.json.
@@ -526,6 +539,7 @@ class Shrinkwrap {
     return this
   }
 
+  // 设置 npm-shrinkwrap.josn 中 packages 属性
   #loadAll (location, name, lock) {
     // migrate a v1 package lock to the new format.
     const meta = this.#metaFromLock(location, name, lock)
@@ -672,6 +686,7 @@ class Shrinkwrap {
     return this.#metaFromLock(location, name, lock)
   }
 
+  // 单个设置 npm-shrinkwrap.josn 中 packages 属性
   #metaFromLock (location, name, lock) {
     // This function tries as hard as it can to figure out the metadata
     // from a lockfile which may be outdated or incomplete.  Since v1
@@ -796,7 +811,6 @@ class Shrinkwrap {
       meta.inBundle = true
     }
 
-    // save it for next time
     return this.data.packages[location] = meta
   }
 
@@ -918,6 +932,7 @@ class Shrinkwrap {
       this.resolveOptions)
   }
 
+  // 生成 锁文件 内容
   commit () {
     if (this.tree) {
       if (this.yarnLock) {
@@ -1139,6 +1154,7 @@ class Shrinkwrap {
     return lock
   }
 
+  // 
   toJSON () {
     if (!this.data) {
       throw new Error('run load() before getting or setting data')
@@ -1147,6 +1163,7 @@ class Shrinkwrap {
     return this.commit()
   }
 
+  // 序列化 锁文件 内容
   toString (options = {}) {
     const data = this.toJSON()
     const { format = true } = options
@@ -1157,6 +1174,7 @@ class Shrinkwrap {
     return stringify(data, swKeyOrder, indent).replace(/\n/g, eol)
   }
 
+  // 讲 锁文件 内容写入到特定路径中
   save (options = {}) {
     if (!this.data) {
       throw new Error('run load() before saving data')
@@ -1169,20 +1187,18 @@ class Shrinkwrap {
       && this.originalLockfileVersion !== undefined
       && this.originalLockfileVersion !== this.lockfileVersion
     ) {
+      // 提示 锁文件 锁版本变更
       log.warn(
         'shrinkwrap',
         `Converting lock file (${relative(process.cwd(), this.filename)}) from v${this.originalLockfileVersion} -> v${this.lockfileVersion}`
       )
     }
 
+    // 写入文件
     return Promise.all([
       writeFile(this.filename, json).catch(er => {
         if (this.hiddenLockfile) {
-          // well, we did our best.
-          // if we reify, and there's nothing there, then it might be lacking
-          // a node_modules folder, but then the lockfile is not important.
-          // Remove the file, so that in case there WERE deps, but we just
-          // failed to update the file for some reason, it's not out of sync.
+          // 当要隐藏 锁文件 时， 则删除该文件
           return rm(this.filename, { recursive: true, force: true })
         }
         throw er

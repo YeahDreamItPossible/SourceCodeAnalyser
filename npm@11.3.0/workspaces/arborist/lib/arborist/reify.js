@@ -99,7 +99,10 @@ module.exports = cls => class Reifier extends cls {
     this[_trashList] = new Set()
   }
 
-  // public method
+  // 构建ActualTree和IdealTree
+  // 对比两个树之间的差异，构建Diff树
+  // 遍历Diff树中的Node节点，创建其对应的目录，下载其对应的产物，执行其script脚本命令
+  // 更新package.json配置文件内容和保存package-lock.json文件
   async reify (options = {}) {
     const linked = (options.installStrategy || this.options.installStrategy) === 'linked'
 

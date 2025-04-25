@@ -2,6 +2,7 @@
 // are case-insensitive and unicode-normalizing, so we need to treat
 // node.children.get('FOO') and node.children.get('foo') as the same thing.
 
+// 
 module.exports = class CIMap extends Map {
   #keys = new Map()
 
@@ -16,6 +17,7 @@ module.exports = class CIMap extends Map {
     if (typeof key !== 'string') {
       return key
     }
+    // Sting.prototype.normalize 该字符串的 Unicode 标准化形式
     return key.normalize('NFKD').toLowerCase()
   }
 

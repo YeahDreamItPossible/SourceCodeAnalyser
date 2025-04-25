@@ -1,14 +1,20 @@
 const proggy = require('proggy')
 
+// TODO:
+// 进度条链接组建
+// 作用：
+//
 module.exports = cls => class Tracker extends cls {
   #progress = new Map()
 
+  // 创建追踪器
   #createTracker (key, name) {
     const tracker = new proggy.Tracker(name ?? key)
     tracker.on('done', () => this.#progress.delete(key))
     this.#progress.set(key, tracker)
   }
 
+  // 添加 追踪器
   addTracker (section, subsection = null, key = null) {
     if (section === null || section === undefined) {
       this.#onError(`Tracker can't be null or undefined`)

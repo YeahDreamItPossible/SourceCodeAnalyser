@@ -16,6 +16,14 @@ const treeCheck = require('../tree-check.js')
 const flagsSuspect = Symbol.for('flagsSuspect')
 const setWorkspaces = Symbol.for('setWorkspaces')
 
+// 虚拟树加载器
+// 加载虚拟树
+// 作用:
+// 加载虚拟树, 这个虚拟树是从 shrinkwrap 文件中加载的
+// 这个虚拟树是一个 Node 对象, 它的 children 是虚拟树的依赖
+// 这个虚拟树的依赖是从 shrinkwrap 文件中加载的
+// 这个虚拟树的依赖是一个 Node 对象, 它的 children 是虚拟树的依赖的依赖
+// 这个虚拟树的依赖的依赖是从 shrinkwrap 文件中加载的
 module.exports = cls => class VirtualLoader extends cls {
   #rootOptionProvided
 
@@ -27,14 +35,12 @@ module.exports = cls => class VirtualLoader extends cls {
     this[flagsSuspect] = false
   }
 
-  // public method
+  // 加载虚拟树
   async loadVirtual (options = {}) {
     if (this.virtualTree) {
       return this.virtualTree
     }
 
-    // allow the user to set reify options on the ctor as well.
-    // XXX: deprecate separate reify() options object.
     options = { ...this.options, ...options }
 
     if (options.root && options.root.meta) {
@@ -65,12 +71,14 @@ module.exports = cls => class VirtualLoader extends cls {
     return treeCheck(this.virtualTree)
   }
 
+  // 加载 根结点
   async #loadRoot (s) {
     const pj = this.path + '/package.json'
     const pkg = await rpj(pj).catch(() => s.data.packages['']) || {}
     return this[setWorkspaces](this.#loadNode('', pkg, true))
   }
 
+  // 从 锁定文件 中加载
   async #loadFromShrinkwrap (s, root) {
     if (!this.#rootOptionProvided) {
       // root is never any of these things, but might be a brand new
@@ -123,9 +131,13 @@ module.exports = cls => class VirtualLoader extends cls {
     }
 
     const lock = s.get('')
+    // 线上依赖
     const prod = lock.dependencies || {}
+    // 开发依赖
     const dev = lock.devDependencies || {}
+    // 可选依赖
     const optional = lock.optionalDependencies || {}
+    // 同等依赖
     const peer = lock.peerDependencies || {}
     const peerOptional = {}
 
@@ -245,6 +257,7 @@ module.exports = cls => class VirtualLoader extends cls {
     }
   }
 
+  // 加载 节点
   #loadNode (location, sw, loadOverrides) {
     const p = this.virtualTree ? this.virtualTree.realpath : this.path
     const path = resolve(p, location)
@@ -284,6 +297,7 @@ module.exports = cls => class VirtualLoader extends cls {
     return node
   }
 
+  // 加载 链接
   #loadLink (location, targetLoc, target) {
     const path = resolve(this.path, location)
     const link = new Link({

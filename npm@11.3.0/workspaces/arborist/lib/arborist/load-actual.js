@@ -1,5 +1,3 @@
-// mix-in implementing the loadActual method
-
 const { relative, dirname, resolve, join, normalize } = require('node:path')
 
 const rpj = require('read-package-json-fast')
@@ -20,6 +18,9 @@ const _setWorkspaces = Symbol.for('setWorkspaces')
 const _rpcache = Symbol.for('realpathCache')
 const _stcache = Symbol.for('statCache')
 
+// 实际树加载器
+// 作用:
+// 
 module.exports = cls => class ActualLoader extends cls {
   #actualTree
   // ensure when walking the tree that we don't call loadTree on the same
@@ -45,6 +46,7 @@ module.exports = cls => class ActualLoader extends cls {
     super(options)
 
     // the tree of nodes on disk
+    //
     this.actualTree = options.actualTree
 
     // caches for cached realpath calls
@@ -54,21 +56,12 @@ module.exports = cls => class ActualLoader extends cls {
     this[_stcache] = new Map()
   }
 
-  // public method
-  // TODO remove options param in next semver major
   async loadActual (options = {}) {
-    // In the past this.actualTree was set as a promise that eventually
-    // resolved, and overwrite this.actualTree with the resolved value.  This
-    // was a problem because virtually no other code expects this.actualTree to
-    // be a promise.  Instead we only set it once resolved, and also return it
-    // from the promise so that it is what's returned from this function when
-    // awaited.
+    // 从 缓存 中读取
     if (this.actualTree) {
       return this.actualTree
     }
     if (!this.#actualTreePromise) {
-      // allow the user to set options on the ctor as well.
-      // XXX: deprecate separate method options objects.
       options = { ...this.options, ...options }
 
       this.#actualTreePromise = this.#loadActual(options)
@@ -90,11 +83,9 @@ module.exports = cls => class ActualLoader extends cls {
     return this.#actualTreePromise
   }
 
-  // return the promise so that we don't ever have more than one going at the
-  // same time.  This is so that buildIdealTree can default to the actualTree
-  // if no shrinkwrap present, but reify() can still call buildIdealTree and
-  // loadActual in parallel safely.
-
+  // 创建根Node节点
+  // 解析本地package-lock.json文件内容
+  // 递归遍历Node节点，构建Node节点树
   async #loadActual (options) {
     // mostly realpath to throw if the root doesn't exist
     const {
@@ -244,6 +235,12 @@ module.exports = cls => class ActualLoader extends cls {
     this.#actualTree = root
   }
 
+  // 加载 文件节点
+  // 获取当前Node节点的package.json文件内容，
+  // 创建Node节点，
+  // 遍历package.json中的依赖，
+  // 创建其对应的Edge对象，
+  // 并添加到其归属的Node节点的edgesOut属性中
   async #loadFSNode ({ path, parent, real, root, loadOverrides, useRootOverrides }) {
     if (!real) {
       try {
@@ -301,6 +298,7 @@ module.exports = cls => class ActualLoader extends cls {
     return node
   }
 
+  // 新建 节点
   #newNode (options) {
     // check it for an fsParent if it's a tree top.  there's a decent chance
     // it'll get parented later, making the fsParent scan a no-op, but better
@@ -329,6 +327,8 @@ module.exports = cls => class ActualLoader extends cls {
     return link
   }
 
+  // 加载 文件树
+  // 递归遍历Node节点的依赖，创建对应的子Node节点并建立父子引用关系，构建Node节点树
   async #loadFSTree (node) {
     const did = this.#actualTreeLoaded
     if (!node.isLink && !did.has(node.target.realpath)) {
@@ -342,8 +342,7 @@ module.exports = cls => class ActualLoader extends cls {
     }
   }
 
-  // create child nodes for all the entries in node_modules
-  // and attach them to the node as a parent
+  // 遍历当前Node节点的node_modules目录中的依赖，创建其对应的子Node节点，并建立父子引用关系
   async #loadFSChildren (node) {
     const nm = resolve(node.realpath, 'node_modules')
     try {
