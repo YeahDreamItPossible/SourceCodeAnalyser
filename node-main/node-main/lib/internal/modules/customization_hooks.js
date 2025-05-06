@@ -57,6 +57,7 @@ let debug = require('internal/util/debuglog').debuglog('module_hooks', (fn) => {
 // Use arrays for better insertion and iteration performance, we don't care
 // about deletion performance as much.
 
+// 钩子队列
 /** @type {ResolveHook[]} */
 const resolveHooks = [];
 /** @type {LoadHook[]} */
@@ -64,6 +65,7 @@ const loadHooks = [];
 const hookId = Symbol('kModuleHooksIdKey');
 let nextHookId = 0;
 
+// 模块钩子
 class ModuleHooks {
   /**
    * @param {ResolveHook|undefined} resolve User-provided hook.
@@ -297,6 +299,7 @@ function validateLoad(url, context, result) {
   };
 }
 
+// 模块解析上下文
 class ModuleResolveContext {
   /**
    * Context for the resolve hook.
@@ -312,6 +315,7 @@ class ModuleResolveContext {
   }
 };
 
+// 模块加载上下文
 class ModuleLoadContext {
   /**
    * Context for the load hook.

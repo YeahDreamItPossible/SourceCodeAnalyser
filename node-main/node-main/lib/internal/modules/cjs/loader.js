@@ -309,6 +309,7 @@ function reportModuleNotFoundToWatchMode(basePath, extensions) {
   }
 }
 
+// 模块类
 /**
  * Create a new module instance.
  * @param {string} id
@@ -325,6 +326,7 @@ function Module(id = '', parent) {
   this.children = [];
 }
 
+// 缓存
 /** @type {Record<string, Module>} */
 Module._cache = { __proto__: null };
 /** @type {Record<string, string>} */
@@ -338,14 +340,16 @@ Module.globalPaths = [];
 
 let patched = false;
 
+// 在 源代码 中添加 CommonJS 包装器
 /**
  * Add the CommonJS wrapper around a module's source code.
  * @param {string} script Module source code
  */
-let wrap = function(script) { // eslint-disable-line func-style
+let wrap = function(script) {
   return Module.wrapper[0] + script + Module.wrapper[1];
 };
 
+// 包装器
 const wrapper = [
   '(function (exports, require, module, __filename, __dirname) { ',
   '\n});',
@@ -364,7 +368,7 @@ let wrapperProxy = new Proxy(wrapper, {
     return ObjectDefineProperty(target, property, descriptor);
   },
 });
-
+// 包装函数
 ObjectDefineProperty(Module, 'wrap', {
   __proto__: null,
   get() {
@@ -376,7 +380,7 @@ ObjectDefineProperty(Module, 'wrap', {
     wrap = value;
   },
 });
-
+// 包装器
 ObjectDefineProperty(Module, 'wrapper', {
   __proto__: null,
   get() {
@@ -413,7 +417,7 @@ function setModuleParent(value) {
 let debug = debuglog('module', (fn) => {
   debug = fn;
 });
-
+// 父模块
 ObjectDefineProperty(Module.prototype, 'parent', {
   __proto__: null,
   get: pendingDeprecate(
@@ -815,7 +819,8 @@ Module._findPath = function(request, paths, isMain, conditions = getCjsCondition
   return false;
 };
 
-/** `node_modules` character codes reversed */
+
+// `node_modules` 反转后的字符串
 const nmChars = [ 115, 101, 108, 117, 100, 111, 109, 95, 101, 100, 111, 110 ];
 const nmLen = nmChars.length;
 if (isWindows) {
@@ -2072,6 +2077,6 @@ ObjectDefineProperty(Module.prototype, 'constructor', {
   enumerable: false,
 });
 
-// Backwards compatibility
+// 向后兼容
 Module.Module = Module;
 Module.registerHooks = registerHooks;
