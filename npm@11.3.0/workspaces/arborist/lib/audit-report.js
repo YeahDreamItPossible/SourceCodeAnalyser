@@ -17,6 +17,13 @@ const { log, time } = require('proc-log')
 
 const npmFetch = require('npm-registry-fetch')
 
+/**
+ * 
+ */
+
+// 审计报告器:
+// 作用:
+// 
 class AuditReport extends Map {
   static load (tree, opts) {
     return new AuditReport(tree, opts).run()

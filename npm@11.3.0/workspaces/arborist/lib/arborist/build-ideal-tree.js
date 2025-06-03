@@ -46,7 +46,6 @@ const _usePackageLock = Symbol.for('usePackageLock')
 const _rpcache = Symbol.for('realpathCache')
 const _stcache = Symbol.for('statCache')
 
-// used by Reify mixin
 const _addNodeToTrashList = Symbol.for('addNodeToTrashList')
 
 // Push items in, pop them sorted by depth and then path
@@ -78,8 +77,29 @@ class DepsQueue {
 }
 
 /**
- * ActualTree是根据本地package.json和node_modules目录下的依赖构建的Node节点树。
- * IdealTree是根据本地package.json、package-lock.json和命令行输入的依赖构建的Node节点树。
+ * 理想树:
+ * npm 根据 package.json 中的依赖声明，理论上应生成的完美依赖关系结构
+ * 虚拟树:
+ * npm 在依赖解析过程中生成的中间依赖关系模型
+ * 实际树:
+ * 对应着 node_modules 目录中的 物理依赖结构
+ */
+
+/**
+ * 理想树: IdealTree
+ * 根据本地 package.json、package-lock.json 和 命令行输入的依赖构建的 Node节点树
+ */
+
+/**
+ * 虚拟树: VirtualTree
+ * 从 npm-shrinkwrap.json || package-lock.json || yarn.lock 文件中加载 依赖锁定 内容
+ * 并将 依赖信息 更新到 根结点 中
+ * 例如: 元信息 依赖
+ */
+
+/**
+ * 实际树: ActualTree
+ * 是根据本地 package.json 和 node_modules 目录下的依赖构建的 Node节点树
  */
 
 /**
@@ -129,8 +149,9 @@ module.exports = cls => class IdealTreeBuilder extends cls {
   constructor (options) {
     super(options)
 
-    // normalize trailing slash
+    // 仓库地址
     const registry = options.registry || 'https://registry.npmjs.org'
+    // 标准化 反斜杠
     options.registry = this.registry = registry.replace(/\/+$/, '') + '/'
 
     const {
@@ -292,14 +313,6 @@ module.exports = cls => class IdealTreeBuilder extends cls {
   // load the initial tree, either the virtualTree from a shrinkwrap,
   // or just the root node from a package.json
   // 初始化树
-  // 作用:
-  // 1. 初始化树
-  // 2. 初始化依赖队列
-  // 3. 初始化依赖集合
-  // 4. 初始化加载失败集合
-  // 5. 初始化显式请求集合
-  // 6. 初始化虚拟根节点集合
-  // 7. 初始化依赖标志 suspect 集合 
   async #initTree () {
     const timeEnd = time.start('idealTree:init')
     let root
@@ -317,10 +330,6 @@ module.exports = cls => class IdealTreeBuilder extends cls {
       }
     }
     return this[_setWorkspaces](root)
-      // ok to not have a virtual tree.  probably initial install.
-      // When updating all, we load the shrinkwrap, but don't bother
-      // to build out the full virtual tree from it, since we'll be
-      // reconstructing it anyway.
       .then(root => {
         if (this.options.global) {
           return root
@@ -338,13 +347,6 @@ module.exports = cls => class IdealTreeBuilder extends cls {
             })
         }
       })
-
-      // if we don't have a lockfile to go from, then start with the
-      // actual tree, so we only make the minimum required changes.
-      // don't do this for global installs or updates, because in those
-      // cases we don't use a lockfile anyway.
-      // Load on a new Arborist object, so the Nodes aren't the same,
-      // or else it'll get super confusing when we change them!
       .then(async root => {
         if ((!this[_updateAll] && !this.options.global && !root.meta.loadedFromDisk) || (this.options.global && this[_updateNames].length)) {
           await new this.constructor(this.options).loadActual({ root })
@@ -361,7 +363,6 @@ module.exports = cls => class IdealTreeBuilder extends cls {
         root.meta.inferFormattingOptions(root.package)
         return root
       })
-
       .then(tree => {
         // search the virtual tree for invalid edges, if any are found add their source to
         // the depsQueue so that we'll fix it later
@@ -393,29 +394,24 @@ module.exports = cls => class IdealTreeBuilder extends cls {
       })
   }
 
-  //  返回带有元数据的 根结点
+  // 返回带有 元数据 的 根结点
   async #globalRootNode () {
+    // 创建 根结点
     const root = await this.#rootNodeFromPackage({ dependencies: {} })
-    // this is a gross kludge to handle the fact that we don't save
-    // metadata on the root node in global installs, because the "root"
-    // node is something like /usr/local/lib.
+    // 读取 依赖锁定 信息
     const meta = new Shrinkwrap({
       path: this.path,
       lockfileVersion: this.options.lockfileVersion,
       resolveOptions: this.options,
     })
     meta.reset()
+    // 绑定元数据
     root.meta = meta
     return root
   }
 
-  // 从 package 中返回创建的 根结点  
+  // 返回带有 依赖包 信息的 根结点
   async #rootNodeFromPackage (pkg) {
-    // if the path doesn't exist, then we explode at this point. Note that
-    // this is not a problem for reify(), since it creates the root path
-    // before ever loading trees.
-    // TODO: make buildIdealTree() and loadActual handle a missing root path,
-    // or a symlink to a missing target, and let reify() create it as needed.
     const real = await realpath(this.path, this[_rpcache], this[_stcache])
     const Cls = real === this.path ? Node : Link
     const root = new Cls({

@@ -1,15 +1,13 @@
-// a module that manages a shrinkwrap file (npm-shrinkwrap.json or
-// package-lock.json).
-
-// Increment whenever the lockfile version updates
-// v1 - npm <=6
-// v2 - arborist v1, npm v7, backwards compatible with v1, add 'packages'
-// v3 will drop the 'dependencies' field, backwards comp with v2, not v1
-//
-// We cannot bump to v3 until npm v6 is out of common usage, and
-// definitely not before npm v8.
+// 一个管理shrinkwrap文件的模块（npm-shrinkwrap.json 或 package-lock.json.json）。
+// 每当锁文件版本更新时递增
+// v1 - npm<=6
+// v2 - arborist v1，npm v7，向后兼容v1，添加“packages”
+// v3 将删除“依赖关系”字段，与v2反向比较，而不是v1
+// 在npm v6不再常用之前，我们不能升级到v3
+// 当然不是在npm v8之前。
 
 const localeCompare = require('@isaacs/string-locale-compare')('en')
+// 默认锁文件版本
 const defaultLockfileVersion = 3
 
 // for comparing nodes to yarn.lock entries
@@ -381,7 +379,7 @@ class Shrinkwrap {
     }
   }
 
-  // 返回 锁定文件路径列表
+  // 锁文件路径列表
   get #filenameSet () {
     if (this.shrinkwrapOnly) {
       return [`${this.path}/npm-shrinkwrap.json`]

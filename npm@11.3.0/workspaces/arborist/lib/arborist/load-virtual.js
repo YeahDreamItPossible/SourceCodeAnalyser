@@ -17,13 +17,9 @@ const flagsSuspect = Symbol.for('flagsSuspect')
 const setWorkspaces = Symbol.for('setWorkspaces')
 
 // 虚拟树加载器
-// 加载虚拟树
 // 作用:
-// 加载虚拟树, 这个虚拟树是从 shrinkwrap 文件中加载的
-// 这个虚拟树是一个 Node 对象, 它的 children 是虚拟树的依赖
-// 这个虚拟树的依赖是从 shrinkwrap 文件中加载的
-// 这个虚拟树的依赖是一个 Node 对象, 它的 children 是虚拟树的依赖的依赖
-// 这个虚拟树的依赖的依赖是从 shrinkwrap 文件中加载的
+// 从 npm-shrinkwrap.json || package-lock.json || yarn.lock 文件中加载 依赖锁定 内容
+// 并将 依赖信息 更新到 根结点 中
 module.exports = cls => class VirtualLoader extends cls {
   #rootOptionProvided
 
@@ -43,16 +39,19 @@ module.exports = cls => class VirtualLoader extends cls {
 
     options = { ...this.options, ...options }
 
+    // 如果 根结点 中已经存在元信息
     if (options.root && options.root.meta) {
       await this.#loadFromShrinkwrap(options.root.meta, options.root)
       return treeCheck(this.virtualTree)
     }
 
+    // 读取 依赖锁定 信息
     const s = await Shrinkwrap.load({
       path: this.path,
       lockfileVersion: this.options.lockfileVersion,
       resolveOptions: this.options,
     })
+    // 加载虚拟树时 需要存在shrinkwrap.json文件
     if (!s.loadedFromDisk && !options.root) {
       const er = new Error('loadVirtual requires existing shrinkwrap file')
       throw Object.assign(er, { code: 'ENOLOCK' })
@@ -91,7 +90,8 @@ module.exports = cls => class VirtualLoader extends cls {
     } else {
       this[flagsSuspect] = true
     }
-
+    
+    // 检查 根结点 的 边
     this.#checkRootEdges(s, root)
     root.meta = s
     this.virtualTree = root
@@ -118,20 +118,14 @@ module.exports = cls => class VirtualLoader extends cls {
     return root
   }
 
-  // check the lockfile deps, and see if they match.  if they do not
-  // then we have to reset dep flags at the end.  for example, if the
-  // user manually edits their package.json file, then we need to know
-  // that the idealTree is no longer entirely trustworthy.
+  // 检查 根节点 的 边 是否有效
   #checkRootEdges (s, root) {
-    // loaded virtually from tree, no chance of being out of sync
-    // ancient lockfiles are critically damaged by this process,
-    // so we need to just hope for the best in those cases.
     if (!s.loadedFromDisk || s.ancientLockfile) {
       return
     }
 
     const lock = s.get('')
-    // 线上依赖
+    // 生产依赖
     const prod = lock.dependencies || {}
     // 开发依赖
     const dev = lock.devDependencies || {}
@@ -150,6 +144,11 @@ module.exports = cls => class VirtualLoader extends cls {
       }
     }
 
+    // 删除 生产依赖 的 同等依赖
+    for (const name of Object.keys(peerOptional)) {
+      delete prod[name]
+    }
+    // 删除 生产依赖 中 可选依赖
     for (const name of Object.keys(optional)) {
       delete prod[name]
     }
@@ -169,7 +168,7 @@ module.exports = cls => class VirtualLoader extends cls {
 
     const lockByType = ({ dev, optional, peer, peerOptional, prod, workspace: lockWS })
 
-    // Find anything in shrinkwrap deps that doesn't match root's type or spec
+    // 将 锁定文件 的 依赖 与 根结点 的 边 对比, 删除 无效的依赖
     for (const type in lockByType) {
       const deps = lockByType[type]
       for (const name in deps) {
@@ -186,7 +185,7 @@ module.exports = cls => class VirtualLoader extends cls {
     }
   }
 
-  // separate out link metadatas, and create Node objects for nodes
+  // 从 依赖锁定 文件中 解析对应 的 节点 和 链接
   #resolveNodes (s, root) {
     const links = new Map()
     const nodes = new Map([['', root]])
@@ -205,8 +204,7 @@ module.exports = cls => class VirtualLoader extends cls {
     return { links, nodes }
   }
 
-  // links is the set of metadata, and nodes is the map of non-Link nodes
-  // Set the targets to nodes in the set, if we have them (we might not)
+  // 
   async #resolveLinks (links, nodes) {
     for (const [location, meta] of links.entries()) {
       const targetPath = resolve(this.path, meta.resolved)
@@ -257,7 +255,7 @@ module.exports = cls => class VirtualLoader extends cls {
     }
   }
 
-  // 加载 节点
+  // 返回创建的 节点
   #loadNode (location, sw, loadOverrides) {
     const p = this.virtualTree ? this.virtualTree.realpath : this.path
     const path = resolve(p, location)
@@ -297,7 +295,7 @@ module.exports = cls => class VirtualLoader extends cls {
     return node
   }
 
-  // 加载 链接
+  // 返回创建的 链接
   #loadLink (location, targetLoc, target) {
     const path = resolve(this.path, location)
     const link = new Link({

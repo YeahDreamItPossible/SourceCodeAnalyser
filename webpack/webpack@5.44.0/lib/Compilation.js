@@ -383,7 +383,6 @@ const compareErrors = concatComparators(byModule, byLocation, byMessage);
  * 2. 分块
  * 根据 入口 进行分块 并构建 块 与 模块 的图谱关系(ChunkGraph)
  * 3. 模块Id 模块哈希值 块Id 块哈希值
- * 
  * 4. 优化
  * 优化模块 优化块 优化块中模块
  * 

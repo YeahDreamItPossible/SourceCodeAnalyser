@@ -78,6 +78,9 @@ const _addNodeToTrashList = Symbol.for('addNodeToTrashList')
 
 const _createIsolatedTree = Symbol.for('createIsolatedTree')
 
+// 具体化
+// 作用:
+// 
 module.exports = cls => class Reifier extends cls {
   #bundleMissing = new Set() // child nodes we'd EXPECT to be included in a bundle, but aren't
   #bundleUnpacked = new Set() // the nodes we unpack to read their bundles

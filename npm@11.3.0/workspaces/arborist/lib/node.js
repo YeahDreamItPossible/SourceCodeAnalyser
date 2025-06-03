@@ -66,6 +66,27 @@ const CaseInsensitiveMap = require('./case-insensitive-map.js')
 
 const querySelectorAll = require('./query-selector-all.js')
 
+/**
+ * 依赖分类: 
+ * Dependency: 生产依赖
+ * 无论在开发环境还是在生产环境都必须使用的依赖, 通过 npm install XXX 或者 npm install XXX --save 下载的依赖
+ * 
+ * DevDependency: 开发依赖
+ * 仅在开发环境使用的依赖, 通过 npm install packageName --save-dev 下载的依赖
+ * 
+ * PeerDependency: 同等依赖
+ * 声明当前包需要宿主环境提供的依赖，避免重复安装和版本冲突
+ * 典型场景：开发插件或库时，依赖宿主环境的某个核心包
+ * 例如： Vue 插件：需要宿主项目安装 vue@3.x
+ * 
+ * OptionalDependency: 可选依赖
+ * 可以选择的依赖，当你希望某些依赖即使下载失败或者没有找到时，项目依然可以正常运行或者 npm 继续运行的时
+ * 例如：跨平台工具：如 fsevents（仅在 macOS 可用，Windows 可忽略）
+ * 
+ * BundleDependency: 捆绑依赖
+ * 将依赖的代码直接打包到当前包的 .tgz 文件中，确保离线可用
+ */
+
 // 节点
 // 作用:
 // 
@@ -112,23 +133,25 @@ class Node {
     // while processing a query
     this.queryContext = {}
 
-    // true if part of a global install
+    // 标识是否为全局安装的依赖 即: global install
     this.#global = global
-
+    // 工作区
+    // 作用:
+    // 存储工作区的路径
+    // 工作区路径是相对于根目录的路径
     this.#workspaces = null
 
     this.errors = error ? [error] : []
+    // 标识：
     this.isInStore = isInStore
 
-    // this will usually be null, except when modeling a
-    // package's dependencies in a virtual root.
+    // 该属性通常为 null，除非在虚拟根目录中模拟包的依赖关系
     this.sourceReference = sourceReference
 
-    // TODO if this came from pacote.manifest we don't have to do this,
-    // we can be told to skip this step
+    // 包信息
     const pkg = sourceReference ? sourceReference.package
       : normalize(options.pkg || {})
-
+    // 节点名
     this.name = name ||
       nameFromFolder(path || pkg.name || realpath) ||
       pkg.name ||
@@ -169,10 +192,15 @@ class Node {
     this.installLinks = installLinks
     this.legacyPeerDeps = legacyPeerDeps
 
+    // 子节点
     this.children = new CaseInsensitiveMap()
+    // 
     this.fsChildren = new Set()
+    // 
     this.inventory = new Inventory()
+    // 
     this.tops = new Set()
+    // 
     this.linksIn = new Set(linksIn || [])
 
     // these three are set by an Arborist taking a catalog
@@ -203,11 +231,12 @@ class Node {
 
     this.ideallyInert = ideallyInert
 
+    // 边
     this.edgesIn = new Set()
+    // 当前节点的依赖边
     this.edgesOut = new CaseInsensitiveMap()
 
-    // have to set the internal package ref before assigning the parent,
-    // because this.package is read when adding to inventory
+    // 包信息
     this[_package] = pkg && typeof pkg === 'object' ? pkg : {}
 
     if (overrides) {
@@ -221,24 +250,10 @@ class Node {
       }
     }
 
-    // only relevant for the root and top nodes
+    // 元信息
     this.meta = meta
 
-    // Note: this is _slightly_ less efficient for the initial tree
-    // building than it could be, but in exchange, it's a much simpler
-    // algorithm.
-    // If this node has a bunch of children, and those children satisfy
-    // its various deps, then we're going to _first_ create all the
-    // edges, and _then_ assign the children into place, re-resolving
-    // them all in _reloadNamedEdges.
-    // A more efficient, but more complicated, approach would be to
-    // flag this node as being a part of a tree build, so it could
-    // hold off on resolving its deps until its children are in place.
-
-    // call the parent setter
-    // Must be set prior to calling _loadDeps, because top-ness is relevant
-
-    // will also assign root if present on the parent
+    // 
     this[_parent] = null
     this.parent = parent || null
 
@@ -265,7 +280,7 @@ class Node {
       }
     }
 
-    // now load all the dep edges
+    // 加载所有的 依赖边
     this[_loadDeps]()
   }
 
@@ -379,19 +394,14 @@ class Node {
     return this[_package]
   }
 
+  // 设置 包信息
   set package (pkg) {
-    // just detach them all.  we could make this _slightly_ more efficient
-    // by only detaching the ones that changed, but we'd still have to walk
-    // them all, and the comparison logic gets a bit tricky.  we generally
-    // only do this more than once at the root level, so the resolve() calls
-    // are only one level deep, and there's not much to be saved, anyway.
-    // simpler to just toss them all out.
+    // 当设置新的 包信息时 先解除 当前节点 与 依赖边 的关联关系
     for (const edge of this.edgesOut.values()) {
       edge.detach()
     }
 
     this[_explanation] = null
-    /* istanbul ignore next - should be impossible */
     if (!pkg || typeof pkg !== 'object') {
       debug(() => {
         throw new Error('setting Node.package to non-object')
@@ -400,9 +410,9 @@ class Node {
     }
     this[_package] = pkg
     this.#loadWorkspaces()
+    // 重新绑定 当前节点 与 依赖边 的关联关系
     this[_loadDeps]()
-    // do a hard reload, since the dependents may now be valid or invalid
-    // as a result of the package change.
+    // 
     this.edgesIn.forEach(edge => edge.reload(true))
   }
 
@@ -874,15 +884,6 @@ class Node {
   // 加载依赖
   // 绑定 this.edgesOut 属性
   [_loadDeps] () {
-    // Caveat!  Order is relevant!
-    // Packages in optionalDependencies are optional.
-    // Packages in both deps and devDeps are required.
-    // Note the subtle breaking change from v6: it is no longer possible
-    // to have a different spec for a devDep than production dep.
-
-    // Linked targets that are disconnected from the tree are tops,
-    // but don't have a 'path' field, only a 'realpath', because we
-    // don't know their canonical location. We don't need their devDeps.
     const pd = this.package.peerDependencies
     const ad = this.package.acceptDependencies || {}
     if (pd && typeof pd === 'object' && !this.legacyPeerDeps) {
@@ -918,13 +919,11 @@ class Node {
 
   // 加载依赖
   // 绑定 this.edgesOut 属性
-  // 依赖类型：prod, dev, optional, peer, peerOptional, workspace
-  // 依赖名称：name
-  // 依赖版本：spec
-  // 依赖接受：accept 
   #loadDepType (deps, type, ad) {
-    // Because of the order in which _loadDeps runs, we always want to
-    // prioritize a new edge over an existing one
+    // 依赖类型：prod, dev, optional, peer, peerOptional, workspace
+    // 依赖名称：name
+    // 依赖版本：spec
+    // 依赖接受：accept 
     for (const [name, spec] of Object.entries(deps || {})) {
       const current = this.edgesOut.get(name)
       if (!current || current.type !== 'workspace') {
@@ -1388,6 +1387,7 @@ class Node {
     }
   }
 
+  // 添加 当前节点 的 依赖
   addEdgeOut (edge) {
     if (this.overrides) {
       edge.overrides = this.overrides.getEdgeRule(edge)
@@ -1473,6 +1473,7 @@ class Node {
     }
   }
 
+  // 添加边
   addEdgeIn (edge) {
     // We need to handle the case where the new edge in has an overrides field which is different from the current value.
     if (!this.overrides || !this.overrides.isEqual(edge.overrides)) {
@@ -1555,9 +1556,8 @@ class Node {
     return this.parent || this.fsParent
   }
 
+  // 
   resolve (name) {
-    /* istanbul ignore next - should be impossible,
-     * but I keep doing this mistake in tests */
     debug(() => {
       if (typeof name !== 'string' || !name) {
         throw new Error('non-string passed to Node.resolve')

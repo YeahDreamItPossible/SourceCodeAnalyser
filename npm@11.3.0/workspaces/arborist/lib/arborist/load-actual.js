@@ -12,50 +12,57 @@ const Node = require('../node.js')
 const Link = require('../link.js')
 const realpath = require('../realpath.js')
 
-// public symbols
+// 公共 symbols
 const _changePath = Symbol.for('_changePath')
 const _setWorkspaces = Symbol.for('setWorkspaces')
 const _rpcache = Symbol.for('realpathCache')
 const _stcache = Symbol.for('statCache')
 
+/**
+ * 实际树(文件树): 
+ * 磁盘上的节点树，对应整个 node_modules 目录 的文件树 
+ */
+
 // 实际树加载器
 // 作用:
-// 
+// 读取 某个目录下 的 package.json 文件
+// 构建当前当前目录下完整的 实际树
 module.exports = cls => class ActualLoader extends cls {
+  // 文件树
   #actualTree
-  // ensure when walking the tree that we don't call loadTree on the same
-  // actual node more than one time.
+  // 绝对路径集合: 依赖的绝对路径
+  // 示例: /Users/didi/Desktop/Demo/my-jest/node_modules/npm/node_modules/@isaacs/cliui/node_modules/strip-ansi
   #actualTreeLoaded = new Set()
+  // 
   #actualTreePromise
 
-  // cache of nodes when loading the actualTree, so that we avoid loaded the
-  // same node multiple times when symlinks attack.
+  // 缓存: 节点缓存
+  // 作用: 避免重复加载相同的节点
+  // 示例: 依赖绝对路径 => 节点
   #cache = new Map()
+  // 过滤器
   #filter
-
-  // cache of link targets for setting fsParent links
-  // We don't do fsParent as a magic getter/setter, because it'd be too costly
-  // to keep up to date along the walk.
-  // And, we know that it can ONLY be relevant when the node is a target of a
-  // link, otherwise it'd be in a node_modules folder, so take advantage of
-  // that to limit the scans later.
+  
+  // 顶部节点的绝对路径集合
+  // 示例: /Users/didi/Desktop/Demo/my-jest
   #topNodes = new Set()
+  // 过滤器
   #transplantFilter
 
   constructor (options) {
     super(options)
 
-    // the tree of nodes on disk
-    //
     this.actualTree = options.actualTree
 
-    // caches for cached realpath calls
+    // 当前工作目录
     const cwd = process.cwd()
-    // assume that the cwd is real enough for our purposes
+    // 缓存: 真实路径缓存
     this[_rpcache] = new Map([[cwd, cwd]])
+    // 缓存: 统计缓存
     this[_stcache] = new Map()
   }
 
+  // 加载 实际树
   async loadActual (options = {}) {
     // 从 缓存 中读取
     if (this.actualTree) {
@@ -87,7 +94,6 @@ module.exports = cls => class ActualLoader extends cls {
   // 解析本地package-lock.json文件内容
   // 递归遍历Node节点，构建Node节点树
   async #loadActual (options) {
-    // mostly realpath to throw if the root doesn't exist
     const {
       global,
       filter = () => true,
@@ -114,7 +120,6 @@ module.exports = cls => class ActualLoader extends cls {
         this.#actualTree = await this.#newLink(params)
       }
     } else {
-      // not in global mode, hidden lockfile is allowed, load root pkg too
       this.#actualTree = await this.#loadFSNode({
         path: this.path,
         real: await realpath(this.path, this[_rpcache], this[_stcache]),
@@ -123,11 +128,9 @@ module.exports = cls => class ActualLoader extends cls {
 
       this.#actualTree.assertRootOverrides()
 
-      // if forceActual is set, don't even try the hidden lockfile
+      // 如果设置了forceActual，则不加载隐藏的锁文件
       if (!forceActual) {
-        // Note: hidden lockfile will be rejected if it's not the latest thing
-        // in the folder, or if any of the entries in the hidden lockfile are
-        // missing.
+        // 加载隐藏的锁文件
         const meta = await Shrinkwrap.load({
           path: this.#actualTree.path,
           hiddenLockfile: true,
@@ -151,6 +154,7 @@ module.exports = cls => class ActualLoader extends cls {
         }
       }
 
+      // 加载隐藏的锁文件
       const meta = await Shrinkwrap.load({
         path: this.#actualTree.path,
         lockfileVersion: this.options.lockfileVersion,
@@ -159,6 +163,7 @@ module.exports = cls => class ActualLoader extends cls {
       this.#actualTree.meta = meta
     }
 
+    // 加载 文件树
     await this.#loadFSTree(this.#actualTree)
     await this[_setWorkspaces](this.#actualTree)
 
@@ -215,11 +220,13 @@ module.exports = cls => class ActualLoader extends cls {
     return this.#actualTree
   }
 
+  // 移植
   #transplant (root) {
     if (!root || root === this.#actualTree) {
       return
     }
 
+    // 
     this.#actualTree[_changePath](root.path)
     for (const node of this.#actualTree.children.values()) {
       if (!this.#transplantFilter(node)) {
@@ -235,12 +242,7 @@ module.exports = cls => class ActualLoader extends cls {
     this.#actualTree = root
   }
 
-  // 加载 文件节点
-  // 获取当前Node节点的package.json文件内容，
-  // 创建Node节点，
-  // 遍历package.json中的依赖，
-  // 创建其对应的Edge对象，
-  // 并添加到其归属的Node节点的edgesOut属性中
+  // 加载 文件节点 或者 文件链接
   async #loadFSNode ({ path, parent, real, root, loadOverrides, useRootOverrides }) {
     if (!real) {
       try {
@@ -260,8 +262,8 @@ module.exports = cls => class ActualLoader extends cls {
 
     const cached = this.#cache.get(path)
     let node
-    // missing edges get a dummy node, assign the parent and return it
     if (cached && !cached.dummy) {
+      // 从缓存中读取
       cached.parent = parent
       return cached
     } else {
@@ -276,6 +278,7 @@ module.exports = cls => class ActualLoader extends cls {
       }
 
       try {
+        // 获取当前Node节点的package.json文件内容
         const pkg = await rpj(join(real, 'package.json'))
         params.pkg = pkg
         if (useRootOverrides && root.overrides) {
@@ -284,10 +287,7 @@ module.exports = cls => class ActualLoader extends cls {
       } catch (err) {
         params.error = err
       }
-
-      // soldier on if read-package-json raises an error, passing it to the
-      // Node which will attach it to its errors array (Link passes it along to
-      // its target node)
+      
       if (normalize(path) === real) {
         node = this.#newNode(params)
       } else {
@@ -298,11 +298,8 @@ module.exports = cls => class ActualLoader extends cls {
     return node
   }
 
-  // 新建 节点
+  // 返回新建的 节点
   #newNode (options) {
-    // check it for an fsParent if it's a tree top.  there's a decent chance
-    // it'll get parented later, making the fsParent scan a no-op, but better
-    // safe than sorry, since it's cheap.
     const { parent, realpath } = options
     if (!parent) {
       this.#topNodes.add(realpath)
@@ -310,6 +307,7 @@ module.exports = cls => class ActualLoader extends cls {
     return new Node(options)
   }
 
+  // 返回新建的 链接
   async #newLink (options) {
     const { realpath } = options
     this.#topNodes.add(realpath)
@@ -326,9 +324,12 @@ module.exports = cls => class ActualLoader extends cls {
 
     return link
   }
-
-  // 加载 文件树
-  // 递归遍历Node节点的依赖，创建对应的子Node节点并建立父子引用关系，构建Node节点树
+  
+  /**
+   * 递归加载 文件树
+   * 1. 加载某个 文件节点 的 所有子节点，创建其对应的子Node节点并建立父子引用关系
+   * 2. 依次加载 所有子节点 的 文件树，重复上述动作
+   */
   async #loadFSTree (node) {
     const did = this.#actualTreeLoaded
     if (!node.isLink && !did.has(node.target.realpath)) {
@@ -342,13 +343,28 @@ module.exports = cls => class ActualLoader extends cls {
     }
   }
 
-  // 遍历当前Node节点的node_modules目录中的依赖，创建其对应的子Node节点，并建立父子引用关系
+  /**
+   * 加载某个 文件节点 的 所有子节点
+   * 1. 遍历 当前文件节点 的 node_modules目录 中的依赖，
+   * 2. 创建其对应的子Node节点，
+   * 3. 并建立父子引用关系
+   */
   async #loadFSChildren (node) {
     const nm = resolve(node.realpath, 'node_modules')
     try {
       const kids = await readdirScoped(nm).then(paths => paths.map(p => p.replace(/\\/g, '/')))
       return Promise.all(
-        // ignore . dirs and retired scoped package folders
+        /**
+         * ^             # 字符串开始
+         * (             # 分组开始（可选）
+         *   @           # 匹配 @
+         *   [^/]+       # 匹配非 / 的字符（至少一个）
+         *   \/          # 匹配 /
+         * )?            # 分组结束（可选）
+         * \.            # 匹配 .
+         */
+        // 忽视 是否以 . 开头，或是在 @scope/ 作用域前缀后紧跟 . 的路径
+        // 例如: @user/.bin .bin
         kids.filter(kid => !/^(@[^/]+\/)?\./.test(kid))
           .filter(kid => this.#filter(node, kid))
           .map(kid => this.#loadFSNode({
@@ -360,6 +376,7 @@ module.exports = cls => class ActualLoader extends cls {
     }
   }
 
+  // 发现丢失的边
   async #findMissingEdges () {
     // try to resolve any missing edges by walking up the directory tree,
     // checking for the package in each node_modules folder.  stop at the

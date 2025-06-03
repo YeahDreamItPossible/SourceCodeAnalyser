@@ -1,9 +1,23 @@
 ```js
+jest => 执行 jest-cli 中 run 函数
+jest-cli => 解析命令行参数，并解析 配置选项, 最终执行 jest-core中 runCli 函数
+jest-core => 根据命令行参数运行对应的函数(如 watch 选项)， 最终执行 runJest 函数
+            在 runJest 函数中 根据配置 启动对应的类， 如 运行期， 定序器，调度器， 并解析要运行的单测文件路径集合， 并执行调度任务 scheduler.scheduleTests
+jest-circus => 默认调度器
+jest-runtime => 运行时，执行单测函数代码
+jest-environment => 特定环境下注入全局变量
+jest-runner => 运行器，
+
+
 jest-circus  =>  绑定全局变量 例如：(afterAll, afterEach, beforeAll, beforeEach, describe, it, test)
 
 expect => 绑定全局变量 expect
 expect-utils => expect 辅助函数工具
 jest-mock => 绑定(jest.fn jest.spyOn jest.mocked jest.replaceProperty)
+```
+
+```js
+名词解释:
 ```
 
 ```js

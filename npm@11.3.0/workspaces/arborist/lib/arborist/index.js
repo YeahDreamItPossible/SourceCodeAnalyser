@@ -1,30 +1,36 @@
-// The arborist manages three trees:
-// - actual
-// - virtual
-// - ideal
-//
-// The actual tree is what's present on disk in the node_modules tree
-// and elsewhere that links may extend.
-//
-// The virtual tree is loaded from metadata (package.json and lock files).
-//
-// The ideal tree is what we WANT that actual tree to become.  This starts
-// with the virtual tree, and then applies the options requesting
-// add/remove/update actions.
-//
-// To reify a tree, we calculate a diff between the ideal and actual trees,
-// and then turn the actual tree into the ideal tree by taking the actions
-// required.  At the end of the reification process, the actualTree is
-// updated to reflect the changes.
-//
-// Each tree has an Inventory at the root.  Shrinkwrap is tracked by Arborist
-// instance.  It always refers to the actual tree, but is updated (and written
-// to disk) on reification.
+// Arborist 管理三种依赖树：
+// - 实际树 (actual)
+// - 虚拟树 (virtual)
+// - 理想树 (ideal)
 
-// Each of the mixin "classes" adds functionality, but are not dependent on
-// constructor call order.  So, we just load them in an array, and build up
-// the base class, so that the overall voltron class is easier to test and
-// cover, and separation of concerns can be maintained.
+// 实际树对应磁盘上的 node_modules 结构
+// 包含所有实际存在的依赖链接
+
+// 虚拟树从元数据构建（package.json 和 lock 文件）
+// 反映声明的依赖关系状态
+
+// 理想树是我们希望达到的目标状态
+// 基于虚拟树应用增/删/更新操作生成
+
+// 通过计算理想树与实际树的差异
+// 执行具体操作使实际树转化为理想树
+// 完成具象化 (reify) 后更新实际树状态
+
+// 每棵树在根节点维护依赖清单 (Inventory)
+// Shrinkwrap 文件始终跟踪实际树状态
+// 并在具象化时更新到磁盘
+
+// 通过混合类 (mixin) 实现功能扩展
+// 各类之间无构造顺序依赖
+// 组合形成最终功能完整的 Arborist 类
+
+
+/**
+ * 名词解释：
+ * - "reify": 译为「具象化」对应 npm 的依赖固化操作
+ * - "inventory": 保留英文术语，指代依赖清单数据结构
+ * - "mixin": 译为「混合类」符合 JavaScript 类扩展模式
+ */
 
 const { resolve } = require('node:path')
 const { homedir } = require('node:os')
@@ -63,6 +69,22 @@ const lockfileVersion = lfv => {
 
   throw new TypeError('Invalid lockfileVersion config: ' + lfv)
 }
+
+/**
+ * Arborist:
+ * 树艺师；树艺家；树木栽培家
+ * 它提供了一种统一的方式来管理和操作依赖关系，
+ * 包括解析依赖、构建理想树、加载实际树、
+ * 计算差异、应用差异、重建树等操作。
+ * 它还支持工作区管理和依赖锁定等功能。
+ * 它是 npm 包管理器的核心组件之一，
+ * 用于管理和构建项目的依赖关系。
+ * 它可以用于安装、更新、卸载和管理项目的依赖关系。
+ * 它还可以用于生成依赖树、解析依赖关系、
+ * 检查依赖关系的一致性等。
+ * 它是 npm 包管理器的核心组件之一，
+ * 用于管理和构建项目的依赖关系。
+ */
 
 class Arborist extends Base {
   constructor (options = {}) {

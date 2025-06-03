@@ -6,6 +6,8 @@ const npa = require('npm-package-arg')
 const depValid = require('./dep-valid.js')
 const OverrideSet = require('./override-set.js')
 
+
+// 边
 class ArboristEdge {
   constructor (edge) {
     this.name = edge.name
@@ -34,7 +36,12 @@ class ArboristEdge {
   }
 }
 
-// 依赖图的边
+/**
+ * 边:
+ * 某个 节点 的 依赖信息
+ */
+
+// 边
 class Edge {
   #accept
   #error
@@ -45,6 +52,7 @@ class Edge {
   #to
   #type
 
+  // 类型枚举
   static types = Object.freeze([
     'prod',
     'dev',
@@ -54,7 +62,7 @@ class Edge {
     'workspace',
   ])
 
-  // XXX where is this used?
+  // 错误类型枚举
   static errors = Object.freeze([
     'DETACHED',
     'MISSING',
@@ -65,7 +73,6 @@ class Edge {
   constructor (options) {
     const { type, name, spec, accept, from, overrides } = options
 
-    // XXX are all of these error states even possible?
     if (typeof spec !== 'string') {
       throw new TypeError('must provide string spec')
     }
@@ -91,13 +98,20 @@ class Edge {
       this.overrides = overrides
     }
 
+    // 依赖名
     this.#name = name
+    // 类型
     this.#type = type
+    // 版本
     this.#spec = spec
+    // 
     this.#explanation = null
+    // 当前边的起始节点
     this.#from = from
 
+    // 解除当前边 与 节点 的依赖关系
     from.edgesOut.get(this.#name)?.detach()
+    // 起始节点 添加 该边
     from.addEdgeOut(this)
 
     this.reload(true)
@@ -328,6 +342,7 @@ class Edge {
     }
   }
 
+  // 解除 依赖 与 依赖边 的关联关系
   detach () {
     this.#explanation = null
     if (this.#to) {
