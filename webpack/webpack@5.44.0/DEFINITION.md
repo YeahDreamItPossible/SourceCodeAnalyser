@@ -1,4 +1,6 @@
-名词解释
+```
+Webpack名词解释:
+```
 
 ```
 Compiler
@@ -13,28 +15,23 @@ Compiler
 Compilation
 编译过程
 编译过程可以分为以下几个流程
-1. 模块树的构建
-创建模块 并在构建模块的过程中 递归的解析模块中的依赖 构建 模块 与 依赖的图谱关系(ModuleGraph)
-2. 冻结
-2. 分块
-根据 入口 进行分块 并构建 块 与 模块 的图谱关系(ChunkGraph)
-3. 模块Id 模块哈希值 块Id 块哈希值
-4. 优化
-优化模块 优化块 优化块中模块
-5. 模块代码生成
-6. 块代码生成
-7. 文件输出
-
-
 1. 构建模块树(load)
+  - 创建模块,并在构建模块的过程中,递归的解析模块中的依赖,构建 模块 与 依赖的图谱关系(ModuleGraph)
 2. 收集模块中的错误和警告
 3. 冻结(seal)
+  - 不再接受新的模块
 4. 分块
-5. 优化(优化依赖，模块，块)
-6. 设置ID
-7. 设置哈希(hash)
-8. 模块代码生成
-9. 块代码生成
+5. 优化
+  - 优化依赖，优化模块，优化块
+  - 优化块和模块(主要是关联关系)
+6. 设置模块ID和块ID
+  - 根据占位符，使用对应的插件，生成模块ID和块ID
+7. 设置模块哈希(hash)
+  - 
+8. 代码生成
+  - 先生成 模块代码
+  - 再生成 运行时块代码
+  - 最后生成 块代码
 9. 生成文件缓存及解析
 
 
@@ -52,7 +49,6 @@ ChunkGraph
 在优化阶段
   优化依赖  => 分块 => 优化模块 => 优化块 => 优化依赖树 => 优化块模块 => 优化模块Id => 优化块Id =>
 创建模块哈希 => 代码生成任务 => 
-
 ```
 
 ```
@@ -100,6 +96,53 @@ Loader
   - 前置加载器(preLoader)
   - 标准加载器(loader)
   - 后置加载器(postLoader)
+```
+
+```
+loader-runner
+加载器运行器
+作用：
+加载 加载器 并将 加载加载器的结果 绑定到 加载器 上
+
+加载 加载器 的方式:
+1. 优先以 cjs 的方式(require)加载 加载器 因为该加载方式是 同步 的
+2. 其次以 esm 的方式(dynamic import)加载 加载器 因为该加载方式是 异步 的 
+
+绑定 加载加载器的结果:
+绑定 loader.normal loader.pitch loader.raw
+```
+
+```
+加载器属性描述:
+  loader.normal:
+    指向loader函数
+  loader.pitch:
+    通过读取 loaderContext.remainingRequest 和 loaderContext.previousRequest 来修改 loaderContext.data
+    如果某个 loader.pitch 函数有返回值时 准备阶段 结束(开始执行阶段)
+    并将 返回值 作为 loader.normal 的参数
+  loader.raw:
+    表示是需要将loader.normal返回值 从 Buffer 转换成 String
+```
+
+```
+单个 加载器 整个运行周期分为 加载阶段 和 准备阶段 和 执行阶段
+
+1. 加载阶段
+  在 加载阶段 中
+  优先以 cjs 的方式(require)加载 加载器 因为该加载方式是 同步 的
+  其次以 esm 的方式(dynamic import)加载 加载器 因为该加载方式是 异步 的 
+
+2. 准备阶段(pitch)
+  按照 从左到右 的顺序 依次 运行每个 loader.pitch 
+  如果某个 loader.pitch 有返回值时 准备阶段结束 开始执行阶段
+
+3. 执行阶段(normal)
+  按照 从右到左 的顺序 依次 执行每个 loader.normal
+  每次运行 loader.normal 时 会将 上一个loader.normal的返回值 作为 下一个loader.normal 的参数
+
+加载器的执行顺序:
+在 准备阶段 时 是按照 从左到右 依次执行
+在 执行阶段 是 是按照 从左到左 依次执行
 ```
 
 ```
@@ -178,7 +221,6 @@ ModuleGraphConnection
   在 ModuleGraph 中 通过 Dependency 找到对应的 ModuleGraphConnection
 ```
 
-
 ```
 块出现的原因:
   我们书写的模块是零散的 需要用 块 来对这些模块的引用关系进行系统的记录
@@ -195,7 +237,6 @@ Chunk
   当 构建完成 时 块(Chunk) 被渲染成 捆(Bundle)
   块 存储着 入口信息 和 对应的出口信息
   在 ChunkGraph 中 能够 根据 块 找到对应的 模块信息 
-
 
 块图:
   - 单个块 与 模块 之间是复杂的 一对多关系
@@ -221,3 +262,4 @@ ChunkGraphModule
   以 模块 为核心 描述 当前模块 属于哪些 块
   在 ChunkGraph 中 根据 Module 找到对应的 ChunkGraphModule
 ```
+
