@@ -1,8 +1,0 @@
-{
-  "jest": {
-    "collectCoverageFrom": [
-      "*.js"
-    ],
-    "resetModules": true
-  }
-}

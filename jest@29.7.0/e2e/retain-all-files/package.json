@@ -1,9 +1,0 @@
-{
-  "jest": {
-    "testEnvironment": "node",
-    "testPathIgnorePatterns": [],
-    "haste": {
-      "retainAllFiles": true
-    }
-  }
-}

@@ -1,9 +1,0 @@
-{
-  "jest": {
-    "testEnvironment": "node",
-    "verbose": false
-  },
-  "dependencies": {
-    "chai": "^4.2.0"
-  }
-}

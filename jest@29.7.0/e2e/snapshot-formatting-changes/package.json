@@ -1,9 +1,0 @@
-{
-  "jest": {
-    "testEnvironment": "node",
-    "snapshotFormat": {
-      "printBasicPrototype": false,
-      "indent": 8
-    }
-  }
-}

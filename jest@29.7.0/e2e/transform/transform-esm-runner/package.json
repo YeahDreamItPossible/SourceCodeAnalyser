@@ -1,7 +1,0 @@
-{
-  "type": "module",
-  "jest": {
-    "rootDir": "./",
-    "runner": "<rootDir>/runner.mjs"
-  }
-}

@@ -1,7 +1,0 @@
-{
-  "jest": {
-    "testMatch": [
-      "**/test-suites/*.?js"
-    ]
-  }
-}

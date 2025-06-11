@@ -1,8 +1,0 @@
-{
-  "name": "enable-legacy-fake-timers",
-  "jest": {
-    "fakeTimers": {
-      "legacyFakeTimers": true
-    }
-  }
-}

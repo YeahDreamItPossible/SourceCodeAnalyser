@@ -1,7 +1,0 @@
-{
-  "jest": {
-    "watchPlugins": [
-      "./my-watch-plugin.cjs"
-    ]
-  }
-}

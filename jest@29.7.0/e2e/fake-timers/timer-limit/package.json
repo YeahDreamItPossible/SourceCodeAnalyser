@@ -1,9 +1,0 @@
-{
-  "name": "timer-limit",
-  "jest": {
-    "fakeTimers": {
-      "enableGlobally": true,
-      "timerLimit": 10
-    }
-  }
-}

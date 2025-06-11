@@ -1,7 +1,0 @@
-{
-  "jest": {
-    "testEnvironment": "node",
-    "globalSetup": "<rootDir>/setup.js",
-    "transformIgnorePatterns": []
-  }
-}

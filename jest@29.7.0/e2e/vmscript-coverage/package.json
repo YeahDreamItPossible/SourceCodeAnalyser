@@ -1,9 +1,0 @@
-{
-  "jest": {
-    "rootDir": "./",
-    "testEnvironment": "node",
-    "collectCoverageFrom": [
-      "package/**/*.js"
-    ]
-  }
-}

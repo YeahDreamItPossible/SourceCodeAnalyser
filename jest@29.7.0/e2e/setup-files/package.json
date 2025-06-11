@@ -1,7 +1,0 @@
-{
-  "jest": {
-    "setupFiles": [
-      "./setup-fetchdata.js"
-    ]
-  }
-}

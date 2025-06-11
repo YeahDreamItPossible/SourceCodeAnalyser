@@ -1,6 +1,0 @@
-{
-  "name": "request-animation-frame-legacy",
-  "jest": {
-    "testEnvironment": "jsdom"
-  }
-}

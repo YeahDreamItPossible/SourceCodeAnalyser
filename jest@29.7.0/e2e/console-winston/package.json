@@ -1,9 +1,0 @@
-{
-  "jest": {
-    "testEnvironment": "node",
-    "verbose": false
-  },
-  "dependencies": {
-    "winston": "^3.2.1"
-  }
-}

@@ -1,9 +1,0 @@
-{
-  "jest": {
-    "resolver": "<rootDir>/resolver.js",
-    "testEnvironment": "jsdom"
-  },
-  "dependencies": {
-    "browser-resolve": "^2.0.0"
-  }
-}

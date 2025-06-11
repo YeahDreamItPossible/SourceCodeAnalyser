@@ -1,8 +1,0 @@
-{
-  "jest": {
-    "testEnvironment": "node",
-    "snapshotSerializers": [
-      "./serializers/string"
-    ]
-  }
-}
