@@ -1,4 +1,0 @@
-{
-  "inputSourceMap": true,
-  "plugins": ["./plugin.js"]
-}

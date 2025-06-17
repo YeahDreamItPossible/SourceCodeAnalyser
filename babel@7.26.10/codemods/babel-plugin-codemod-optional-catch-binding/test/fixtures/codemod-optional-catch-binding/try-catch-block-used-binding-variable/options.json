@@ -1,3 +1,0 @@
-{
-  "plugins": ["codemod-optional-catch-binding"]
-}

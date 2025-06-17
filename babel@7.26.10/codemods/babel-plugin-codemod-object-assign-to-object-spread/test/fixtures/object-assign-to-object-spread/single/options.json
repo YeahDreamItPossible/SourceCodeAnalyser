@@ -1,3 +1,0 @@
-{
-  "plugins": ["codemod-object-assign-to-object-spread"]
-}
