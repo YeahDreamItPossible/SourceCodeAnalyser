@@ -1,4 +1,5 @@
-import "./path/context.ts"; // We have some cycles, this ensures correct order to avoid TDZ
+// We have some cycles, this ensures correct order to avoid TDZ
+import "./path/context.ts"; 
 import * as visitors from "./visitors.ts";
 import {
   VISITOR_KEYS,
@@ -49,6 +50,7 @@ function traverse(
   visitSelf?: boolean,
 ): void;
 
+// 遍历
 function traverse<Options extends TraverseOptions>(
   parent: t.Node,
   // @ts-expect-error provide {} as default value for Options
@@ -78,8 +80,10 @@ function traverse<Options extends TraverseOptions>(
     return;
   }
 
+  // 规范化 访问器对象, 并验证其数据结构
   visitors.explode(opts as Visitor);
 
+  // 遍历节点
   traverseNode(
     parent,
     opts as ExplodedVisitor,

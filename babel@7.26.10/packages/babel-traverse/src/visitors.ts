@@ -13,6 +13,7 @@ import type { ExplVisitNode, VisitNodeFunction, VisitPhase } from "./types.ts";
 import { requeueComputedKeyAndDecorators } from "./path/context.ts";
 
 type VIRTUAL_TYPES = keyof typeof virtualTypes;
+// 断言: 检查是否是虚拟类型
 function isVirtualType(type: string): type is VIRTUAL_TYPES {
   return type in virtualTypes;
 }
@@ -22,6 +23,7 @@ export type VisitWrapper<S = any> = (
   callback: VisitNodeFunction<S, Node>,
 ) => VisitNodeFunction<S, Node>;
 
+// 断言: 检查访问器对象是否已被展开
 export function isExplodedVisitor(
   visitor: Visitor,
 ): visitor is ExplodedVisitor {
@@ -29,33 +31,24 @@ export function isExplodedVisitor(
   return visitor?._exploded;
 }
 
-// We need to name this function `explode$1` because otherwise rollup-plugin-dts
-// will generate a `namespace traverse { var explode: typeof explode; }` when
-// bundling @babel/traverse's index.d.ts.
-// TODO: Just call it `explode` once https://github.com/Swatinem/rollup-plugin-dts/issues/307
-// is fixed.
 export { explode$1 as explode };
-/**
- * explode() will take a visitor object with all of the various shorthands
- * that we support, and validates & normalizes it into a common format, ready
- * to be used in traversal
- *
- * The various shorthands are:
- * * `Identifier() { ... }` -> `Identifier: { enter() { ... } }`
- * * `"Identifier|NumericLiteral": { ... }` -> `Identifier: { ... }, NumericLiteral: { ... }`
- * * Aliases in `@babel/types`: e.g. `Property: { ... }` -> `ObjectProperty: { ... }, ClassProperty: { ... }`
- * Other normalizations are:
- * * Visitors of virtual types are wrapped, so that they are only visited when
- *   their dynamic check passes
- * * `enter` and `exit` functions are wrapped in arrays, to ease merging of
- *   visitors
- */
+
+// 规范化 访问器对象
+// 处理各种简写形式并验证数据结构
+// 包括：
+//  1. 标准化管道符类型
+//  2. 验证 访问器数据结构
+//  3. 确保访问器是对象
+//  4. 确保enter/exit回调是数组
+//  5. 添加类型包装器
+//  6. 处理别名
 function explode$1<S>(visitor: Visitor<S>): ExplodedVisitor<S> {
+  // 如果 访问器对象 已被规范化 则直接返回
   if (isExplodedVisitor(visitor)) return visitor;
   // @ts-expect-error `visitor` will be cast to ExplodedVisitor by this function
   visitor._exploded = true;
 
-  // normalise pipes
+  // 标准化管道符类型
   for (const nodeType of Object.keys(visitor) as (keyof Visitor)[]) {
     if (shouldIgnoreKey(nodeType)) continue;
 
@@ -71,21 +64,19 @@ function explode$1<S>(visitor: Visitor<S>): ExplodedVisitor<S> {
     }
   }
 
-  // verify data structure
+  // 验证 访问器数据结构
   verify$1(visitor);
 
-  // make sure there's no __esModule type since this is because we're using loose mode
-  // and it sets __esModule to be enumerable on all modules :(
   // @ts-expect-error ESModule interop
   delete visitor.__esModule;
 
-  // ensure visitors are objects
+  // 确保访问器是对象
   ensureEntranceObjects(visitor);
 
-  // ensure enter/exit callbacks are arrays
+  // 确保enter/exit回调是数组
   ensureCallbackArrays(visitor);
 
-  // add type wrappers
+  // 添加类型包装器
   for (const nodeType of Object.keys(visitor)) {
     if (shouldIgnoreKey(nodeType)) continue;
 
@@ -117,7 +108,7 @@ function explode$1<S>(visitor: Visitor<S>): ExplodedVisitor<S> {
     }
   }
 
-  // add aliases
+  // 处理别名
   for (const nodeType of Object.keys(visitor) as (keyof Visitor)[]) {
     if (shouldIgnoreKey(nodeType)) continue;
 
@@ -163,12 +154,11 @@ function explode$1<S>(visitor: Visitor<S>): ExplodedVisitor<S> {
   return visitor as ExplodedVisitor;
 }
 
-// We need to name this function `verify$1` because otherwise rollup-plugin-dts
-// will generate a `namespace traverse { var verify: typeof verify; }` when
-// bundling @babel/traverse's index.d.ts.
-// TODO: Just call it `verify` once https://github.com/Swatinem/rollup-plugin-dts/issues/307
-// is fixed.
 export { verify$1 as verify };
+
+// 验证访问器对象的结构
+// 检查访问器是否是函数而不是对象
+// 验证节点类型是否有效
 function verify$1(visitor: Visitor) {
   // @ts-expect-error _verified is not defined on non-verified Visitor.
   // TODO: unify _verified and _exploded.
@@ -218,6 +208,7 @@ function verify$1(visitor: Visitor) {
   visitor._verified = true;
 }
 
+// 验证 访问器 方法必须是函数
 function validateVisitorMethods(
   path: string,
   val: any,
@@ -240,6 +231,8 @@ export function merge(
   states?: any[],
   wrapper?: Function | null,
 ): ExplodedVisitor<unknown>;
+
+// 合并 访问器
 export function merge(
   visitors: any[],
   states: any[] = [],
@@ -353,8 +346,9 @@ function wrapCheck(nodeType: VIRTUAL_TYPES, fn: Function) {
   return newFn;
 }
 
+// 断言: 该键是否应该被忽视
 function shouldIgnoreKey(key: string): key is
-  | `_${string}` // ` // Comment to fix syntax highlighting in vscode
+  | `_${string}` // `
   | "enter"
   | "exit"
   | "shouldSkip"
@@ -362,13 +356,13 @@ function shouldIgnoreKey(key: string): key is
   | "noScope"
   | "skipKeys"
   | "blacklist" {
-  // internal/hidden key
+  // 该键是内部属性 或者 隐藏属性
   if (key[0] === "_") return true;
 
-  // ignore function keys
+  // 该键是函数名
   if (key === "enter" || key === "exit" || key === "shouldSkip") return true;
 
-  // ignore other options
+  // 该键是某个选项名
   if (key === "denylist" || key === "noScope" || key === "skipKeys") {
     return true;
   }
@@ -395,9 +389,10 @@ function mergePair(dest: any, src: any) {
   }
 }
 
-// environmentVisitor should be used when traversing the whole class and not for specific class elements/methods.
-// For perf reasons, the environmentVisitor might be traversed with `{ noScope: true }`, which means `path.scope` is undefined.
-// Avoid using `path.scope` here
+// 环境访问器
+// 环境访问器 应该在遍历整个类时使用，而不是用于特定的类元素/方法。
+// 出于性能原因，环境访问器 可能会被遍历为“{noScope:true}”，这意味着“path.scope”是 undefined。
+// 避免在此处使用`path.scope`
 const _environmentVisitor: Visitor = {
   FunctionParent(path) {
     // arrows are not skipped because they inherit the context.

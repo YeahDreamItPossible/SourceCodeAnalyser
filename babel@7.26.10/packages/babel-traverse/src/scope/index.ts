@@ -395,6 +395,7 @@ let uid = 0;
 export type { Binding };
 
 export { Scope as default };
+// 作用域
 class Scope {
   uid;
 

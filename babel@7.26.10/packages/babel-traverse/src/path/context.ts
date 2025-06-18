@@ -8,6 +8,7 @@ import type { VisitPhase } from "../types.ts";
 import type NodePath from "./index.ts";
 import * as t from "@babel/types";
 
+// 执行 特定的回调函数队列
 export function call(this: NodePath, key: VisitPhase): boolean {
   const opts = this.opts;
 
@@ -24,6 +25,7 @@ export function call(this: NodePath, key: VisitPhase): boolean {
   return false;
 }
 
+// 执行 回调函数队列
 export function _call(this: NodePath, fns?: Array<Function>): boolean {
   if (!fns) return false;
 
@@ -56,6 +58,7 @@ export function _call(this: NodePath, fns?: Array<Function>): boolean {
   return false;
 }
 
+// 断言: 是否要跳过该节点的遍历
 export function isDenylisted(this: NodePath): boolean {
   // @ts-expect-error TODO(Babel 8): Remove blacklist
   const denylist = this.opts.denylist ?? this.opts.blacklist;
@@ -67,6 +70,7 @@ if (!process.env.BABEL_8_BREAKING && !USE_ESM) {
   exports.isBlacklisted = isDenylisted;
 }
 
+// 恢复 上下文
 function restoreContext(path: NodePath, context: TraversalContext) {
   if (path.context !== context) {
     path.context = context;
@@ -75,6 +79,7 @@ function restoreContext(path: NodePath, context: TraversalContext) {
   }
 }
 
+// 访问
 export function visit(this: NodePath): boolean {
   if (!this.node) {
     return false;
@@ -117,10 +122,12 @@ export function visit(this: NodePath): boolean {
   return this.shouldStop;
 }
 
+// 设置 跳过
 export function skip(this: NodePath) {
   this.shouldSkip = true;
 }
 
+// 设置要跳过遍历的 key
 export function skipKey(this: NodePath, key: string) {
   if (this.skipKeys == null) {
     this.skipKeys = {};
@@ -133,6 +140,7 @@ export function stop(this: NodePath) {
   this._traverseFlags |= SHOULD_SKIP | SHOULD_STOP;
 }
 
+// 设置 作用域
 export function setScope(this: NodePath) {
   if (this.opts?.noScope) return;
 
@@ -157,9 +165,10 @@ export function setScope(this: NodePath) {
   }
 
   this.scope = this.getScope(target);
-  this.scope?.init();
+  this.scope?.in·it();
 }
 
+// 设置 上下文
 export function setContext<S = unknown>(
   this: NodePath,
   context?: TraversalContext<S>,
@@ -182,12 +191,9 @@ export function setContext<S = unknown>(
   return this;
 }
 
-/**
- * Here we resync the node paths `key` and `container`. If they've changed according
- * to what we have stored internally then we attempt to resync by crawling and looking
- * for the new values.
- */
-
+// 在这里，我们重新同步节点路径“key”和“container”。
+// 如果他们改变了，然后，我们尝试通过爬行和查找来重新同步我们内部存储的内容对于新的价值观。
+// 重新同步
 export function resync(this: NodePath) {
   if (this.removed) return;
 
@@ -197,12 +203,14 @@ export function resync(this: NodePath) {
   //this._resyncRemoved();
 }
 
+// 重新同步 父节点路径
 export function _resyncParent(this: NodePath) {
   if (this.parentPath) {
     this.parent = this.parentPath.node;
   }
 }
 
+// 重新同步 key
 export function _resyncKey(this: NodePath) {
   if (!this.container) return;
 
@@ -238,6 +246,7 @@ export function _resyncKey(this: NodePath) {
   this.key = null;
 }
 
+// 重新同步
 export function _resyncList(this: NodePath) {
   if (!this.parent || !this.inList) return;
 
@@ -261,6 +270,7 @@ export function _resyncRemoved(this: NodePath) {
   }
 }
 
+// 从堆栈弹出上下文
 export function popContext(this: NodePath) {
   this.contexts.pop();
   if (this.contexts.length > 0) {
@@ -270,11 +280,13 @@ export function popContext(this: NodePath) {
   }
 }
 
+// 将上下文推入堆栈
 export function pushContext(this: NodePath, context: TraversalContext) {
   this.contexts.push(context);
   this.setContext(context);
 }
 
+// 设置节点路径的基本信息
 export function setup(
   this: NodePath,
   parentPath: NodePath | undefined,
@@ -284,11 +296,11 @@ export function setup(
 ) {
   this.listKey = listKey;
   this.container = container;
-
   this.parentPath = parentPath || this.parentPath;
   setKey.call(this, key);
 }
 
+// 设置当前路径的key
 export function setKey(this: NodePath, key: string | number) {
   this.key = key;
   this.node =
@@ -297,6 +309,7 @@ export function setKey(this: NodePath, key: string | number) {
   this.type = this.node?.type;
 }
 
+// 将路径重新加入队列
 export function requeue(this: NodePath, pathToQueue = this) {
   if (pathToQueue.removed) return;
 
@@ -316,6 +329,7 @@ export function requeue(this: NodePath, pathToQueue = this) {
   }
 }
 
+// 重新排队计算属性和装饰器
 export function requeueComputedKeyAndDecorators(
   this: NodePath<t.Method | t.Property>,
 ) {
@@ -330,6 +344,7 @@ export function requeueComputedKeyAndDecorators(
   }
 }
 
+// 获取队列上下文
 export function _getQueueContexts(this: NodePath) {
   let path = this;
   let contexts = this.contexts;
