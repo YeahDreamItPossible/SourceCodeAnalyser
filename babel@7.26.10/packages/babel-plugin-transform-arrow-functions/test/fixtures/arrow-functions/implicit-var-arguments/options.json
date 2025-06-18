@@ -1,4 +1,0 @@
-{
-  "sourceType": "script",
-  "plugins": ["transform-arrow-functions"]
-}

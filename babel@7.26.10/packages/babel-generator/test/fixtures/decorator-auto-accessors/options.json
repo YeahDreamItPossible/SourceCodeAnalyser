@@ -1,7 +1,0 @@
-{
-  "plugins": [
-    ["decorators", { "decoratorsBeforeExport": false }],
-    "decoratorAutoAccessors"
-  ],
-  "decoratorsBeforeExport": true
-}

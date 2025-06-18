@@ -36,7 +36,7 @@ export default class BaseParser {
   // not want to ever copy them, which happens if state gets cloned
   declare input: string;
   declare length: number;
-  // Comment store for Program.comments
+  // 注释
   declare comments: Array<N.Comment>;
 
   sourceToOffsetPos(sourcePos: number) {

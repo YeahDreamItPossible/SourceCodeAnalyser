@@ -1,5 +1,0 @@
-{
-  "retainLines": true,
-  "parserOpts": { "createParenthesizedExpressions": true },
-  "sourceMaps": true
-}

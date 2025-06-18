@@ -1,5 +1,0 @@
-{
-  "sourceType": "module",
-  "parserOpts": { "createParenthesizedExpressions": true },
-  "plugins": ["typescript"]
-}

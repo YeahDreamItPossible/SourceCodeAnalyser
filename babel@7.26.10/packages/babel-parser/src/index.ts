@@ -22,8 +22,6 @@ import {
 } from "./tokenizer/types.ts";
 export type { Token } from "./tokenizer/index.ts";
 
-// TODO: Rather than type-casting the internal AST definitions to the
-// @babel/types one, we should actually unify them.
 import type { Expression, File } from "@babel/types";
 export type { Expression, File };
 
@@ -37,9 +35,8 @@ export type ParseResult<Result extends File | Expression = File> = Result & {
   errors: null | ParseError[];
 };
 
-/**
- * Parse the provided code as an entire ECMAScript program.
- */
+// 分析
+// 将提供的代码解析为整个ECMAScript程序
 export function parse(
   input: string,
   options?: ParserOptions,

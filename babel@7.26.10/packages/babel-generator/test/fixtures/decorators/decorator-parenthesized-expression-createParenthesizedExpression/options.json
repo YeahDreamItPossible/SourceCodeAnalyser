@@ -1,5 +1,0 @@
-{
-  "plugins": [["decorators", { "decoratorsBeforeExport": false }]],
-  "decoratorsBeforeExport": true,
-  "parserOpts": { "createParenthesizedExpressions": true }
-}

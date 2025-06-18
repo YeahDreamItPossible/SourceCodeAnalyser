@@ -1,4 +1,0 @@
-{
-  "presets": [["env"]],
-  "throws": "\"one\" is read-only"
-}

@@ -11,7 +11,6 @@ import * as t from "@babel/types";
 import * as cache from "../cache.ts";
 import generator from "@babel/generator";
 
-// NodePath is split across many files.
 import * as NodePath_ancestry from "./ancestry.ts";
 import * as NodePath_inference from "./inference/index.ts";
 import * as NodePath_replacement from "./replacement.ts";
@@ -36,13 +35,22 @@ export const SHOULD_SKIP = 1 << 2;
 
 declare const bit: import("../../../../scripts/babel-plugin-bit-decorator/types.d.ts").BitDecorator<any>;
 
+// 节点路径
+// 作用:
+// 用于表示AST中的单个节点路径
+// 包含节点路径的元数据和操作
 const NodePath_Final = class NodePath {
+  // 构造函数，初始化节点路径
   constructor(hub: HubInterface, parent: t.Node | null) {
+    // 父节点
     this.parent = parent;
+    // 
     this.hub = hub;
+    // 数据
     this.data = null;
-
+    // 上下文
     this.context = null;
+    // 作用域
     this.scope = null;
   }
 
@@ -53,23 +61,35 @@ const NodePath_Final = class NodePath {
   declare context: TraversalContext;
   declare scope: Scope;
 
+  // 
   contexts: Array<TraversalContext> = [];
+  // 
   state: any = null;
+  // 
   opts: ExplodedTraverseOptions | null = null;
 
+  // 
   @bit.storage _traverseFlags: number;
   @bit(REMOVED) accessor removed = false;
   @bit(SHOULD_STOP) accessor shouldStop = false;
   @bit(SHOULD_SKIP) accessor shouldSkip = false;
 
+  // 
   skipKeys: Record<string, boolean> | null = null;
+  // 
   parentPath: NodePath_Final | null = null;
+  // 容器
   container: t.Node | Array<t.Node> | null = null;
+  // 
   listKey: string | null = null;
+  // 从容器中访问该节点的key
   key: string | number | null = null;
+  // 当前节点
   node: t.Node | null = null;
+  // 当前节点类型
   type: t.Node["type"] | null = null;
 
+  // 静态方法，获取或创建节点路径
   static get({
     hub,
     parentPath,
@@ -93,6 +113,7 @@ const NodePath_Final = class NodePath {
       throw new Error("To get a node path the parent needs to exist");
     }
 
+    // 当前节点
     const targetNode =
       // @ts-expect-error key must present in container
       container[key];
@@ -110,10 +131,12 @@ const NodePath_Final = class NodePath {
     return path;
   }
 
+  // 获取当前节点路径的作用域
   getScope(this: NodePath_Final, scope: Scope): Scope {
     return this.isScope() ? new Scope(this) : scope;
   }
 
+  // 设置路径上的自定义数据
   setData(key: string | symbol, val: any): any {
     if (this.data == null) {
       this.data = Object.create(null);
@@ -121,6 +144,7 @@ const NodePath_Final = class NodePath {
     return (this.data[key] = val);
   }
 
+  // 获取路径上的自定义数据
   getData(key: string | symbol, def?: any): any {
     if (this.data == null) {
       this.data = Object.create(null);
@@ -130,10 +154,15 @@ const NodePath_Final = class NodePath {
     return val;
   }
 
+  // 断言: 检查当前节点路径是否有对应的节点
   hasNode(): boolean {
     return this.node != null;
   }
 
+  // 构建代码帧错误
+  // @param msg - 错误信息
+  // @param Error - 错误类型(默认为SyntaxError)
+  // @returns 错误实例
   buildCodeFrameError(
     msg: string,
     Error: new () => Error = SyntaxError,
@@ -141,6 +170,9 @@ const NodePath_Final = class NodePath {
     return this.hub.buildError(this.node, msg, Error);
   }
 
+  // 遍历当前节点
+  // @param visitor - 访问器对象
+  // @param state - 遍历状态(可选)
   traverse<T>(this: NodePath_Final, visitor: Visitor<T>, state: T): void;
   traverse(this: NodePath_Final, visitor: Visitor): void;
   traverse(this: NodePath_Final, visitor: any, state?: any) {
@@ -191,12 +223,33 @@ const NodePath_Final = class NodePath {
 
 const methods = {
   // NodePath_ancestry
+  // 查找满足条件的父路径
+  // @param callback - 判断条件函数
+  // @returns 找到的父路径或undefined
   findParent: NodePath_ancestry.findParent,
+  
+  // 查找满足条件的路径
+  // @param callback - 判断条件函数
+  // @returns 找到的路径或undefined
   find: NodePath_ancestry.find,
+  
+  // 获取最近的函数父路径
+  // @returns 函数父路径或undefined
   getFunctionParent: NodePath_ancestry.getFunctionParent,
+  
+  // 获取最近的语句父路径
+  // @returns 语句父路径或undefined
   getStatementParent: NodePath_ancestry.getStatementParent,
+  
+  // 从多个路径中获取最早的共同祖先路径
+  // @param paths - 要比较的路径数组
+  // @returns 最早的共同祖先路径或undefined
   getEarliestCommonAncestorFrom:
     NodePath_ancestry.getEarliestCommonAncestorFrom,
+  
+  // 从多个路径中获取最深的共同祖先路径
+  // @param paths - 要比较的路径数组
+  // @returns 最深的共同祖先路径或undefined
   getDeepestCommonAncestorFrom: NodePath_ancestry.getDeepestCommonAncestorFrom,
   getAncestry: NodePath_ancestry.getAncestry,
   isAncestor: NodePath_ancestry.isAncestor,

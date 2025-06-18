@@ -1,7 +1,0 @@
-{
-  "plugins": ["transform-parameters", "transform-async-generator-functions"],
-  "parserOpts": {
-    "allowReturnOutsideFunction": true
-  },
-  "minNodeVersion": "8.0.0"
-}

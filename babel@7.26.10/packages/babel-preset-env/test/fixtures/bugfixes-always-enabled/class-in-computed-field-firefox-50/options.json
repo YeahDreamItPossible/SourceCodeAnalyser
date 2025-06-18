@@ -1,5 +1,0 @@
-{
-  "validateLogs": true,
-  "targets": { "firefox": 50 },
-  "presets": [["env", { "debug": true }]]
-}

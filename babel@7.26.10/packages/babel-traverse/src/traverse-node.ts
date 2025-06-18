@@ -29,7 +29,9 @@ export function traverseNode<S = unknown>(
   const keys = VISITOR_KEYS[node.type];
   if (!keys) return false;
 
+  // 遍历上下文
   const context = new TraversalContext<S>(scope, opts, state, path);
+  // 是否访问自己
   if (visitSelf) {
     if (skipKeys?.[path.parentKey]) return false;
     return context.visitQueue([path]);

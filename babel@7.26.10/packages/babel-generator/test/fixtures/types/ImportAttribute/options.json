@@ -1,5 +1,0 @@
-{
-  "plugins": [["importAttributes", { "importAttributesKeyword": "with" }]],
-  "sourceType": "module",
-  "parserOpts": { "createImportExpressions": true }
-}
