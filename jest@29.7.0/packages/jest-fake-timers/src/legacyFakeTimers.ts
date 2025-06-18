@@ -1,12 +1,3 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-/* eslint-disable local/prefer-spread-eventually */
-
 import {promisify} from 'util';
 import {StackTraceConfig, formatStackTrace} from 'jest-message-util';
 import type {
@@ -68,6 +59,7 @@ export default class FakeTimers<TimerRef = unknown> {
   private _cancelledTicks!: Record<string, boolean>;
   private readonly _config: StackTraceConfig;
   private _disposed: boolean;
+  // 模拟定时器API
   private _fakeTimerAPIs!: FakeTimerAPI;
   private _fakingTime = false;
   private _global: typeof globalThis;
@@ -101,7 +93,7 @@ export default class FakeTimers<TimerRef = unknown> {
     this._uuidCounter = 1;
     this._moduleMocker = moduleMocker;
 
-    // Store original timer APIs for future reference
+    // 存储 原始计时器API
     this._timerAPIs = {
       cancelAnimationFrame: global.cancelAnimationFrame,
       clearImmediate: global.clearImmediate,
@@ -342,6 +334,7 @@ export default class FakeTimers<TimerRef = unknown> {
     }
   }
 
+  // 使用 真实定时器
   useRealTimers(): void {
     const global = this._global;
 
@@ -375,6 +368,7 @@ export default class FakeTimers<TimerRef = unknown> {
     this._fakingTime = false;
   }
 
+  // 使用 模拟定时器
   useFakeTimers(): void {
     this._createMocks();
 
@@ -431,6 +425,7 @@ export default class FakeTimers<TimerRef = unknown> {
     }
   }
 
+  // 创建 定时器api模拟对象
   private _createMocks() {
     const fn = <T extends FunctionLike = UnknownFunction>(implementation?: T) =>
       this._moduleMocker.fn(implementation);

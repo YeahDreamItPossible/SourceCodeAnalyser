@@ -373,6 +373,7 @@ export default class Runtime {
     });
   }
 
+  // 返回创建的路径解析器
   static createResolver(
     config: Config.ProjectConfig,
     moduleMap: IModuleMap,
@@ -409,7 +410,7 @@ export default class Runtime {
     );
   }
 
-  // 返回 加载后的ES模块
+  // 返回加载后的ES模块
   private async loadEsmModule(
     modulePath: string,
     query = '',
@@ -1403,7 +1404,7 @@ export default class Runtime {
       : from;
   }
 
-  // TOOD：解析模块路径
+  // 返回解析后的模块路径
   private _resolveModule(from: string, to: string | undefined) {
     return to
       ? this._resolver.resolveModuleAsync(from, to, {
@@ -2550,7 +2551,7 @@ export default class Runtime {
     };
   }
 
-  // 以同步的方式读取文件 并返回Buffer
+  // 以 Buffer 的方式返回根据 文件路径 读取后的文件内容
   private readFileBuffer(filename: string): Buffer {
     let source = this._cacheFSBuffer.get(filename);
 
@@ -2563,7 +2564,7 @@ export default class Runtime {
     return source;
   }
 
-  // 根据 文件路径 读取文件 并返回JSON类型的文件
+  // 以String的方式返回根据 文件路径 读取后的文件内容
   private readFile(filename: string): string {
     let source = this._cacheFS.get(filename);
 

@@ -489,9 +489,10 @@ function isReadonlyProp(object: unknown, prop: string): boolean {
   return false;
 }
 
-// 模块模拟器
-// 作用：
-// 模拟模块
+// 名词解释:
+// 模拟配置: 是当前模拟函数的配置属性,例如模拟实现
+// 模拟状态: 是当前模拟函数经过各种模拟后存储的模拟结果,例如调用栈,参数栈
+
 export class ModuleMocker {
   private readonly _environmentGlobal: typeof globalThis;
   private _mockState: WeakMap<Mock, MockFunctionState>;
@@ -502,13 +503,17 @@ export class ModuleMocker {
   constructor(global: typeof globalThis) {
     // 运行时全局对象
     this._environmentGlobal = global;
+    // 存储 模拟函数 的 模拟状态
     this._mockState = new WeakMap();
+    // 存储 模拟函数 的 默认配置
     this._mockConfigRegistry = new WeakMap();
+    // 存储spy函数
     this._spyState = new Set();
+    // 调用计数器
     this._invocationCallCounter = 1;
   }
 
-  // 
+  // 以数组的方式返回该对象上所有可模拟的属性或者方法
   private _getSlots(object?: Record<string, any>): Array<string> {
     if (!object) {
       return [];
@@ -555,7 +560,8 @@ export class ModuleMocker {
     return Array.from(slots);
   }
 
-  // 保证返回 模拟配置
+  // 返回 模拟函数 的模拟配置
+  // 没有则创建默认配置
   private _ensureMockConfig(f: Mock): MockFunctionConfig {
     let config = this._mockConfigRegistry.get(f);
     if (!config) {
@@ -565,7 +571,8 @@ export class ModuleMocker {
     return config;
   }
 
-  // 保证返回 模拟状态
+  // 返回 模拟函数 的模拟状态
+  // 没有则创建默认状态
   private _ensureMockState<T extends UnknownFunction>(
     f: Mock<T>,
   ): MockFunctionState<T> {
@@ -580,16 +587,16 @@ export class ModuleMocker {
     return state;
   }
 
-  // 默认 模拟配置
+  // 返回 模拟函数 的默认配置
   private _defaultMockConfig(): MockFunctionConfig {
     return {
-      mockImpl: undefined,
-      mockName: 'jest.fn()',
-      specificMockImpls: [],
+      mockImpl: undefined, // 模拟实现
+      mockName: 'jest.fn()', // 模拟名称
+      specificMockImpls: [], // 单次模拟实现
     };
   }
 
-  // 默认 模拟状态
+  // 返回 模拟函数 的默认状态
   private _defaultMockState(): MockFunctionState {
     return {
       calls: [],
@@ -748,8 +755,9 @@ export class ModuleMocker {
         this._spyState.add(restore);
       }
 
-      // 
+      // 存储 模拟函数 的模拟状态
       this._mockState.set(f, this._defaultMockState());
+      // 存储 模拟函数 的模拟配置
       this._mockConfigRegistry.set(f, this._defaultMockConfig());
 
       Object.defineProperty(f, 'mock', {
@@ -759,17 +767,20 @@ export class ModuleMocker {
         set: val => this._mockState.set(f, val),
       });
 
+      // 清除当前 模拟函数 的模拟状态
       f.mockClear = () => {
         this._mockState.delete(f);
         return f;
       };
 
+      // 清除当前 模拟函数 的模拟配置
       f.mockReset = () => {
         f.mockClear();
         this._mockConfigRegistry.delete(f);
         return f;
       };
 
+      // 模拟缓存
       f.mockRestore = () => {
         f.mockReset();
         return restore ? restore() : undefined;
@@ -1093,6 +1104,7 @@ export class ModuleMocker {
     return fn != null && (fn as Mock)._isMockFunction === true;
   }
 
+  // 模拟函数
   fn<T extends FunctionLike = UnknownFunction>(implementation?: T): Mock<T> {
     const length = implementation ? implementation.length : 0;
     const fn = this._makeComponent<T>({
@@ -1129,6 +1141,7 @@ export class ModuleMocker {
     methodKey: K,
   ): V extends ClassLike | FunctionLike ? Spied<V> : never;
 
+  // 模拟对象属性
   spyOn<T extends object>(
     object: T,
     methodKey: keyof T,
@@ -1293,6 +1306,7 @@ export class ModuleMocker {
     return descriptor[accessType] as Mock;
   }
 
+  // 替换属性
   replaceProperty<T extends object, K extends keyof T>(
     object: T,
     propertyKey: K,
@@ -1405,10 +1419,12 @@ export class ModuleMocker {
     return replaced.replaceValue(value);
   }
 
+  // 清空所有的模拟
   clearAllMocks(): void {
     this._mockState = new WeakMap();
   }
 
+  // 重置所有的模拟
   resetAllMocks(): void {
     this._mockConfigRegistry = new WeakMap();
     this._mockState = new WeakMap();
