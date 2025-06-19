@@ -1,6 +1,0 @@
-{
-  "plugins": ["transform-object-rest-spread", "transform-destructuring"],
-  "targets": {
-    "browsers": "ie 6"
-  }
-}

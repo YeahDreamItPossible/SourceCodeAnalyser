@@ -1,3 +1,0 @@
-{
-  "presets": [["react", { "development": true, "runtime": "classic" }]]
-}

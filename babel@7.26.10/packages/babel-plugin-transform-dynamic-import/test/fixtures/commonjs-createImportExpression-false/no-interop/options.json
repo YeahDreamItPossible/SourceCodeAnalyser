@@ -1,6 +1,0 @@
-{
-  "plugins": [
-    "transform-dynamic-import",
-    ["transform-modules-commonjs", { "noInterop": true }]
-  ]
-}

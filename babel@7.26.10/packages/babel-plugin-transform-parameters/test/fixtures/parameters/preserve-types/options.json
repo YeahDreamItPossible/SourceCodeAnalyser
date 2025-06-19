@@ -1,8 +1,0 @@
-{
-  "plugins": [
-    "transform-parameters",
-    "syntax-typescript",
-    "transform-block-scoping",
-    "transform-destructuring"
-  ]
-}

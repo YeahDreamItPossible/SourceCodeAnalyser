@@ -1,6 +1,0 @@
-{
-  "plugins": ["transform-async-generator-functions"],
-  "parserOpts": {
-    "allowReturnOutsideFunction": true
-  }
-}

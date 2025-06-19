@@ -83,6 +83,7 @@ export function* buildPresetChain(
   };
 }
 
+// 
 export const buildPresetChainWalker = makeChainWalker<PresetInstance>({
   root: preset => loadPresetDescriptors(preset),
   env: (preset, envName) => loadPresetEnvDescriptors(preset)(envName),
@@ -142,6 +143,7 @@ export type RootConfigChain = ConfigChain & {
 /**
  * Build a config chain for Babel's full root configuration.
  */
+// 
 export function* buildRootChain(
   opts: ValidatedOptions,
   context: ConfigContext,

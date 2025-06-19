@@ -1,6 +1,0 @@
-{
-  "plugins": [
-    "bugfix-firefox-class-in-computed-class-key",
-    ["proposal-decorators", { "version": "2023-11" }]
-  ]
-}

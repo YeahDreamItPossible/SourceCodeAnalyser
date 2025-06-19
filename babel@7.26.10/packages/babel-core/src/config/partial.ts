@@ -66,6 +66,7 @@ export type PrivPartialConfig = {
   files: Set<string>;
 };
 
+// 加载
 export default function* loadPrivatePartialConfig(
   inputOpts: InputOptions,
 ): Handler<PrivPartialConfig | null> {

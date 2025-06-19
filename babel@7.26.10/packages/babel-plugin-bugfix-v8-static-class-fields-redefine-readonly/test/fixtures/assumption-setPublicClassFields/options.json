@@ -1,6 +1,0 @@
-{
-  "plugins": ["bugfix-v8-static-class-fields-redefine-readonly"],
-  "assumptions": {
-    "setPublicClassFields": true
-  }
-}

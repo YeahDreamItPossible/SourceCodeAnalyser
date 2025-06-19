@@ -1,5 +1,0 @@
-{
-  "sourceType": "module",
-  "plugins": [["transform-react-jsx", { "runtime": "classic" }]],
-  "sourceMaps": true
-}

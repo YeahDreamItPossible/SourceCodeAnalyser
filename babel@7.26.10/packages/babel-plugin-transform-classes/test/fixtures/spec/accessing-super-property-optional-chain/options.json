@@ -1,9 +1,0 @@
-{
-  "plugins": [
-    "transform-optional-chaining",
-    "transform-function-name",
-    "transform-classes",
-    "transform-spread",
-    "transform-block-scoping"
-  ]
-}

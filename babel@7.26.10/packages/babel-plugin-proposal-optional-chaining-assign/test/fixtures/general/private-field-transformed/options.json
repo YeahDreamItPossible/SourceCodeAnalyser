@@ -1,6 +1,0 @@
-{
-  "plugins": [
-    ["proposal-optional-chaining-assign", { "version": "2023-07" }],
-    "transform-class-properties"
-  ]
-}

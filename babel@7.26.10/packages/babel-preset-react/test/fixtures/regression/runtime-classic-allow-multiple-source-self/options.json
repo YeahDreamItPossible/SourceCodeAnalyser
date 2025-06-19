@@ -1,6 +1,0 @@
-{
-  "presets": [
-    ["react", { "development": true, "runtime": "classic" }],
-    "./my-preset"
-  ]
-}

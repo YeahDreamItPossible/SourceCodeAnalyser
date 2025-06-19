@@ -1,2 +1,0 @@
-; // Otherwise-empty file
-export {};

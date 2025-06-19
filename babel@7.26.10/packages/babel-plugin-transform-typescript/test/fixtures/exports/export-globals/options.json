@@ -1,5 +1,0 @@
-{
-  "plugins": ["transform-typescript"],
-  "sourceType": "module",
-  "validateLogs": true
-}

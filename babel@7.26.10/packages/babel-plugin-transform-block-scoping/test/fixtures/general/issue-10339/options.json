@@ -1,7 +1,0 @@
-{
-  "plugins": [
-    "transform-block-scoping",
-    ["transform-object-rest-spread", { "loose": true }]
-  ],
-  "parserOpts": { "allowReturnOutsideFunction": true }
-}

@@ -1,4 +1,0 @@
-{
-    "plugins": ["transform-function-name", "transform-shorthand-properties"],
-    "targets": { "firefox": 60 }
-}

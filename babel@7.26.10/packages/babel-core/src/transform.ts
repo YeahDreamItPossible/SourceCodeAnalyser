@@ -29,6 +29,7 @@ const transformRunner = gensync(function* transform(
   return yield* run(config, code);
 });
 
+// 转换
 export const transform: Transform = function transform(
   code,
   optsOrCallback?: InputOptions | null | undefined | FileResultCallback,
@@ -60,11 +61,14 @@ export const transform: Transform = function transform(
   beginHiddenCallStack(transformRunner.errback)(code, opts, callback);
 };
 
+// 同步转换
 export function transformSync(
   ...args: Parameters<typeof transformRunner.sync>
 ) {
   return beginHiddenCallStack(transformRunner.sync)(...args);
 }
+
+// 异步转换
 export function transformAsync(
   ...args: Parameters<typeof transformRunner.async>
 ) {

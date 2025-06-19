@@ -1,2 +1,0 @@
-globalThis ?? window;
-a ?? b;

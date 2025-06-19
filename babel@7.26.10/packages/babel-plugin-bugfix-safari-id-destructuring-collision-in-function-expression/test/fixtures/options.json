@@ -1,3 +1,0 @@
-{
-  "plugins": ["bugfix-safari-id-destructuring-collision-in-function-expression"]
-}

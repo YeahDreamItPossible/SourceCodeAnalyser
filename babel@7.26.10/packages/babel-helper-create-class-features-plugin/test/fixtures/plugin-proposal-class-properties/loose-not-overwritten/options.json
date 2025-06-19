@@ -1,6 +1,0 @@
-{
-  "plugins": [
-    ["transform-class-properties", { "loose": true }, "name 1"],
-    ["transform-class-properties", { "loose": false }, "name 2"]
-  ]
-}

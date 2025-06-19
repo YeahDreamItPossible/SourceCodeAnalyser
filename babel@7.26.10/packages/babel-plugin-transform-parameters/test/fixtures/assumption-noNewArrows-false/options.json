@@ -1,6 +1,0 @@
-{
-  "plugins": ["transform-parameters"],
-  "assumptions": {
-    "noNewArrows": false
-  }
-}

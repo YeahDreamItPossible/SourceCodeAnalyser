@@ -1,6 +1,0 @@
-{
-  "plugins": [
-    ["transform-logical-assignment-operators", { "loose": true }],
-    ["transform-class-properties", { "loose": true }]
-  ]
-}

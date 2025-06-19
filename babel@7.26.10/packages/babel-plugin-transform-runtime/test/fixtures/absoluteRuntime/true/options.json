@@ -1,6 +1,0 @@
-{
-  "plugins": [
-    "transform-classes",
-    ["transform-runtime", { "absoluteRuntime": true, "version": "7.100.0" }]
-  ]
-}

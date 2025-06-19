@@ -1,3 +1,0 @@
-{
-  "presets": [["typescript", { "optimizeConstEnums": true }]]
-}

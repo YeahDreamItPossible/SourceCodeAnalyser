@@ -1,5 +1,0 @@
-{
-  "plugins": [
-    ["transform-duplicate-named-capturing-groups-regex", { "runtime": false }]
-  ]
-}
