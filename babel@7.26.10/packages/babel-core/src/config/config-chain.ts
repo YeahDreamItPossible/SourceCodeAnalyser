@@ -143,7 +143,8 @@ export type RootConfigChain = ConfigChain & {
 /**
  * Build a config chain for Babel's full root configuration.
  */
-// 
+// 为Babel的完整根配置构建一个配置链。
+// 构建根配置链
 export function* buildRootChain(
   opts: ValidatedOptions,
   context: ConfigContext,
@@ -360,6 +361,7 @@ const validateExtendFile = makeWeakCacheSync(
 /**
  * Build a config chain for just the programmatic options passed into Babel.
  */
+// 
 const loadProgrammaticChain = makeChainWalker({
   root: input => buildRootDescriptors(input, "base", createCachedDescriptors),
   env: (input, envName) =>
@@ -729,6 +731,7 @@ function* mergeChainOpts(
   return target;
 }
 
+// 创建空配置链
 function emptyChain(): ConfigChain {
   return {
     options: [],

@@ -61,22 +61,26 @@ export type {
   PresetObject,
 } from "./config/index.ts";
 
+// 代码转换
 export {
   type FileResult,
   transform,
   transformAsync,
   transformSync,
 } from "./transform.ts";
+// 文件转换
 export {
   transformFile,
   transformFileAsync,
   transformFileSync,
 } from "./transform-file.ts";
+// AST转换
 export {
   transformFromAst,
   transformFromAstAsync,
   transformFromAstSync,
 } from "./transform-ast.ts";
+// 解析
 export { parse, parseAsync, parseSync } from "./parse.ts";
 
 /**

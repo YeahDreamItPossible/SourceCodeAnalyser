@@ -137,6 +137,7 @@ if (!process.env.BABEL_8_BREAKING) {
 
 export type InputOptions = ValidatedOptions;
 
+// 选项
 export type ValidatedOptions = {
   cwd?: string;
   filename?: string;

@@ -94,6 +94,7 @@ function descriptorToConfig<API>(
   }
 }
 
+// 配置打印器
 export class ConfigPrinter {
   _stack: Array<PrintableConfig> = [];
   configure(

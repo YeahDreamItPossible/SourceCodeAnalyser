@@ -15,7 +15,7 @@ import type {
  * - Detects code indentation.
  * - If `opts.compact = "auto"` and the code is over 500KB, `compact` will be set to `true`.
  */
-
+// 标准化选项
 function normalizeOptions(
   code: string | { [filename: string]: string },
   opts: GeneratorOptions,

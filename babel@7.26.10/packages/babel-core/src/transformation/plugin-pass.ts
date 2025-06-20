@@ -1,7 +1,9 @@
 import type * as t from "@babel/types";
 import type File from "./file/file.ts";
 
+// 插件
 export default class PluginPass<Options = object> {
+  // 
   _map: Map<unknown, unknown> = new Map();
   key: string | undefined | null;
   file: File;
@@ -27,11 +29,17 @@ export default class PluginPass<Options = object> {
     options: Options | undefined,
     isAsync: boolean,
   ) {
+    // 插件的键
     this.key = key;
+    // 文件
     this.file = file;
+    // 选项
     this.opts = options || {};
+    // 
     this.cwd = file.opts.cwd;
+    // 
     this.filename = file.opts.filename;
+    // 
     this.isAsync = isAsync;
   }
 

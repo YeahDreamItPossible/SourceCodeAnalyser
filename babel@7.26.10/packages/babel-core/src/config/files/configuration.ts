@@ -65,6 +65,7 @@ const runConfig = makeWeakCache(function* runConfig(
   };
 });
 
+// 
 function* readConfigCode(
   filepath: string,
   data: ConfigCacheData,
@@ -158,6 +159,7 @@ const packageToBabelConfig = makeWeakCacheSync(
   },
 );
 
+// 读取 JSON 类型的配置文件
 const readConfigJSON5 = makeStaticFileCache((filepath, content): ConfigFile => {
   let options;
   try {
@@ -306,7 +308,7 @@ function* loadOneConfig(
   return config;
 }
 
-// 
+// 加载配置
 export function* loadConfig(
   name: string,
   dirname: string,
@@ -327,10 +329,7 @@ export function* loadConfig(
   return conf;
 }
 
-/**
- * Read the given config file, returning the result. Returns null if no config was found, but will
- * throw if there are parsing errors while loading a config.
- */
+// 根据 配置路径 读取配置
 function readConfig(
   filepath: string,
   envName: string,

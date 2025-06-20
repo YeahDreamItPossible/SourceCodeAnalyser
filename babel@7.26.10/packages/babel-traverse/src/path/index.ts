@@ -54,24 +54,32 @@ const NodePath_Final = class NodePath {
     this.scope = null;
   }
 
+  // 父节点
   declare parent: t.Node;
+  // 
   declare hub: HubInterface;
+  // 
   declare data: Record<string | symbol, unknown>;
   // TraversalContext is configured by setContext
+  // 遍历上下文
   declare context: TraversalContext;
+  // 作用域
   declare scope: Scope;
 
-  // 
+  // 遍历上下文集合
   contexts: Array<TraversalContext> = [];
-  // 
+  // 状态
   state: any = null;
   // 
   opts: ExplodedTraverseOptions | null = null;
 
   // 
   @bit.storage _traverseFlags: number;
+  // 
   @bit(REMOVED) accessor removed = false;
+  // 
   @bit(SHOULD_STOP) accessor shouldStop = false;
+  // 
   @bit(SHOULD_SKIP) accessor shouldSkip = false;
 
   // 

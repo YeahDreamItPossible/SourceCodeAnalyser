@@ -81,31 +81,49 @@ export interface ImportItem {
   path: string
 }
 
+/**
+ * 转换上下文对象，包含AST转换过程中需要的所有状态和方法
+ * 继承自TransformOptions(排除兼容性选项)并合并CompilerCompatOptions
+ */
 export interface TransformContext
   extends Required<Omit<TransformOptions, keyof CompilerCompatOptions>>,
     CompilerCompatOptions {
+  // 组件自身名称(从文件名推断)
   selfName: string | null
+  // AST根节点
   root: RootNode
+  // 运行时帮助函数引用计数
   helpers: Map<symbol, number>
+  // 组件集合
   components: Set<string>
+  // 指令集合
   directives: Set<string>
+  // 静态提升节点
   hoists: (JSChildNode | null)[]
+  // 导入项
   imports: ImportItem[]
+  // 临时变量计数
   temps: number
+  // 缓存表达式
   cached: (CacheExpression | null)[]
+  // 标识符引用计数
   identifiers: { [name: string]: number | undefined }
+  // 作用域计数器
   scopes: {
     vFor: number
     vSlot: number
     vPre: number
     vOnce: number
   }
+  // 当前节点的父节点
   parent: ParentNode | null
-  // we could use a stack but in practice we've only ever needed two layers up
-  // so this is more efficient
+  // 祖父节点(替代使用完整的节点栈，优化性能)
   grandParent: ParentNode | null
+  // 当前节点在父节点children中的索引
   childIndex: number
+  // 当前正在处理的节点
   currentNode: RootNode | TemplateChildNode | null
+  // 是否在v-once节点内
   inVOnce: boolean
   helper<T extends symbol>(name: T): T
   removeHelper<T extends symbol>(name: T): void
@@ -123,6 +141,12 @@ export interface TransformContext
   filters?: Set<string>
 }
 
+/**
+ * 创建AST转换上下文
+ * @param root - AST根节点
+ * @param options - 转换选项
+ * @returns 转换上下文对象
+ */
 export function createTransformContext(
   root: RootNode,
   {
@@ -150,10 +174,13 @@ export function createTransformContext(
     compatConfig,
   }: TransformOptions,
 ): TransformContext {
+  // 从文件名推断组件名称
   const nameMatch = filename.replace(/\?.*$/, '').match(/([^/\\]+)\.\w+$/)
+  // 初始化转换上下文
   const context: TransformContext = {
-    // options
+    // 转换选项
     filename,
+    // 组件名称(从文件名推断)
     selfName: nameMatch && capitalize(camelize(nameMatch[1])),
     prefixIdentifiers,
     hoistStatic,

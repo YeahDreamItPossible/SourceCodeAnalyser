@@ -44,9 +44,13 @@ export default class Buffer {
     this._allocQueue();
   }
 
+  // 
   _map: SourceMap = null;
+  // 
   _buf = "";
+  // 
   _str = "";
+  // 
   _appendCount = 0;
   _last = 0;
   _queue: QueueItem[] = [];

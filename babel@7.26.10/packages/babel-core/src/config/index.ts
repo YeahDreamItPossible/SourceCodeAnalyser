@@ -71,22 +71,31 @@ export function loadPartialConfig(
   }
 }
 
+// 加载选项
 function* loadOptionsImpl(opts: InputOptions): Handler<ResolvedConfig | null> {
   const config = yield* loadFullConfig(opts);
   // NOTE: We want to return "null" explicitly, while ?. alone returns undefined
   return config?.options ?? null;
 }
+
+// 加载选项运行器
 const loadOptionsRunner = gensync(loadOptionsImpl);
+
+// 异步加载选项
 export function loadOptionsAsync(
   ...args: Parameters<typeof loadOptionsRunner.async>
 ) {
   return beginHiddenCallStack(loadOptionsRunner.async)(...args);
 }
+
+// 同步加载选项
 export function loadOptionsSync(
   ...args: Parameters<typeof loadOptionsRunner.sync>
 ) {
   return beginHiddenCallStack(loadOptionsRunner.sync)(...args);
 }
+
+// 加载选项
 export function loadOptions(
   opts: Parameters<typeof loadOptionsImpl>[0],
   callback?: (err: Error, val: ResolvedConfig | null) => void,

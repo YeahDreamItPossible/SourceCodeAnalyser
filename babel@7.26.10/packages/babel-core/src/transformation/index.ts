@@ -80,6 +80,7 @@ export function* run(
   };
 }
 
+// 转换文件
 function* transformFile(file: File, pluginPasses: PluginPasses): Handler<void> {
   const async = yield* isAsync();
 
@@ -88,6 +89,7 @@ function* transformFile(file: File, pluginPasses: PluginPasses): Handler<void> {
     const passes = [];
     const visitors = [];
 
+    // 插件分组
     for (const plugin of pluginPairs.concat([loadBlockHoistPlugin()])) {
       const pass = new PluginPass(file, plugin.key, plugin.options, async);
 
@@ -127,6 +129,7 @@ function* transformFile(file: File, pluginPasses: PluginPasses): Handler<void> {
           `You appear to be using an async plugin/preset, but Babel has been called synchronously`,
         );
 
+        
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         yield* fn.call(pass, file);
       }

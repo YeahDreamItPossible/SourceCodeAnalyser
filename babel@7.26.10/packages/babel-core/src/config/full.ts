@@ -56,6 +56,7 @@ export type { Plugin };
 export type PluginPassList = Array<Plugin>;
 export type PluginPasses = Array<PluginPassList>;
 
+// 加载全配置
 export default gensync(function* loadFullConfig(
   inputOpts: InputOptions,
 ): Handler<ResolvedConfig | null> {
@@ -257,12 +258,15 @@ const makeDescriptorLoader = <Context, API>(
     const externalDependencies: Array<string> = [];
 
     let item: unknown = value;
+    // NOTE:
+    // 插件调用
     if (typeof value === "function") {
       const factory = maybeAsync(
         value as (api: API, options: object, dirname: string) => unknown,
         `You appear to be using an async plugin/preset, but Babel has been called synchronously`,
       );
 
+      // 插件
       const api = {
         ...context,
         ...apiFactory(cache, externalDependencies),
@@ -334,6 +338,7 @@ const presetDescriptorLoader = makeDescriptorLoader<
   PresetAPI
 >(makePresetAPI);
 
+// 
 const instantiatePlugin = makeWeakCache(function* (
   { value, options, dirname, alias, externalDependencies }: LoadedDescriptor,
   cache: CacheConfigurator<Context.SimplePlugin>,

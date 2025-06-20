@@ -62,11 +62,19 @@ export function getBaseTransformPreset(
 
 // we name it `baseCompile` so that higher order compilers like
 // @vue/compiler-dom can export `compile` while re-exporting everything else.
+/**
+ * Vue编译器核心函数，将模板字符串或AST转换为渲染函数代码
+ * @param source - 模板字符串或已解析的AST根节点
+ * @param options - 编译器选项
+ * @returns 包含渲染函数代码和静态提升节点的CodegenResult对象
+ */
 export function baseCompile(
   source: string | RootNode,
   options: CompilerOptions = {},
 ): CodegenResult {
+  // 错误处理回调，默认使用内置错误处理器
   const onError = options.onError || defaultOnError
+  // 检查是否为ES模块模式
   const isModuleMode = options.mode === 'module'
   /* v8 ignore start */
   if (__BROWSER__) {
@@ -78,8 +86,11 @@ export function baseCompile(
   }
   /* v8 ignore stop */
 
+  // 确定是否需要对标识符添加前缀(非浏览器环境且启用prefixIdentifiers或模块模式)
   const prefixIdentifiers =
     !__BROWSER__ && (options.prefixIdentifiers === true || isModuleMode)
+  
+  // 校验选项兼容性
   if (!prefixIdentifiers && options.cacheHandlers) {
     onError(createCompilerError(ErrorCodes.X_CACHE_HANDLER_NOT_SUPPORTED))
   }
@@ -87,9 +98,12 @@ export function baseCompile(
     onError(createCompilerError(ErrorCodes.X_SCOPE_ID_NOT_SUPPORTED))
   }
 
+  // 合并解析后的选项
   const resolvedOptions = extend({}, options, {
     prefixIdentifiers,
   })
+  
+  // 如果输入是字符串则进行解析，否则直接使用AST
   const ast = isString(source) ? baseParse(source, resolvedOptions) : source
   const [nodeTransforms, directiveTransforms] =
     getBaseTransformPreset(prefixIdentifiers)
@@ -101,13 +115,16 @@ export function baseCompile(
     }
   }
 
+  // 执行AST转换
   transform(
     ast,
     extend({}, resolvedOptions, {
+      // 合并内置节点转换器和用户自定义转换器
       nodeTransforms: [
         ...nodeTransforms,
         ...(options.nodeTransforms || []), // user transforms
       ],
+      // 合并内置指令转换器和用户自定义指令转换器
       directiveTransforms: extend(
         {},
         directiveTransforms,
@@ -116,5 +133,6 @@ export function baseCompile(
     }),
   )
 
+  // 生成渲染函数代码
   return generate(ast, resolvedOptions)
 }
