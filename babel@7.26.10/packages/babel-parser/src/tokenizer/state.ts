@@ -30,6 +30,7 @@ export const enum LoopLabelKind {
 
 declare const bit: import("../../../../scripts/babel-plugin-bit-decorator/types.d.ts").BitDecorator<State>;
 
+// 状态
 export default class State {
   @bit.storage flags: number;
 
@@ -118,6 +119,7 @@ export default class State {
   commentStack: Array<CommentWhitespace> = [];
 
   // The current position of the tokenizer in the input.
+  // 
   pos: number = 0;
 
   // Properties of the current token:
@@ -181,6 +183,7 @@ export default class State {
     );
   }
 
+  // 克隆
   clone(): State {
     const state = new State();
     state.flags = this.flags;

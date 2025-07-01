@@ -66,6 +66,7 @@ export default gensync(function* loadFullConfig(
   }
   const { options, context, fileHandling } = result;
 
+  // 
   if (fileHandling === "ignored") {
     return null;
   }
@@ -213,9 +214,12 @@ export default gensync(function* loadFullConfig(
   opts.passPerPreset = opts.presets.length > 0;
 
   return {
-    options: opts,
-    passes: passes,
-    externalDependencies: freezeDeepArray(externalDependencies),
+    // 选项
+    options: opts, 
+    // 插件
+    passes: passes, 
+    // 外部依赖
+    externalDependencies: freezeDeepArray(externalDependencies), 
   };
 });
 

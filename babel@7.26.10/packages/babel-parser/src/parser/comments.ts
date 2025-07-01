@@ -8,6 +8,7 @@ import type { Undone } from "./node.ts";
 /**
  * A whitespace token containing comments
  */
+// 包含注释的空白标记
 export type CommentWhitespace = {
   /**
    * the start of the whitespace token.
@@ -99,7 +100,9 @@ function adjustInnerComments(
   }
 }
 
+// 注释词法分析器
 export default class CommentsParser extends BaseParser {
+  // 添加注释
   addComment(comment: Comment): void {
     if (this.filename) comment.loc.filename = this.filename;
     const { commentsLen } = this.state;
@@ -114,6 +117,7 @@ export default class CommentsParser extends BaseParser {
    * Given a newly created AST node _n_, attach _n_ to a comment whitespace _w_ if applicable
    * {@see {@link CommentWhitespace}}
    */
+  // 处理注释
   processComment(node: Node): void {
     const { commentStack } = this.state;
     const commentStackLength = commentStack.length;

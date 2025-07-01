@@ -1,7 +1,7 @@
 import path from "path";
 import type { ResolvedConfig } from "../config/index.ts";
 
-// 
+// 标准化选项
 export default function normalizeOptions(config: ResolvedConfig) {
   const {
     filename,

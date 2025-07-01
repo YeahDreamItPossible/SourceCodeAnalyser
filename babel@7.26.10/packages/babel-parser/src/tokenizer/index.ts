@@ -84,6 +84,7 @@ export class Token {
 
 // ## Tokenizer
 
+// 分词器 or 词法标记器
 export default abstract class Tokenizer extends CommentsParser {
   isLookahead: boolean;
 
@@ -225,11 +226,13 @@ export default abstract class Tokenizer extends CommentsParser {
     return this.input.charCodeAt(this.nextTokenInLineStart());
   }
 
+  // 获取特定位置的字符编码
   codePointAtPos(pos: number): number {
     // The implementation is based on
     // https://source.chromium.org/chromium/chromium/src/+/master:v8/src/builtins/builtins-string-gen.cc;l=1455;drc=221e331b49dfefadbc6fa40b0c68e6f97606d0b3;bpv=0;bpt=1
     // We reimplement `codePointAt` because `codePointAt` is a V8 builtin which is not inlined by TurboFan (as of M91)
     // since `input` is mostly ASCII, an inlined `charCodeAt` wins here
+    // 特定位置的字符编码
     let cp = this.input.charCodeAt(pos);
     if ((cp & 0xfc00) === 0xd800 && ++pos < this.input.length) {
       const trail = this.input.charCodeAt(pos);

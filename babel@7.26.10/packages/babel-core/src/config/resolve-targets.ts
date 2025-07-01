@@ -13,6 +13,9 @@ import getTargets, {
 
 import type { Targets } from "@babel/helper-compilation-targets";
 
+// 输出目标
+
+// 解析 浏览器列表配置文件
 export function resolveBrowserslistConfigFile(
   browserslistConfigFile: string,
   configFileDir: string,
@@ -20,6 +23,7 @@ export function resolveBrowserslistConfigFile(
   return path.resolve(configFileDir, browserslistConfigFile);
 }
 
+// 解析 目标浏览器
 export function resolveTargets(
   options: ValidatedOptions,
   root: string,

@@ -71,7 +71,7 @@ export function loadPartialConfig(
   }
 }
 
-// 加载选项
+// 加载选项实现
 function* loadOptionsImpl(opts: InputOptions): Handler<ResolvedConfig | null> {
   const config = yield* loadFullConfig(opts);
   // NOTE: We want to return "null" explicitly, while ?. alone returns undefined

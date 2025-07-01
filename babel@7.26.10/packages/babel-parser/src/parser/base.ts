@@ -12,45 +12,65 @@ import type {
 } from "../typings.ts";
 import type * as N from "../types.ts";
 
+// 基础分析器
+// 主要是 位置偏移 和 插件获取
 export default class BaseParser {
   // Properties set by constructor in index.js
+  // 
   declare options: Options;
+  // 
   declare optionFlags: OptionFlags;
+  // 
   declare inModule: boolean;
+  // 
   declare scope: ScopeHandler<any>;
+  // 
   declare classScope: ClassScopeHandler;
+  // 
   declare prodParam: ProductionParameterHandler;
+  // 
   declare expressionScope: ExpressionScopeHandler;
+  // 插件
   declare plugins: PluginsMap;
+  // 文件名
   declare filename: string | undefined | null;
+  // 开始索引
   declare startIndex: number;
   // Names of exports store. `default` is stored as a name for both
   // `export default foo;` and `export { foo as default };`.
   declare exportedIdentifiers: Set<string>;
+  // 
   sawUnambiguousESM: boolean = false;
+  // 
   ambiguousScriptDifferentAst: boolean = false;
 
   // Initialized by Tokenizer
+  // 状态
   declare state: State;
   // input and length are not in state as they are constant and we do
   // not want to ever copy them, which happens if state gets cloned
+  // 输入
   declare input: string;
+  // 输入长度
   declare length: number;
-  // 注释
+  // 注释节点集合
   declare comments: Array<N.Comment>;
 
+  // 输入位置转偏移位置
   sourceToOffsetPos(sourcePos: number) {
     return sourcePos + this.startIndex;
   }
 
+  // 偏移位置转输入位置
   offsetToSourcePos(offsetPos: number) {
     return offsetPos - this.startIndex;
   }
 
-  // This method accepts either a string (plugin name) or an array pair
-  // (plugin name and options object). If an options object is given,
-  // then each value is non-recursively checked for identity with that
-  // plugin’s actual option value.
+  // 是否有插件
+  // 此方法接受字符串（插件名称）或数组对
+  // （插件名称和选项对象）。如果给出了选项对象，
+  // 然后非递归地检查每个值是否与该值一致
+  // 插件的实际选项值。
   hasPlugin(pluginConfig: PluginConfig): boolean {
     if (typeof pluginConfig === "string") {
       return this.plugins.has(pluginConfig);
@@ -71,6 +91,7 @@ export default class BaseParser {
     }
   }
 
+  // 获取某个插件选项
   getPluginOption<
     PluginName extends ParserPluginWithOptions[0],
     OptionName extends keyof PluginOptions<PluginName>,

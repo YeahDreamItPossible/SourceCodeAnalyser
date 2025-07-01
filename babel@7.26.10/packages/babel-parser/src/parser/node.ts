@@ -5,6 +5,7 @@ import { OptionFlags } from "../options.ts";
 
 // Start an AST node, attaching a start offset.
 
+// 节点
 class Node implements NodeBase {
   constructor(parser: UtilParser, pos: number, loc: Position) {
     this.start = pos;
@@ -96,6 +97,7 @@ export function cloneStringLiteral(node: any): any {
 
 export type Undone<T extends NodeType> = Omit<T, "type">;
 
+// 节点工具
 export abstract class NodeUtils extends UtilParser {
   startNode<T extends NodeType = never>(): Undone<T> {
     const loc = this.state.startLoc;

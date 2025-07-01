@@ -21,31 +21,47 @@ import type {
 import { resolveBrowserslistConfigFile } from "./resolve-targets.ts";
 import type { PluginAPI, PresetAPI } from "./helpers/config-api.ts";
 
-// Represents a config object and functions to lazily load the descriptors
-// for the plugins and presets so we don't load the plugins/presets unless
-// the options object actually ends up being applicable.
+/**
+ * 表示配置对象和延迟加载描述符的函数
+ * 这样我们不会加载插件/预设，除非选项对象最终适用
+ */
 export type OptionsAndDescriptors = {
+  // 选项
   options: ValidatedOptions;
+  // 插件描述符加载函数
   plugins: () => Handler<Array<UnloadedDescriptor<PluginAPI>>>;
+  // 预设描述符加载函数
   presets: () => Handler<Array<UnloadedDescriptor<PresetAPI>>>;
 };
 
-// Represents a plugin or presets at a given location in a config object.
-// At this point these have been resolved to a specific object or function,
-// but have not yet been executed to call functions with options.
+/**
+ * 表示配置对象中特定位置的插件或预设
+ * 此时这些已被解析为特定对象或函数，但尚未执行以调用带选项的函数
+ */
 export interface UnloadedDescriptor<API, Options = object | undefined | false> {
+  // 名
   name: string | undefined;
+  // 值
   value: object | ((api: API, options: Options, dirname: string) => unknown);
+  // 选项
   options: Options;
+  // 目录名
   dirname: string;
+  // 别名
   alias: string;
+  // 是否拥有自己的处理流程
   ownPass?: boolean;
+  // 文件信息
   file?: {
+    // 请求路径
     request: string;
+    // 解析后的路径
     resolved: string;
   };
 }
 
+// 比较函数
+// 比较两个描述符是否相等
 function isEqualDescriptor<API>(
   a: UnloadedDescriptor<API>,
   b: UnloadedDescriptor<API>,
@@ -62,21 +78,31 @@ function isEqualDescriptor<API>(
   );
 }
 
+// 文件类型
 export type ValidatedFile = {
+  // 文件路径
   filepath: string;
+  // 目录路径
   dirname: string;
+  // 选项
   options: ValidatedOptions;
 };
 
-// eslint-disable-next-line require-yield
+// 包装函数
+// 将 值 包装成 函数
 function* handlerOf<T>(value: T): Handler<T> {
   return value;
 }
 
+// 切换是否使用 浏览器列表配置源，
+// 包括搜索任何 browserslist 文件或引用 package.json 中的 browserslist 键。
+// 这对于使用 browserslist 配置文件的项目很有用，这些文件不会用 Babel 编译
+// 处理 浏览器列表配置文件
 function optionsWithResolvedBrowserslistConfigFile(
   options: ValidatedOptions,
   dirname: string,
 ): ValidatedOptions {
+  // 浏览器列表配置源
   if (typeof options.browserslistConfigFile === "string") {
     options.browserslistConfigFile = resolveBrowserslistConfigFile(
       options.browserslistConfigFile,
@@ -87,10 +113,9 @@ function optionsWithResolvedBrowserslistConfigFile(
 }
 
 /**
- * Create a set of descriptors from a given options object, preserving
- * descriptor identity based on the identity of the plugin/preset arrays
- * themselves, and potentially on the identity of the plugins/presets + options.
+ * 从给定选项对象创建一组描述符，基于插件/预设数组本身的标识保留描述符标识
  */
+// 创建 缓存的描述符
 export function createCachedDescriptors(
   dirname: string,
   options: ValidatedOptions,
@@ -117,9 +142,9 @@ export function createCachedDescriptors(
 }
 
 /**
- * Create a set of descriptors from a given options object, with consistent
- * identity for the descriptors, but not caching based on any specific identity.
+ * 从给定选项对象创建一组描述符，具有一致的标识但不基于任何特定标识进行缓存
  */
+// 创建 非缓存的描述符
 export function createUncachedDescriptors(
   dirname: string,
   options: ValidatedOptions,
@@ -144,6 +169,7 @@ export function createUncachedDescriptors(
   };
 }
 
+// 
 const PRESET_DESCRIPTOR_CACHE = new WeakMap();
 const createCachedPresetDescriptors = makeWeakCacheSync(
   (items: PluginList, cache: CacheConfigurator<string>) => {
@@ -169,6 +195,7 @@ const createCachedPresetDescriptors = makeWeakCacheSync(
   },
 );
 
+// 插件描述符缓存
 const PLUGIN_DESCRIPTOR_CACHE = new WeakMap();
 const createCachedPluginDescriptors = makeWeakCacheSync(
   (items: PluginList, cache: CacheConfigurator<string>) => {
@@ -187,17 +214,11 @@ const createCachedPluginDescriptors = makeWeakCacheSync(
   },
 );
 
-/**
- * When no options object is given in a descriptor, this object is used
- * as a WeakMap key in order to have consistent identity.
- */
+// 默认选项
 const DEFAULT_OPTIONS = {};
 
-/**
- * Given the cache and a descriptor, returns a matching descriptor from the
- * cache, or else returns the input descriptor and adds it to the cache for
- * next time.
- */
+// 给定缓存和描述符，从缓存返回匹配的描述符，
+// 否则返回输入描述符并将其添加到缓存中
 function loadCachedDescriptor<API>(
   cache: WeakMap<
     object | Function,
@@ -234,6 +255,7 @@ function loadCachedDescriptor<API>(
   return desc;
 }
 
+// 创建 预设描述符
 function* createPresetDescriptors(
   items: PluginList,
   dirname: string,
@@ -249,6 +271,7 @@ function* createPresetDescriptors(
   );
 }
 
+// 创建 插件描述符
 function* createPluginDescriptors(
   items: PluginList,
   dirname: string,
@@ -257,6 +280,7 @@ function* createPluginDescriptors(
   return yield* createDescriptors("plugin", items, dirname, alias);
 }
 
+// 批量创建 描述符
 function* createDescriptors<API>(
   type: "plugin" | "preset",
   items: PluginList,
@@ -279,9 +303,8 @@ function* createDescriptors<API>(
   return descriptors;
 }
 
-/**
- * Given a plugin/preset item, resolve it into a standard format.
- */
+// 创建 描述符
+// 给定一个插件/预设项，将其解析为标准格式
 export function* createDescriptor<API>(
   pair: PluginItem,
   dirname: string,
@@ -300,10 +323,13 @@ export function* createDescriptor<API>(
     return desc;
   }
 
+  // 插件名
   let name;
+  // 插件选项
   let options;
-  // todo(flow->ts) better type annotation
+  // 插件值
   let value: any = pair;
+  // 插件
   if (Array.isArray(value)) {
     if (value.length === 3) {
       [value, options, name] = value;
@@ -326,8 +352,8 @@ export function* createDescriptor<API>(
     ({ filepath, value } = yield* resolver(value, dirname));
 
     file = {
-      request,
-      resolved: filepath,
+      request, // 插件请求路径
+      resolved: filepath, // 解析后的插件路径(绝对路径)
     };
   }
 
@@ -359,16 +385,17 @@ export function* createDescriptor<API>(
   }
 
   return {
-    name,
-    alias: filepath || alias,
-    value,
-    options,
-    dirname,
-    ownPass,
-    file,
+    name, // 插件名
+    alias: filepath || alias, // 别名
+    value, // 插件值, 必须是函数
+    options, // 插件选项
+    dirname, // 目录路径
+    ownPass, // 是否拥有自己的处理流程
+    file, // 文件信息
   };
 }
 
+// 无重复
 function assertNoDuplicates<API>(items: Array<UnloadedDescriptor<API>>): void {
   const map = new Map();
 

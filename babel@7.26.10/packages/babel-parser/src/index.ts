@@ -90,6 +90,7 @@ export function parse(
   }
 }
 
+// 
 export function parseExpression(
   input: string,
   options?: ParserOptions,
@@ -115,6 +116,7 @@ function generateExportedTokenTypes(
 
 export const tokTypes = generateExportedTokenTypes(internalTokenTypes);
 
+// 获取 解析器
 function getParser(options: Options | undefined | null, input: string): Parser {
   let cls = Parser;
   const pluginsMap: PluginsMap = new Map();
@@ -137,6 +139,7 @@ function getParser(options: Options | undefined | null, input: string): Parser {
   return new cls(options, input, pluginsMap);
 }
 
+// 
 const parserClassCache = new Map<string, new (...args: any) => Parser>();
 
 /** Get a Parser class with plugins applied. */

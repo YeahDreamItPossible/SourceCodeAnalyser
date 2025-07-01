@@ -31,6 +31,7 @@ const OTHER_ORG_DEFAULT_RE = /^(@(?!babel$)[^/]+)$/;
 export const resolvePlugin = resolveStandardizedName.bind(null, "plugin");
 export const resolvePreset = resolveStandardizedName.bind(null, "preset");
 
+// 加载插件
 export function* loadPlugin(
   name: string,
   dirname: string,
@@ -43,6 +44,7 @@ export function* loadPlugin(
   return { filepath, value };
 }
 
+// 加载预设
 export function* loadPreset(
   name: string,
   dirname: string,

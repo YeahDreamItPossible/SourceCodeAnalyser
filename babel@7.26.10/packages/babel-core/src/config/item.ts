@@ -6,18 +6,14 @@ import { createDescriptor } from "./config-descriptors.ts";
 
 import type { UnloadedDescriptor } from "./config-descriptors.ts";
 
+// 从描述符创建配置项
 export function createItemFromDescriptor<API>(
   desc: UnloadedDescriptor<API>,
 ): ConfigItem<API> {
   return new ConfigItem(desc);
 }
 
-/**
- * Create a config item using the same value format used in Babel's config
- * files. Items returned from this function should be cached by the caller
- * ideally, as recreating the config item will mean re-resolving the item
- * and re-evaluating the plugin/preset function.
- */
+// 创建配置项
 export function* createConfigItem<API>(
   value:
     | PluginTarget
@@ -31,16 +27,20 @@ export function* createConfigItem<API>(
     type?: "preset" | "plugin";
   } = {},
 ): Handler<ConfigItem<API>> {
+  // 创建描述符
   const descriptor = yield* createDescriptor(value, path.resolve(dirname), {
     type,
     alias: "programmatic item",
   });
 
+  // 从描述符创建配置项
   return createItemFromDescriptor(descriptor);
 }
 
+// 配置项的唯一标识符号
 const CONFIG_ITEM_BRAND = Symbol.for("@babel/core@7 - ConfigItem");
 
+// 获取配置项的描述符
 export function getItemDescriptor<API>(
   item: unknown,
 ): UnloadedDescriptor<API> | void {
@@ -53,69 +53,45 @@ export function getItemDescriptor<API>(
 
 export type { ConfigItem };
 
-/**
- * A public representation of a plugin/preset that will _eventually_ be load.
- * Users can use this to interact with the results of a loaded Babel
- * configuration.
- *
- * Any changes to public properties of this class should be considered a
- * breaking change to Babel's API.
- */
+// 配置项
 class ConfigItem<API> {
-  /**
-   * The private underlying descriptor that Babel actually cares about.
-   * If you access this, you are a bad person.
-   */
+  // 描述符
   _descriptor: UnloadedDescriptor<API>;
 
-  // TODO(Babel 9): Check if this symbol needs to be updated
-  /**
-   * Used to detect ConfigItem instances from other Babel instances.
-   */
+  // 标识
   [CONFIG_ITEM_BRAND] = true;
-
-  /**
-   * The resolved value of the item itself.
-   */
+  
+  // 解析值
   value: object | Function;
 
   /**
-   * The options, if any, that were passed to the item.
-   * Mutating this will lead to undefined behavior.
-   *
-   * "false" means that this item has been disabled.
+   * 传递给项的选项（如果有）
+   * 修改此属性将导致未定义的行为
+   * "false"表示此项已被禁用
    */
   options: object | void | false;
 
-  /**
-   * The directory that the options for this item are relative to.
-   */
+  //  此项选项的相对目录
   dirname: string;
 
-  /**
-   * Get the name of the plugin, if the user gave it one.
-   */
+  // 插件名
   name: string | void;
 
-  /**
-   * Data about the file that the item was loaded from, if Babel knows it.
-   */
+  // 加载项的文件的元数据
   file: {
-    // The requested path, e.g. "@babel/env".
+    // 请求的路径，例如"@babel/env"
     request: string;
-    // The resolved absolute path of the file.
+    // 文件的解析绝对路径
     resolved: string;
   } | void;
 
   constructor(descriptor: UnloadedDescriptor<API>) {
-    // Make people less likely to stumble onto this if they are exploring
-    // programmatically, and also make sure that if people happen to
-    // pass the item through JSON.stringify, it doesn't show up.
     this._descriptor = descriptor;
     Object.defineProperty(this, "_descriptor", { enumerable: false });
 
     Object.defineProperty(this, CONFIG_ITEM_BRAND, { enumerable: false });
 
+    // 初始化公共属性
     this.value = this._descriptor.value;
     this.options = this._descriptor.options;
     this.dirname = this._descriptor.dirname;
@@ -127,9 +103,6 @@ class ConfigItem<API> {
         }
       : undefined;
 
-    // Freeze the object to make it clear that people shouldn't expect mutating
-    // this object to do anything. A new item should be created if they want
-    // to change something.
     Object.freeze(this);
   }
 }

@@ -312,6 +312,7 @@ export default abstract class UtilParser extends Tokenizer {
     return node.type === "ObjectMethod";
   }
 
+  // 初始化作用域
   initializeScopes(
     this: Parser,
     inModule: boolean = this.options.sourceType === "module",
@@ -354,6 +355,7 @@ export default abstract class UtilParser extends Tokenizer {
     };
   }
 
+  // 进入初始作用域
   enterInitialScopes() {
     let paramFlags = ParamKind.PARAM;
     if (this.inModule) {

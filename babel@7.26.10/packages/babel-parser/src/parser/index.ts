@@ -26,10 +26,15 @@ export default class Parser extends StatementParser {
     options = getOptions(options);
     super(options, input);
 
+    // 选项
     this.options = options;
+    // 
     this.initializeScopes();
+    // 插件映射
     this.plugins = pluginsMap;
+    // 
     this.filename = options.sourceFilename;
+    // 
     this.startIndex = options.startIndex;
 
     let optionFlags = 0;
@@ -73,6 +78,7 @@ export default class Parser extends StatementParser {
       optionFlags |= OptionFlags.AnnexB;
     }
 
+    // 选项标志
     this.optionFlags = optionFlags;
   }
 

@@ -23,6 +23,20 @@ import {
 import type { ConfigFile, IgnoreFile } from "./files/index.ts";
 import { resolveTargets } from "./resolve-targets.ts";
 
+/**
+ * rootMode 选项作用:
+ * 查找 babel.config.json 配置文件的方式
+ * 
+ * root:
+ * 传递 "root" 值不变
+ * upward: 
+ * 从 "root" 目录向上走，寻找包含 babel.config.json 文件的目录，
+ * 如果找不到 babel.config.json 则抛出错误。
+ * upward-optional: 
+ * 从 "root" 目录向上走，寻找包含 babel.config.json 文件的目录，
+ * 如果没有找到 babel.config.json 则回退到 "root"。
+ */
+// 返回解析后的 rootMode 选项
 function resolveRootMode(rootDir: string, rootMode: RootMode): string {
   switch (rootMode) {
     case "root":
@@ -55,6 +69,7 @@ function resolveRootMode(rootDir: string, rootMode: RootMode): string {
   }
 }
 
+// 私有部分配置
 export type PrivPartialConfig = {
   showIgnoredFiles?: boolean;
   options: NormalizedOptions;
@@ -87,17 +102,21 @@ export default function* loadPrivatePartialConfig(
     caller,
     cloneInputAst = true,
   } = args;
+  // 当前工作目录(绝对路径)
   const absoluteCwd = path.resolve(cwd);
+  // 项目根
   const absoluteRootDir = resolveRootMode(
     path.resolve(absoluteCwd, rootDir),
     rootMode,
   );
 
+  // 文件名(绝对路径)
   const filename =
     typeof args.filename === "string"
       ? path.resolve(cwd, args.filename)
       : undefined;
 
+  // 
   const showConfigPath = yield* resolveShowConfigPath(absoluteCwd);
 
   const context: ConfigContext = {
@@ -106,7 +125,7 @@ export default function* loadPrivatePartialConfig(
     root: absoluteRootDir,
     envName,
     caller,
-    showConfig: showConfigPath === filename,
+    showConfig: showConfigPath === filename, // 是否输出选项
   };
 
   const configChain = yield* buildRootChain(args, context);
@@ -199,6 +218,7 @@ export function* loadPartialConfig(
 
 export type { PartialConfig };
 
+// 部分配置
 class PartialConfig {
   /**
    * These properties are public, so any changes to them should be considered

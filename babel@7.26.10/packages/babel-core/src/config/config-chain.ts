@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-
 import path from "path";
 import buildDebug from "debug";
 import type { Handler } from "gensync";
@@ -42,32 +41,47 @@ import type {
   ValidatedFile,
 } from "./config-descriptors.ts";
 
+// 配置链基础结构
 export type ConfigChain = {
+  // 插件描述符数组
   plugins: Array<UnloadedDescriptor<PluginAPI>>;
+  // 预设描述符数组
   presets: Array<UnloadedDescriptor<PresetAPI>>;
+  // 选项数组
   options: Array<ValidatedOptions>;
+  // 文件路径集合
   files: Set<string>;
 };
 
+// 预设实例结构
 export type PresetInstance = {
+  // 选项
   options: ValidatedOptions;
+  // 预设别名
   alias: string;
+  // 目录路径
   dirname: string;
+  // 外部依赖
   externalDependencies: ReadonlyDeepArray<string>;
 };
 
+// 配置上下文
 export type ConfigContext = {
+  // 文件名
   filename: string | undefined;
+  // 当前工作目录
   cwd: string;
+  // 根目录
   root: string;
+  // 环境名
   envName: string;
+  // 调用者元数据
   caller: CallerMetadata | undefined;
+  // 是否显示配置
   showConfig: boolean;
 };
 
-/**
- * Build a config chain for a given preset.
- */
+// 构建 预设配置链
 export function* buildPresetChain(
   arg: PresetInstance,
   context: any,
@@ -83,7 +97,7 @@ export function* buildPresetChain(
   };
 }
 
-// 
+// 构建 预设配置链遍历器
 export const buildPresetChainWalker = makeChainWalker<PresetInstance>({
   root: preset => loadPresetDescriptors(preset),
   env: (preset, envName) => loadPresetEnvDescriptors(preset)(envName),
@@ -92,9 +106,11 @@ export const buildPresetChainWalker = makeChainWalker<PresetInstance>({
     loadPresetOverridesEnvDescriptors(preset)(index)(envName),
   createLogger: () => () => {}, // Currently we don't support logging how preset is expanded
 });
+// 加载预设描述符
 const loadPresetDescriptors = makeWeakCacheSync((preset: PresetInstance) =>
   buildRootDescriptors(preset, preset.alias, createUncachedDescriptors),
 );
+// 加载预设环境特定描述符
 const loadPresetEnvDescriptors = makeWeakCacheSync((preset: PresetInstance) =>
   makeStrongCacheSync((envName: string) =>
     buildEnvDescriptors(
@@ -105,6 +121,7 @@ const loadPresetEnvDescriptors = makeWeakCacheSync((preset: PresetInstance) =>
     ),
   ),
 );
+// 加载预设覆盖描述符
 const loadPresetOverridesDescriptors = makeWeakCacheSync(
   (preset: PresetInstance) =>
     makeStrongCacheSync((index: number) =>
@@ -140,17 +157,15 @@ export type RootConfigChain = ConfigChain & {
   files: Set<string>;
 };
 
-/**
- * Build a config chain for Babel's full root configuration.
- */
-// 为Babel的完整根配置构建一个配置链。
 // 构建根配置链
 export function* buildRootChain(
   opts: ValidatedOptions,
   context: ConfigContext,
 ): Handler<RootConfigChain | null> {
   let configReport, babelRcReport;
+  // / 创建程序化日志记录器
   const programmaticLogger = new ConfigPrinter();
+  // 加载程序化配置链
   const programmaticChain = yield* loadProgrammaticChain(
     {
       options: opts,
@@ -161,8 +176,10 @@ export function* buildRootChain(
     programmaticLogger,
   );
   if (!programmaticChain) return null;
+  // 获取程序化配置报告
   const programmaticReport = yield* programmaticLogger.output();
 
+  // 处理配置文件
   let configFile;
   if (typeof opts.configFile === "string") {
     configFile = yield* loadConfig(
@@ -280,13 +297,21 @@ export function* buildRootChain(
   );
 
   return {
+    // 插件
     plugins: isIgnored ? [] : dedupDescriptors(chain.plugins),
+    // 预设
     presets: isIgnored ? [] : dedupDescriptors(chain.presets),
+    // 选项
     options: isIgnored ? [] : chain.options.map(o => normalizeOptions(o)),
+    // 
     fileHandling: isIgnored ? "ignored" : "transpile",
+    // 忽视文件内容
     ignore: ignoreFile || undefined,
+    // babelrc 文件内容
     babelrc: babelrcFile || undefined,
+    // 配置文件内容
     config: configFile || undefined,
+    // 文件
     files: chain.files,
   };
 }
@@ -334,6 +359,7 @@ function babelrcLoadEnabled(
   });
 }
 
+// 验证配置文件有效性
 const validateConfigFile = makeWeakCacheSync(
   (file: ConfigFile): ValidatedFile => ({
     filepath: file.filepath,
@@ -342,6 +368,7 @@ const validateConfigFile = makeWeakCacheSync(
   }),
 );
 
+// 验证 bablrc文件有效性
 const validateBabelrcFile = makeWeakCacheSync(
   (file: ConfigFile): ValidatedFile => ({
     filepath: file.filepath,
@@ -350,6 +377,7 @@ const validateBabelrcFile = makeWeakCacheSync(
   }),
 );
 
+// 
 const validateExtendFile = makeWeakCacheSync(
   (file: ConfigFile): ValidatedFile => ({
     filepath: file.filepath,
@@ -358,10 +386,7 @@ const validateExtendFile = makeWeakCacheSync(
   }),
 );
 
-/**
- * Build a config chain for just the programmatic options passed into Babel.
- */
-// 
+// 加载 程序配置链
 const loadProgrammaticChain = makeChainWalker({
   root: input => buildRootDescriptors(input, "base", createCachedDescriptors),
   env: (input, envName) =>
@@ -456,6 +481,7 @@ function buildFileLogger(
   });
 }
 
+// 构建 根描述符
 function buildRootDescriptors(
   { dirname, options }: Partial<ValidatedFile>,
   alias: string,
@@ -535,6 +561,7 @@ function buildOverrideEnvDescriptors(
     : null;
 }
 
+// 制造 配置链遍历器
 function makeChainWalker<
   ArgT extends {
     options: ValidatedOptions;
@@ -709,6 +736,7 @@ function* mergeExtendsChain(
   return true;
 }
 
+// 合并 链配置
 function mergeChain(target: ConfigChain, source: ConfigChain): ConfigChain {
   target.options.push(...source.options);
   target.plugins.push(...source.plugins);
@@ -720,6 +748,7 @@ function mergeChain(target: ConfigChain, source: ConfigChain): ConfigChain {
   return target;
 }
 
+// 合并 链配置选项
 function* mergeChainOpts(
   target: ConfigChain,
   { options, plugins, presets }: OptionsAndDescriptors,
@@ -734,10 +763,10 @@ function* mergeChainOpts(
 // 创建空配置链
 function emptyChain(): ConfigChain {
   return {
-    options: [],
-    presets: [],
-    plugins: [],
-    files: new Set(),
+    options: [], // 选项
+    presets: [], // 预设
+    plugins: [], // 插件
+    files: new Set(), // 文件
   };
 }
 
@@ -766,6 +795,7 @@ function normalizeOptions(opts: ValidatedOptions): ValidatedOptions {
   return options;
 }
 
+// 
 function dedupDescriptors<API>(
   items: Array<UnloadedDescriptor<API>>,
 ): Array<UnloadedDescriptor<API>> {
@@ -806,6 +836,7 @@ function dedupDescriptors<API>(
   }, []);
 }
 
+// 配置是否可用
 function configIsApplicable(
   { options }: OptionsAndDescriptors,
   dirname: string,
@@ -822,6 +853,7 @@ function configIsApplicable(
   );
 }
 
+// 配置文件是否可用
 function configFieldIsApplicable(
   context: ConfigContext,
   test: ConfigApplicableTest,
@@ -902,6 +934,7 @@ function matchesPatterns(
   );
 }
 
+// 匹配模式
 function matchPattern(
   pattern: IgnoreItem,
   dirname: string,

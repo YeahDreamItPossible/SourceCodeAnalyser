@@ -349,6 +349,7 @@ function readConfig(
   }
 }
 
+// 解析 
 export function* resolveShowConfigPath(
   dirname: string,
 ): Handler<string | null> {
