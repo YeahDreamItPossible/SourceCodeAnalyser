@@ -38,12 +38,17 @@ import {
   htmlDecodeTree,
 } from 'entities/lib/decode.js'
 
+// 分析器模式
 export enum ParseMode {
+  // 
   BASE,
+  // 解析 html 文件
   HTML,
+  // 解析 sfc 文件
   SFC,
 }
 
+// 字符码
 export enum CharCodes {
   Tab = 0x9, // "\t"
   NewLine = 0xa, // "\n"
@@ -80,18 +85,22 @@ export enum CharCodes {
   RightSquare = 93, // "]"
 }
 
+// 占位符开标签
 const defaultDelimitersOpen = new Uint8Array([123, 123]) // "{{"
+// 占位符必闭标签
 const defaultDelimitersClose = new Uint8Array([125, 125]) // "}}"
 
 /** All the states the tokenizer can be in. */
 export enum State {
   Text = 1,
 
+  // 插值
   // interpolation
   InterpolationOpen,
   Interpolation,
   InterpolationClose,
 
+  // 标签
   // Tags
   BeforeTagName, // After <
   InTagName,
@@ -100,6 +109,7 @@ export enum State {
   InClosingTagName,
   AfterClosingTagName,
 
+  // 属性
   // Attrs
   BeforeAttrName,
   InAttrName,
@@ -113,6 +123,7 @@ export enum State {
   InAttrValueSq, // '
   InAttrValueNq,
 
+  // 
   // Declarations
   BeforeDeclaration, // !
   InDeclaration,
@@ -126,6 +137,7 @@ export enum State {
   InSpecialComment,
   InCommentLike,
 
+  // 特殊标签
   // Special tags
   BeforeSpecialS, // Decide if we deal with `<script` or `<style`
   BeforeSpecialT, // Decide if we deal with `<title` or `<textarea`
@@ -137,10 +149,7 @@ export enum State {
   InSFCRootTagName,
 }
 
-/**
- * HTML only allows ASCII alpha characters (a-z and A-Z) at the beginning of a
- * tag name.
- */
+// 该字符是否在(a-z and A-Z) 之间, 则是标签名
 function isTagStartChar(c: number): boolean {
   return (
     (c >= CharCodes.LowerA && c <= CharCodes.LowerZ) ||
@@ -148,6 +157,7 @@ function isTagStartChar(c: number): boolean {
   )
 }
 
+// 断言: 是否是空白字符
 export function isWhitespace(c: number): boolean {
   return (
     c === CharCodes.Space ||
@@ -158,10 +168,12 @@ export function isWhitespace(c: number): boolean {
   )
 }
 
+// 断言: 是否是结束标签的结束
 function isEndOfTagSection(c: number): boolean {
   return c === CharCodes.Slash || c === CharCodes.Gt || isWhitespace(c)
 }
 
+// 
 export function toCharCodes(str: string): Uint8Array {
   const ret = new Uint8Array(str.length)
   for (let i = 0; i < str.length; i++) {
@@ -170,6 +182,7 @@ export function toCharCodes(str: string): Uint8Array {
   return ret
 }
 
+// 属性值类型
 export enum QuoteType {
   NoValue = 0,
   Unquoted = 1,
@@ -177,6 +190,7 @@ export enum QuoteType {
   Double = 3,
 }
 
+// 回调
 export interface Callbacks {
   ontext(start: number, endIndex: number): void
   ontextentity(char: string, start: number, endIndex: number): void
@@ -213,6 +227,7 @@ export interface Callbacks {
  * We don't have `Script`, `Style`, or `Title` here. Instead, we re-use the *End
  * sequences with an increased offset.
  */
+// 特殊标签结束序列
 export const Sequences: {
   Cdata: Uint8Array
   CdataEnd: Uint8Array
@@ -233,12 +248,14 @@ export const Sequences: {
   ]), // `</textarea
 }
 
+// 分词器
 export default class Tokenizer {
   /** The current state the tokenizer is in. */
   public state: State = State.Text
   /** The read buffer. */
   private buffer = ''
   /** The beginning of the section that is currently being read. */
+  // 正在读取的部分的开始
   public sectionStart = 0
   /** The index within the buffer that we are currently looking at. */
   private index = 0
@@ -253,11 +270,14 @@ export default class Tokenizer {
   /** For disabling interpolation parsing in v-pre */
   public inVPre = false
   /** Record newline positions for fast line / column calculation */
+  // 
   private newlines: number[] = []
 
   private readonly entityDecoder?: EntityDecoder
 
+  // 模式
   public mode: ParseMode = ParseMode.BASE
+  // 在 SFC 根
   public get inSFCRoot(): boolean {
     return this.mode === ParseMode.SFC && this.stack.length === 0
   }
@@ -273,6 +293,7 @@ export default class Tokenizer {
     }
   }
 
+  // 重置
   public reset(): void {
     this.state = State.Text
     this.mode = ParseMode.BASE
@@ -293,6 +314,10 @@ export default class Tokenizer {
    * processed index, so all the newlines up to this index should have been
    * recorded.
    */
+  // 返回位置对象
+  // 使用记录的行/列信息生成位置对象换行符位置。
+  // 我们知道该指数将永远是一个已处理索引，
+  // 因此该索引之前的所有新行都应该记录。
   public getPos(index: number): Position {
     let line = 1
     let column = index + 1
@@ -305,16 +330,18 @@ export default class Tokenizer {
       }
     }
     return {
-      column,
-      line,
-      offset: index,
+      column, // 列
+      line, // 行
+      offset: index, // 偏移
     }
   }
 
+  // 查看下一个字符
   private peek() {
     return this.buffer.charCodeAt(this.index + 1)
   }
 
+  // 状态文本
   private stateText(c: number): void {
     if (c === CharCodes.Lt) {
       if (this.index > this.sectionStart) {
@@ -540,6 +567,7 @@ export default class Tokenizer {
     this.sequenceIndex = offset
   }
 
+  // 标签名称之前的状态
   private stateBeforeTagName(c: number): void {
     if (c === CharCodes.ExclamationMark) {
       this.state = State.BeforeDeclaration
@@ -582,6 +610,8 @@ export default class Tokenizer {
       this.handleTagName(c)
     }
   }
+
+  // 
   private stateInSFCRootTagName(c: number): void {
     if (isEndOfTagSection(c)) {
       const tag = this.buffer.slice(this.sectionStart, this.index)
@@ -591,12 +621,15 @@ export default class Tokenizer {
       this.handleTagName(c)
     }
   }
+
+  // 处理标签名
   private handleTagName(c: number) {
     this.cbs.onopentagname(this.sectionStart, this.index)
     this.sectionStart = -1
     this.state = State.BeforeAttrName
     this.stateBeforeAttrName(c)
   }
+
   private stateBeforeClosingTagName(c: number): void {
     if (isWhitespace(c)) {
       // Ignore
@@ -629,6 +662,8 @@ export default class Tokenizer {
       this.sectionStart = this.index + 1
     }
   }
+
+  // 
   private stateBeforeAttrName(c: number): void {
     if (c === CharCodes.Gt) {
       this.cbs.onopentagend(this.index)
@@ -660,6 +695,8 @@ export default class Tokenizer {
       this.handleAttrStart(c)
     }
   }
+
+  // 处理属性
   private handleAttrStart(c: number) {
     if (c === CharCodes.LowerV && this.peek() === CharCodes.Dash) {
       this.state = State.InDirName
@@ -678,6 +715,8 @@ export default class Tokenizer {
       this.sectionStart = this.index
     }
   }
+
+  // 
   private stateInSelfClosingTag(c: number): void {
     if (c === CharCodes.Gt) {
       this.cbs.onselfclosingtag(this.index)

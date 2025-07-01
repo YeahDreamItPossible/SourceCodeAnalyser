@@ -65,6 +65,7 @@ export type MergedParserOptions = Omit<
 > &
   Pick<ParserOptions, OptionalOptions>
 
+// 默认选项
 export const defaultParserOptions: MergedParserOptions = {
   parseMode: 'base',
   ns: Namespaces.HTML,
@@ -80,28 +81,41 @@ export const defaultParserOptions: MergedParserOptions = {
   prefixIdentifiers: false,
 }
 
+// 
 let currentOptions: MergedParserOptions = defaultParserOptions
+// 根节点
 let currentRoot: RootNode | null = null
-
-// parser state
+// 词法分析器状态
+// 
 let currentInput = ''
+// 开放标签
 let currentOpenTag: ElementNode | null = null
+// 
 let currentProp: AttributeNode | DirectiveNode | null = null
+// 属性值
 let currentAttrValue = ''
+// 
 let currentAttrStartIndex = -1
+// 
 let currentAttrEndIndex = -1
+// 
 let inPre = 0
+// 
 let inVPre = false
+// 
 let currentVPreBoundary: ElementNode | null = null
+// 元素节点集合
 const stack: ElementNode[] = []
 
 const tokenizer = new Tokenizer(stack, {
   onerr: emitError,
 
+  // 添加文本节点
   ontext(start, end) {
     onText(getSlice(start, end), start, end)
   },
 
+  // 添加属性值
   ontextentity(char, start, end) {
     onText(char, start, end)
   },
@@ -134,6 +148,7 @@ const tokenizer = new Tokenizer(stack, {
     })
   },
 
+  // 返回 起始标签
   onopentagname(start, end) {
     const name = getSlice(start, end)
     currentOpenTag = {
@@ -148,10 +163,12 @@ const tokenizer = new Tokenizer(stack, {
     }
   },
 
+  // 添加开放标签
   onopentagend(end) {
     endOpenTag(end)
   },
 
+  // 添加闭合标签
   onclosetag(start, end) {
     const name = getSlice(start, end)
     if (!currentOptions.isVoidTag(name)) {
@@ -185,6 +202,7 @@ const tokenizer = new Tokenizer(stack, {
     }
   },
 
+  // 添加属性名
   onattribname(start, end) {
     // plain attribute
     currentProp = {
@@ -196,6 +214,7 @@ const tokenizer = new Tokenizer(stack, {
     }
   },
 
+  // 添加指令名
   ondirname(start, end) {
     const raw = getSlice(start, end)
     const name =
@@ -243,6 +262,7 @@ const tokenizer = new Tokenizer(stack, {
     }
   },
 
+  // 添加指令参数
   ondirarg(start, end) {
     if (start === end) return
     const arg = getSlice(start, end)
@@ -260,6 +280,7 @@ const tokenizer = new Tokenizer(stack, {
     }
   },
 
+  // 添加指令修饰符
   ondirmodifier(start, end) {
     const mod = getSlice(start, end)
     if (inVPre) {
@@ -279,12 +300,14 @@ const tokenizer = new Tokenizer(stack, {
     }
   },
 
+  // 添加指令修饰符值
   onattribdata(start, end) {
     currentAttrValue += getSlice(start, end)
     if (currentAttrStartIndex < 0) currentAttrStartIndex = start
     currentAttrEndIndex = end
   },
 
+  // 添加指令修饰符值实体
   onattribentity(char, start, end) {
     currentAttrValue += char
     if (currentAttrStartIndex < 0) currentAttrStartIndex = start
@@ -407,6 +430,7 @@ const tokenizer = new Tokenizer(stack, {
     currentAttrStartIndex = currentAttrEndIndex = -1
   },
 
+  // 添加注释
   oncomment(start, end) {
     if (currentOptions.comments) {
       addNode({
@@ -564,10 +588,12 @@ function parseForExpression(
   return result
 }
 
+// 返回(起始位置和截止位置的)字符串
 function getSlice(start: number, end: number) {
   return currentInput.slice(start, end)
 }
 
+// 添加元素节点
 function endOpenTag(end: number) {
   if (tokenizer.inSFCRoot) {
     // in SFC mode, generate locations for root-level tags' inner content.
@@ -589,6 +615,7 @@ function endOpenTag(end: number) {
   currentOpenTag = null
 }
 
+// 添加文本节点
 function onText(content: string, start: number, end: number) {
   if (__BROWSER__) {
     const tag = stack[0] && stack[0].tag
@@ -777,10 +804,13 @@ function isFragmentTemplate({ tag, props }: ElementNode): boolean {
   return false
 }
 
+// 断言: 是否是组件
 function isComponent({ tag, props }: ElementNode): boolean {
+  // 是否是自定义组件
   if (currentOptions.isCustomElement(tag)) {
     return false
   }
+  // 是否是内置组件
   if (
     tag === 'component' ||
     isUpperCase(tag.charCodeAt(0)) ||
@@ -793,6 +823,7 @@ function isComponent({ tag, props }: ElementNode): boolean {
   }
   // at this point the tag should be a native tag, but check for potential "is"
   // casting
+  // 是否有is属性
   for (let i = 0; i < props.length; i++) {
     const p = props[i]
     if (p.type === NodeTypes.ATTRIBUTE) {
@@ -827,6 +858,7 @@ function isComponent({ tag, props }: ElementNode): boolean {
   return false
 }
 
+// 断言: 是否是大写字母
 function isUpperCase(c: number) {
   return c > 64 && c < 91
 }
@@ -919,10 +951,12 @@ function condense(str: string) {
   return ret
 }
 
+// 添加注释节点
 function addNode(node: TemplateChildNode) {
   ;(stack[0] || currentRoot).children.push(node)
 }
 
+// 返回位置信息
 function getLoc(start: number, end?: number): SourceLocation {
   return {
     start: tokenizer.getPos(start),
@@ -937,6 +971,7 @@ export function cloneLoc(loc: SourceLocation): SourceLocation {
   return getLoc(loc.start.offset, loc.end.offset)
 }
 
+// 设置位置信息结束位置
 function setLocEnd(loc: SourceLocation, end: number) {
   loc.end = tokenizer.getPos(end)
   loc.source = getSlice(loc.start.offset, end)
@@ -1025,6 +1060,7 @@ function emitError(code: ErrorCodes, index: number, message?: string) {
   )
 }
 
+// 重置
 function reset() {
   tokenizer.reset()
   currentOpenTag = null
@@ -1035,11 +1071,13 @@ function reset() {
   stack.length = 0
 }
 
+// 基础词法分析器
 export function baseParse(input: string, options?: ParserOptions): RootNode {
   reset()
   currentInput = input
+  // 默认选项
   currentOptions = extend({}, defaultParserOptions)
-
+  // 合并 用户选项
   if (options) {
     let key: keyof ParserOptions
     for (key in options) {
@@ -1063,6 +1101,7 @@ export function baseParse(input: string, options?: ParserOptions): RootNode {
     }
   }
 
+  // 模式
   tokenizer.mode =
     currentOptions.parseMode === 'html'
       ? ParseMode.HTML
@@ -1070,6 +1109,7 @@ export function baseParse(input: string, options?: ParserOptions): RootNode {
         ? ParseMode.SFC
         : ParseMode.BASE
 
+  // 是否是 SVG 或者
   tokenizer.inXML =
     currentOptions.ns === Namespaces.SVG ||
     currentOptions.ns === Namespaces.MATH_ML
@@ -1080,6 +1120,7 @@ export function baseParse(input: string, options?: ParserOptions): RootNode {
     tokenizer.delimiterClose = toCharCodes(delimiters[1])
   }
 
+  // 根节点
   const root = (currentRoot = createRoot([], input))
   tokenizer.parse(currentInput)
   root.loc = getLoc(0, input.length)

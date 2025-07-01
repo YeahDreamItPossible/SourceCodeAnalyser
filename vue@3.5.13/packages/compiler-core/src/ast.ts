@@ -26,64 +26,69 @@ export enum Namespaces {
   MATH_ML,
 }
 
+// 节点类型
 export enum NodeTypes {
-  ROOT,
-  ELEMENT,
-  TEXT,
-  COMMENT,
-  SIMPLE_EXPRESSION,
-  INTERPOLATION,
-  ATTRIBUTE,
-  DIRECTIVE,
+  ROOT, // 根节点
+  ELEMENT, // 元素节点
+  TEXT, // 文本节点
+  COMMENT, // 注释节点
+  SIMPLE_EXPRESSION, // 简单表达式
+  INTERPOLATION, // 插值
+  ATTRIBUTE, // 属性
+  DIRECTIVE, // 指令
   // containers
-  COMPOUND_EXPRESSION,
-  IF,
-  IF_BRANCH,
-  FOR,
-  TEXT_CALL,
+  COMPOUND_EXPRESSION, // 复合表达式
+  IF, // if条件
+  IF_BRANCH, // if分支
+  FOR, // for循环
+  TEXT_CALL, // 文本调用
   // codegen
-  VNODE_CALL,
-  JS_CALL_EXPRESSION,
-  JS_OBJECT_EXPRESSION,
-  JS_PROPERTY,
-  JS_ARRAY_EXPRESSION,
-  JS_FUNCTION_EXPRESSION,
-  JS_CONDITIONAL_EXPRESSION,
-  JS_CACHE_EXPRESSION,
+  VNODE_CALL, // 虚拟节点调用
+  JS_CALL_EXPRESSION, // JS调用表达式
+  JS_OBJECT_EXPRESSION, // JS对象表达式
+  JS_PROPERTY, // JS属性
+  JS_ARRAY_EXPRESSION, // JS数组表达式
+  JS_FUNCTION_EXPRESSION, // JS函数表达式
+  JS_CONDITIONAL_EXPRESSION, // JS条件表达式
+  JS_CACHE_EXPRESSION, // JS缓存表达式
 
   // ssr codegen
-  JS_BLOCK_STATEMENT,
-  JS_TEMPLATE_LITERAL,
-  JS_IF_STATEMENT,
-  JS_ASSIGNMENT_EXPRESSION,
-  JS_SEQUENCE_EXPRESSION,
-  JS_RETURN_STATEMENT,
+  JS_BLOCK_STATEMENT, // JS块语句
+  JS_TEMPLATE_LITERAL, // JS模板字面量
+  JS_IF_STATEMENT, // JS if语句
+  JS_ASSIGNMENT_EXPRESSION, // JS赋值表达式
+  JS_SEQUENCE_EXPRESSION, // JS序列表达式
+  JS_RETURN_STATEMENT, // JS返回语句
 }
 
+// 元素类型
 export enum ElementTypes {
-  ELEMENT,
-  COMPONENT,
-  SLOT,
-  TEMPLATE,
+  ELEMENT, // 元素
+  COMPONENT, // 组件
+  SLOT, // 插槽
+  TEMPLATE, // 模板
 }
 
+// 节点
 export interface Node {
-  type: NodeTypes
-  loc: SourceLocation
+  type: NodeTypes // 节点类型
+  loc: SourceLocation // 位置
 }
 
 // The node's range. The `start` is inclusive and `end` is exclusive.
 // [start, end)
+// 源代码位置信息
 export interface SourceLocation {
-  start: Position
-  end: Position
-  source: string
+  start: Position // 位置开始
+  end: Position // 位置结束
+  source: string // 源代码
 }
 
+// 位置信息
 export interface Position {
   offset: number // from start of file
-  line: number
-  column: number
+  line: number // 行
+  column: number // 列
 }
 
 export type ParentNode = RootNode | ElementNode | IfBranchNode | ForNode
@@ -101,6 +106,7 @@ export type TemplateChildNode =
   | ForNode
   | TextCallNode
 
+// 根节点
 export interface RootNode extends Node {
   type: NodeTypes.ROOT
   source: string
@@ -114,10 +120,11 @@ export interface RootNode extends Node {
   temps: number
   ssrHelpers?: symbol[]
   codegenNode?: TemplateChildNode | JSChildNode | BlockStatement
+  // 标识: 是否已被转换
   transformed?: boolean
 
   // v2 compat only
-  filters?: string[]
+  filters?: string[] // 过滤器  仅v2兼容
 }
 
 export type ElementNode =
@@ -582,32 +589,38 @@ export interface ForIteratorExpression extends FunctionExpression {
 // Some expressions, e.g. sequence and conditional expressions, are never
 // associated with template nodes, so their source locations are just a stub.
 // Container types like CompoundExpression also don't need a real location.
+// 源代码位置
 export const locStub: SourceLocation = {
+  // 开始
   start: { line: 1, column: 1, offset: 0 },
+  // 结束
   end: { line: 1, column: 1, offset: 0 },
+  // 当前位置的源代码
   source: '',
 }
 
+// 创建根节点
 export function createRoot(
   children: TemplateChildNode[],
   source = '',
 ): RootNode {
   return {
-    type: NodeTypes.ROOT,
-    source,
-    children,
-    helpers: new Set(),
-    components: [],
-    directives: [],
-    hoists: [],
-    imports: [],
-    cached: [],
-    temps: 0,
-    codegenNode: undefined,
-    loc: locStub,
+    type: NodeTypes.ROOT, // 节点类型
+    source, // 源代码
+    children, // 子节点集合
+    helpers: new Set(), // 辅助函数
+    components: [], // 组件
+    directives: [], // 指令
+    hoists: [], // 提升
+    imports: [], // 导入
+    cached: [], // 缓存
+    temps: 0, // 临时变量数量
+    codegenNode: undefined, // 代码生成节点
+    loc: locStub, // 源代码位置
   }
 }
 
+// 创建VNode调用
 export function createVNodeCall(
   context: TransformContext | null,
   tag: VNodeCall['tag'],
@@ -861,6 +874,7 @@ export function getVNodeHelper(
   return ssr || isComponent ? CREATE_VNODE : CREATE_ELEMENT_VNODE
 }
 
+// 生成 VNode 调用
 export function getVNodeBlockHelper(
   ssr: boolean,
   isComponent: boolean,

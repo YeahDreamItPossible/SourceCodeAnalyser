@@ -1,3 +1,4 @@
+// 编译器
 export { baseCompile } from './compile'
 
 // Also expose lower level APIs & types
@@ -10,7 +11,11 @@ export {
   type BindingMetadata,
   BindingTypes,
 } from './options'
+
+// 词法分析器
 export { baseParse } from './parser'
+
+// 转换器
 export {
   transform,
   type TransformContext,
@@ -21,6 +26,8 @@ export {
   type StructuralDirectiveTransform,
   type DirectiveTransform,
 } from './transform'
+
+// 代码生成器
 export {
   generate,
   type CodegenContext,

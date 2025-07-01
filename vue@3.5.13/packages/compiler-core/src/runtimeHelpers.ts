@@ -1,3 +1,5 @@
+// 运行时模版
+
 export const FRAGMENT: unique symbol = Symbol(__DEV__ ? `Fragment` : ``)
 export const TELEPORT: unique symbol = Symbol(__DEV__ ? `Teleport` : ``)
 export const SUSPENSE: unique symbol = Symbol(__DEV__ ? `Suspense` : ``)

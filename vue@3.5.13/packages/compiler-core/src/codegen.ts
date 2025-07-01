@@ -99,12 +99,14 @@ interface MappingItem {
   name: string | null
 }
 
+// 纯注解
 const PURE_ANNOTATION = `/*@__PURE__*/`
 
 const aliasHelper = (s: symbol) => `${helperNameMap[s]}: _${helperNameMap[s]}`
 
 type CodegenNode = TemplateChildNode | JSChildNode | SSRCodegenNode
 
+// 代码生成结果
 export interface CodegenResult {
   code: string
   preamble: string
@@ -112,11 +114,12 @@ export interface CodegenResult {
   map?: RawSourceMap
 }
 
+// 换行类型
 enum NewlineType {
-  Start = 0,
-  End = -1,
-  None = -2,
-  Unknown = -3,
+  Start = 0, // 开始
+  End = -1, // 结束
+  None = -2, // 无
+  Unknown = -3, // 未知
 }
 
 export interface CodegenContext
@@ -136,6 +139,7 @@ export interface CodegenContext
   newline(): void
 }
 
+// 创建 代码生成上下文
 function createCodegenContext(
   ast: RootNode,
   {
@@ -154,29 +158,51 @@ function createCodegenContext(
   }: CodegenOptions,
 ): CodegenContext {
   const context: CodegenContext = {
+    // 模式
     mode,
+    // 标识符前缀
     prefixIdentifiers,
+    // 是否需要源代码映射
     sourceMap,
+    // 文件名
     filename,
+    // 作用域Id
     scopeId,
+    // 优化导入
     optimizeImports,
+    // 运行时全局名称
     runtimeGlobalName,
+    // 运行时模块名称
     runtimeModuleName,
+    // SSR运行时模块名称
     ssrRuntimeModuleName,
+    // 是否需要SSR
     ssr,
+    // 是否是TS
     isTS,
+    // 是否在SSR中
     inSSR,
+    // 源代码
     source: ast.source,
+    // 生成后的代码
     code: ``,
+    // 列
     column: 1,
+    // 行
     line: 1,
+    // 偏移量
     offset: 0,
+    // 缩进级别
     indentLevel: 0,
+    // 纯注解
     pure: false,
+    // 源代码映射生成器
     map: undefined,
+    // 助手函数
     helper(key) {
       return `_${helperNameMap[key]}`
     },
+    // 代码生成
     push(code, newlineIndex = NewlineType.None, node) {
       context.code += code
       if (!__BROWSER__ && context.map) {
@@ -230,9 +256,11 @@ function createCodegenContext(
         }
       }
     },
+    // 缩进
     indent() {
       newline(++context.indentLevel)
     },
+    // 去除缩进
     deindent(withoutNewLine = false) {
       if (withoutNewLine) {
         --context.indentLevel
@@ -240,11 +268,13 @@ function createCodegenContext(
         newline(--context.indentLevel)
       }
     },
+    // 换行
     newline() {
       newline(context.indentLevel)
     },
   }
 
+  // 换行
   function newline(n: number) {
     context.push('\n' + `  `.repeat(n), NewlineType.Start)
   }
@@ -295,15 +325,17 @@ export function generate(
     ssr,
   } = context
 
+  // 助手函数
   const helpers = Array.from(ast.helpers)
   const hasHelpers = helpers.length > 0
+  // 是否使用with块
   const useWithBlock = !prefixIdentifiers && mode !== 'module'
+  // 是否生成作用域ID
   const genScopeId = !__BROWSER__ && scopeId != null && mode === 'module'
+  // 是否内联setup
   const isSetupInlined = !__BROWSER__ && !!options.inline
 
-  // preambles
-  // in setup() inline mode, the preamble is generated in a sub context
-  // and returned separately.
+  // 生成模块预amble
   const preambleContext = isSetupInlined
     ? createCodegenContext(ast, options)
     : context
@@ -312,8 +344,11 @@ export function generate(
   } else {
     genFunctionPreamble(ast, preambleContext)
   }
-  // enter render function
+
+  // 进入 render 函数
+  // 函数名
   const functionName = ssr ? `ssrRender` : `render`
+  // 函数参数
   const args = ssr ? ['_ctx', '_push', '_parent', '_attrs'] : ['_ctx', '_cache']
   if (!__BROWSER__ && options.bindingMetadata && !options.inline) {
     // binding optimization args
@@ -331,6 +366,7 @@ export function generate(
   }
   indent()
 
+  // with 语句
   if (useWithBlock) {
     push(`with (_ctx) {`)
     indent()
@@ -345,6 +381,7 @@ export function generate(
     }
   }
 
+  // 生成 资源解析语句
   // generate asset resolution statements
   if (ast.components.length) {
     genAssets(ast.components, 'component', context)
@@ -401,6 +438,7 @@ export function generate(
   }
 }
 
+// 生成函数序言
 function genFunctionPreamble(ast: RootNode, context: CodegenContext) {
   const {
     ssr,
@@ -430,9 +468,7 @@ function genFunctionPreamble(ast: RootNode, context: CodegenContext) {
       // "with" mode.
       // save Vue in a separate variable to avoid collision
       push(`const _Vue = ${VueBinding}\n`, NewlineType.End)
-      // in "with" mode, helpers are declared inside the with block to avoid
-      // has check cost, but hoists are lifted out of the function - we need
-      // to provide the helper here.
+      // 提升变量
       if (ast.hoists.length) {
         const staticHelpers = [
           CREATE_VNODE,
@@ -463,6 +499,7 @@ function genFunctionPreamble(ast: RootNode, context: CodegenContext) {
   push(`return `)
 }
 
+// 生成模块序言
 function genModulePreamble(
   ast: RootNode,
   context: CodegenContext,
@@ -560,6 +597,7 @@ function genAssets(
   }
 }
 
+// 生成 提升的变量
 function genHoists(hoists: (JSChildNode | null)[], context: CodegenContext) {
   if (!hoists.length) {
     return
@@ -602,6 +640,7 @@ function isText(n: string | CodegenNode) {
   )
 }
 
+// 生成 数组节点集合代码
 function genNodeListAsArray(
   nodes: (string | CodegenNode | TemplateChildNode[])[],
   context: CodegenContext,
@@ -616,6 +655,7 @@ function genNodeListAsArray(
   context.push(`]`)
 }
 
+// 生成 节点集合代码
 function genNodeList(
   nodes: (string | symbol | CodegenNode | TemplateChildNode[])[],
   context: CodegenContext,
@@ -643,6 +683,7 @@ function genNodeList(
   }
 }
 
+// 生成 节点代码
 function genNode(node: CodegenNode | symbol | string, context: CodegenContext) {
   if (isString(node)) {
     context.push(node, NewlineType.Unknown)
@@ -740,6 +781,7 @@ function genNode(node: CodegenNode | symbol | string, context: CodegenContext) {
   }
 }
 
+// 生成 文本节点代码
 function genText(
   node: TextNode | SimpleExpressionNode,
   context: CodegenContext,
@@ -747,6 +789,7 @@ function genText(
   context.push(JSON.stringify(node.content), NewlineType.Unknown, node)
 }
 
+// 生成 表达式节点代码
 function genExpression(node: SimpleExpressionNode, context: CodegenContext) {
   const { content, isStatic } = node
   context.push(
@@ -810,6 +853,7 @@ function genComment(node: CommentNode, context: CodegenContext) {
   )
 }
 
+// 生成 VNode 调用
 function genVNodeCall(node: VNodeCall, context: CodegenContext) {
   const { push, helper, pure } = context
   const {
@@ -845,15 +889,19 @@ function genVNodeCall(node: VNodeCall, context: CodegenContext) {
     }
   }
 
+  // _withDirectives()
   if (directives) {
     push(helper(WITH_DIRECTIVES) + `(`)
   }
+  // _openBlock()
   if (isBlock) {
     push(`(${helper(OPEN_BLOCK)}(${disableTracking ? `true` : ``}), `)
   }
   if (pure) {
     push(PURE_ANNOTATION)
   }
+
+  // _createElementBlock() || _createElementVNode()
   const callHelper: symbol = isBlock
     ? getVNodeBlockHelper(context.inSSR, isComponent)
     : getVNodeHelper(context.inSSR, isComponent)
@@ -873,6 +921,7 @@ function genVNodeCall(node: VNodeCall, context: CodegenContext) {
   }
 }
 
+// 生成可空参数
 function genNullableArgs(args: any[]): CallExpression['arguments'] {
   let i = args.length
   while (i--) {

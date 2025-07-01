@@ -141,12 +141,7 @@ export interface TransformContext
   filters?: Set<string>
 }
 
-/**
- * 创建AST转换上下文
- * @param root - AST根节点
- * @param options - 转换选项
- * @returns 转换上下文对象
- */
+// 创建AST转换上下文
 export function createTransformContext(
   root: RootNode,
   {
@@ -206,6 +201,7 @@ export function createTransformContext(
 
     // state
     root,
+    // 
     helpers: new Map(),
     components: new Set(),
     directives: new Set(),
@@ -223,16 +219,20 @@ export function createTransformContext(
     },
     parent: null,
     grandParent: null,
+    // 当前节点
     currentNode: root,
     childIndex: 0,
+    // 是否有 v-once 指令
     inVOnce: false,
 
     // methods
+    // 
     helper(name) {
       const count = context.helpers.get(name) || 0
       context.helpers.set(name, count + 1)
       return name
     },
+    // 
     removeHelper(name) {
       const count = context.helpers.get(name)
       if (count) {
@@ -355,6 +355,7 @@ export function createTransformContext(
   return context
 }
 
+// 转换
 export function transform(root: RootNode, options: TransformOptions): void {
   const context = createTransformContext(root, options)
   traverseNode(root, context)
@@ -427,6 +428,7 @@ function createRootCodegen(root: RootNode, context: TransformContext) {
   }
 }
 
+// 遍历 子节点
 export function traverseChildren(
   parent: ParentNode,
   context: TransformContext,
@@ -446,6 +448,7 @@ export function traverseChildren(
   }
 }
 
+// 遍历节点
 export function traverseNode(
   node: RootNode | TemplateChildNode,
   context: TransformContext,
@@ -453,6 +456,7 @@ export function traverseNode(
   context.currentNode = node
   // apply transform plugins
   const { nodeTransforms } = context
+  // 退出队列
   const exitFns = []
   for (let i = 0; i < nodeTransforms.length; i++) {
     const onExit = nodeTransforms[i](node, context)

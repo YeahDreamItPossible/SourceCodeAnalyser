@@ -126,6 +126,7 @@ export enum PatchFlags {
 /**
  * dev only flag -> name mapping
  */
+// 标志名称
 export const PatchFlagNames: Record<PatchFlags, string> = {
   [PatchFlags.TEXT]: `TEXT`,
   [PatchFlags.CLASS]: `CLASS`,

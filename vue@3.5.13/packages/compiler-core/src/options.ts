@@ -19,6 +19,7 @@ export interface ErrorHandlingOptions {
   onError?: (error: CompilerError) => void
 }
 
+// 解析器选项
 export interface ParserOptions
   extends ErrorHandlingOptions,
     CompilerCompatOptions {
@@ -216,6 +217,7 @@ interface SharedTransformCodegenOptions {
   filename?: string
 }
 
+// 转换选项
 export interface TransformOptions
   extends SharedTransformCodegenOptions,
     ErrorHandlingOptions,
@@ -302,6 +304,7 @@ export interface TransformOptions
   hmr?: boolean
 }
 
+// 代码生成选项
 export interface CodegenOptions extends SharedTransformCodegenOptions {
   /**
    * - `module` mode will generate ES module import statements for helpers
@@ -346,4 +349,5 @@ export interface CodegenOptions extends SharedTransformCodegenOptions {
   runtimeGlobalName?: string
 }
 
+// 编译选项
 export type CompilerOptions = ParserOptions & TransformOptions & CodegenOptions
